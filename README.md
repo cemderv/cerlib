@@ -8,7 +8,7 @@ cerlib is an easy-to-use 2D game library for C++.
 - [Getting Started](https://cerlib.org/getting-started)
 - [API Reference](https://cerlib.org/docs/latest)
 
-[![CMake Build](https://github.com/c-dervis/cerlib/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/c-dervis/cerlib/actions/workflows/cmake-multi-platform.yml)
+[![CMake Build](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml)
 
 ## What it provides
 
