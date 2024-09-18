@@ -8,7 +8,7 @@ cerlib is an easy-to-use 2D game library for C++.
 - [Getting Started](https://cerlib.org/getting-started)
 - [API Reference](https://cerlib.org/docs/latest)
 
-[![CMake Build](https://github.com/c-dervis/cerlib/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/c-dervis/cerlib/actions/workflows/cmake-multi-platform.yml)
+[![CMake Build](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml)
 
 ## What it provides
 
@@ -39,6 +39,44 @@ cerlib does **not** provide
 In short, cerlib lets you define your game architecture however you desire.
 It does not impose a strict model on the game's code.
 It provides every basic audiovisual aspect necessary to develop a 2D game.
+
+## Example
+
+```cpp
+#include <cerlib.hpp>
+#include <cerlib/Main.hpp>
+
+struct MyGame : cer::Game {
+  MyGame() {
+    window = cer::Window("My Game Window");
+  }
+
+  void load_content() override {
+    image = cer::load_image("MyImage.png");
+  }
+
+  bool update(cer::GameTime time) override {
+    // Update game logic. Use the time parameter as a reference point for
+    // how much time has passed since the last update:
+    // ...
+    return true;
+  }
+
+  void draw(cer::Window window) override {
+    // Draw game content into 'window':
+    // ...
+    cer::draw_sprite(image, {100, 200}, cer::Color::white());
+  }
+
+  cer::Window window;
+  cer::Image image;
+};
+
+int main() {
+  // Create & run our game.
+  return cer::run_game<MyGame>();
+}
+```
 
 ## Platform support
 
