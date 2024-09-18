@@ -11,6 +11,7 @@
 #include "cerlib/Logging.hpp"
 #include <array>
 #include <cassert>
+#include <cstring>
 
 namespace cer::details
 {
