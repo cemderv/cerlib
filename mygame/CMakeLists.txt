@@ -28,13 +28,23 @@ set(cerlib_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 # Let CMake find the cerlib package and all of its libraries.
 list(APPEND CMAKE_MODULE_PATH ${cerlib_DIR}/cmake)
-find_package(cerlib REQUIRED)
+
+add_subdirectory(
+  ${cerlib_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}/cerlib_build
+)
 
 # Imports the cerlib_add_executable function.
-include(${cerlib_DIR}/cmake/cerlib.cmake)
+include(${cerlib_DIR}/cmake/support/cerlib.cmake)
 
 # Include the list of the game's source files.
-include(files.cmake)
+file(
+  GLOB_RECURSE
+    game_source_files
+  CONFIGURE_DEPENDS
+    "src/*.hpp"
+    "src/*.cpp"
+)
 
 # Register the game as a cerlib-based executable.
 # This will call add_executable() internally, and set the executable
