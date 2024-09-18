@@ -1,0 +1,19 @@
+set(util_files
+  BinPack.cpp
+  BinPack.hpp
+  Logging.cpp
+  InternalError.hpp
+  MultiStringHash.hpp
+  NonCopyable.hpp
+  Object.cpp
+  Object.hpp
+  OStreamCompat.cpp
+  SmallVector.hpp
+  StringUnorderedMap.hpp
+  StringUtil.hpp
+  StringUtil.cpp
+  StringViewUnorderedSet.hpp
+  ToString.cpp
+  Util.hpp
+  Util.cpp
+)

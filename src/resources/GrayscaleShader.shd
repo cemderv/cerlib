@@ -1,0 +1,19 @@
+// Implements the built-in grayscale shader, accessible via Shader::Grayscale().
+// Compiled to a native shader at runtime.
+
+float saturation = 0.0;
+
+const gray_dot_factor = Vector3(0.3, 0.59, 0.11);
+
+Vector4 main() {
+  // Load the sprite's color.
+  const real_sprite_color = sample(sprite_image, sprite_uv) * sprite_color;
+
+  // Calculate the sprite's gray color.
+  const gray_color = Vector3(dot(real_sprite_color.xyz, gray_dot_factor));
+
+  // Clamp the user-specified saturation to a safe range.
+  const saturation = clamp(saturation, 0.0, 1.0);
+
+  return Vector4(lerp(gray_color, real_sprite_color.xyz, saturation), real_sprite_color.w);
+}

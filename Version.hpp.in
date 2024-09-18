@@ -1,0 +1,27 @@
+// Copyright (C) 2023-2024 Cemalettin Dervis
+// This file is part of cerlib.
+// For conditions of distribution and use, see copyright notice in LICENSE.
+
+#pragma once
+
+#include <format>
+#include <tuple>
+#include <string_view>
+
+namespace cer
+{
+/**
+ * Gets the currently used version of cerlib as a tuple of
+ * `major`, `minor`, `revision`.
+ *
+ * @ingroup Misc
+ */
+static constexpr std::tuple library_version = { ${CMAKE_PROJECT_VERSION_MAJOR}, ${CMAKE_PROJECT_VERSION_MINOR}, ${CMAKE_PROJECT_VERSION_PATCH} };
+
+/**
+ * Gets the currently used version of cerlib as a display string.
+ *
+ * @ingroup Misc
+ */
+static constexpr std::string_view library_version_string = "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}";
+} // namespace cer

@@ -1,0 +1,11 @@
+set(audio_files
+  Audio.cpp
+  AudioDevice.cpp
+  AudioDevice.hpp
+  Sound.cpp
+  SoundChannel.cpp
+  SoundChannelImpl.cpp
+  SoundChannelImpl.hpp
+  SoundImpl.cpp
+  SoundImpl.hpp
+)

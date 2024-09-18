@@ -1,0 +1,101 @@
+// Copyright (C) 2023-2024 Cemalettin Dervis
+// This file is part of cerlib.
+// For conditions of distribution and use, see copyright notice in LICENSE.
+
+#include "OpenGLPrerequisites.hpp"
+#include "cerlib/Image.hpp"
+#include "util/InternalError.hpp"
+
+namespace cer::details
+{
+auto verify_opengl_state_x() -> void
+{
+    auto error = glGetError();
+    if (error != GL_NO_ERROR)
+    {
+        std::string errorString;
+        while (error != GL_NO_ERROR)
+        {
+            errorString += std::to_string(error);
+            errorString += ';';
+            error = glGetError();
+        }
+
+        errorString.pop_back();
+
+        CER_THROW_RUNTIME_ERROR("OpenGL error(s) occurred: {}", errorString);
+    }
+}
+
+OpenGLFormatTriplet convert_to_opengl_pixel_format(ImageFormat format)
+{
+#ifdef GL_RGBA8
+    constexpr auto rgba8 = GL_RGBA8;
+#else
+    constexpr auto rgba8 = GL_RGBA8_OES;
+#endif
+
+#ifdef GL_SRGB8_ALPHA8
+    constexpr auto srgb = GL_SRGB8_ALPHA8;
+#else
+    constexpr auto srgb = GL_SRGB8_ALPHA8_EXT;
+#endif
+
+#ifdef GL_R8
+    constexpr auto r8 = GL_R8;
+#else
+    constexpr auto r8 = GL_R8_EXT;
+#endif
+
+#ifdef GL_RED
+    constexpr auto red = GL_RED;
+#else
+    constexpr auto red = GL_RED_EXT;
+#endif
+
+    switch (format)
+    {
+        case ImageFormat::R8G8B8A8_UNorm:
+            return OpenGLFormatTriplet{
+                .internal_format = rgba8,
+                .base_format     = GL_RGBA,
+                .type            = GL_UNSIGNED_BYTE,
+            };
+        case ImageFormat::R8G8B8A8_Srgb:
+            return OpenGLFormatTriplet{
+                .internal_format = srgb,
+                .base_format     = GL_RGBA,
+                .type            = GL_UNSIGNED_BYTE,
+            }; // glEnable(GL_FRAMEBUFFER_SRGB) necessary
+
+        case ImageFormat::R8_UNorm:
+            return OpenGLFormatTriplet{
+                .internal_format = r8,
+                .base_format     = red,
+                .type            = GL_UNSIGNED_BYTE,
+            };
+
+        default: CER_THROW_INTERNAL_ERROR("Unsupported texture format {}", int(format));
+    }
+}
+
+int compare_opengl_version_to_min_required_version(int major, int minor)
+{
+    const auto compare = [](int lhs, int rhs) { return lhs < rhs ? -1 : lhs > rhs ? 1 : 0; };
+
+    constexpr auto rhsMajor = min_required_gl_major_version;
+    constexpr auto rhsMinor = min_required_gl_minor_version;
+
+    if (major != rhsMajor)
+    {
+        return compare(major, rhsMajor);
+    }
+
+    if (minor != rhsMinor)
+    {
+        return compare(minor, rhsMinor);
+    }
+
+    return 0;
+}
+} // namespace cer::details

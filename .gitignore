@@ -1,0 +1,16 @@
+*.user
+.DS_Store
+.vs/
+.vscode/
+.zed/
+CMakeUserPresets.json
+cmake-build-*/
+[bB]uild/
+_[bB]uild/
+deploy/
+_deploy/
+[lL]ib/
+[pP]ackage/
+venv/
+site/
+include/cerlib/Version.hpp

@@ -1,0 +1,43 @@
+// Copyright (C) 2023-2024 Cemalettin Dervis
+// This file is part of cerlib.
+// For conditions of distribution and use, see copyright notice in LICENSE.
+
+#pragma once
+
+#include <compare>
+#include <cstdint>
+#include <string_view>
+
+namespace cer::shadercompiler
+{
+class SourceLocation final
+{
+  public:
+    static const SourceLocation std;
+
+    constexpr SourceLocation()
+        : SourceLocation(std::string_view(), 0, 0, 0)
+    {
+    }
+
+    constexpr SourceLocation(std::string_view filename,
+                             uint16_t         line,
+                             uint16_t         column,
+                             uint16_t         start_index)
+        : filename(filename)
+        , line(line)
+        , column(column)
+        , start_index(start_index)
+    {
+    }
+
+    static SourceLocation from_to(const SourceLocation& start, const SourceLocation& end);
+
+    auto operator<=>(const SourceLocation& other) const = default;
+
+    std::string_view filename;
+    uint16_t         line;
+    uint16_t         column;
+    uint16_t         start_index;
+};
+} // namespace cer::shadercompiler

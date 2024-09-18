@@ -1,0 +1,13 @@
+set(contentmanagement_files
+  Content.cpp
+  ContentManager.cpp
+  ContentManager.hpp
+  DDS.cpp
+  DDS.hpp
+  DxgiFormatConversion.cpp
+  DxgiFormatConversion.hpp
+  FileSystem.cpp
+  FileSystem.hpp
+  ImageLoading.cpp
+  ImageLoading.hpp
+)

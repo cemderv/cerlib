@@ -1,0 +1,25 @@
+set(graphics_files
+  CBufferPacker.cpp
+  CBufferPacker.hpp
+  Drawing.cpp
+  Font.cpp
+  FontImpl.cpp
+  FontImpl.hpp
+  GraphicsDevice.cpp
+  GraphicsDevice.hpp
+  GraphicsResource.cpp
+  GraphicsResourceImpl.cpp
+  GraphicsResourceImpl.hpp
+  Image.cpp
+  ImageImpl.cpp
+  ImageImpl.hpp
+  Shader.cpp
+  ShaderImpl.cpp
+  ShaderImpl.hpp
+  ShaderParameter.hpp
+  SpriteBatch.cpp
+  SpriteBatch.hpp
+  Tessellation2D.cpp
+  Tessellation2D.hpp
+  VertexElement.hpp
+)

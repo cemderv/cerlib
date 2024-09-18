@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>${bundle_identifier}</string>
+	<key>CFBundleVersion</key>
+	<string>${bundle_version}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>${bundle_version}</string>
+	<key>CFBundleName</key>
+	<string>${bundle_name}</string>
+	<key>CFBundleDisplayName</key>
+	<string>${bundle_display_name}</string>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<key>CFBundleExecutable</key>
+	<string>${executable_name}</string>
+</dict>
+</plist>

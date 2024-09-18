@@ -1,0 +1,133 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "binaryDir": "${sourceDir}/build/",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Build the game in debug mode",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Build the game in release mode",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "debug-wasm",
+      "displayName": "Build the game for WebAssembly in debug mode",
+      "inherits": "debug",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+    },
+    {
+      "name": "release-wasm",
+      "displayName": "Build the game for WebAssembly in release mode",
+      "inherits": "release",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+    },
+    {
+      "name": "vs2022",
+      "displayName": "Configure the game for development with Visual Studio 2022",
+      "inherits": "default",
+      "generator": "Visual Studio 17 2022",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "xcode",
+      "displayName": "Configure the game for development with Xcode",
+      "inherits": "default",
+      "generator": "Xcode",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-base",
+      "hidden": true,
+      "jobs": 10
+    },
+    {
+      "name": "debug",
+      "inherits": "build-base",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "inherits": "build-base",
+      "configurePreset": "release"
+    },
+    {
+      "name": "debug-wasm",
+      "inherits": "build-base",
+      "configurePreset": "debug-wasm"
+    },
+    {
+      "name": "release-wasm",
+      "inherits": "build-base",
+      "configurePreset": "release-wasm"
+    },
+    {
+      "name": "vs2022",
+      "inherits": "build-base",
+      "configurePreset": "vs2022"
+    },
+    {
+      "name": "xcode",
+      "inherits": "build-base",
+      "configurePreset": "xcode"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release"
+        },
+        {
+          "type": "build",
+          "name": "release"
+        }
+      ]
+    },
+    {
+      "name": "release-wasm",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release-wasm"
+        },
+        {
+          "type": "build",
+          "name": "release-wasm"
+        }
+      ]
+    }
+  ]
+}

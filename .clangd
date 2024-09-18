@@ -1,0 +1,16 @@
+# clangd configuration file
+# https://clangd.llvm.org/config
+
+Index:
+  Background: Build
+
+CompileFlags:
+  CompilationDatabase: build/dev
+
+InlayHints:
+  Enabled: Yes
+  Designators: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
+  TypeNameLimit: 20
+  BlockEnd: No
