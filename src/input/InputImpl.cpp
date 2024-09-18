@@ -370,6 +370,22 @@ MouseButton InputImpl::from_sdl_mouse_button(int sdl_button)
 #define CER_KMOD_CAPS   SDL_KMOD_CAPS
 #endif
 
+static KeyModifier operator|(KeyModifier lhs, KeyModifier rhs)
+{
+    return static_cast<KeyModifier>(static_cast<int>(lhs) | static_cast<int>(rhs));
+}
+
+static KeyModifier& operator|=(KeyModifier& lhs, KeyModifier rhs)
+{
+    lhs = lhs | rhs;
+    return lhs;
+}
+
+static KeyModifier operator&(KeyModifier lhs, KeyModifier rhs)
+{
+    return static_cast<KeyModifier>(static_cast<int>(lhs) & static_cast<int>(rhs));
+}
+
 static KeyModifier from_sdl_keymods(Uint16 mods)
 {
     auto result = KeyModifier::None;

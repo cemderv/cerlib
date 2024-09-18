@@ -24,20 +24,4 @@ enum class KeyModifier
     Num          = 1 << 6, /** */
     Caps         = 1 << 7, /** */
 };
-
-static KeyModifier operator|(KeyModifier lhs, KeyModifier rhs)
-{
-    return static_cast<KeyModifier>(static_cast<int>(lhs) | static_cast<int>(rhs));
-}
-
-static KeyModifier& operator|=(KeyModifier& lhs, KeyModifier rhs)
-{
-    lhs = lhs | rhs;
-    return lhs;
-}
-
-static KeyModifier operator&(KeyModifier lhs, KeyModifier rhs)
-{
-    return static_cast<KeyModifier>(static_cast<int>(lhs) & static_cast<int>(rhs));
-}
 } // namespace cer
