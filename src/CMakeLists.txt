@@ -123,8 +123,7 @@ target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
 target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
 
 # Link out-of-source dependencies
-target_link_libraries(
-  cerlib PRIVATE
+target_link_libraries(cerlib PRIVATE
   GSL
   small_vector
   utf8cpp
@@ -156,11 +155,6 @@ endif ()
 if (EMSCRIPTEN)
   target_compile_options(cerlib PUBLIC "SHELL:-s USE_SDL=2")
   target_link_options(cerlib PUBLIC "SHELL:-s MIN_WEBGL_VERSION=2" "SHELL:-s FULL_ES3=1")
-endif ()
-
-if (cerlib_library_type STREQUAL "STATIC")
-  cerlib_log("Merging static libraries into one")
-  BundleStaticLibrary(cerlib cerlib-static)
 endif ()
 
 if (ANDROID)
