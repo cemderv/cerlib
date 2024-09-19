@@ -37,7 +37,7 @@ option(
 option(
   CERLIB_SHARED_LIBRARY
   "Build cerlib as a shared library"
-  ON
+  OFF
 )
 
 option(
