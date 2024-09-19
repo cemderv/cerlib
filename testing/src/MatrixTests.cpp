@@ -41,9 +41,9 @@ TEST_CASE("Matrix", "[math]")
 
     SECTION("rotate")
     {
-        const Matrix rad = radians(45.0f);
-        const Matrix s   = sin(rad);
-        const Matrix c   = cos(rad);
+        const float rad = cer::radians(45.0f);
+        const float s   = cer::sin(rad);
+        const float c   = cer::cos(rad);
 
         REQUIRE(rotate(radians(0.0f)) == Matrix());
         REQUIRE(rotate(rad) == Matrix(c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1));
