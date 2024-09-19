@@ -67,7 +67,7 @@ enum class TokenType
 
 struct Token
 {
-    constexpr explicit Token(TokenType type, std::string_view value, const SourceLocation& location)
+    constexpr Token(TokenType type, std::string_view value, const SourceLocation& location)
         : type(type)
         , value(value)
         , location(location)

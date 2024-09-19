@@ -18,7 +18,7 @@ class FunctionCallExpr;
 class ASTOptimizer
 {
   public:
-    auto optimize(AST& ast) -> void;
+    void optimize(AST& ast);
 
   private:
     bool remove_unused_functions(AST& ast) const;

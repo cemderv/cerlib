@@ -16,25 +16,33 @@ void ASTOptimizer::optimize(AST& ast)
 {
     while (true)
     {
-        auto keepGoing = false;
+        bool keep_going = false;
 
-        keepGoing |= remove_unused_functions(ast);
-        keepGoing |= remove_unused_structs(ast);
+        keep_going |= remove_unused_functions(ast);
+        keep_going |= remove_unused_structs(ast);
 
         for (const auto& child : ast.decls())
+        {
             if (const auto func = asa<FunctionDecl>(child.get()))
+            {
                 if (func->is_shader())
-                    keepGoing |= optimize_block(func->body());
+                {
+                    keep_going |= optimize_block(func->body());
+                }
+            }
+        }
 
-        if (!keepGoing)
+        if (!keep_going)
+        {
             break;
+        }
     }
 
     // Remove unused parameters
     AST::DeclsType& decls = ast.decls();
 
     const auto it =
-        std::ranges::remove_if(decls, [&ast](const auto& decl) {
+        std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
             return isa<ShaderParamDecl>(decl.get()) && !ast.is_symbol_accessed_anywhere(*decl);
         }).begin();
 
@@ -43,16 +51,16 @@ void ASTOptimizer::optimize(AST& ast)
 
 bool ASTOptimizer::remove_unused_functions(AST& ast) const
 {
-    auto& decls = ast.decls();
+    AST::DeclsType& decls = ast.decls();
 
-    const auto it = std::ranges::remove_if(decls, [&ast](const auto& decl) {
-                        const auto func = asa<FunctionDecl>(decl.get());
-                        if (!func)
+    const auto it = std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
+                        const FunctionDecl* func = asa<FunctionDecl>(decl.get());
+                        if (func == nullptr)
                         {
                             return false;
                         }
 
-                        if (!func->body())
+                        if (func->body() == nullptr)
                         {
                             // A built-in function; don't optimize it away.
                             return false;
@@ -78,11 +86,11 @@ bool ASTOptimizer::remove_unused_functions(AST& ast) const
 
 bool ASTOptimizer::remove_unused_structs(AST& ast) const
 {
-    auto& decls = ast.decls();
+    AST::DeclsType& decls = ast.decls();
 
-    const auto it = std::ranges::remove_if(decls, [&ast](const auto& decl) {
-                        const auto strct = asa<StructDecl>(decl.get());
-                        if (!strct)
+    const auto it = std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
+                        const StructDecl* strct = asa<StructDecl>(decl.get());
+                        if (strct == nullptr)
                         {
                             return false;
                         }
@@ -110,7 +118,9 @@ bool ASTOptimizer::optimize_block(CodeBlock* block)
                                          [block](const auto& pair) { return pair.first == block; });
 
     if (it == m_code_block_name_gens.cend())
+    {
         m_code_block_name_gens.emplace(block, TempVarNameGen(block));
+    }
 
     return remove_unused_variables(block);
 }
@@ -119,24 +129,30 @@ bool ASTOptimizer::remove_unused_variables(CodeBlock* block)
 {
     SmallVector<VarStmt*, 4> var_stmts;
 
-    for (const auto& stmt : block->stmts())
+    for (const std::unique_ptr<Stmt>& stmt : block->stmts())
     {
-        if (const auto& var_stmt = asa<VarStmt>(stmt.get()))
+        if (VarStmt* var_stmt = asa<VarStmt>(stmt.get()))
+        {
             var_stmts.push_back(var_stmt);
+        }
     }
 
     SmallVector<gsl::not_null<VarStmt*>, 4> var_stmts_to_remove;
 
-    for (const auto& var_stmt : var_stmts)
+    for (VarStmt* var_stmt : var_stmts)
     {
         if (!block->accesses_symbol(var_stmt->variable(), false))
+        {
             var_stmts_to_remove.emplace_back(var_stmt);
+        }
     }
 
     const bool has_removed_any = !var_stmts_to_remove.empty();
 
-    for (const auto& lbe : var_stmts_to_remove)
+    for (const gsl::not_null<VarStmt*>& lbe : var_stmts_to_remove)
+    {
         block->remove_stmt(*lbe);
+    }
 
     return has_removed_any;
 }

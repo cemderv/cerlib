@@ -58,10 +58,12 @@ static void add_struct_fields(
     std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> fields)
 {
     var.reserve(fields.size());
+
     for (const auto& [field_name, field_type] : fields)
     {
         var.push_back(
             std::make_unique<StructFieldDecl>(SourceLocation::std, field_name, *field_type));
+
         all.emplace_back(var.back().get());
     }
 }
@@ -179,14 +181,17 @@ BuiltInSymbols::BuiltInSymbols()
              "clamp",
              {{"value", floatT}, {"start", floatT}, {"end", floatT}},
              *floatT);
+
     add_func(clamp_Vector2,
              "clamp",
              {{"value", vector2T}, {"start", vector2T}, {"end", vector2T}},
              *vector2T);
+
     add_func(clamp_Vector3,
              "clamp",
              {{"value", vector3T}, {"start", vector3T}, {"end", vector3T}},
              *vector3T);
+
     add_func(clamp_Vector4,
              "clamp",
              {{"value", vector4T}, {"start", vector4T}, {"end", vector4T}},
@@ -255,14 +260,17 @@ BuiltInSymbols::BuiltInSymbols()
              "smoothstep",
              {{"min", floatT}, {"max", floatT}, {"value", floatT}},
              *floatT);
+
     add_func(smoothstep_Vector2,
              "smoothstep",
              {{"min", vector2T}, {"max", vector2T}, {"value", vector2T}},
              *vector2T);
+
     add_func(smoothstep_Vector3,
              "smoothstep",
              {{"min", vector3T}, {"max", vector3T}, {"value", vector3T}},
              *vector3T);
+
     add_func(smoothstep_Vector4,
              "smoothstep",
              {{"min", vector4T}, {"max", vector4T}, {"value", vector4T}},

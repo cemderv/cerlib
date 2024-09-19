@@ -54,9 +54,13 @@ std::string GLSLShaderGenerator::do_generation(const SemaContext&               
     Writer w;
 
     if (m_is_gles)
+    {
         w << "#version 300 es" << WNewline;
+    }
     else
+    {
         w << "#version 140" << WNewline;
+    }
 
     w << "precision highp float;" << WNewline;
     w << "precision highp sampler2D;" << WNewline;

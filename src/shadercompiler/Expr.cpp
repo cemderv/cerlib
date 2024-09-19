@@ -69,6 +69,9 @@ void Expr::verify(SemaContext& context, Scope& scope)
 
 std::any Expr::evaluate_constant_value(SemaContext& context, Scope& scope) const
 {
+    CERLIB_UNUSED(context);
+    CERLIB_UNUSED(scope);
+
     return {};
 }
 
@@ -79,6 +82,8 @@ bool Expr::is_literal() const
 
 bool Expr::accesses_symbol(const Decl& symbol, bool transitive) const
 {
+    CERLIB_UNUSED(transitive);
+
     return m_symbol == &symbol;
 }
 
@@ -138,6 +143,9 @@ int32_t IntLiteralExpr::value() const
 
 std::any IntLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
 {
+    CERLIB_UNUSED(context);
+    CERLIB_UNUSED(scope);
+
     return m_value;
 }
 
@@ -154,19 +162,22 @@ void BoolLiteralExpr::on_verify(SemaContext& context, Scope& scope)
 
 BoolLiteralExpr::BoolLiteralExpr(const SourceLocation& location, bool value)
     : Expr(location)
-    , m_Value(value)
+    , m_value(value)
 {
     set_type(BoolType::instance());
 }
 
 bool BoolLiteralExpr::value() const
 {
-    return m_Value;
+    return m_value;
 }
 
 std::any BoolLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
 {
-    return m_Value;
+    CERLIB_UNUSED(context);
+    CERLIB_UNUSED(scope);
+
+    return m_value;
 }
 
 bool BoolLiteralExpr::is_literal() const
@@ -202,6 +213,9 @@ double FloatLiteralExpr::value() const
 
 std::any FloatLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
 {
+    CERLIB_UNUSED(context);
+    CERLIB_UNUSED(scope);
+
     return m_value;
 }
 
@@ -216,7 +230,7 @@ void BinOpExpr::on_verify(SemaContext& context, Scope& scope)
 
     if (is(BinOpKind::MemberAccess))
     {
-        if (const auto sym_access = asa<SymAccessExpr>(m_rhs.get()))
+        if (SymAccessExpr* sym_access = asa<SymAccessExpr>(m_rhs.get()))
         {
             sym_access->m_ancestor_expr = m_lhs.get();
         }
@@ -473,9 +487,10 @@ bool StructCtorCall::accesses_symbol(const Decl& symbol, bool transitive) const
         }
     }
 
-    return std::ranges::any_of(m_args, [&symbol, transitive](const auto& expr) {
-        return expr->accesses_symbol(symbol, transitive);
-    });
+    return std::ranges::any_of(m_args,
+                               [&symbol, transitive](const std::unique_ptr<StructCtorArg>& expr) {
+                                   return expr->accesses_symbol(symbol, transitive);
+                               });
 }
 
 void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
@@ -582,7 +597,7 @@ SymAccessExpr::SymAccessExpr(const SourceLocation& location, Decl& symbol)
 
 void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
 {
-    const auto& built_ins = context.built_in_symbols();
+    const BuiltInSymbols& built_ins = context.built_in_symbols();
 
     if (m_ancestor_expr != nullptr)
     {
@@ -900,12 +915,14 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
         {
             const float x = expect_and_get_float(values[0]);
             const float y = expect_and_get_float(values[1]);
+
             return Vector2{x, y};
         }
 
         if (&symbol == built_ins.vector2_ctor_xy.get())
         {
             const Vector2 xy = expect_and_get_vector2(values[0]);
+
             return Vector2{xy};
         }
 
@@ -926,6 +943,7 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
             const float y = expect_and_get_float(values.at(1));
             const float z = expect_and_get_float(values.at(2));
             const float w = expect_and_get_float(values.at(3));
+
             return Vector4{x, y, z, w};
         }
 
@@ -933,6 +951,7 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
         {
             const Vector2 xy = expect_and_get_vector2(values.at(0));
             const Vector2 zw = expect_and_get_vector2(values.at(1));
+
             return Vector4{xy, zw};
         }
 
@@ -941,6 +960,7 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
             const Vector2 xy = expect_and_get_vector2(values.at(0));
             const float   z  = expect_and_get_float(values.at(1));
             const float   w  = expect_and_get_float(values.at(2));
+
             return Vector4{xy, z, w};
         }
 
@@ -948,6 +968,7 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
         {
             const Vector3 xyz = expect_and_get_vector3(values.at(0));
             const float   w   = expect_and_get_float(values.at(1));
+
             return Vector4{xyz, w};
         }
 
@@ -981,6 +1002,7 @@ ScientificIntLiteralExpr::ScientificIntLiteralExpr(const SourceLocation& locatio
 
 void ScientificIntLiteralExpr::on_verify(SemaContext& context, Scope& scope)
 {
+    CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
 }
 
@@ -991,7 +1013,9 @@ std::string_view ScientificIntLiteralExpr::value() const
 
 void HexadecimalIntLiteralExpr::on_verify(SemaContext& context, Scope& scope)
 {
+    CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
+
     set_type(IntType::instance());
 }
 
@@ -1227,12 +1251,14 @@ std::any TernaryExpr::evaluate_constant_value(SemaContext& context, Scope& scope
     }
 
     std::any true_value = m_true_expr->evaluate_constant_value(context, scope);
+
     if (!true_value.has_value())
     {
         return {};
     }
 
     std::any false_value = m_false_expr->evaluate_constant_value(context, scope);
+
     if (!false_value.has_value())
     {
         return {};

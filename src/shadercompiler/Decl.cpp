@@ -79,7 +79,9 @@ StructFieldDecl::~StructFieldDecl() noexcept = default;
 void StructFieldDecl::on_verify(SemaContext& context, Scope& scope)
 {
     if (!name().starts_with(naming::forbidden_identifier_prefix))
+    {
         context.verify_symbol_name(location(), name());
+    }
 
     const Type& type = this->type().resolve(context, scope);
 
@@ -162,7 +164,9 @@ std::string_view StructDecl::type_name() const
 
 const Type& StructDecl::resolve(SemaContext& context, Scope& scope) const
 {
+    CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
+
     return *this;
 }
 
@@ -173,6 +177,8 @@ std::span<const std::unique_ptr<StructFieldDecl>> StructDecl::get_fields() const
 
 Decl* StructDecl::find_member_symbol(const SemaContext& context, std::string_view name) const
 {
+    CERLIB_UNUSED(context);
+
     return find_field(name);
 }
 
@@ -448,7 +454,7 @@ void FunctionParamDecl::on_verify(SemaContext& context, Scope& scope)
     set_type(type);
 
     if (const FunctionDecl* function = scope.current_function();
-        function != nullptr && function->body())
+        function != nullptr && function->body() != nullptr)
     {
         if (type.is_array() || type.is_image_type())
         {
@@ -471,6 +477,8 @@ ForLoopVariableDecl::ForLoopVariableDecl(const SourceLocation& location, std::st
 
 void ForLoopVariableDecl::on_verify(SemaContext& context, Scope& scope)
 {
+    CERLIB_UNUSED(context);
+
     scope.add_symbol(*this);
 }
 

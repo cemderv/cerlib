@@ -100,4 +100,15 @@ const Type* BinOpTable::bin_op_result_type(BinOpKind   op_kind,
 
     return nullptr;
 }
+
+BinOpTable::Entry::Entry(BinOpKind                  op_kind,
+                         gsl::not_null<const Type*> lhs,
+                         gsl::not_null<const Type*> rhs,
+                         gsl::not_null<const Type*> result)
+    : op_kind(op_kind)
+    , lhs(lhs)
+    , rhs(rhs)
+    , result(result)
+{
+}
 } // namespace cer::shadercompiler

@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <compare>
 #include <cstdint>
 #include <string_view>
 
@@ -33,7 +32,8 @@ class SourceLocation final
 
     static SourceLocation from_to(const SourceLocation& start, const SourceLocation& end);
 
-    auto operator<=>(const SourceLocation& other) const = default;
+    bool operator==(const SourceLocation&) const = default;
+    bool operator!=(const SourceLocation&) const = default;
 
     std::string_view filename;
     uint16_t         line;

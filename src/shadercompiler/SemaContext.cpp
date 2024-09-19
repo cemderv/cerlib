@@ -97,7 +97,8 @@ void SemaContext::verify_type_assignment(const Type& target_type,
 
 void SemaContext::verify_symbol_assignment(const Expr& lhs)
 {
-    auto symbol = lhs.symbol();
+    const Decl* symbol = lhs.symbol();
+
     if (symbol == nullptr)
     {
         throw Error{lhs.location(), "cannot assign a value to an unnamed value"};

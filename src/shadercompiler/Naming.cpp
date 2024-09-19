@@ -8,7 +8,7 @@
 
 namespace cer::shadercompiler
 {
-auto naming::is_identifier_forbidden(std::string_view identifier) -> bool
+bool naming::is_identifier_forbidden(std::string_view identifier)
 {
     return identifier.starts_with(forbidden_identifier_prefix);
 }

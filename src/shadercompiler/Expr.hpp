@@ -161,7 +161,7 @@ class CERLIB_API_INTERNAL BoolLiteralExpr final : public Expr
     bool is_literal() const override;
 
   private:
-    bool m_Value;
+    bool m_value;
 };
 
 class CERLIB_API_INTERNAL FloatLiteralExpr final : public Expr

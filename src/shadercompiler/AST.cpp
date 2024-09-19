@@ -23,63 +23,71 @@ AST::AST(std::string_view              filename,
 
 AST::~AST() noexcept = default;
 
-auto AST::verify(SemaContext& context, Scope& global_scope) -> void
+void AST::verify(SemaContext& context, Scope& global_scope)
 {
     if (m_is_verified)
+    {
         return;
+    }
 
     for (const auto& decl : m_decls)
+    {
         decl->verify(context, global_scope);
+    }
 
     m_is_verified = true;
 }
 
-auto AST::is_top_level_symbol(const SemaContext& context, const Decl& symbol) const -> bool
+bool AST::is_top_level_symbol(const SemaContext& context, const Decl& symbol) const
 {
     if (isa<StructFieldDecl>(&symbol))
+    {
         return false;
+    }
 
     if (std::ranges::any_of(m_decls, [&symbol](const auto& e) { return e.get() == &symbol; }))
+    {
         return true;
+    }
 
     return context.built_in_symbols().contains(symbol);
 }
 
-auto AST::filename() const -> std::string_view
+std::string_view AST::filename() const
 {
     return m_filename;
 }
 
-auto AST::decls() -> DeclsType&
+AST::DeclsType& AST::decls()
 {
     return m_decls;
 }
 
-auto AST::decls() const -> const DeclsType&
+const AST::DeclsType& AST::decls() const
 {
     return m_decls;
 }
 
-auto AST::has_parameters() const -> bool
+bool AST::has_parameters() const
 {
     return std::ranges::any_of(m_decls,
                                [](const auto& decl) { return isa<ShaderParamDecl>(decl.get()); });
 }
 
-auto AST::is_symbol_accessed_anywhere(const Decl& symbol) const -> bool
+bool AST::is_symbol_accessed_anywhere(const Decl& symbol) const
 {
     return std::ranges::any_of(m_decls, [&symbol](const std::unique_ptr<Decl>& decl) {
-        FunctionDecl* function = asa<FunctionDecl>(decl.get());
+        auto* function = asa<FunctionDecl>(decl.get());
         return function != nullptr ? function->accesses_symbol(symbol, true) : false;
     });
 }
 
-auto AST::user_specified_defines() const -> const StringViewUnorderedSet*
+const StringViewUnorderedSet* AST::user_specified_defines() const
 {
     return m_user_specified_defines;
 }
 
-auto AST::is_verified() const -> bool
+bool AST::is_verified() const
 {
     return m_is_verified;
 }

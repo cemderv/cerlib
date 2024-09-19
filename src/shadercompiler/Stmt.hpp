@@ -7,7 +7,6 @@
 #include "shadercompiler/SourceLocation.hpp"
 #include "util/InternalExport.hpp"
 #include "util/NonCopyable.hpp"
-
 #include <memory>
 
 namespace cer::shadercompiler
@@ -34,11 +33,11 @@ class CERLIB_API_INTERNAL Stmt
 
     virtual ~Stmt() noexcept;
 
-    auto location() const -> const SourceLocation&;
+    const SourceLocation& location() const;
 
-    auto verify(SemaContext& context, Scope& scope) -> void;
+    void verify(SemaContext& context, Scope& scope);
 
-    virtual auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool = 0;
+    virtual bool accesses_symbol(const Decl& symbol, bool transitive) const = 0;
 
   private:
     SourceLocation m_location;
@@ -65,15 +64,15 @@ class CERLIB_API_INTERNAL CompoundStmt final : public Stmt
 
     ~CompoundStmt() noexcept override;
 
-    auto on_verify(SemaContext& context, Scope& scope) -> void override;
+    void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto kind() const -> CompoundStmtKind;
+    CompoundStmtKind kind() const;
 
-    auto lhs() const -> const Expr&;
+    const Expr& lhs() const;
 
-    auto rhs() const -> const Expr&;
+    const Expr& rhs() const;
 
-    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
+    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
 
   private:
     CompoundStmtKind      m_kind;
@@ -92,13 +91,13 @@ class CERLIB_API_INTERNAL AssignmentStmt final : public Stmt
 
     ~AssignmentStmt() noexcept override;
 
-    auto on_verify(SemaContext& context, Scope& scope) -> void override;
+    void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto lhs() const -> const Expr&;
+    const Expr& lhs() const;
 
-    auto rhs() const -> const Expr&;
+    const Expr& rhs() const;
 
-    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
+    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
 
   private:
     std::unique_ptr<Expr> m_lhs;
@@ -114,11 +113,11 @@ class CERLIB_API_INTERNAL ReturnStmt final : public Stmt
 
     ~ReturnStmt() noexcept override;
 
-    auto on_verify(SemaContext& context, Scope& scope) -> void override;
+    void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto expr() const -> const Expr&;
+    const Expr& expr() const;
 
-    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
+    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
 
   private:
     std::unique_ptr<Expr> m_expr;
@@ -136,15 +135,15 @@ class CERLIB_API_INTERNAL ForStmt final : public Stmt
 
     ~ForStmt() noexcept override;
 
-    auto on_verify(SemaContext& context, Scope& scope) -> void override;
+    void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto loop_variable() const -> const ForLoopVariableDecl&;
+    const ForLoopVariableDecl& loop_variable() const;
 
-    auto range() const -> const RangeExpr&;
+    const RangeExpr& range() const;
 
-    auto body() const -> const CodeBlock&;
+    const CodeBlock& body() const;
 
-    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
+    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
 
   private:
     std::unique_ptr<ForLoopVariableDecl> m_loop_variable;
@@ -164,15 +163,15 @@ class CERLIB_API_INTERNAL IfStmt final : public Stmt
 
     ~IfStmt() noexcept override;
 
-    auto on_verify(SemaContext& context, Scope& scope) -> void override;
+    void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto condition_expr() const -> const Expr*;
+    const Expr* condition_expr() const;
 
-    auto body() const -> const CodeBlock&;
+    const CodeBlock& body() const;
 
-    auto next() const -> const IfStmt*;
+    const IfStmt* next() const;
 
-    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
+    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
 
   private:
     std::unique_ptr<Expr>      m_condition_expr;
@@ -189,15 +188,15 @@ class CERLIB_API_INTERNAL VarStmt final : public Stmt
 
     ~VarStmt() noexcept override;
 
-    auto on_verify(SemaContext& context, Scope& scope) -> void override;
+    void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto name() const -> std::string_view;
+    std::string_view name() const;
 
-    auto variable() const -> const VarDecl&;
+    const VarDecl& variable() const;
 
-    auto steal_variable() -> std::unique_ptr<VarDecl>;
+    std::unique_ptr<VarDecl> steal_variable();
 
-    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
+    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
 
   private:
     std::unique_ptr<VarDecl> m_variable;

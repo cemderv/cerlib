@@ -23,7 +23,7 @@ TempVarNameGen::TempVarNameGen(const CodeBlock* block)
     {
         for (const std::unique_ptr<Stmt>& stmt : block->stmts())
         {
-            VarStmt* lbe = asa<VarStmt>(stmt.get());
+            const VarStmt* lbe = asa<VarStmt>(stmt.get());
             if (lbe == nullptr)
             {
                 continue;

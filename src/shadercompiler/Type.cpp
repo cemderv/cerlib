@@ -28,6 +28,7 @@ const Type* Type::member_type(std::string_view name) const
 
 Decl* Type::find_member_symbol(const SemaContext& context, std::string_view name) const
 {
+    CERLIB_UNUSED(context);
     CERLIB_UNUSED(name);
     return nullptr;
 }
@@ -436,6 +437,8 @@ UnresolvedType::UnresolvedType(const SourceLocation& location, std::string_view 
 
 const Type& UnresolvedType::resolve(SemaContext& context, Scope& scope) const
 {
+    CERLIB_UNUSED(context);
+
     const Type* resolved_type = scope.find_type(m_name);
 
     if (resolved_type == nullptr)
@@ -464,7 +467,9 @@ const Type& ImageType::instance()
 
 const Type& ImageType::resolve(SemaContext& context, Scope& scope) const
 {
+    CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
+
     return instance();
 }
 

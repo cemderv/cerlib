@@ -14,6 +14,7 @@
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
+#include "util/Util.hpp"
 #include <cassert>
 #include <format>
 #include <gsl/util>
@@ -47,7 +48,8 @@ AccessedParams ShaderGenerator::params_accessed_by_function(const FunctionDecl& 
 
     for (const std::unique_ptr<Decl>& decl : m_ast->decls())
     {
-        const auto param = asa<ShaderParamDecl>(decl.get());
+        const ShaderParamDecl* param = asa<ShaderParamDecl>(decl.get());
+
         if (param == nullptr)
         {
             continue;
@@ -77,6 +79,8 @@ ShaderGenerationResult ShaderGenerator::generate(const SemaContext& context,
                                                  std::string_view   entry_point_name,
                                                  bool               minify)
 {
+    CERLIB_UNUSED(minify);
+
     assert(m_ast == nullptr);
     assert(ast.is_verified());
 
@@ -183,7 +187,9 @@ void ShaderGenerator::generate_expr(Writer& w, const Expr& expr, const SemaConte
     {
         w << float_lit->string_value();
         if (m_needs_float_literal_suffix)
+        {
             w << 'f';
+        }
     }
     else if (const BoolLiteralExpr* bool_lit = asa<BoolLiteralExpr>(&expr))
     {
@@ -315,6 +321,8 @@ void ShaderGenerator::generate_struct_decl(Writer&            w,
                                            const StructDecl&  strct,
                                            const SemaContext& context)
 {
+    CERLIB_UNUSED(context);
+
     w << "struct " << strct.name() << " ";
     w.open_brace();
 
@@ -413,6 +421,9 @@ void ShaderGenerator::generate_var_stmt(Writer&            w,
                                         const VarStmt&     var_stmt,
                                         const SemaContext& context)
 {
+    CERLIB_UNUSED(var_stmt);
+    CERLIB_UNUSED(context);
+
     w << "<< generate_var_stmt >>";
 }
 
@@ -480,6 +491,8 @@ void ShaderGenerator::generate_struct_ctor_call(Writer&               w,
                                                 const StructCtorCall& struct_ctor_call,
                                                 const SemaContext&    context)
 {
+    CERLIB_UNUSED(context);
+
     const auto it = m_temporary_vars.find(&struct_ctor_call);
     assert(it != m_temporary_vars.cend() && "Struct ctor call did not create a temporary variable");
     w << it->second;
@@ -533,6 +546,8 @@ void ShaderGenerator::generate_sym_access_expr(Writer&              w,
                                                const SymAccessExpr& expr,
                                                const SemaContext&   context)
 {
+    CERLIB_UNUSED(context);
+
     const Decl*            symbol = expr.symbol();
     const std::string_view name   = expr.name();
 
@@ -650,7 +665,7 @@ SmallVector<const Decl*, 8> ShaderGenerator::gather_ast_decls_to_generate(
     for (const std::unique_ptr<Decl>& decl : ast.decls())
     {
         if (const FunctionDecl* func = asa<FunctionDecl>(decl.get());
-            func && func->is_struct_ctor())
+            func != nullptr && func->is_struct_ctor())
         {
             continue;
         }

@@ -30,7 +30,7 @@ Scope::Scope()
 
 Scope::Scope(Scope&& rhs) noexcept = default;
 
-auto Scope::operator=(Scope&& rhs) noexcept -> Scope& = default;
+Scope& Scope::operator=(Scope&& rhs) noexcept = default;
 
 Scope::~Scope() noexcept = default;
 
@@ -69,9 +69,9 @@ const Decl* Scope::find_symbol(std::string_view name, bool fall_back_to_parent) 
     assert(!name.empty());
 
     const Decl* decl = nullptr;
-    for (auto m_symbol : std::ranges::reverse_view(m_symbols))
+    for (const gsl::not_null<const Decl*>& symbol : std::ranges::reverse_view(m_symbols))
     {
-        if (const auto& e = m_symbol.get(); e->name() == name)
+        if (const Decl* e = symbol.get(); e->name() == name)
         {
             decl = e;
         }
@@ -124,7 +124,7 @@ const Decl* Scope::find_symbol_with_similar_name(std::string_view name,
     const Decl* symbol_with_min_distance = nullptr;
     double      min_distance             = std::numeric_limits<double>::max();
 
-    for (auto symbol : std::ranges::reverse_view(m_symbols))
+    for (const gsl::not_null<const Decl*>& symbol : std::ranges::reverse_view(m_symbols))
     {
         const std::string_view s1 = symbol->name();
         const std::string_view s2 = name;
@@ -271,6 +271,7 @@ Scope& Scope::push_child()
 {
     m_children.push_back(std::make_unique<Scope>());
     m_children.back()->m_parent = this;
+
     return *m_children.back();
 }
 

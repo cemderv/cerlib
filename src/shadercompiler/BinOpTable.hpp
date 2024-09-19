@@ -30,6 +30,11 @@ class BinOpTable final
   private:
     struct Entry // NOLINT(*-pro-type-member-init)
     {
+        Entry(BinOpKind                  op_kind,
+              gsl::not_null<const Type*> lhs,
+              gsl::not_null<const Type*> rhs,
+              gsl::not_null<const Type*> result);
+
         BinOpKind                  op_kind{};
         gsl::not_null<const Type*> lhs;
         gsl::not_null<const Type*> rhs;

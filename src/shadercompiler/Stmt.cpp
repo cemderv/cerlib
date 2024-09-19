@@ -10,6 +10,7 @@
 #include "shadercompiler/Expr.hpp"
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/SemaContext.hpp"
+#include "util/Util.hpp"
 
 #include <cassert>
 
@@ -66,6 +67,8 @@ std::unique_ptr<VarDecl> VarStmt::steal_variable()
 
 bool VarStmt::accesses_symbol(const Decl& symbol, bool transitive) const
 {
+    CERLIB_UNUSED(transitive);
+
     return m_variable->expr().accesses_symbol(symbol, true);
 }
 
@@ -143,8 +146,8 @@ ForStmt::ForStmt(const SourceLocation&                location,
     , m_range(std::move(range))
     , m_body(std::move(body))
 {
-    assert(m_range);
-    assert(m_body);
+    assert(m_range != nullptr);
+    assert(m_body != nullptr);
 }
 
 ForStmt::~ForStmt() noexcept = default;

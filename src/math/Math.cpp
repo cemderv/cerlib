@@ -40,7 +40,9 @@ uint32_t cer::mipmap_extent(uint32_t base_extent, uint32_t mipmap)
     auto extent = base_extent;
 
     for (uint32_t i = 0; i < mipmap; ++i)
+    {
         extent = max(extent / 2, 1u);
+    }
 
     return extent;
 }
@@ -48,8 +50,10 @@ uint32_t cer::mipmap_extent(uint32_t base_extent, uint32_t mipmap)
 uint32_t cer::max_mipmap_count_for_extent(uint32_t base_extent)
 {
     uint32_t max_mipmap_count = 0u;
+
     for (uint32_t m = base_extent; m > 0; m = m >> 1, ++max_mipmap_count)
         ;
+
     return max_mipmap_count;
 }
 
