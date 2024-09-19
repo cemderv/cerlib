@@ -4,12 +4,12 @@
 
 #pragma once
 
-#define NON_COPYABLE(className)                                                                    \
-    className(const className&)            = delete;                                               \
-    className& operator=(const className&) = delete
+#define NON_COPYABLE(class_name)                                                                   \
+    class_name(const class_name&)            = delete;                                             \
+    class_name& operator=(const class_name&) = delete
 
-#define NON_COPYABLE_NON_MOVABLE(className)                                                        \
-    className(const className&)                = delete;                                           \
-    className& operator=(const className&)     = delete;                                           \
-    className(className&&) noexcept            = delete;                                           \
-    className& operator=(className&&) noexcept = delete
+#define NON_COPYABLE_NON_MOVABLE(class_name)                                                       \
+    class_name(const class_name&)                = delete;                                         \
+    class_name& operator=(const class_name&)     = delete;                                         \
+    class_name(class_name&&) noexcept            = delete;                                         \
+    class_name& operator=(class_name&&) noexcept = delete
