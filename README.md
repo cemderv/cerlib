@@ -55,14 +55,14 @@ struct MyGame : cer::Game {
     image = cer::load_image("MyImage.png");
   }
 
-  bool update(cer::GameTime time) override {
+  bool update(const cer::GameTime& time) override {
     // Update game logic. Use the time parameter as a reference point for
     // how much time has passed since the last update:
     // ...
     return true;
   }
 
-  void draw(cer::Window window) override {
+  void draw(const cer::Window& window) override {
     // Draw game content into 'window':
     // ...
     cer::draw_sprite(image, {100, 200}, cer::Color::white());

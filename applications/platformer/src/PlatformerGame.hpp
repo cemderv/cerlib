@@ -11,9 +11,9 @@ class PlatformerGame final : public cer::Game
   private:
     void load_content() override;
 
-    bool update(cer::GameTime time) override;
+    bool update(const cer::GameTime& time) override;
 
-    void draw(cer::Window window) override;
+    void draw(const cer::Window& window) override;
 
     void draw_hud();
 

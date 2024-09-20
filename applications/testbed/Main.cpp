@@ -16,12 +16,12 @@ class Testbed : public cer::Game
         img = cer::load_image("logo.png");
     }
 
-    bool update(cer::GameTime time) override
+    bool update(const cer::GameTime& time) override
     {
         return true;
     }
 
-    void draw(cer::Window window) override
+    void draw(const cer::Window& window) override
     {
         draw_sprite(img, (window.size_px() - img.size()) / 2);
     }

@@ -49,7 +49,7 @@ void PlatformerGame::load_content()
     load_next_level();
 }
 
-bool PlatformerGame::update(cer::GameTime time)
+bool PlatformerGame::update(const cer::GameTime& time)
 {
     if (time.elapsed_time == 0.0)
     {
@@ -65,7 +65,9 @@ bool PlatformerGame::update(cer::GameTime time)
         return true;
     }
 
-    time.elapsed_time = target_elapsed_time;
+    cer::GameTime corrected_time{time};
+
+    corrected_time.elapsed_time = target_elapsed_time;
     m_time_accumulator -= target_elapsed_time;
 
     if (was_key_just_pressed(cer::Key::Escape))
@@ -95,12 +97,12 @@ bool PlatformerGame::update(cer::GameTime time)
         }
     }
 
-    m_level->update(time);
+    m_level->update(corrected_time);
 
     return true;
 }
 
-void PlatformerGame::draw(cer::Window window)
+void PlatformerGame::draw(const cer::Window& window)
 {
     if (m_canvas)
     {
