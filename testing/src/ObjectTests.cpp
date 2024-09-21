@@ -5,7 +5,6 @@
 #include "cerlib/Export.hpp"
 #include "util/Object.hpp"
 #include "util/Util.hpp"
-#include <format>
 #include <gsl/pointers>
 #include <memory>
 #include <snitch/snitch.hpp>
@@ -22,12 +21,12 @@ class AnimalImpl : public cer::details::Object
     explicit AnimalImpl(int id)
         : m_id(id)
     {
-        s_info_list.push_back(std::format("AnimalImpl({})", m_id));
+        s_info_list.push_back(cer_fmt::format("AnimalImpl({})", m_id));
     }
 
     ~AnimalImpl() noexcept override
     {
-        s_info_list.push_back(std::format("~AnimalImpl({})", m_id));
+        s_info_list.push_back(cer_fmt::format("~AnimalImpl({})", m_id));
     }
 
     auto animal_id() const -> int
@@ -66,12 +65,12 @@ class DogImpl : public AnimalImpl
         : AnimalImpl(base_id)
         , m_dog_id(dog_id)
     {
-        s_info_list.push_back(std::format("DogImpl({},{})", animal_id(), m_dog_id));
+        s_info_list.push_back(cer_fmt::format("DogImpl({},{})", animal_id(), m_dog_id));
     }
 
     ~DogImpl() noexcept override
     {
-        s_info_list.push_back(std::format("~DogImpl({},{})", animal_id(), m_dog_id));
+        s_info_list.push_back(cer_fmt::format("~DogImpl({},{})", animal_id(), m_dog_id));
     }
 
     auto dog_id() const -> int

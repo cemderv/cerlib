@@ -151,7 +151,7 @@ void PlatformerGame::draw_hud()
         seconds_string.insert(0, "0");
     }
 
-    const std::string time_string = std::format("Time: {}:{}", minutes_string, seconds_string);
+    const std::string time_string = cer_fmt::format("Time: {}:{}", minutes_string, seconds_string);
 
     cer::Color time_color;
 
@@ -169,7 +169,7 @@ void PlatformerGame::draw_hud()
 
     // Draw score
     const float       time_height  = m_hud_font.measure(time_string, text_size).y;
-    const std::string score_string = std::format("Score: {}", m_total_score);
+    const std::string score_string = cer_fmt::format("Score: {}", m_total_score);
 
     draw_shadowed_string(score_string,
                          hud_location + cer::Vector2{0, time_height * 1.2f},
@@ -201,7 +201,7 @@ void PlatformerGame::load_next_level()
     // Unload the current level first before loading the next level.
     m_level.reset();
 
-    m_level = cer::load_custom_asset_of_type<Level>(std::format("levels/{}.txt", m_level_index),
+    m_level = cer::load_custom_asset_of_type<Level>(cer_fmt::format("levels/{}.txt", m_level_index),
                                                     Level::Args{
                                                         .score = &m_total_score,
                                                     });

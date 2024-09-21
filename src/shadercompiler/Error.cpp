@@ -6,7 +6,6 @@
 #include "cerlib/Logging.hpp"
 #include "shadercompiler/SourceLocation.hpp"
 #include <cassert>
-#include <format>
 
 namespace cer::shadercompiler
 {
@@ -14,10 +13,10 @@ static std::string build_full_message(const SourceLocation& location, std::strin
 {
     assert(!location.filename.empty());
 
-    return location.line == 0 ? std::format("{}: error: {}", location.filename, message)
+    return location.line == 0 ? cer_fmt::format("{}: error: {}", location.filename, message)
            : location.column == 0
-               ? std::format("{}({}): error: {}", location.filename, location.line, message)
-               : std::format("{}({}, {}): error: {}",
+               ? cer_fmt::format("{}({}): error: {}", location.filename, location.line, message)
+               : cer_fmt::format("{}({}, {}): error: {}",
                              location.filename,
                              location.line,
                              location.column,

@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "cerlib/Formatters.hpp"
 #include <exception>
-#include <format>
 #include <stdexcept>
 #include <string>
 
@@ -15,7 +15,7 @@ class InternalError final : public std::exception
 {
   public:
     explicit InternalError(std::string_view location, std::string_view message)
-        : m_message(std::format("{}: {}", location, message))
+        : m_message(cer_fmt::format("{}: {}", location, message))
     {
     }
 
@@ -32,7 +32,7 @@ class InternalError final : public std::exception
 #define CER_THROW_INTERNAL_ERROR(str, ...)                                                         \
     throw cer::InternalError                                                                       \
     {                                                                                              \
-        __FUNCTION__, std::format(str, __VA_ARGS__)                                                \
+        __FUNCTION__, cer_fmt::format(str, __VA_ARGS__)                                                \
     }
 
 #define CER_THROW_INTERNAL_ERROR_STR(message)                                                      \
@@ -44,7 +44,7 @@ class InternalError final : public std::exception
 #define CER_THROW_INVALID_ARG(str, ...)                                                            \
     throw std::invalid_argument                                                                    \
     {                                                                                              \
-        std::format(str, __VA_ARGS__)                                                              \
+        cer_fmt::format(str, __VA_ARGS__)                                                              \
     }
 
 #define CER_THROW_INVALID_ARG_STR(message)                                                         \
@@ -56,7 +56,7 @@ class InternalError final : public std::exception
 #define CER_THROW_LOGIC_ERROR(str, ...)                                                            \
     throw std::logic_error                                                                         \
     {                                                                                              \
-        std::format(str, __VA_ARGS__)                                                              \
+        cer_fmt::format(str, __VA_ARGS__)                                                              \
     }
 
 #define CER_THROW_LOGIC_ERROR_STR(message)                                                         \
@@ -68,7 +68,7 @@ class InternalError final : public std::exception
 #define CER_THROW_RUNTIME_ERROR(str, ...)                                                          \
     throw std::runtime_error                                                                       \
     {                                                                                              \
-        std::format(str, __VA_ARGS__)                                                              \
+        cer_fmt::format(str, __VA_ARGS__)                                                              \
     }
 
 #define CER_THROW_RUNTIME_ERROR_STR(message)                                                       \

@@ -4,10 +4,9 @@
 
 #pragma once
 
+#include "cerlib/Formatters.hpp"
 #include "shadercompiler/SourceLocation.hpp"
-
 #include <exception>
-#include <format>
 #include <string>
 
 namespace cer::shadercompiler
@@ -22,8 +21,8 @@ class Error final : public std::exception
     explicit Error(const SourceLocation& location, std::string_view message);
 
     template <typename... Args>
-    explicit Error(const SourceLocation& location, std::format_string<Args...> fmt, Args&&... args)
-        : Error(location, std::format(fmt, std::forward<Args>(args)...))
+    explicit Error(const SourceLocation& location, cer_fmt::format_string<Args...> fmt, Args&&... args)
+        : Error(location, cer_fmt::format(fmt, std::forward<Args>(args)...))
     {
     }
 

@@ -10,7 +10,7 @@ Enemy::Enemy(Level* level, cer::Vector2 position, std::string sprite_set)
     , m_position(position)
 {
     // Load animations.
-    sprite_set       = std::format("sprites/{}/", sprite_set);
+    sprite_set       = cer_fmt::format("sprites/{}/", sprite_set);
     m_run_animation  = {sprite_set + "run.png", 0.1f, true};
     m_idle_animation = {sprite_set + "idle.png", 0.15f, true};
 

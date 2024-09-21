@@ -31,6 +31,14 @@ CPMAddPackage(
 
 set_target_properties(SoLoud PROPERTIES FOLDER "Dependencies")
 
+# fmt
+CPMAddPackage(
+  NAME fmt
+  GITHUB_REPOSITORY fmtlib/fmt
+  GIT_TAG 11.0.2
+  GIT_SHALLOW
+)
+
 # utfcpp
 CPMAddPackage(
   NAME utfcpp

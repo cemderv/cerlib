@@ -130,6 +130,10 @@ target_link_libraries(cerlib PRIVATE
   stblib
 )
 
+target_link_libraries(cerlib PUBLIC
+  fmt::fmt-header-only
+)
+
 add_library(cerlib_SDL INTERFACE)
 
 if (CERLIB_ENABLE_TESTS)

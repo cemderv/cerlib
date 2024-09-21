@@ -7,7 +7,6 @@
 #include <cerlib/Game.hpp>
 #include <cerlib/OStreamCompat.hpp>
 #include <cerlib/Shader.hpp>
-#include <format>
 #include <snitch/snitch.hpp>
 
 using namespace cer;
@@ -23,7 +22,7 @@ class MockGame final : public Game
 
     void load_content() override
     {
-        m_logo             = Image(std::format("{}/cerlib-logo300.png", TEST_ASSETS_DIR));
+        m_logo             = Image(cer_fmt::format("{}/cerlib-logo300.png", TEST_ASSETS_DIR));
         m_grayscale_shader = Shader::create_grayscale();
     }
 

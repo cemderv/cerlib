@@ -10,9 +10,7 @@
 #include "shadercompiler/Naming.hpp"
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/Type.hpp"
-
 #include <cassert>
-#include <format>
 
 // NOLINTBEGIN
 

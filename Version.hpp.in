@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <format>
 #include <tuple>
 #include <string_view>
 
