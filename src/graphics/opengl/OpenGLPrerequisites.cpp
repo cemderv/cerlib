@@ -48,9 +48,9 @@ OpenGLFormatTriplet convert_to_opengl_pixel_format(ImageFormat format)
 #endif
 
 #ifdef GL_RED
-    constexpr auto red = GL_RED;
+    constexpr auto red_gl = GL_RED;
 #else
-    constexpr auto red = GL_RED_EXT;
+    constexpr auto red_gl = GL_RED_EXT;
 #endif
 
     switch (format)
@@ -71,7 +71,7 @@ OpenGLFormatTriplet convert_to_opengl_pixel_format(ImageFormat format)
         case ImageFormat::R8_UNorm:
             return OpenGLFormatTriplet{
                 .internal_format = r8,
-                .base_format     = red,
+                .base_format     = red_gl,
                 .type            = GL_UNSIGNED_BYTE,
             };
 

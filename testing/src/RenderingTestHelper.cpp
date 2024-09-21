@@ -11,7 +11,7 @@
 RenderingTestHelper::RenderingTestHelper(uint32_t width, uint32_t height, const cer::Window& window)
     : m_canvas(width, height, cer::ImageFormat::R8G8B8A8_UNorm, window)
 {
-    m_canvas.set_canvas_clear_color(cer::Color::black());
+    m_canvas.set_canvas_clear_color(cer::black);
 }
 
 void RenderingTestHelper::test_render(std::string_view test_name, const RenderFunction& function)
