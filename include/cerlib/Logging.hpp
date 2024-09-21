@@ -84,4 +84,23 @@ void log_debug([[maybe_unused]] std::format_string<Args...> fmt, [[maybe_unused]
                           details::LogMessageType::Info);
 #endif
 }
+
+/**
+ * Logs information to the system's output **in debug mode only**,
+ * and only if the CERLIB_ENABLE_VERBOSE_LOGGING option was enabled.
+ *
+ * In release mode, this will result in a no-op.
+ *
+ * See the documentation of `cer::log_info()` for an example.
+ *
+ * @ingroup Misc
+ */
+template <typename... Args>
+void log_verbose([[maybe_unused]] std::format_string<Args...> fmt, [[maybe_unused]] Args&&... args)
+{
+#if defined(CERLIB_ENABLE_VERBOSE_LOGGING) && !defined(NDEBUG)
+    details::log_internal(std::format(fmt, std::forward<Args>(args)...),
+                          details::LogMessageType::Info);
+#endif
+}
 } // namespace cer

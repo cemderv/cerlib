@@ -55,7 +55,7 @@ FontImpl::~FontImpl() noexcept
 
 void FontImpl::create_built_in_fonts()
 {
-    log_debug("Creating built-in font objects");
+    log_verbose("Creating built-in font objects");
 
     s_built_in_font_regular = std::make_unique<FontImpl>(VeraRegular_ttf_span(), false).release();
     s_built_in_font_regular->add_ref();
@@ -255,17 +255,17 @@ void FontImpl::append_new_page()
 
 void FontImpl::update_page_atlas_image(FontPage& page)
 {
-    log_debug("Updating font page image of size {}x{}", page.width, page.height);
+    log_verbose("Updating font page image of size {}x{}", page.width, page.height);
 
     if (!page.atlas)
     {
-        log_debug("  Reallocating page image");
+        log_verbose("  Reallocating page image");
         page.atlas =
             Image(page.width, page.height, ImageFormat::R8_UNorm, 1, page.atlas_data.get());
     }
     else
     {
-        log_debug("  Writing directly to page image");
+        log_verbose("  Writing directly to page image");
 
 #ifdef CERLIB_HAVE_OPENGL
         verify_opengl_state();

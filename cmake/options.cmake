@@ -23,12 +23,6 @@ option(
 )
 
 option(
-  CERLIB_ENABLE_DIAGNOSTIC_LOGGING
-  "Enable diagnostic logging. Should only be used for debugging purposes."
-  OFF
-)
-
-option(
   CERLIB_ATOMIC_REFCOUNTING
   "Enable atomic reference counting for cerlib objects"
   OFF
@@ -59,8 +53,8 @@ option(
 )
 
 option(
-  CERLIB_ENABLE_CLANG_TIDY
-  "Enable clang-tidy checks across the entire codebase"
+  CERLIB_ENABLE_VERBOSE_LOGGING
+  "Enable verbose logging during debug mode"
   OFF
 )
 

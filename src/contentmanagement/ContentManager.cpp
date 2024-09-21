@@ -56,14 +56,14 @@ ContentManager::ContentManager()
 {
     m_root_directory = root_directory();
 
-    log_debug("Root directory: {}", m_root_directory);
+    log_verbose("Root directory: {}", m_root_directory);
 
     filesystem::set_file_loading_root_directory(m_root_directory);
 }
 
 ContentManager::~ContentManager() noexcept
 {
-    log_debug("Destroying ContentManager");
+    log_verbose("Destroying ContentManager");
 
     for (auto& loaded_asset_pair : m_loaded_assets)
     {
@@ -258,7 +258,7 @@ std::shared_ptr<Asset> ContentManager::load_custom_asset(std::string_view type_i
     // Store a weak_ptr in the map.
     m_loaded_assets.emplace(key_str, asset);
 
-    log_debug("[ContentManager] Loaded custom asset '{}'", key_str);
+    log_verbose("[ContentManager] Loaded custom asset '{}'", key_str);
 
     // ... but return the shared_ptr.
     return asset;
@@ -280,7 +280,7 @@ void ContentManager::register_custom_asset_loader(std::string_view    type_id,
 
     m_custom_asset_loaders.emplace(std::string(type_id), std::move(load_func));
 
-    log_debug("[ContentManager] Registered custom asset loader for type ID '{}'", type_id);
+    log_verbose("[ContentManager] Registered custom asset loader for type ID '{}'", type_id);
 }
 
 void ContentManager::unregister_custom_asset_loader(std::string_view type_id)
@@ -288,16 +288,12 @@ void ContentManager::unregister_custom_asset_loader(std::string_view type_id)
     const auto it = m_custom_asset_loaders.find(type_id);
     m_custom_asset_loaders.erase(it);
 
-    log_debug("[ContentManager] Unregistered custom asset loader for type ID '{}'", type_id);
+    log_verbose("[ContentManager] Unregistered custom asset loader for type ID '{}'", type_id);
 }
 
 void ContentManager::notify_asset_destroyed(std::string_view name)
 {
-    if (name.find("music") != std::string_view::npos)
-    {
-        log_debug("dda");
-    }
-    log_debug("[ContentManager] Removing asset '{}'", name);
+    log_verbose("[ContentManager] Removing asset '{}'", name);
     m_loaded_assets.erase(std::string{name});
 }
 } // namespace cer::details

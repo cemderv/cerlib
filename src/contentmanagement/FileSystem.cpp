@@ -220,7 +220,7 @@ std::string cer::filesystem::combine_paths(std::string_view path1, std::string_v
 
 cer::AssetData cer::filesystem::load_asset_data(std::string_view filename)
 {
-    log_debug("Loading binary file '{}'", filename);
+    log_verbose("Loading binary file '{}'", filename);
 
     std::string filename_str{};
 
@@ -281,17 +281,17 @@ cer::AssetData cer::filesystem::load_asset_data(std::string_view filename)
         if (!full_asset_path_str.empty())
             ifs = std::ifstream(full_asset_path_str.data(), std::ios::binary | std::ios::ate);
         else
-            log_debug("Full asset path was empty; skipping");
+            log_verbose("Full asset path was empty; skipping");
     }
 
     if (!ifs.is_open())
     {
-        log_debug("Falling back to file '{}'", filename_str);
+        log_verbose("Falling back to file '{}'", filename_str);
         ifs = std::ifstream{filename_str.c_str(), std::ios::binary | std::ios::ate};
         if (ifs)
-            log_debug("Found the file");
+            log_verbose("Found the file");
         else
-            log_debug("Did not find the file");
+            log_verbose("Did not find the file");
     }
 
 #elif defined(__ANDROID__)

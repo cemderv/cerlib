@@ -179,8 +179,8 @@ target_link_libraries(cerlib PRIVATE SoLoud)
 
 enable_default_cpp_flags(cerlib)
 
-if (CERLIB_ENABLE_DIAGNOSTIC_LOGGING)
-  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_DIAGNOSTIC_LOGGING")
+if (CERLIB_ENABLE_VERBOSE_LOGGING)
+  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_VERBOSE_LOGGING")
 endif ()
 
 cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/VeraRegular.ttf)

@@ -111,7 +111,7 @@ static constexpr bool force_audio_disabled = false;
 
 GameImpl::GameImpl(bool enable_audio)
 {
-    log_debug("Creating game");
+    log_verbose("Creating game");
 
     auto init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
 
@@ -132,11 +132,11 @@ GameImpl::GameImpl(bool enable_audio)
         CER_THROW_RUNTIME_ERROR("Failed to initialize the windowing system. Reason: {}", error);
     }
 
-    log_debug("SDL is initialized");
+    log_verbose("SDL is initialized");
 
     if (enable_audio && !force_audio_disabled)
     {
-        log_debug("Audio is enabled, attempting to initialize it");
+        log_verbose("Audio is enabled, attempting to initialize it");
 
         auto success   = false;
         m_audio_device = std::make_unique<AudioDevice>(success);
@@ -147,11 +147,11 @@ GameImpl::GameImpl(bool enable_audio)
         }
         else
         {
-            log_debug("Audio initialized successfully");
+            log_verbose("Audio initialized successfully");
         }
     }
 
-    log_debug("Creating ContentManager");
+    log_verbose("Creating ContentManager");
 
     m_content_manager = std::make_unique<ContentManager>();
 
@@ -196,7 +196,7 @@ void GameImpl::run()
     if (m_is_running)
         CER_THROW_LOGIC_ERROR_STR("The game is already running.");
 
-    log_debug("Starting to run game");
+    log_verbose("Starting to run game");
 
     m_is_running = true;
 
@@ -410,7 +410,7 @@ void GameImpl::ensure_graphics_device_initialized(WindowImpl& first_window)
 {
     if (!m_graphics_device)
     {
-        log_debug("Initializing device");
+        log_verbose("Initializing device");
 
         try
         {

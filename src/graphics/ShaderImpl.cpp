@@ -84,7 +84,7 @@ ShaderImpl::ShaderImpl(gsl::not_null<GraphicsDevice*> parent_device, ParameterLi
 
 ShaderImpl::~ShaderImpl() noexcept
 {
-    log_debug("~ShaderImpl({})", name());
+    log_verbose("~ShaderImpl({})", name());
     parent_device().notify_user_shader_destroyed(this);
 }
 

@@ -92,7 +92,7 @@ WindowImpl::WindowImpl(std::string_view        title,
     , m_sync_interval(1)
     , m_clear_color(cornflowerblue)
 {
-    log_debug("Creating window with title '{}'", title);
+    log_verbose("Creating window with title '{}'", title);
 
     if (!GameImpl::is_instance_initialized())
     {
@@ -142,7 +142,7 @@ auto WindowImpl::create_sdl_window(int additional_flags) -> void
 {
     const int flags = get_sdl_window_flags(m_allow_high_dpi) | additional_flags;
 
-    log_debug("  Creating SDL window");
+    log_verbose("  Creating SDL window");
 
     m_sdl_window = SDL_CreateWindow(m_initial_title.c_str(),
 #ifdef __EMSCRIPTEN__
@@ -161,7 +161,7 @@ WindowImpl::~WindowImpl() noexcept
 {
     if (m_sdl_window != nullptr)
     {
-        log_debug("  Destroying SDL window");
+        log_verbose("  Destroying SDL window");
         SDL_DestroyWindow(m_sdl_window);
         m_sdl_window = nullptr;
     }

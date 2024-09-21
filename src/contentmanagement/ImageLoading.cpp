@@ -146,7 +146,7 @@ gsl::not_null<cer::details::ImageImpl*> cer::details::load_image(GraphicsDevice&
                                                                  std::span<const std::byte> memory,
                                                                  bool generate_mipmaps)
 {
-    log_debug("Loading image from memory. Span is {} bytes, generate_mipmaps={}",
+    log_verbose("Loading image from memory. Span is {} bytes, generate_mipmaps={}",
               memory.size(),
               generate_mipmaps);
 
