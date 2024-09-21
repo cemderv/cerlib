@@ -8,6 +8,7 @@
 #include <cerlib/SmallDataArray.hpp>
 #include <cerlib/Vector2.hpp>
 #include <chrono>
+#include <optional>
 
 namespace cer
 {
