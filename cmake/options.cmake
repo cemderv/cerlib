@@ -58,6 +58,12 @@ option(
   ${is_root_directory}
 )
 
+option(
+  CERLIB_ENABLE_CLANG_TIDY
+  "Enable clang-tidy checks across the entire codebase"
+  OFF
+)
+
 if (ANDROID)
   if (CERLIB_BUILD_TESTBED)
     cerlib_log("Disabling Testbed implicitly due to Android")
