@@ -733,7 +733,7 @@ std::any SymAccessExpr::evaluate_constant_value(SemaContext& context, Scope& sco
     return {};
 }
 
-bool SymAccessExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+bool SymAccessExpr::accesses_symbol(const Decl& symbol, bool /*transitive*/) const
 {
     return this->symbol() == &symbol;
 }

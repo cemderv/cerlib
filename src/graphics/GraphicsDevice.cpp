@@ -29,7 +29,7 @@
 
 namespace cer::details
 {
-GraphicsDevice::GraphicsDevice(WindowImpl& main_window)
+GraphicsDevice::GraphicsDevice()
     : m_must_flush_draw_calls(false)
     , m_blend_state(BlendState::non_premultiplied())
     , m_sampler(Sampler::linear_clamp())

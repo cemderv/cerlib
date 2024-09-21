@@ -110,7 +110,7 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
                        static_cast<GLsizei>(viewport.width),
                        static_cast<GLsizei>(viewport.height)));
 
-    if (const std::optional<Color> clearColor =
+    if (const std::optional<Color> clear_color =
             canvas ? canvas.canvas_clear_color() : current_window().clear_color())
     {
         auto previous_mask = std::array<GLint, 4>();
@@ -124,7 +124,7 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
             has_color_write_mask_changed = true;
         }
 
-        const Color color = *clearColor;
+        const Color color = *clear_color;
         GL_CALL(glClearColor(color.r, color.g, color.b, color.a));
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
@@ -256,9 +256,9 @@ void OpenGLGraphicsDevice::read_canvas_data_into(
 
     for (uint32_t row = 0; row < height; ++row)
     {
-        const auto src_row = tmp_buffer.get() + row_pitch * (height - row - 1);
+        const auto src_row = tmp_buffer.get() + row_pitch * (height - row - 1); // NOLINT
         std::memcpy(dst_row, src_row, row_pitch);
-        dst_row += row_pitch;
+        dst_row += row_pitch; // NOLINT
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, previously_bound_fbo);
@@ -271,7 +271,6 @@ std::unique_ptr<ShaderImpl> OpenGLGraphicsDevice::create_native_user_shader(
 }
 
 OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
-    : GraphicsDevice(main_window)
 {
     OpenGLWindow& opengl_window = dynamic_cast<OpenGLWindow&>(main_window);
     opengl_window.make_context_current();
@@ -343,7 +342,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     m_features.flush_buffer_range = [] {
         if (glFlushMappedBufferRange)
         {
-            return true;
+            return true; // NOLINT
         }
 
 #ifdef __APPLE__
@@ -384,7 +383,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     }
 #endif
 
-    log_verbose("Initialized OpenGL device. Now calling PostInit().");
+    log_verbose("Initialized OpenGL device. Now calling post_init().");
 
     post_init(std::make_unique<OpenGLSpriteBatch>(this, frame_stats_ptr()));
 }

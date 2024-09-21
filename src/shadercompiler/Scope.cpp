@@ -30,7 +30,7 @@ Scope::Scope()
 
 Scope::Scope(Scope&& rhs) noexcept = default;
 
-Scope& Scope::operator=(Scope&& rhs) noexcept = default;
+Scope& Scope::operator=(Scope&& rhs) noexcept = default; // NOLINT
 
 Scope::~Scope() noexcept = default;
 

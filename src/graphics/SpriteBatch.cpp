@@ -29,9 +29,9 @@ SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
 
     // White image
     {
-        constexpr auto size = 1;
+        constexpr size_t size = 1;
 
-        auto data = std::array<uint8_t, 4 * size * size>();
+        std::array<uint8_t, 4 * size * size> data{};
         std::ranges::fill(data, 255);
 
         m_white_image = Image(m_parent_device
@@ -349,7 +349,7 @@ void SpriteBatch::fill_sprite_vertices(Vertex*          dst,
                       texture_size_and_inverse,
                       flip_image_up_down);
 
-        dst += vertices_per_sprite;
+        dst += vertices_per_sprite; // NOLINT
     }
 }
 
@@ -431,11 +431,13 @@ void SpriteBatch::render_sprite(const InternalSprite& sprite,
         const Vector4 position = Vector4{position2.x, position2.y, 0.0f, 1.0f};
         const Vector2 uv       = (corner_offsets[i ^ mirror_bits] * source_size) + source_pos;
 
+        // NOLINTBEGIN
         dst_vertices[i] = Vertex{
             .position = position,
             .color    = color,
             .uv       = uv,
         };
+        // NOLINTEND
     }
 }
 } // namespace cer::details

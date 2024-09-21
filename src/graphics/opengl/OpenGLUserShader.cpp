@@ -21,25 +21,27 @@ OpenGLUserShader::OpenGLUserShader(gsl::not_null<GraphicsDevice*> parent_device,
         CER_THROW_RUNTIME_ERROR_STR("Failed to create the internal shader handle.");
     }
 
-    const auto codes = std::array{
+    const std::array codes{
         (glsl_code.data()),
     };
 
-    const auto codeLengths = std::array{
+    const std::array code_lengths{
         gsl::narrow<GLint>(glsl_code.size()),
     };
 
-    GL_CALL(glShaderSource(gl_handle, 1, codes.data(), codeLengths.data()));
+    GL_CALL(glShaderSource(gl_handle, 1, codes.data(), code_lengths.data()));
     GL_CALL(glCompileShader(gl_handle));
 
-    GLint compileStatus = 0;
-    GL_CALL(glGetShaderiv(gl_handle, GL_COMPILE_STATUS, &compileStatus));
+    GLint compile_status = 0;
+    GL_CALL(glGetShaderiv(gl_handle, GL_COMPILE_STATUS, &compile_status));
 
-    if (compileStatus != GL_TRUE)
+    if (compile_status != GL_TRUE)
     {
         auto    buffer = std::make_unique<GLchar[]>(shader_log_max_length);
         GLsizei length = shader_log_max_length;
+
         GL_CALL(glGetShaderInfoLog(gl_handle, shader_log_max_length, &length, buffer.get()));
+
         const std::string_view msg{buffer.get(), static_cast<size_t>(length)};
 
         CER_THROW_RUNTIME_ERROR("Failed to compile the generated internal shader: {}", msg);

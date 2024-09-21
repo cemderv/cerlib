@@ -251,6 +251,6 @@ class CERLIB_API Window final
     static void show_message_box(MessageBoxType   type,
                                  std::string_view title,
                                  std::string_view message,
-                                 Window           parent_window = Window());
+                                 const Window&    parent_window = Window{});
 };
 } // namespace cer

@@ -109,19 +109,19 @@ void SoundChannelImpl::set_inaudible_behavior(SoundInaudibleBehavior value)
     m_soloud->setInaudibleBehavior(m_soloud_handle, b1, b2);
 }
 
-void SoundChannelImpl::fade_volume(float toVolume, SoundTime fadeDuration)
+void SoundChannelImpl::fade_volume(float to_volume, SoundTime fade_duration)
 {
-    m_soloud->fadeVolume(m_soloud_handle, toVolume, to_soloud_time(fadeDuration));
+    m_soloud->fadeVolume(m_soloud_handle, to_volume, to_soloud_time(fade_duration));
 }
 
-void SoundChannelImpl::fade_pan(float toPan, SoundTime fadeDuration)
+void SoundChannelImpl::fade_pan(float to_pan, SoundTime fade_duration)
 {
-    m_soloud->fadePan(m_soloud_handle, toPan, to_soloud_time(fadeDuration));
+    m_soloud->fadePan(m_soloud_handle, to_pan, to_soloud_time(fade_duration));
 }
 
-void SoundChannelImpl::fade_relative_play_speed(float toSpeed, SoundTime fadeDuration)
+void SoundChannelImpl::fade_relative_play_speed(float to_speed, SoundTime fade_duration)
 {
-    m_soloud->fadeRelativePlaySpeed(m_soloud_handle, toSpeed, to_soloud_time(fadeDuration));
+    m_soloud->fadeRelativePlaySpeed(m_soloud_handle, to_speed, to_soloud_time(fade_duration));
 }
 
 void SoundChannelImpl::stop_after(SoundTime after)

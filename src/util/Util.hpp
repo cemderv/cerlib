@@ -95,7 +95,6 @@
 
 #define CERLIB_IMPLEMENT_DERIVED_OBJECT(base_class_name, class_name)                               \
     class_name::class_name()                                                                       \
-        : base_class_name()                                                                        \
     {                                                                                              \
     }                                                                                              \
     class_name::class_name(base_class_name::impl_t* impl)                                          \

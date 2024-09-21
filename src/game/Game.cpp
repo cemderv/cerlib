@@ -8,7 +8,9 @@
 
 #include <cassert>
 
+// NOLINTBEGIN
 #define LOAD_GAME_IMPL auto& impl = details::GameImpl::instance()
+// NOLINTEND
 
 namespace cer
 {
@@ -32,7 +34,7 @@ Game::Game(bool enable_audio)
 
     auto& game_impl = details::GameImpl::instance();
 
-    game_impl.set_load_func([this] { return load_content(); });
+    game_impl.set_load_func([this] { load_content(); });
     game_impl.set_update_func([this](const GameTime& time) { return update(time); });
     game_impl.set_draw_func([this](const Window& window) { draw(window); });
     game_impl.set_event_func([this](const details::Event& event) {

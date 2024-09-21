@@ -52,7 +52,9 @@ uint32_t cer::max_mipmap_count_for_extent(uint32_t base_extent)
     uint32_t max_mipmap_count = 0u;
 
     for (uint32_t m = base_extent; m > 0; m = m >> 1, ++max_mipmap_count)
-        ;
+    {
+        // Nothing to do
+    }
 
     return max_mipmap_count;
 }

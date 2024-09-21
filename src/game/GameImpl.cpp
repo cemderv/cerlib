@@ -28,15 +28,11 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #if defined(__ANDROID__)
 #include <android/asset_manager_jni.h>
-#endif
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/html5.h>
 #endif
 
 #if defined(__APPLE__)
@@ -125,7 +121,7 @@ GameImpl::GameImpl(bool enable_audio)
     if (SDL_Init(init_flags) != 0)
     {
 #else
-    if (SDL_Init(init_flags) != SDL_TRUE)
+    if (!SDL_Init(init_flags))
     {
 #endif
         const auto error = SDL_GetError();
@@ -194,7 +190,9 @@ void GameImpl::destroy_instance()
 void GameImpl::run()
 {
     if (m_is_running)
+    {
         CER_THROW_LOGIC_ERROR_STR("The game is already running.");
+    }
 
     log_verbose("Starting to run game");
 
@@ -208,7 +206,9 @@ void GameImpl::run()
         1);
 #else
     while (tick())
-        ;
+    {
+        // Nothing to do
+    }
 #endif
 }
 
@@ -259,15 +259,15 @@ static std::optional<ImageFormat> from_sdl_display_mode_format(Uint32 format)
     return {};
 }
 
-static std::optional<DisplayMode> from_sdl_display_mode(const SDL_DisplayMode& sdlMode)
+static std::optional<DisplayMode> from_sdl_display_mode(const SDL_DisplayMode& sdl_mode)
 {
-    if (const auto format = from_sdl_display_mode_format(sdlMode.format))
+    if (const std::optional<ImageFormat> format = from_sdl_display_mode_format(sdl_mode.format))
     {
         return DisplayMode{
-            .format       = *format,
-            .width        = static_cast<uint32_t>(sdlMode.w),
-            .height       = static_cast<uint32_t>(sdlMode.h),
-            .refresh_rate = static_cast<uint32_t>(sdlMode.refresh_rate),
+            .format       = format,
+            .width        = static_cast<uint32_t>(sdl_mode.w),
+            .height       = static_cast<uint32_t>(sdl_mode.h),
+            .refresh_rate = static_cast<uint32_t>(sdl_mode.refresh_rate),
             // .ContentScale = sdlMode.pixel_density,
             .content_scale = 1.0,
         };
@@ -317,12 +317,16 @@ std::vector<DisplayMode> GameImpl::display_modes(uint32_t display_index) const
             SDL_GetFullscreenDisplayModes(static_cast<SDL_DisplayID>(display_index), &mode_count);
         mode_count > 0 && modes != nullptr)
     {
+        const std::span modes_span{modes, static_cast<size_t>(mode_count)};
+
         list.reserve(static_cast<size_t>(mode_count));
 
         for (int i = 0; i < mode_count; ++i)
         {
-            if (const auto mode = from_sdl_display_mode(*modes[i]))
+            if (const auto mode = from_sdl_display_mode(*modes_span[i]))
+            {
                 list.push_back(*mode);
+            }
         }
     }
 
@@ -450,12 +454,14 @@ void GameImpl::open_initial_gamepads()
     int             count            = 0;
     SDL_JoystickID* sdl_joystick_ids = SDL_GetGamepads(&count);
 
-    for (int i = 0; i < count; ++i)
+    const std::span sdl_joystick_ids_span{sdl_joystick_ids, static_cast<size_t>(count)};
+
+    for (const SDL_JoystickID joystick_id : sdl_joystick_ids_span)
     {
-        if (auto sdl_gamepad = SDL_OpenGamepad(sdl_joystick_ids[i]))
+        if (auto sdl_gamepad = SDL_OpenGamepad(joystick_id))
         {
             GamepadImpl* gamepad_impl =
-                std::make_unique<GamepadImpl>(sdl_joystick_ids[i], sdl_gamepad).release();
+                std::make_unique<GamepadImpl>(joystick_id, sdl_gamepad).release();
 
             m_connected_gamepads.emplace_back(gamepad_impl);
         }
@@ -466,7 +472,9 @@ void GameImpl::open_initial_gamepads()
 bool GameImpl::tick()
 {
     if (!m_is_running)
+    {
         return false;
+    }
 
     if (!m_has_loaded_content)
     {
@@ -483,11 +491,15 @@ bool GameImpl::tick()
     bool should_exit = false;
 
     if (m_audio_device)
+    {
         m_audio_device->purge_sounds();
+    }
 
     const auto do_update = [this, &should_exit](GameTime game_time) {
         if (m_update_func && !m_update_func(game_time))
+        {
             should_exit = true;
+        }
     };
 
     const Uint64 current_time   = SDL_GetPerformanceCounter();
@@ -740,7 +752,9 @@ void GameImpl::process_events()
 #endif
 
                 if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                {
                     delta = -delta;
+                }
 
                 raise_event(MouseWheelEvent{
                     .timestamp = event.motion.timestamp,
@@ -821,6 +835,7 @@ void GameImpl::process_events()
                         case CER_EVENT_TOUCH_FINGER_UP: return TouchFingerEventType::Release;
                         case CER_EVENT_TOUCH_FINGER_DOWN: return TouchFingerEventType::Press;
                         case CER_EVENT_TOUCH_FINGER_MOTION: return TouchFingerEventType::Motion;
+                        default: break;
                     }
                     return static_cast<TouchFingerEventType>(-1);
                 }();
@@ -854,6 +869,7 @@ void GameImpl::process_events()
 
                 break;
             }
+            default: break;
         }
     }
 
@@ -900,7 +916,9 @@ WindowImpl* GameImpl::find_window_by_sdl_window(SDL_Window* sdl_window) const
 void GameImpl::raise_event(const Event& event)
 {
     if (m_event_func)
+    {
         m_event_func(event);
+    }
 }
 
 std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&> GameImpl::

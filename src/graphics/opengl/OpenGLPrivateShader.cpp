@@ -107,9 +107,11 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
     if (compile_status != GL_TRUE)
     {
-        auto buffer = std::make_unique<GLchar[]>(shader_log_max_length);
-        auto length = shader_log_max_length;
+        const auto buffer = std::make_unique<GLchar[]>(shader_log_max_length);
+        GLsizei    length = shader_log_max_length;
+
         GL_CALL(glGetShaderInfoLog(gl_handle, shader_log_max_length, &length, buffer.get()));
+
         const auto msg = std::string_view(reinterpret_cast<const char*>(buffer.get()),
                                           static_cast<size_t>(length));
 
@@ -131,10 +133,11 @@ OpenGLPrivateShader& OpenGLPrivateShader::operator=(OpenGLPrivateShader&& other)
 {
     if (&other != this)
     {
-        if (gl_handle)
+        if (gl_handle != 0)
         {
             glDeleteShader(gl_handle);
         }
+
         name            = std::move(other.name);
         gl_handle       = other.gl_handle;
         attributes      = std::move(other.attributes);

@@ -92,7 +92,7 @@ static constexpr Color black{0.0f, 0.0f, 0.0f, 1.0f};
 static constexpr Color red{1.0f, 0.0f, 0.0f, 1.0f};
 
 /** A constant green color. */
-static constexpr Color green{0.0f, 1.0f, 0.0f, 1.0f};
+static constexpr Color green{0.0f, 0.5f, 0.0f, 1.0f};
 
 /** A constant blue color. */
 static constexpr Color blue{0.0f, 0.0f, 1.0f, 1.0f};

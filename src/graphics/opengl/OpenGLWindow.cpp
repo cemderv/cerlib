@@ -18,7 +18,6 @@ OpenGLWindow::OpenGLWindow(std::string_view        title,
                            std::optional<uint32_t> height,
                            bool                    allow_high_dpi)
     : WindowImpl(title, id, position_x, position_y, width, height, allow_high_dpi)
-    , m_gl_context(nullptr)
 {
 #ifdef CERLIB_GFX_IS_GLES
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
@@ -39,8 +38,10 @@ OpenGLWindow::OpenGLWindow(std::string_view        title,
 
     create_sdl_window(SDL_WINDOW_OPENGL);
 
-    auto&      gameImpl = GameImpl::instance();
-    const auto windows  = gameImpl.windows();
+    GameImpl& game_impl = GameImpl::instance();
+
+    const std::span<WindowImpl* const> windows = game_impl.windows();
+
     if (windows.size() == 1 && windows[0] == this)
     {
         log_verbose("  This is the first window; not sharing OpenGL context");
@@ -62,7 +63,7 @@ OpenGLWindow::~OpenGLWindow() noexcept
 {
     log_verbose("Destroying OpenGL window '{}'", title());
 
-    if (m_gl_context)
+    if (m_gl_context != nullptr)
     {
         log_verbose("  Destroying OpenGL context");
 #ifdef __EMSCRIPTEN__
@@ -76,12 +77,15 @@ OpenGLWindow::~OpenGLWindow() noexcept
 
 void OpenGLWindow::handle_resize_event()
 {
-    const auto [widthPx, heightPx] = size_px();
+    const auto [width_px, height_px] = size_px();
 
     if (m_resize_callback)
     {
         const auto [width, height] = size();
-        m_resize_callback(uint32_t(width), uint32_t(height), uint32_t(widthPx), uint32_t(heightPx));
+        m_resize_callback(static_cast<uint32_t>(width),
+                          static_cast<uint32_t>(height),
+                          static_cast<uint32_t>(width_px),
+                          static_cast<uint32_t>(height_px));
     }
 }
 

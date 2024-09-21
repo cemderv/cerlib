@@ -6,28 +6,28 @@
 #include "cerlib/Image.hpp"
 #include "util/InternalError.hpp"
 
-namespace cer::details
+void cer::details::verify_opengl_state_x()
 {
-auto verify_opengl_state_x() -> void
-{
-    auto error = glGetError();
+    GLenum error = glGetError();
+
     if (error != GL_NO_ERROR)
     {
-        std::string errorString;
+        std::string error_string;
+
         while (error != GL_NO_ERROR)
         {
-            errorString += std::to_string(error);
-            errorString += ';';
+            error_string += std::to_string(error);
+            error_string += ';';
             error = glGetError();
         }
 
-        errorString.pop_back();
+        error_string.pop_back();
 
-        CER_THROW_RUNTIME_ERROR("OpenGL error(s) occurred: {}", errorString);
+        CER_THROW_RUNTIME_ERROR("OpenGL error(s) occurred: {}", error_string);
     }
 }
 
-OpenGLFormatTriplet convert_to_opengl_pixel_format(ImageFormat format)
+cer::details::OpenGLFormatTriplet cer::details::convert_to_opengl_pixel_format(ImageFormat format)
 {
 #ifdef GL_RGBA8
     constexpr auto rgba8 = GL_RGBA8;
@@ -79,23 +79,22 @@ OpenGLFormatTriplet convert_to_opengl_pixel_format(ImageFormat format)
     }
 }
 
-int compare_opengl_version_to_min_required_version(int major, int minor)
+int cer::details::compare_opengl_version_to_min_required_version(int major, int minor)
 {
     const auto compare = [](int lhs, int rhs) { return lhs < rhs ? -1 : lhs > rhs ? 1 : 0; };
 
-    constexpr auto rhsMajor = min_required_gl_major_version;
-    constexpr auto rhsMinor = min_required_gl_minor_version;
+    constexpr int rhs_major = min_required_gl_major_version;
+    constexpr int rhs_minor = min_required_gl_minor_version;
 
-    if (major != rhsMajor)
+    if (major != rhs_major)
     {
-        return compare(major, rhsMajor);
+        return compare(major, rhs_major);
     }
 
-    if (minor != rhsMinor)
+    if (minor != rhs_minor)
     {
-        return compare(minor, rhsMinor);
+        return compare(minor, rhs_minor);
     }
 
     return 0;
 }
-} // namespace cer::details

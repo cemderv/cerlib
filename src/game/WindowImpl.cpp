@@ -64,7 +64,9 @@ static
 #endif
         const auto win = SDL_GetWindowFromID(event->window.windowID);
         if (win == sdl_window)
+        {
             window->handle_resize_event();
+        }
     }
 
 #ifdef __EMSCRIPTEN__
@@ -154,7 +156,9 @@ auto WindowImpl::create_sdl_window(int additional_flags) -> void
                                     flags);
 
     if (m_sdl_window == nullptr)
+    {
         CER_THROW_RUNTIME_ERROR("Failed to create the internal window. Reason: {}", SDL_GetError());
+    }
 }
 
 WindowImpl::~WindowImpl() noexcept
@@ -190,10 +194,10 @@ Vector2 WindowImpl::size() const
 
 Vector2 WindowImpl::size_px() const
 {
-    int widthPx{};
-    int heightPx{};
-    SDL_GetWindowSizeInPixels(m_sdl_window, &widthPx, &heightPx);
-    return {static_cast<float>(widthPx), static_cast<float>(heightPx)};
+    int width_px{};
+    int height_px{};
+    SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
+    return {static_cast<float>(width_px), static_cast<float>(height_px)};
 }
 
 float WindowImpl::pixel_ratio() const
@@ -206,11 +210,11 @@ float WindowImpl::pixel_ratio() const
     int height{};
     SDL_GetWindowSize(m_sdl_window, &width, &height);
 
-    int widthPx{};
-    int heightPx{};
-    SDL_GetWindowSizeInPixels(m_sdl_window, &widthPx, &heightPx);
+    int width_px{};
+    int height_px{};
+    SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
 
-    return static_cast<float>(static_cast<double>(widthPx) / static_cast<double>(width));
+    return static_cast<float>(static_cast<double>(width_px) / static_cast<double>(width));
 #endif
 }
 
@@ -232,12 +236,12 @@ void WindowImpl::set_visible(bool value)
 
 void WindowImpl::set_always_on_top(bool value)
 {
-    SDL_SetWindowAlwaysOnTop(m_sdl_window, value ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowAlwaysOnTop(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
 }
 
 void WindowImpl::set_bordered(bool value)
 {
-    SDL_SetWindowBordered(m_sdl_window, value ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowBordered(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
 }
 
 void WindowImpl::set_full_screen(bool value)
@@ -251,7 +255,7 @@ void WindowImpl::set_full_screen(bool value)
 
 void WindowImpl::set_resizable(bool value)
 {
-    SDL_SetWindowResizable(m_sdl_window, value ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowResizable(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
 }
 
 void WindowImpl::minimize()
@@ -286,7 +290,7 @@ void WindowImpl::set_maximum_size(uint32_t width, uint32_t height)
 
 void WindowImpl::set_mouse_grab(bool value)
 {
-    SDL_SetWindowMouseGrab(m_sdl_window, value ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowMouseGrab(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
 }
 
 void WindowImpl::set_position(int32_t x, int32_t y)
@@ -309,7 +313,7 @@ uint32_t WindowImpl::display_index() const
 #ifdef __EMSCRIPTEN__
     return uint32_t(SDL_GetWindowDisplayIndex(m_sdl_window));
 #else
-    return static_cast<uint32_t>(SDL_GetDisplayForWindow(m_sdl_window));
+    return static_cast<uint32_t>(SDL_GetDisplayForWindow(m_sdl_window)); // NOLINT
 #endif
 }
 

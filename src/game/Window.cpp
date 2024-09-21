@@ -232,7 +232,7 @@ std::optional<Color> Window::clear_color() const
 void Window::show_message_box(MessageBoxType   type,
                               std::string_view title,
                               std::string_view message,
-                              Window           parent_window)
+                              const Window&    parent_window)
 {
     impl_t::show_message_box(type, title, message, parent_window);
 }

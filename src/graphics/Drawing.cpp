@@ -83,7 +83,7 @@ void cer::draw_sprite(const Image& image, Vector2 position, Color color)
     const Vector2 image_size = image.size();
 
     device_impl.draw_sprite(Sprite{
-        .image    = std::move(image),
+        .image    = image,
         .dst_rect = Rectangle{position, image_size},
         .color    = color,
     });
@@ -190,7 +190,9 @@ std::vector<std::byte> cer::read_canvas_data(
     const auto size_in_bytes = image_slice_pitch(width, height, canvas.format());
 
     if (size_in_bytes == 0)
+    {
         CER_THROW_INVALID_ARG_STR("Invalid canvas specified; failed to determine pixel data size");
+    }
 
     std::vector<std::byte> data{size_in_bytes};
     read_canvas_data_into(canvas, x, y, width, height, data.data());
@@ -248,7 +250,9 @@ void cer::save_canvas_to_file(const Image&     canvas,
     }();
 
     if (result == 0)
+    {
         CER_THROW_RUNTIME_ERROR_STR("Failed to save the canvas data.");
+    }
 }
 
 std::vector<std::byte> cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format)

@@ -26,7 +26,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader& vertex_shade
 OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex_shader,
                                          GLuint                           fragment_shader,
                                          std::string_view                 fragment_shader_name,
-                                         bool                             is_user_shader,
+                                         [[maybe_unused]] bool            is_user_shader,
                                          std::span<const ShaderParameter> parameters)
     : gl_handle(0)
 {
@@ -45,7 +45,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
     GL_CALL(glAttachShader(gl_handle, vertex_shader.gl_handle));
 
-    if (fragment_shader)
+    if (fragment_shader != 0u)
     {
         GL_CALL(glAttachShader(gl_handle, fragment_shader));
     }
@@ -73,7 +73,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
         log_debug("Program linking error:\n{}", buffer.get());
 
-        const auto msg = std::string(reinterpret_cast<const char*>(buffer.get()));
+        const std::string msg{reinterpret_cast<const char*>(buffer.get())};
 
         CER_THROW_RUNTIME_ERROR_STR(msg);
     }
@@ -83,7 +83,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
         GL_CALL(glDetachShader(gl_handle, vertex_shader.gl_handle));
     }
 
-    if (fragment_shader)
+    if (fragment_shader != 0u)
     {
         GL_CALL(glDetachShader(gl_handle, fragment_shader));
     }

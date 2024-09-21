@@ -12,9 +12,11 @@
 #include "util/InternalError.hpp"
 #include "util/Util.hpp"
 
+// NOLINTBEGIN
 #define DECLARE_IMAGE_IMPL                                                                         \
     const auto impl = static_cast<details::ImageImpl*>(this->impl());                              \
     VERIFY_IMPL_ACCESS
+// NOLINTEND
 
 namespace cer
 {

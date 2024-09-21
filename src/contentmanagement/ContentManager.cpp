@@ -17,7 +17,9 @@
 #include "graphics/FontImpl.hpp"
 #include "graphics/ImageImpl.hpp"
 #include "graphics/ShaderImpl.hpp"
+#include <algorithm>
 #include <format>
+#include <ranges>
 
 namespace cer::details
 {
@@ -65,43 +67,42 @@ ContentManager::~ContentManager() noexcept
 {
     log_verbose("Destroying ContentManager");
 
-    for (auto& loaded_asset_pair : m_loaded_assets)
+    for (ReferenceToLoadedAsset& asset : m_loaded_assets | std::views::values)
     {
         // Prevent the asset from calling ContentManager::notify_asset_destroyed()
         // when its destroyed later. Because by then, the ContentManager is gone.
 
-        struct Visitor
+        // NOTE: This is ugly, but necessary until pattern matching is available.
+        // std::visit is not noexcept and therefore not allowed in this destructor.
+
+        if (ImageImpl** image = std::get_if<ImageImpl*>(&asset))
         {
-            void operator()(ImageImpl* image) const
+            (*image)->m_content_manager = nullptr;
+        }
+        else if (SoundImpl** sound = std::get_if<SoundImpl*>(&asset))
+        {
+            (*sound)->m_content_manager = nullptr;
+        }
+        else if (ShaderImpl** shader = std::get_if<ShaderImpl*>(&asset))
+        {
+            (*shader)->m_content_manager = nullptr;
+        }
+        else if (FontImpl** font = std::get_if<FontImpl*>(&asset))
+        {
+            (*font)->m_content_manager = nullptr;
+        }
+        else if (const CustomAsset* custom_asset = std::get_if<CustomAsset>(&asset))
+        {
+            if (const std::shared_ptr<Asset> asset_shared = custom_asset->lock();
+                asset_shared != nullptr)
             {
-                image->m_content_manager = nullptr;
+                asset_shared->m_content_manager = nullptr;
             }
-
-            void operator()(SoundImpl* sound) const
-            {
-                sound->m_content_manager = nullptr;
-            }
-
-            void operator()(ShaderImpl* shader) const
-            {
-                shader->m_content_manager = nullptr;
-            }
-
-            void operator()(FontImpl* font) const
-            {
-                font->m_content_manager = nullptr;
-            }
-
-            void operator()(const CustomAsset& custom_asset) const
-            {
-                if (const std::shared_ptr<Asset> asset = custom_asset.lock(); asset != nullptr)
-                {
-                    asset->m_content_manager = nullptr;
-                }
-            }
-        };
-
-        std::visit(Visitor{}, loaded_asset_pair.second);
+        }
+        else
+        {
+            assert(false && "unhandled asset type");
+        }
     }
 }
 
@@ -111,13 +112,7 @@ void ContentManager::set_asset_loading_prefix(std::string_view prefix)
 
     if (!m_asset_loading_prefix.empty())
     {
-        for (auto& ch : m_asset_loading_prefix)
-        {
-            if (ch == '\\')
-            {
-                ch = '/';
-            }
-        }
+        std::ranges::replace(m_asset_loading_prefix, '\\', '/');
 
         if (m_asset_loading_prefix.back() != '/')
         {
@@ -148,10 +143,10 @@ Image ContentManager::load_image(std::string_view name, bool generate_mipmaps)
     });
 }
 
-static std::string build_shader_key(std::string_view                  assetName,
+static std::string build_shader_key(std::string_view                  asset_name,
                                     std::span<const std::string_view> defines)
 {
-    std::string key{assetName};
+    std::string key{asset_name};
 
     for (const std::string_view& define : defines)
     {
@@ -166,40 +161,40 @@ Shader ContentManager::load_shader(std::string_view name, std::span<const std::s
 {
     const std::string key{build_shader_key(name, defines)};
 
-    return lazy_load<Shader, ShaderImpl>(key, name, [defines](std::string_view fullName) {
-        const AssetData data = filesystem::load_asset_data(fullName);
-        Shader          shader{fullName, data.as_string_view(), defines};
-        shader.set_name(fullName);
+    return lazy_load<Shader, ShaderImpl>(key, name, [defines](std::string_view full_name) {
+        const AssetData data = filesystem::load_asset_data(full_name);
+        Shader          shader{full_name, data.as_string_view(), defines};
+        shader.set_name(full_name);
         return shader;
     });
 }
 
 Font ContentManager::load_font(std::string_view name)
 {
-    return lazy_load<Font, FontImpl>(name, name, [](std::string_view fullName) {
-        AssetData data = filesystem::load_asset_data(fullName);
+    return lazy_load<Font, FontImpl>(name, name, [](std::string_view full_name) {
+        AssetData data = filesystem::load_asset_data(full_name);
 
-        std::unique_ptr<FontImpl> fontImpl = std::make_unique<FontImpl>(std::move(data.data));
+        std::unique_ptr<FontImpl> font_impl = std::make_unique<FontImpl>(std::move(data.data));
 
-        return Font{fontImpl.release()};
+        return Font{font_impl.release()};
     });
 }
 
 Sound ContentManager::load_sound(std::string_view name)
 {
-    return lazy_load<Sound, SoundImpl>(name, name, [](std::string_view fullName) {
+    return lazy_load<Sound, SoundImpl>(name, name, [](std::string_view full_name) {
         if (!is_audio_device_initialized())
         {
             return Sound{};
         }
 
-        AudioDevice& audioDevice = GameImpl::instance().audio_device();
-        AssetData    data        = filesystem::load_asset_data(fullName);
+        AudioDevice& audio_device = GameImpl::instance().audio_device();
+        AssetData    data         = filesystem::load_asset_data(full_name);
 
-        std::unique_ptr<SoundImpl> soundImpl =
-            std::make_unique<SoundImpl>(audioDevice.soloud(), std::move(data.data), data.size);
+        std::unique_ptr<SoundImpl> sound_impl =
+            std::make_unique<SoundImpl>(audio_device.soloud(), std::move(data.data), data.size);
 
-        return Sound{soundImpl.release()};
+        return Sound{sound_impl.release()};
     });
 }
 

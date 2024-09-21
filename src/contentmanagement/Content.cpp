@@ -11,7 +11,9 @@
 #include "game/GameImpl.hpp"
 #include <cassert>
 
+// NOLINTBEGIN
 #define LOAD_CONTENT_MANAGER auto& content = details::GameImpl::instance().content_manager()
+// NOLINTEND
 
 namespace cer
 {

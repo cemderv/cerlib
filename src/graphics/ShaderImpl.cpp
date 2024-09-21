@@ -15,7 +15,7 @@ namespace cer::details
 {
 std::string ShaderImpl::shader_parameter_type_string(ShaderParameterType type)
 {
-    using namespace shadercompiler;
+    using namespace shadercompiler; // NOLINT
 
     switch (type)
     {

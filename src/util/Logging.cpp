@@ -11,9 +11,9 @@ auto log_internal(const std::string& message, LogMessageType type) -> void
 {
     switch (type)
     {
-        case LogMessageType::Info: std::cout << message << std::endl; break;
-        case LogMessageType::Warning: std::cout << "WARNING: " << message << std::endl; break;
-        case LogMessageType::Error: std::cout << "ERROR: " << message << std::endl; break;
+        case LogMessageType::Info: std::cout << message << '\n'; break;
+        case LogMessageType::Warning: std::cout << "WARNING: " << message << '\n'; break;
+        case LogMessageType::Error: std::cout << "ERROR: " << message << '\n'; break;
     }
 }
 } // namespace cer::details

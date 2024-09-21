@@ -331,9 +331,8 @@ void GLSLShaderGenerator::generate_sym_access_expr(Writer&              w,
     }
 }
 
-void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(Writer&               w,
-                                                              const FunctionDecl&   shader,
-                                                              const AccessedParams& params) const
+void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
+    Writer& w, [[maybe_unused]] const FunctionDecl& shader, const AccessedParams& params) const
 {
     if (!params.scalars.empty())
     {

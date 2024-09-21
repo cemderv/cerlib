@@ -20,6 +20,9 @@ SourceLocation SourceLocation::from_to(const SourceLocation& start, const Source
     assert(start.filename == end.filename);
     assert(start.start_index < end.start_index);
 
-    return {start.filename, start.line, start.column, start.start_index};
+    return {start.filename,
+            start.line,
+            start.column,
+            static_cast<uint16_t>(start.start_index + end.start_index)};
 }
 } // namespace cer::shadercompiler

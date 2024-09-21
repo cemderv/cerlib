@@ -14,6 +14,8 @@
 #include <cassert>
 #include <format>
 
+// NOLINTBEGIN
+
 #define ADD_FUNC_FOR_FLOAT_TO_VECTOR4(name)                                                        \
     add_func(name##_Float, #name, {{"value", floatT}}, *floatT);                                   \
     add_func(name##_Vector2, #name, {{"value", vector2T}}, *vector2T);                             \
@@ -49,6 +51,8 @@
     add_func(name##_Vector3, #name, {{"value", vector3T}}, *boolT);                                \
     add_func(name##_Vector4, #name, {{"value", vector4T}}, *boolT);                                \
     add_func(name##_Matrix4x4, #name, {{"value", matrixT}}, *boolT)
+
+// NOLINTEND
 
 namespace cer::shadercompiler
 {
@@ -337,7 +341,7 @@ BuiltInSymbols::BuiltInSymbols()
 
 BuiltInSymbols::BuiltInSymbols(BuiltInSymbols&&) noexcept = default;
 
-BuiltInSymbols& BuiltInSymbols::operator=(BuiltInSymbols&&) noexcept = default;
+BuiltInSymbols& BuiltInSymbols::operator=(BuiltInSymbols&&) noexcept = default; // NOLINT
 
 BuiltInSymbols::~BuiltInSymbols() noexcept = default;
 
