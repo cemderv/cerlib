@@ -29,13 +29,12 @@ TEST_CASE("Color", "[math]")
 
     SECTION("Built-in colors")
     {
-        REQUIRE(Color::white() == Color(1, 1, 1, 1));
-        REQUIRE(Color::black() == Color(0, 0, 0, 1));
-        REQUIRE(Color::red() == Color(1, 0, 0, 1));
-        REQUIRE(Color::green() == Color(0, 0.5f, 0, 1));
-        REQUIRE(Color::blue() == Color(0, 0, 1, 1));
-        REQUIRE(Color::cornflowerblue() ==
-                Color(100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1));
+        REQUIRE(cer::white == Color(1, 1, 1, 1));
+        REQUIRE(cer::black == Color(0, 0, 0, 1));
+        REQUIRE(cer::red == Color(1, 0, 0, 1));
+        REQUIRE(cer::green == Color(0, 0.5f, 0, 1));
+        REQUIRE(cer::blue == Color(0, 0, 1, 1));
+        REQUIRE(cer::cornflowerblue == Color(100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1));
     }
 
     SECTION("Properties")
