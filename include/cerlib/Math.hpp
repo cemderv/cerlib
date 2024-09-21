@@ -5,10 +5,12 @@
 #pragma once
 
 #include <cerlib/Export.hpp>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <numbers>
+#include <type_traits>
 
 #ifdef min
 #undef min
