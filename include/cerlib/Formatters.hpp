@@ -13,14 +13,8 @@
 #include <cerlib/Vector2.hpp>
 #include <cerlib/Vector3.hpp>
 #include <cerlib/Vector4.hpp>
-
-#ifdef __cpp_lib_format
-#include <format>
-#define cer_fmt std
-#else
 #include <fmt/core.h>
 #define cer_fmt fmt
-#endif
 
 template <>
 struct cer_fmt::formatter<cer::Color>

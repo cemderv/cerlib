@@ -28,7 +28,7 @@ function(enable_default_cpp_flags targetName)
 
   if (MSVC)
     # Warning level 4, warnings as errors etc.
-    target_compile_options(${targetName} PRIVATE /W4 /WX /MP)
+    target_compile_options(${targetName} PRIVATE /W4 /WX /MP /utf-8)
 
     # Ignore warnings about sprintf etc.
     target_compile_definitions(${targetName} PRIVATE -D_CRT_SECURE_NO_WARNINGS)
