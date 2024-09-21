@@ -50,6 +50,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure CMake
+      - name: Configure CMake (Xcode)
         run: |
           cmake -B ${{github.workspace}}/build-macos-14 -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON
+
+      - name: Build (Xcode)
+        run: cmake --build ${{github.workspace}}/build-macos-14 --config ${{env.BUILD_TYPE}} --parallel 4
+
+  build-macos-15:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake (Xcode)
+        run: |
+          cmake -B ${{github.workspace}}/build-macos-15 -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON
+
+      - name: Build (Xcode)
+        run: cmake --build ${{github.workspace}}/build-macos-15 --config ${{env.BUILD_TYPE}} --parallel 4
