@@ -76,3 +76,9 @@ option(
   OFF
 )
 
+option(
+  CERLIB_ENABLE_RENDERING_TESTS
+  "Enable rendering unit tests. Requires CERLIB_ENABLE_TESTS=ON"
+  ON
+)
+
