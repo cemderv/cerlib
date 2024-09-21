@@ -32,7 +32,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 {
     name = std::format("VS({})_PS({})", vertex_shader.name, fragment_shader_name);
 
-    log_debug("Compiling OpenGL shader program '{}'", name);
+    log_verbose("Compiling OpenGL shader program '{}'", name);
 
     verify_opengl_state();
 

@@ -19,11 +19,11 @@ OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
                                      gsl::not_null<FrameStats*>     draw_stats)
     : SpriteBatch(device_impl, draw_stats)
 {
-    log_debug("Initializing OpenGLSpriteBatch, but verifying OpenGL state first");
+    log_verbose("Initializing OpenGLSpriteBatch, but verifying OpenGL state first");
     verify_opengl_state_x();
-    log_debug("  - State is clean");
+    log_verbose("  - State is clean");
 
-    log_debug("Creating OpenGLSpriteBatch shaders");
+    log_verbose("Creating OpenGLSpriteBatch shaders");
 
     m_sprite_vertex_shader = OpenGLPrivateShader("SpriteBatchVSMain",
                                                  GL_VERTEX_SHADER,
@@ -45,7 +45,7 @@ OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
     m_monochromatic_shader_program_u_transformation =
         GL_CALL(glGetUniformLocation(m_monochromatic_shader_program.gl_handle, "Transformation"));
 
-    log_debug("  - Success");
+    log_verbose("  - Success");
 
     // Vertex buffer
     {
@@ -484,7 +484,7 @@ auto OpenGLSpriteBatch::on_shader_destroyed(gsl::not_null<ShaderImpl*> shader) -
 
     if (it != m_custom_shader_programs.cend())
     {
-        log_debug("Erasing OpenGLShaderProgram with user-origin '{}'", shader->name());
+        log_verbose("Erasing OpenGLShaderProgram with user-origin '{}'", shader->name());
         m_custom_shader_programs.erase(it);
     }
 

@@ -23,7 +23,7 @@ SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
     , m_frame_stats(draw_stats)
     , m_vertex_buffer_position(0)
 {
-    log_debug("Creating SpriteBatch");
+    log_verbose("Creating SpriteBatch");
 
     m_sprite_queue.reserve(initial_queue_size);
 
@@ -43,7 +43,7 @@ SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
                                   .get());
     }
 
-    log_debug("Created SpriteBatch");
+    log_verbose("Created SpriteBatch");
 }
 
 SpriteBatch::~SpriteBatch() noexcept = default;

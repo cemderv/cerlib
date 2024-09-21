@@ -43,16 +43,16 @@ OpenGLWindow::OpenGLWindow(std::string_view        title,
     const auto windows  = gameImpl.windows();
     if (windows.size() == 1 && windows[0] == this)
     {
-        log_debug("  This is the first window; not sharing OpenGL context");
+        log_verbose("  This is the first window; not sharing OpenGL context");
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
     }
     else
     {
-        log_debug("  This is an additional window; sharing with pre-existing OpenGL context");
+        log_verbose("  This is an additional window; sharing with pre-existing OpenGL context");
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
     }
 
-    log_debug("  Creating OpenGL context");
+    log_verbose("  Creating OpenGL context");
     m_gl_context = SDL_GL_CreateContext(sdl_window());
 
     GameImpl::instance().ensure_graphics_device_initialized(*this);
@@ -60,11 +60,11 @@ OpenGLWindow::OpenGLWindow(std::string_view        title,
 
 OpenGLWindow::~OpenGLWindow() noexcept
 {
-    log_debug("Destroying OpenGL window '{}'", title());
+    log_verbose("Destroying OpenGL window '{}'", title());
 
     if (m_gl_context)
     {
-        log_debug("  Destroying OpenGL context");
+        log_verbose("  Destroying OpenGL context");
 #ifdef __EMSCRIPTEN__
         SDL_GL_DeleteContext(m_gl_context);
 #else

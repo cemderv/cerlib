@@ -21,7 +21,8 @@
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CERLIB_ENABLE_ADDRESS_SANITIZER": "ON"
+        "CERLIB_ENABLE_ADDRESS_SANITIZER": "ON",
+        "CERLIB_ENABLE_VERBOSE_LOGGING": "OFF"
       }
     },
     {

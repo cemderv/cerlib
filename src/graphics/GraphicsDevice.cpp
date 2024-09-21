@@ -55,7 +55,7 @@ void GraphicsDevice::notify_user_shader_destroyed(gsl::not_null<ShaderImpl*> res
 
 GraphicsDevice::~GraphicsDevice() noexcept
 {
-    log_debug("Destroying GraphicsDevice");
+    log_verbose("Destroying GraphicsDevice");
 
     assert(!m_current_window);
     m_sprite_shader = {};
@@ -235,7 +235,7 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
                                      shadercompiler::naming::shader_entry_point,
                                      true);
 
-    log_debug("Generated OpenGL shader code: {}", code_gen_results.glsl_code);
+    log_verbose("Generated OpenGL shader code: {}", code_gen_results.glsl_code);
 
     ShaderImpl::ParameterList parameters;
     parameters.reserve(code_gen_results.parameters.size());
