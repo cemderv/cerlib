@@ -56,14 +56,6 @@ CPMAddPackage(
   DOWNLOAD_ONLY # stb does not use CMake, we add its files manually
 )
 
-# small_vector
-CPMAddPackage(
-  NAME small_vector
-  GITHUB_REPOSITORY c-dervis/small_vector
-  GIT_TAG v0.0.1
-  GIT_SHALLOW
-)
-
 CPMAddPackage(
   NAME opengl_loader
   GITHUB_REPOSITORY c-dervis/opengl-loader
