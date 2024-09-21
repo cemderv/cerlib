@@ -50,6 +50,22 @@ jobs:
       - name: Run Tests
         run: ${{github.workspace}}/build/bin/Release/cerlibTests.exe
 
+  build-macos-13:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake (Xcode)
+        run: |
+          cmake -B ${{github.workspace}}/build -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
+
+      - name: Build (Xcode)
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
+
+      - name: Run Tests
+        run: ${{github.workspace}}/build/bin/Release/cerlibTests
+
+
   build-macos-14:
     runs-on: macos-14
     steps:
@@ -57,10 +73,10 @@ jobs:
 
       - name: Configure CMake (Xcode)
         run: |
-          cmake -B ${{github.workspace}}/build-macos-14 -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
+          cmake -B ${{github.workspace}}/build -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build (Xcode)
-        run: cmake --build ${{github.workspace}}/build-macos-14 --config ${{env.BUILD_TYPE}} --parallel 4
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
 
       - name: Run Tests
         run: ${{github.workspace}}/build/bin/Release/cerlibTests
