@@ -1,13 +1,12 @@
 #include "Level.hpp"
 
-#include <format>
 #include <sstream>
 #include <stdexcept>
 
 static Tile load_tile(std::string_view name, TileCollision collision)
 {
     return {
-        .image     = cer::load_image(std::format("tiles/{}.png", name)),
+        .image     = cer::load_image(cer_fmt::format("tiles/{}.png", name)),
         .collision = collision,
     };
 }
@@ -17,7 +16,7 @@ static auto load_variety_tile(std::string_view base_name,
                               TileCollision    collision)
 {
     const int index = cer::random_int(0, variation_count - 1);
-    return load_tile(std::format("{}{}", base_name, index), collision);
+    return load_tile(cer_fmt::format("{}{}", base_name, index), collision);
 }
 
 Level::Level(std::string_view name, std::string_view contents, Args args)
@@ -65,7 +64,7 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
     {
         // Choose a random segment if each background layer for level variety.
         const int         segment_index = cer::random_int(0, 2);
-        const std::string image_name = std::format("backgrounds/layer{}_{}.png", i, segment_index);
+        const std::string image_name = cer_fmt::format("backgrounds/layer{}_{}.png", i, segment_index);
 
         m_layers[i] = cer::load_image(image_name);
     }

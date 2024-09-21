@@ -18,7 +18,6 @@
 #include "graphics/ImageImpl.hpp"
 #include "graphics/ShaderImpl.hpp"
 #include <algorithm>
-#include <format>
 #include <ranges>
 
 namespace cer::details

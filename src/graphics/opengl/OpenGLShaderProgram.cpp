@@ -8,7 +8,6 @@
 #include "shadercompiler/Naming.hpp"
 #include "util/InternalError.hpp"
 #include <cassert>
-#include <format>
 
 namespace cer::details
 {
@@ -30,7 +29,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
                                          std::span<const ShaderParameter> parameters)
     : gl_handle(0)
 {
-    name = std::format("VS({})_PS({})", vertex_shader.name, fragment_shader_name);
+    name = cer_fmt::format("VS({})_PS({})", vertex_shader.name, fragment_shader_name);
 
     log_verbose("Compiling OpenGL shader program '{}'", name);
 

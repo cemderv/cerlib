@@ -19,7 +19,6 @@
 #include "util/InternalError.hpp"
 #include "util/StringUtil.hpp"
 #include <cassert>
-#include <format>
 
 namespace cer::shadercompiler
 {
@@ -30,7 +29,7 @@ GLSLShaderGenerator::GLSLShaderGenerator(bool is_gles)
 {
     m_is_swapping_matrix_vector_multiplications = true;
 
-    m_v2f_prefix = std::format("{}v2f_", naming::forbidden_identifier_prefix);
+    m_v2f_prefix = cer_fmt::format("{}v2f_", naming::forbidden_identifier_prefix);
 
     m_built_in_type_dictionary = {
         {&IntType::instance(), "int"},

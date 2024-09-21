@@ -28,19 +28,19 @@ std::string ShaderImpl::shader_parameter_type_string(ShaderParameterType type)
         case ShaderParameterType::Matrix: return std::string(MatrixType::instance().type_name());
         case ShaderParameterType::Image: return std::string(ImageType::instance().type_name());
         case ShaderParameterType::FloatArray:
-            return std::format("{}[]", FloatType::instance().type_name());
+            return cer_fmt::format("{}[]", FloatType::instance().type_name());
         case ShaderParameterType::IntArray:
-            return std::format("{}[]", IntType::instance().type_name());
+            return cer_fmt::format("{}[]", IntType::instance().type_name());
         case ShaderParameterType::BoolArray:
-            return std::format("{}[]", BoolType::instance().type_name());
+            return cer_fmt::format("{}[]", BoolType::instance().type_name());
         case ShaderParameterType::Vector2Array:
-            return std::format("{}[]", Vector2Type::instance().type_name());
+            return cer_fmt::format("{}[]", Vector2Type::instance().type_name());
         case ShaderParameterType::Vector3Array:
-            return std::format("{}[]", Vector3Type::instance().type_name());
+            return cer_fmt::format("{}[]", Vector3Type::instance().type_name());
         case ShaderParameterType::Vector4Array:
-            return std::format("{}[]", Vector4Type::instance().type_name());
+            return cer_fmt::format("{}[]", Vector4Type::instance().type_name());
         case ShaderParameterType::MatrixArray:
-            return std::format("{}[]", MatrixType::instance().type_name());
+            return cer_fmt::format("{}[]", MatrixType::instance().type_name());
     }
 
     return {};

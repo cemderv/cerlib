@@ -3,13 +3,12 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "shadercompiler/TempVarNameGen.hpp"
-
+#include "cerlib/Formatters.hpp"
 #include "shadercompiler/Casting.hpp"
 #include "shadercompiler/CodeBlock.hpp"
 #include "shadercompiler/Decl.hpp"
 #include "shadercompiler/Naming.hpp"
 #include "shadercompiler/Stmt.hpp"
-#include <format>
 
 namespace cer::shadercompiler
 {
@@ -46,8 +45,8 @@ TempVarNameGen::TempVarNameGen(const CodeBlock* block)
 
 std::string TempVarNameGen::next(std::string_view hint)
 {
-    std::string str = hint.empty() ? std::format("{}{}", m_prefix, m_counter)
-                                   : std::format("{}{}_{}", m_prefix, m_counter, hint);
+    std::string str = hint.empty() ? cer_fmt::format("{}{}", m_prefix, m_counter)
+                                   : cer_fmt::format("{}{}_{}", m_prefix, m_counter, hint);
 
     ++m_counter;
 

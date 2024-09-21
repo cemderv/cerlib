@@ -4,7 +4,6 @@
 #include <cerlib/Color.hpp>
 #include <cerlib/Drawing.hpp>
 #include <cerlib/Logging.hpp>
-#include <format>
 #include <iostream>
 #include <snitch/snitch.hpp>
 
@@ -54,5 +53,5 @@ void RenderingTestHelper::generate_reference_image(std::string_view      test_na
 
 std::string RenderingTestHelper::get_reference_image_filename(std::string_view test_name) const
 {
-    return std::format("{}/{}.png", REFERENCE_IMAGES_DIR, test_name);
+    return cer_fmt::format("{}/{}.png", REFERENCE_IMAGES_DIR, test_name);
 }
