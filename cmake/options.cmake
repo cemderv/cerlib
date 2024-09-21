@@ -57,6 +57,7 @@ option(
   "Enable verbose logging during debug mode"
   OFF
 )
+
 if (ANDROID)
   if (CERLIB_BUILD_TESTBED)
     cerlib_log("Disabling Testbed implicitly due to Android")

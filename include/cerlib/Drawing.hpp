@@ -60,7 +60,7 @@ struct Sprite
     Image                    image{};
     Rectangle                dst_rect{};
     std::optional<Rectangle> src_rect{};
-    Color                    color{Color::white()};
+    Color                    color{white};
     float                    rotation{};
     Vector2                  origin{};
     Vector2                  scale{1.0f, 1.0f};
@@ -210,7 +210,7 @@ CERLIB_API void set_blend_state(const BlendState& blend_state);
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_sprite(const Image& image, Vector2 position, Color color = Color::white());
+CERLIB_API void draw_sprite(const Image& image, Vector2 position, Color color = white);
 
 /**
  * Draws a 2D sprite.
@@ -237,7 +237,7 @@ CERLIB_API void draw_string(std::string_view                     text,
                             const Font&                          font,
                             uint32_t                             font_size,
                             Vector2                              position,
-                            Color                                color      = Color::white(),
+                            Color                                color      = white,
                             const std::optional<TextDecoration>& decoration = std::nullopt);
 
 /**
@@ -251,7 +251,7 @@ CERLIB_API void draw_string(std::string_view                     text,
  * @ingroup Graphics
  */
 CERLIB_API void fill_rectangle(Rectangle rectangle,
-                               Color     color    = Color::white(),
+                               Color     color    = white,
                                float     rotation = 0.0f,
                                Vector2   origin   = Vector2());
 

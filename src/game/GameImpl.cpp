@@ -508,12 +508,12 @@ bool GameImpl::tick()
     {
         for (WindowImpl* window_impl : m_windows)
         {
-            const Window window{window_impl};
+            Window window{window_impl};
             m_graphics_device->start_frame(window);
 
             const auto _ = gsl::finally([this, &window] { m_graphics_device->end_frame(window); });
 
-            m_draw_func(Window(window_impl));
+            m_draw_func(window);
         }
     }
 

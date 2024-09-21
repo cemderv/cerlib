@@ -3,6 +3,7 @@
 .vs/
 .vscode/
 .zed/
+.idea/misc.xml
 CMakeUserPresets.json
 cmake-build-*/
 [bB]uild/

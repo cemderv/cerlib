@@ -1,18 +1,29 @@
+# Address sanitizer
+if (CERLIB_ENABLE_ADDRESS_SANITIZER)
+  cerlib_log("Enabling address sanitizer")
+
+  set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER ON)
+  set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER_USE_AFTER_RETURN ON)
+
+  add_compile_options(-fsanitize=address)
+  add_link_options(-fsanitize=address)
+endif ()
+
 function(enable_default_cpp_flags targetName)
   target_compile_features(${targetName} PUBLIC cxx_std_20)
   set_target_properties(${targetName} PROPERTIES CXX_EXTENSIONS OFF)
 
   set_target_properties(${targetName}
     PROPERTIES
-      ARCHIVE_OUTPUT_DIRECTORY ${cerlib_binary_dir}/bin
-      LIBRARY_OUTPUT_DIRECTORY ${cerlib_binary_dir}/bin
-      RUNTIME_OUTPUT_DIRECTORY ${cerlib_binary_dir}/bin
+    ARCHIVE_OUTPUT_DIRECTORY ${cerlib_binary_dir}/bin
+    LIBRARY_OUTPUT_DIRECTORY ${cerlib_binary_dir}/bin
+    RUNTIME_OUTPUT_DIRECTORY ${cerlib_binary_dir}/bin
   )
 
   set_target_properties(${targetName}
     PROPERTIES
-      XCODE_ATTRIBUTE_OSX_DEPLOYMENT_TARGET "12.0"
-      XCODE_ATTRIBUTE_IPHONE_DEPLOYMENT_TARGET "12.0"
+    XCODE_ATTRIBUTE_OSX_DEPLOYMENT_TARGET "12.0"
+    XCODE_ATTRIBUTE_IPHONE_DEPLOYMENT_TARGET "12.0"
   )
 
   if (MSVC)
@@ -32,18 +43,6 @@ function(enable_default_cpp_flags targetName)
   if (CERLIB_ENABLE_CLANG_TIME_TRACE)
     cerlib_log("Enabling Clang time tracing")
     target_compile_options(${targetName} PRIVATE -ftime-trace)
-  endif()
-
-  # Address sanitizer
-  if (CERLIB_ENABLE_ADDRESS_SANITIZER)
-    cerlib_log("Enabling address sanitizer")
-
-    set(CMAKE_XCODE_GENERATE_SCHEME ON)
-    set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER ON)
-    set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER_USE_AFTER_RETURN ON)
-
-    target_compile_options(${targetName} PRIVATE -fsanitize=address)
-    target_link_options(${targetName} PRIVATE -fsanitize=address)
   endif ()
 
   # Disable common warnings
@@ -67,6 +66,8 @@ function(enable_default_cpp_flags targetName)
     )
   endif ()
 
+  set(CMAKE_XCODE_GENERATE_SCHEME ON)
+
   # clang-tidy
   if (CERLIB_ENABLE_CLANG_TIDY)
     cerlib_log("Enabling clang-tidy")
@@ -76,12 +77,12 @@ function(enable_default_cpp_flags targetName)
       if (CLANG_TIDY_EXE)
         set(CLANG_TIDY_COMMAND "${CLANG_TIDY_EXE}" "-p" "${CMAKE_BINARY_DIR}" "--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy")
         set_target_properties(${targetName} PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
-      else()
+      else ()
         cerlib_warn("clang-tidy executable not found; ignoring")
-      endif()
-    else()
+      endif ()
+    else ()
       cerlib_warn("clang-tidy analysis is enabled, however the current compiler (${CMAKE_CXX_COMPILER_ID}) is not clang-tidy-compatible; ignoring")
-    endif()
+    endif ()
   endif ()
 
   if (CERLIB_ENABLE_LTO)
@@ -98,5 +99,5 @@ function(enable_default_cpp_flags targetName)
     # Non-standard type char_traits<...> is not supported beginning with LLVM 19.
     # But we need it right now, so disable those warnings.
     target_compile_options(${targetName} PRIVATE -Wno-deprecated-declarations)
-  endif()
+  endif ()
 endfunction()

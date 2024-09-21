@@ -109,13 +109,13 @@ void Game::load_content()
 {
 }
 
-bool Game::update(GameTime time)
+bool Game::update(const GameTime& time)
 {
     CERLIB_UNUSED(time);
     return true;
 }
 
-void Game::draw(Window window)
+void Game::draw(const Window& window)
 {
     CERLIB_UNUSED(window);
 }

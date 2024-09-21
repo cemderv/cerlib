@@ -843,7 +843,7 @@ std::unique_ptr<StructCtorCall> Parser::parse_struct_ctor_call(std::unique_ptr<E
         {
             throw Error{m_tk->location,
                         "expected a struct field argument in the form "
-                        "of '<name>: <expression>'"};
+                        "of '<name> = <expression>'"};
         }
 
         args.push_back(std::move(arg));

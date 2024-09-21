@@ -2,9 +2,9 @@ name: CMake Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 env:
   BUILD_TYPE: Release
@@ -14,17 +14,17 @@ jobs:
     runs-on: ubuntu-latest
     container: gcc:13
     steps:
-    - uses: actions/checkout@v4
-    - name: Install prerequisites
-      run: |
+      - uses: actions/checkout@v4
+      - name: Install prerequisites
+        run: |
           apt update -y
           apt install -y cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel
 
   build-windows:
     runs-on: windows-latest
