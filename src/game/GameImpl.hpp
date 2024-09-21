@@ -9,6 +9,7 @@
 #include "util/NonCopyable.hpp"
 #include "util/Object.hpp"
 #include <map>
+#include <memory>
 #include <span>
 #include <variant>
 #include <vector>
