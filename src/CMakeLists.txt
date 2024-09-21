@@ -178,6 +178,7 @@ target_link_libraries(cerlib PUBLIC cerlib_SDL)
 target_link_libraries(cerlib PRIVATE SoLoud)
 
 enable_default_cpp_flags(cerlib)
+enable_clang_tidy(cerlib)
 
 if (CERLIB_ENABLE_VERBOSE_LOGGING)
   target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_VERBOSE_LOGGING")
