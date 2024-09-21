@@ -14,6 +14,7 @@ cerlib is an easy-to-use 2D game library for C++.
 
 - Cross-platform library focused on 2D game development
 - App framework
+  - Based on SDL
 - Content management system
     - Images: .png, .jpg, .bmp, .dds, .hdr, .tga, .psd, .gif
     - Generation of mipmaps
