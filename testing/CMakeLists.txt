@@ -30,7 +30,6 @@ enable_default_cpp_flags(cerlibTests)
 
 target_link_libraries(cerlibTests PRIVATE
   GSL
-  small_vector
   cerlib
   snitch::snitch
 )
