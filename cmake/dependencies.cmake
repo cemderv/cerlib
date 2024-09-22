@@ -5,6 +5,7 @@ if (CERLIB_ENABLE_TESTS)
     GITHUB_REPOSITORY snitch-org/snitch
     VERSION 1.2.5
     GIT_SHALLOW
+    SYSTEM
   )
 endif ()
 
@@ -19,6 +20,7 @@ CPMAddPackage(
   "GSL_TEST OFF"
   "GSL_VS_ADD_NATIVE_VISUALIZERS ON"
   GIT_SHALLOW
+  SYSTEM
 )
 
 # SoLoud
@@ -27,6 +29,7 @@ CPMAddPackage(
   GITHUB_REPOSITORY c-dervis/soloud
   GIT_TAG v0.0.1
   GIT_SHALLOW
+  SYSTEM
 )
 
 set_target_properties(SoLoud PROPERTIES FOLDER "Dependencies")
@@ -36,7 +39,11 @@ CPMAddPackage(
   NAME fmt
   GITHUB_REPOSITORY fmtlib/fmt
   GIT_TAG 11.0.2
+  OPTIONS
+  "FMT_INSTALL OFF"
+  "FMT_SYSTEM_HEADERS ON"
   GIT_SHALLOW
+  SYSTEM
 )
 
 # utfcpp
@@ -45,6 +52,7 @@ CPMAddPackage(
   GITHUB_REPOSITORY nemtrif/utfcpp
   VERSION 4.0.5
   GIT_SHALLOW
+  SYSTEM
 )
 
 # stb
@@ -61,6 +69,7 @@ CPMAddPackage(
   GITHUB_REPOSITORY c-dervis/opengl-loader
   GIT_TAG v0.0.1
   GIT_SHALLOW
+  SYSTEM
 )
 
 if (NOT EMSCRIPTEN)
@@ -96,6 +105,7 @@ if (NOT EMSCRIPTEN)
     "SDL_STATIC ON"
     "SDL_SHARED ON"
     GIT_SHALLOW
+    SYSTEM
   )
 
   set_target_properties(SDL3-shared PROPERTIES FOLDER "Dependencies")
