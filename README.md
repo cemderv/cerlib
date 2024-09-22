@@ -103,10 +103,10 @@ int main() {
 
 cerlib has been tested and is confirmed to work with the following compilers:
 
-- Visual C++ / Visual Studio 2022+
-- Clang 18+
-- GCC 12+
-- Apple Clang 15+
+- MSVC 2022
+- Clang ≥ 16.0.6
+- GCC ≥ 13.3
+- Apple Clang ≥ 15
 
 ## C++
 
