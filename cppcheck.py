@@ -22,8 +22,6 @@ print('Found cppcheck:', cppcheck_cmd)
 with open(compile_commands_json) as f:
     json_doc = json.load(f)
 
-print(json.dumps(json_doc, indent=4))
-
 
 # Remove entries that are irrelevant for checking.
 def is_valid_entry(obj):
