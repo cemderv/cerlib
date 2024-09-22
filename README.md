@@ -1,6 +1,6 @@
 # cerlib
 
-![cerlib-logo](docs/assets/cerlib-logo-extrawide.svg)
+![cerlib-logo](misc/cerlib-logo-extrawide.svg)
 
 cerlib is an easy-to-use 2D game library for C++.
 
