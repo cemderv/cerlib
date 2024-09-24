@@ -100,6 +100,10 @@ bool Tweener::has_ended() const
 
 // NOLINTBEGIN
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wunsequenced"
+#endif
+
 float Tweener::back_ease_in(float t, float b, float c, float d)
 {
     return c * (t /= d) * t * ((1.70158f + 1) * t - 1.70158f) + b;
