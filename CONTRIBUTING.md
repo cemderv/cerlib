@@ -28,6 +28,7 @@ supports a CMake workflow, such as:
 - [Visual Studio](https://visualstudio.microsoft.com/)
 - [Visual Studio Code](https://code.visualstudio.com/) with C++ extensions and a C++ toolchain
 - [Qt Creator](https://github.com/qt-creator/qt-creator)
+- [Xcode](https://developer.apple.com/xcode/)
 
 Alternatively, you can configure and build via the command line:
 
