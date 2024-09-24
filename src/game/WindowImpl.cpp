@@ -104,12 +104,15 @@ WindowImpl::WindowImpl(std::string_view        title,
 
     GameImpl& app_impl = GameImpl::instance();
 
-#if defined(__EMSCRIPTEN__) // && ANDROID && IOS
-    const auto windows = app_impl.windows();
+    if (is_mobile_platform() || target_platform() == TargetPlatform::Web)
+    {
+        const auto windows = app_impl.windows();
 
-    if (!windows.empty())
-        CER_THROW_LOGIC_ERROR_STR("The current system does not support more than one window.");
-#endif
+        if (!windows.empty())
+        {
+            CER_THROW_LOGIC_ERROR_STR("The current system does not support more than one window.");
+        }
+    }
 
     app_impl.notify_window_created(this);
 
