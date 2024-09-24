@@ -48,7 +48,7 @@ It provides every basic audiovisual aspect necessary to develop a 2D game.
 
 struct MyGame : cer::Game {
   MyGame() {
-    window = cer::Window("My Game Window");
+    window = cer::Window{"My Game Window"};
   }
 
   void load_content() override {
@@ -65,7 +65,7 @@ struct MyGame : cer::Game {
   void draw(const cer::Window& window) override {
     // Draw game content into 'window':
     // ...
-    cer::draw_sprite(image, {100, 200}, cer::Color::white());
+    cer::draw_sprite(image, {100, 200}, cer::white);
   }
 
   cer::Window window;
