@@ -51,7 +51,8 @@ using Event = std::variant<WindowShownEvent,
                            MouseWheelEvent,
                            TouchFingerEvent,
                            GamepadConnectedEvent,
-                           GamepadDisconnectedEvent>;
+                           GamepadDisconnectedEvent,
+                           TextInputEvent>;
 
 /**
  * Game implementation object.

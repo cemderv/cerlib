@@ -154,10 +154,13 @@ static SDL_SensorType to_sdl_gamepad_sensor_type(GamepadSensorType type)
         case GamepadSensorType::Unknown: return SDL_SENSOR_UNKNOWN;
         case GamepadSensorType::Acceleration: return SDL_SENSOR_ACCEL;
         case GamepadSensorType::Gyroscope: return SDL_SENSOR_GYRO;
+#ifndef __EMSCRIPTEN__
         case GamepadSensorType::AccelerationLeft: return SDL_SENSOR_ACCEL_L;
         case GamepadSensorType::GyroscopeLeft: return SDL_SENSOR_GYRO_L;
         case GamepadSensorType::AccelerationRight: return SDL_SENSOR_ACCEL_R;
         case GamepadSensorType::GyroscopeRight: return SDL_SENSOR_GYRO_R;
+#endif
+        default: break;
     }
 
     return SDL_SENSOR_UNKNOWN;

@@ -61,6 +61,7 @@ Game::Game(bool enable_audio)
                 [this](const TouchFingerEvent& e) { on_touch_finger(e); },
                 [this](const GamepadConnectedEvent& e) { on_gamepad_connected(e); },
                 [this](const GamepadDisconnectedEvent& e) { on_gamepad_disconnected(e); },
+                [this](const TextInputEvent& e) { on_text_input(e); },
             },
             event);
     });
@@ -223,6 +224,11 @@ void Game::on_gamepad_connected(const GamepadConnectedEvent& event)
 }
 
 void Game::on_gamepad_disconnected(const GamepadDisconnectedEvent& event)
+{
+    CERLIB_UNUSED(event);
+}
+
+void Game::on_text_input(const TextInputEvent& event)
 {
     CERLIB_UNUSED(event);
 }

@@ -5,8 +5,10 @@
 #include "WindowImpl.hpp"
 
 #include "cerlib/Logging.hpp"
+#include "cerlib/Version.hpp"
 #include "game/GameImpl.hpp"
 #include "util/InternalError.hpp"
+#include "util/Platform.hpp"
 #include <gsl/narrow>
 
 #ifdef __EMSCRIPTEN__
@@ -143,6 +145,30 @@ void WindowImpl::show_message_box(MessageBoxType   type,
     SDL_ShowSimpleMessageBox(flags, title_str.c_str(), message_str.c_str(), parent_sdl_window);
 }
 
+void WindowImpl::activate_onscreen_keyboard()
+{
+    if (cer::is_mobile_platform())
+    {
+#ifdef __EMSCRIPTEN__
+        SDL_StartTextInput();
+#else
+        SDL_StartTextInput(m_sdl_window);
+#endif
+    }
+}
+
+void WindowImpl::deactivate_onscreen_keyboard()
+{
+    if (cer::is_mobile_platform())
+    {
+#ifdef __EMSCRIPTEN__
+        SDL_StopTextInput();
+#else
+        SDL_StopTextInput(m_sdl_window);
+#endif
+    }
+}
+
 auto WindowImpl::create_sdl_window(int additional_flags) -> void
 {
     const int flags = get_sdl_window_flags(m_allow_high_dpi) | additional_flags;
@@ -162,6 +188,16 @@ auto WindowImpl::create_sdl_window(int additional_flags) -> void
     {
         CER_THROW_RUNTIME_ERROR("Failed to create the internal window. Reason: {}", SDL_GetError());
     }
+
+// Ensure that the window receives text input on non-mobile platforms.
+#ifdef __EMSCRIPTEN__
+    SDL_StartTextInput();
+#else
+    if (!is_mobile_platform())
+    {
+        SDL_StartTextInput(m_sdl_window);
+    }
+#endif
 }
 
 WindowImpl::~WindowImpl() noexcept
@@ -197,10 +233,14 @@ Vector2 WindowImpl::size() const
 
 Vector2 WindowImpl::size_px() const
 {
+#ifdef __EMSCRIPTEN__
+    return size() * pixel_ratio();
+#else
     int width_px{};
     int height_px{};
     SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
     return {static_cast<float>(width_px), static_cast<float>(height_px)};
+#endif
 }
 
 float WindowImpl::pixel_ratio() const

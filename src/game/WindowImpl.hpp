@@ -97,6 +97,10 @@ class WindowImpl : public Object
                                  std::string_view message,
                                  const Window&    parent_window);
 
+    void activate_onscreen_keyboard();
+
+    void deactivate_onscreen_keyboard();
+
   protected:
     void create_sdl_window(int additional_flags);
 

@@ -236,4 +236,16 @@ void Window::show_message_box(MessageBoxType   type,
 {
     impl_t::show_message_box(type, title, message, parent_window);
 }
+
+void Window::activate_onscreen_keyboard()
+{
+    DECLARE_THIS_IMPL;
+    impl->activate_onscreen_keyboard();
+}
+
+void Window::deactivate_onscreen_keyboard()
+{
+    DECLARE_THIS_IMPL;
+    impl->deactivate_onscreen_keyboard();
+}
 } // namespace cer

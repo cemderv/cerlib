@@ -202,6 +202,8 @@ class CERLIB_API Game
     virtual void on_gamepad_connected(const GamepadConnectedEvent& event);
 
     virtual void on_gamepad_disconnected(const GamepadDisconnectedEvent& event);
+
+    virtual void on_text_input(const TextInputEvent& event);
 };
 
 /**

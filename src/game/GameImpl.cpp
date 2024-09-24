@@ -72,6 +72,7 @@
 #  define CER_EVENT_TOUCH_FINGER_MOTION SDL_FINGERMOTION
 #  define SDL_EVENT_GAMEPAD_ADDED       SDL_CONTROLLERDEVICEADDED
 #  define SDL_EVENT_GAMEPAD_REMOVED     SDL_CONTROLLERDEVICEREMOVED
+#  define CER_EVENT_TEXT_INPUT          SDL_TEXTINPUT
 #else
 #  define CER_EVENT_QUIT                SDL_EVENT_QUIT
 #  define CER_EVENT_WINDOW_SHOWN        SDL_EVENT_WINDOW_SHOWN
@@ -94,6 +95,7 @@
 #  define CER_EVENT_TOUCH_FINGER_DOWN   SDL_EVENT_FINGER_DOWN
 #  define CER_EVENT_TOUCH_FINGER_UP     SDL_EVENT_FINGER_UP
 #  define CER_EVENT_TOUCH_FINGER_MOTION SDL_EVENT_FINGER_MOTION
+#  define CER_EVENT_TEXT_INPUT          SDL_EVENT_TEXT_INPUT
 #endif
 // clang-format on
 
@@ -842,7 +844,7 @@ void GameImpl::process_events()
 
                 if (type != static_cast<TouchFingerEventType>(-1))
                 {
-                    const Window  window = find_window_by_sdl_window_id(event.tfinger.windowID);
+                    Window        window = find_window_by_sdl_window_id(event.tfinger.windowID);
                     const Vector2 window_size = window.size_px();
                     const Vector2 position =
                         Vector2{event.tfinger.x, event.tfinger.y} * window_size;
@@ -851,7 +853,7 @@ void GameImpl::process_events()
                     const auto evt = TouchFingerEvent{
                         .type      = type,
                         .timestamp = event.tfinger.timestamp,
-                        .window    = window,
+                        .window    = std::move(window),
 #ifdef __EMSCRIPTEN__
                         .touch_id  = static_cast<uint64_t>(event.tfinger.touchId),
                         .finger_id = static_cast<uint64_t>(event.tfinger.fingerId),
@@ -868,6 +870,14 @@ void GameImpl::process_events()
                 }
 
                 break;
+            }
+            case CER_EVENT_TEXT_INPUT: {
+                Window window = find_window_by_sdl_window_id(event.text.windowID);
+                raise_event(TextInputEvent{
+                    .timestamp = event.text.timestamp,
+                    .window    = std::move(window),
+                    .text      = event.text.text,
+                });
             }
             default: break;
         }

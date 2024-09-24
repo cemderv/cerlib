@@ -252,5 +252,17 @@ class CERLIB_API Window final
                                  std::string_view title,
                                  std::string_view message,
                                  const Window&    parent_window = Window{});
+
+    /**
+     * Activates the on-screen keyboard of the current system.
+     * This only has an effect on platforms that support on-screen keyboards.
+     */
+    void activate_onscreen_keyboard();
+
+    /**
+     * Deactivates the on-screen keyboard of the current system.
+     * This only has an effect on platforms that support on-screen keyboards.
+     */
+    void deactivate_onscreen_keyboard();
 };
 } // namespace cer

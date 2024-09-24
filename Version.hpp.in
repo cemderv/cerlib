@@ -4,11 +4,26 @@
 
 #pragma once
 
-#include <tuple>
+#include <cerlib/Export.hpp>
 #include <string_view>
+#include <tuple>
 
 namespace cer
 {
+/**
+ * Defines a concrete target platform such as Windows, macOS and Linux.
+ *
+ * @ingroup Misc
+ */
+enum class TargetPlatform
+{
+    Windows = 1,
+    macOS   = 2,
+    Linux   = 3,
+    Android = 4,
+    Web     = 5,
+};
+
 /**
  * Gets the currently used version of cerlib as a tuple of
  * `major`, `minor`, `revision`.
@@ -23,4 +38,26 @@ static constexpr std::tuple library_version = { ${CMAKE_PROJECT_VERSION_MAJOR}, 
  * @ingroup Misc
  */
 static constexpr std::string_view library_version_string = "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}";
+
+/**
+ * Gets the current target platform.
+ *
+ * @ingroup Misc
+ */
+CERLIB_API TargetPlatform target_platform();
+
+/**
+ * Gets a value indicating whether the current platform counts as a desktop platform.
+ *
+ * @ingroup Misc
+ */
+CERLIB_API bool is_desktop_platform();
+
+/**
+ * Gets a value indicating whether the current platform counts as a mobile platform.
+ *
+ * @ingroup Misc
+ */
+CERLIB_API bool is_mobile_platform();
 } // namespace cer
+
