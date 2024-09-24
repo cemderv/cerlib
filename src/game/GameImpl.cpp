@@ -72,6 +72,7 @@
 #  define CER_EVENT_TOUCH_FINGER_MOTION SDL_FINGERMOTION
 #  define SDL_EVENT_GAMEPAD_ADDED       SDL_CONTROLLERDEVICEADDED
 #  define SDL_EVENT_GAMEPAD_REMOVED     SDL_CONTROLLERDEVICEREMOVED
+#  define CER_EVENT_TEXT_INPUT          SDL_TEXTINPUT
 #else
 #  define CER_EVENT_QUIT                SDL_EVENT_QUIT
 #  define CER_EVENT_WINDOW_SHOWN        SDL_EVENT_WINDOW_SHOWN
@@ -94,6 +95,7 @@
 #  define CER_EVENT_TOUCH_FINGER_DOWN   SDL_EVENT_FINGER_DOWN
 #  define CER_EVENT_TOUCH_FINGER_UP     SDL_EVENT_FINGER_UP
 #  define CER_EVENT_TOUCH_FINGER_MOTION SDL_EVENT_FINGER_MOTION
+#  define CER_EVENT_TEXT_INPUT          SDL_EVENT_TEXT_INPUT
 #endif
 // clang-format on
 
@@ -869,7 +871,7 @@ void GameImpl::process_events()
 
                 break;
             }
-            case SDL_EVENT_TEXT_INPUT: {
+            case CER_EVENT_TEXT_INPUT: {
                 Window window = find_window_by_sdl_window_id(event.text.windowID);
                 raise_event(TextInputEvent{
                     .timestamp = event.text.timestamp,

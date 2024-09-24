@@ -63,12 +63,14 @@ function(cerlib_add_executable)
         "SHELL:-s ASSERTIONS"
         "SHELL:-s NO_DISABLE_EXCEPTION_CATCHING"
         "SHELL:-s LZ4"
+        "SHELL:-s GL_ENABLE_GET_PROC_ADDRESS"
         "SHELL:--preload-file ${assets_dir}@"
       )
     else ()
       set(link_flags
         "SHELL:-s ALLOW_MEMORY_GROWTH"
         "SHELL:-s LZ4"
+        "SHELL:-s GL_ENABLE_GET_PROC_ADDRESS"
         "SHELL:--preload-file ${assets_dir}@"
       )
     endif ()
