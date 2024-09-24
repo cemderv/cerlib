@@ -252,7 +252,7 @@ void Player::update(cer::GameTime time)
 
     if (m_is_alive && m_is_on_ground && !m_has_reached_exit)
     {
-        const bool is_moving = abs(m_velocity.x) - 0.02f > 0;
+        const bool is_moving = cer::abs(m_velocity.x) - 0.02f > 0;
         m_sprite.play_animation(is_moving ? m_run_animation : m_idle_animation);
     }
 

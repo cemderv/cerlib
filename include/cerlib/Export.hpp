@@ -42,7 +42,6 @@
 #define CERLIB_DECLARE_OBJECT(class_name)                                                          \
   public:                                                                                          \
     using impl_t = details::class_name##Impl;                                                      \
-    static constexpr std::string_view type_name{#class_name};                                      \
     class_name();                                                                                  \
     explicit class_name(impl_t* impl);                                                             \
     class_name(const class_name& copyFrom);                                                        \
@@ -79,13 +78,8 @@
  */
 #define CERLIB_DECLARE_DERIVED_OBJECT(base_class_name, class_name)                                 \
   public:                                                                                          \
-    static constexpr std::string_view type_name{#class_name};                                      \
     class_name();                                                                                  \
     explicit class_name(base_class_name::impl_t* impl);                                            \
-    explicit operator bool() const                                                                 \
-    {                                                                                              \
-        return impl() != nullptr;                                                                  \
-    }                                                                                              \
     bool operator==(const class_name& other) const                                                 \
     {                                                                                              \
         return impl() == other.impl();                                                             \
