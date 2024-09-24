@@ -5,8 +5,10 @@
 #include "WindowImpl.hpp"
 
 #include "cerlib/Logging.hpp"
+#include "cerlib/Version.hpp"
 #include "game/GameImpl.hpp"
 #include "util/InternalError.hpp"
+#include "util/Platform.hpp"
 #include <gsl/narrow>
 
 #ifdef __EMSCRIPTEN__
@@ -140,6 +142,22 @@ void WindowImpl::show_message_box(MessageBoxType   type,
     SDL_ShowSimpleMessageBox(flags, title_str.c_str(), message_str.c_str(), parent_sdl_window);
 }
 
+void WindowImpl::activate_onscreen_keyboard()
+{
+    if (cer::is_mobile_platform())
+    {
+        SDL_StartTextInput(m_sdl_window);
+    }
+}
+
+void WindowImpl::deactivate_onscreen_keyboard()
+{
+    if (cer::is_mobile_platform())
+    {
+        SDL_StopTextInput(m_sdl_window);
+    }
+}
+
 auto WindowImpl::create_sdl_window(int additional_flags) -> void
 {
     const int flags = get_sdl_window_flags(m_allow_high_dpi) | additional_flags;
@@ -158,6 +176,12 @@ auto WindowImpl::create_sdl_window(int additional_flags) -> void
     if (m_sdl_window == nullptr)
     {
         CER_THROW_RUNTIME_ERROR("Failed to create the internal window. Reason: {}", SDL_GetError());
+    }
+
+    // Ensure that the window receives text input on non-mobile platforms.
+    if (!is_mobile_platform())
+    {
+        SDL_StartTextInput(m_sdl_window);
     }
 }
 

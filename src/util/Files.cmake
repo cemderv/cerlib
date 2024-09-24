@@ -16,4 +16,6 @@ set(util_files
   ToString.cpp
   Util.hpp
   Util.cpp
+  Platform.hpp
+  Platform.cpp
 )

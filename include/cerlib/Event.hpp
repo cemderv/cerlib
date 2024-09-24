@@ -288,4 +288,17 @@ struct GamepadDisconnectedEvent
 {
     Gamepad gamepad;
 };
+
+/**
+ * An event that is raised when a window received text input, for example from
+ * a physical or on-screen keyboard.
+ *
+ * @ingroup Events
+ */
+struct TextInputEvent
+{
+    uint64_t    timestamp{};
+    Window      window;
+    std::string text;
+};
 } // namespace cer
