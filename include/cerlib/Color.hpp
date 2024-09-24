@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <optional>
+
 namespace cer
 {
 struct Vector2;
@@ -54,6 +56,16 @@ struct Color
     /** The value of the color's alpha channel */
     float a{};
 };
+
+/**
+ * Calculates a random color.
+ *
+ * @param alpha If specified, the resulting color will have this alpha value.
+ *              If empty, the alpha value is determined randomly.
+ *
+ * @ingroup Math
+ */
+Color random_color(std::optional<float> alpha = std::nullopt);
 
 Color operator*(const Color& lhs, float rhs);
 Color operator*(float lhs, const Color& rhs);
@@ -132,12 +144,37 @@ static constexpr Color cornflowerblue{100.0f / 255.0f, 149.0f / 255.0f, 237.0f /
 static constexpr Color yellow{1.0f, 1.0f, 0.0f, 1.0f};
 } // namespace cer
 
+inline cer::Color cer::random_color(std::optional<float> alpha)
+{
+    if (!alpha.has_value())
+    {
+        alpha = random_float(0.0f, 1.0f);
+    }
+
+    return {
+        random_float(0.0f, 1.0f),
+        random_float(0.0f, 1.0f),
+        random_float(0.0f, 1.0f),
+        *alpha,
+    };
+}
+
 inline cer::Color cer::operator*(const Color& lhs, float rhs)
 {
-    return {lhs.r * rhs, lhs.g * rhs, lhs.b * rhs, lhs.a * rhs};
+    return {
+        lhs.r * rhs,
+        lhs.g * rhs,
+        lhs.b * rhs,
+        lhs.a * rhs,
+    };
 }
 
 inline cer::Color cer::operator*(float lhs, const Color& rhs)
 {
-    return {lhs * rhs.r, lhs * rhs.g, lhs * rhs.b, lhs * rhs.a};
+    return {
+        lhs * rhs.r,
+        lhs * rhs.g,
+        lhs * rhs.b,
+        lhs * rhs.a,
+    };
 }
