@@ -132,13 +132,13 @@ Objects can be tested for validity (i.e. do they hold a value?) in conditional e
 Example:
 
 ```cpp
-cer::Image image = Image(); // default construct
+cer::Image image; // default construct
 if (image) // = false
 {
   // ...
 }
  
-texture = cer::Image{...}; // initialize a texture
+image = cer::Image{...}; // initialize an image
 if (image) // = true
 {
   // ...
