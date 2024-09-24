@@ -71,6 +71,7 @@ folder in your editor / IDE directly.
 If you want to report a bug or request a feature, [create a new issue](https://github.com/cemderv/cerlib/issues).
 
 For other kinds of feedback, you may contact the developers directly via:
+- [Discussions](https://github.com/cemderv/cerlib/discussions)
 - [Contact form](https://cerlib.org/contact)
 - [Email](mailto:support@cerlib.org) 
 

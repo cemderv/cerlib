@@ -1,4 +1,4 @@
-# Catch2
+# snitch
 if (CERLIB_ENABLE_TESTS)
   CPMAddPackage(
     NAME snitch
