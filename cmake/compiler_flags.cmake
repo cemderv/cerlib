@@ -1,5 +1,5 @@
 # Address sanitizer
-if (CERLIB_ENABLE_ADDRESS_SANITIZER)
+if (NOT MSVC AND CERLIB_ENABLE_ADDRESS_SANITIZER)
   cerlib_log("Enabling address sanitizer")
 
   set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER ON)
