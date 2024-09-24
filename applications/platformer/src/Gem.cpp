@@ -41,7 +41,7 @@ void Gem::draw() const
     cer::draw_sprite({
         .image    = m_texture,
         .dst_rect = {position(), m_texture.size()},
-        .color    = m_is_super_gem ? cer::Color::cornflowerblue() * 2.0f : cer::Color::yellow(),
+        .color    = m_is_super_gem ? cer::cornflowerblue * 2.0f : cer::yellow,
         .origin   = m_origin,
     });
 }

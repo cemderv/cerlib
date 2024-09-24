@@ -22,7 +22,9 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     GL_CALL(glGenTextures(1, &gl_handle));
 
     if (gl_handle == 0)
+    {
         CER_THROW_RUNTIME_ERROR_STR("Failed to create the texture handle.");
+    }
 
     verify_opengl_state();
 
@@ -86,7 +88,9 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     GL_CALL(glGenTextures(1, &gl_handle));
 
     if (gl_handle == 0)
+    {
         CER_THROW_RUNTIME_ERROR_STR("Failed to create the canvas texture handle.");
+    }
 
     GL_CALL(glBindTexture(GL_TEXTURE_2D, gl_handle));
 

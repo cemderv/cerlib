@@ -16,16 +16,20 @@ target_sources(cerlibTests PRIVATE
   src/ObjectTests.cpp
   src/ColorTests.cpp
   src/FormattingTests.cpp
-  src/SpriteRenderingTests.cpp
-  src/RenderingTestHelper.hpp
-  src/RenderingTestHelper.cpp
 )
+
+if (CERLIB_ENABLE_RENDERING_TESTS)
+  target_sources(cerlibTests PRIVATE
+    src/SpriteRenderingTests.cpp
+    src/RenderingTestHelper.hpp
+    src/RenderingTestHelper.cpp
+  )
+endif ()
 
 enable_default_cpp_flags(cerlibTests)
 
 target_link_libraries(cerlibTests PRIVATE
   GSL
-  small_vector
   cerlib
   snitch::snitch
 )

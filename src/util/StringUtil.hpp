@@ -9,7 +9,7 @@
 
 namespace cer::details
 {
-std::string to_lower_case(std::string_view str);
+[[nodiscard]] std::string to_lower_case(std::string_view str);
 
-std::string to_upper_case(std::string_view str);
+[[nodiscard]] std::string to_upper_case(std::string_view str);
 } // namespace cer::details

@@ -110,7 +110,7 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
                        static_cast<GLsizei>(viewport.width),
                        static_cast<GLsizei>(viewport.height)));
 
-    if (const std::optional<Color> clearColor =
+    if (const std::optional<Color> clear_color =
             canvas ? canvas.canvas_clear_color() : current_window().clear_color())
     {
         auto previous_mask = std::array<GLint, 4>();
@@ -124,7 +124,7 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
             has_color_write_mask_changed = true;
         }
 
-        const Color color = *clearColor;
+        const Color color = *clear_color;
         GL_CALL(glClearColor(color.r, color.g, color.b, color.a));
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
 
@@ -256,9 +256,9 @@ void OpenGLGraphicsDevice::read_canvas_data_into(
 
     for (uint32_t row = 0; row < height; ++row)
     {
-        const auto src_row = tmp_buffer.get() + row_pitch * (height - row - 1);
+        const auto src_row = tmp_buffer.get() + row_pitch * (height - row - 1); // NOLINT
         std::memcpy(dst_row, src_row, row_pitch);
-        dst_row += row_pitch;
+        dst_row += row_pitch; // NOLINT
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, previously_bound_fbo);
@@ -271,7 +271,6 @@ std::unique_ptr<ShaderImpl> OpenGLGraphicsDevice::create_native_user_shader(
 }
 
 OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
-    : GraphicsDevice(main_window)
 {
     OpenGLWindow& opengl_window = dynamic_cast<OpenGLWindow&>(main_window);
     opengl_window.make_context_current();
@@ -319,14 +318,14 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     }
 
     // Log OpenGL information
-#if !defined(NDEBUG) && defined(CERLIB_ENABLE_DIAGNOSTIC_LOGGING)
+#if !defined(NDEBUG) && defined(CERLIB_ENABLE_VERBOSE_LOGGING)
     {
         const auto renderer_name =
             std::string_view(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
 
-        log_debug("Initialized OpenGL Device");
-        log_debug("  OpenGL version: " << gl_major_version << "." << gl_minor_version);
-        log_debug("  OpenGL renderer: " << renderer_name);
+        log_verbose("Initialized OpenGL Device");
+        log_verbose("  OpenGL version: {}.{}", gl_major_version, gl_minor_version);
+        log_verbose("  OpenGL renderer: {}", renderer_name);
     }
 #endif
 
@@ -334,7 +333,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     // Hook to OpenGL debug log
     if (GLAD_GL_ARB_debug_output != 0 && glDebugMessageCallbackARB)
     {
-        log_debug("  Device supports GL_debug_output; enabling it");
+        log_verbose("  Device supports GL_debug_output; enabling it");
         GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB));
         GL_CALL(glDebugMessageCallbackARB(OpenGlDebugMessageCallback, this));
     }
@@ -343,7 +342,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     m_features.flush_buffer_range = [] {
         if (glFlushMappedBufferRange)
         {
-            return true;
+            return true; // NOLINT
         }
 
 #ifdef __APPLE__
@@ -358,7 +357,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
 
     if (m_features.flush_buffer_range)
     {
-        log_debug("  Device supports OpenGL feature FlushBufferRange");
+        log_verbose("  Device supports OpenGL feature FlushBufferRange");
     }
 
     // TODO: check glBufferStorageExt
@@ -366,25 +365,25 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
 #ifndef CERLIB_GFX_IS_GLES
     if (GLAD_GL_ARB_buffer_storage != 0 && glBufferStorage)
     {
-        log_debug("  Device supports OpenGL feature BufferStorage");
+        log_verbose("  Device supports OpenGL feature BufferStorage");
         m_features.buffer_storage = true;
     }
 
     if ((GLAD_GL_ARB_texture_storage != 0 || GLAD_GL_EXT_texture_storage != 0) &&
         glTexStorage2D != nullptr)
     {
-        log_debug("  Device supports OpenGL feature TextureStorage");
+        log_verbose("  Device supports OpenGL feature TextureStorage");
         m_features.texture_storage = true;
     }
 
     if (GLAD_GL_ARB_bindless_texture != 0 && glCreateTextures)
     {
-        log_debug("  Device supports OpenGL feature BindlessTextures");
+        log_verbose("  Device supports OpenGL feature BindlessTextures");
         m_features.bindless_textures = true;
     }
 #endif
 
-    log_debug("Initialized OpenGL device. Now calling PostInit().");
+    log_verbose("Initialized OpenGL device. Now calling post_init().");
 
     post_init(std::make_unique<OpenGLSpriteBatch>(this, frame_stats_ptr()));
 }

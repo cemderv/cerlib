@@ -16,7 +16,6 @@
 #include "shadercompiler/Writer.hpp"
 #include "util/Util.hpp"
 #include <cassert>
-#include <format>
 #include <gsl/util>
 
 namespace cer::shadercompiler
@@ -632,7 +631,7 @@ std::string ShaderGenerator::translate_type(const Type& type, TypeNameContext co
 std::string ShaderGenerator::translate_array_type(const ArrayType& type,
                                                   std::string_view variable_name) const
 {
-    return std::format("{} {}[{}]",
+    return cer_fmt::format("{} {}[{}]",
                        translate_type(type.element_type(), TypeNameContext::Normal),
                        variable_name,
                        type.size());

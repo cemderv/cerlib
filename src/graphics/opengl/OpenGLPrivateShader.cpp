@@ -15,7 +15,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
                                          std::string_view glsl_code)
     : name(name)
 {
-    log_debug("Compiling OpenGL shader '{}'", name);
+    log_verbose("Compiling OpenGL shader '{}'", name);
 
     if (type == GL_VERTEX_SHADER)
     {
@@ -83,14 +83,16 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
         code_string_lengths_gl.emplace_back(static_cast<GLint>(str.size()));
     }
 
-#ifdef CERLIB_ENABLE_DIAGNOSTIC_LOGGING
+#ifdef CERLIB_ENABLE_VERBOSE_LOGGING
     {
-        auto total_code = std::string();
-        for (const auto& str : code_strings)
+        std::string total_code;
+
+        for (const std::string_view str : code_strings)
         {
             total_code += str;
         }
-        CERLIB_LOG_DIAGNOSTIC("Sending GLSL code to driver:\n" << total_code);
+
+        log_verbose("Sending GLSL code to driver:\n{}", total_code);
     }
 #endif
 
@@ -105,9 +107,11 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
     if (compile_status != GL_TRUE)
     {
-        auto buffer = std::make_unique<GLchar[]>(shader_log_max_length);
-        auto length = shader_log_max_length;
+        const auto buffer = std::make_unique<GLchar[]>(shader_log_max_length);
+        GLsizei    length = shader_log_max_length;
+
         GL_CALL(glGetShaderInfoLog(gl_handle, shader_log_max_length, &length, buffer.get()));
+
         const auto msg = std::string_view(reinterpret_cast<const char*>(buffer.get()),
                                           static_cast<size_t>(length));
 
@@ -129,10 +133,11 @@ OpenGLPrivateShader& OpenGLPrivateShader::operator=(OpenGLPrivateShader&& other)
 {
     if (&other != this)
     {
-        if (gl_handle)
+        if (gl_handle != 0)
         {
             glDeleteShader(gl_handle);
         }
+
         name            = std::move(other.name);
         gl_handle       = other.gl_handle;
         attributes      = std::move(other.attributes);

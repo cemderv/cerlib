@@ -6,9 +6,9 @@
 
 #include "cerlib/KeyModifier.hpp"
 #include "cerlib/MouseButton.hpp"
-#include "soloud.h"
 
 #include <cassert>
+#include <span>
 
 #ifdef __EMSCRIPTEN__
 #define SDL_SCANCODE_MEDIA_NEXT_TRACK     SDL_SCANCODE_AUDIONEXT
@@ -390,42 +390,42 @@ static KeyModifier from_sdl_keymods(Uint16 mods)
 {
     auto result = KeyModifier::None;
 
-    if (mods & CER_KMOD_LSHIFT)
+    if ((mods & CER_KMOD_LSHIFT) != 0u)
     {
         result |= KeyModifier::LeftShift;
     }
 
-    if (mods & CER_KMOD_RSHIFT)
+    if ((mods & CER_KMOD_RSHIFT) != 0u)
     {
         result |= KeyModifier::RightShift;
     }
 
-    if (mods & CER_KMOD_LCTRL)
+    if ((mods & CER_KMOD_LCTRL) != 0u)
     {
         result |= KeyModifier::LeftControl;
     }
 
-    if (mods & CER_KMOD_RCTRL)
+    if ((mods & CER_KMOD_RCTRL) != 0u)
     {
         result |= KeyModifier::RightControl;
     }
 
-    if (mods & CER_KMOD_LALT)
+    if ((mods & CER_KMOD_LALT) != 0u)
     {
         result |= KeyModifier::LeftAlt;
     }
 
-    if (mods & CER_KMOD_RALT)
+    if ((mods & CER_KMOD_RALT) != 0u)
     {
         result |= KeyModifier::RightAlt;
     }
 
-    if (mods & CER_KMOD_NUM)
+    if ((mods & CER_KMOD_NUM) != 0u)
     {
         result |= KeyModifier::Num;
     }
 
-    if (mods & CER_KMOD_CAPS)
+    if ((mods & CER_KMOD_CAPS) != 0u)
     {
         result |= KeyModifier::Caps;
     }
@@ -483,22 +483,26 @@ bool InputImpl::was_key_just_released(Key key) const
 bool InputImpl::is_mouse_button_down(MouseButton button) const
 {
     const auto bits = SDL_GetMouseState(nullptr, nullptr);
-    return bits & SDL_BUTTON(to_sdl_mouse_button(button));
+    return (bits & SDL_BUTTON(to_sdl_mouse_button(button))) != 0u;
 }
 
 void InputImpl::update_key_states()
 {
-    int        num_keys{};
-    const auto sdl_key_states = SDL_GetKeyboardState(&num_keys);
+    int          num_keys{};
+    const Uint8* sdl_key_states = SDL_GetKeyboardState(&num_keys);
+
+    const std::span sdl_key_states_span{sdl_key_states, static_cast<size_t>(num_keys)};
 
     m_previous_key_states = m_key_states;
 
     for (size_t i = 0; i < m_key_states.size(); ++i)
     {
-        const auto key     = static_cast<Key>(i + 1);
-        const auto sdl_key = to_sdl_key(key);
+        const Key key     = static_cast<Key>(i + 1);
+        const int sdl_key = to_sdl_key(key);
+
         assert(sdl_key < num_keys);
-        m_key_states[i] = sdl_key_states[sdl_key] == 1;
+
+        m_key_states[i] = sdl_key_states_span[sdl_key];
     }
 }
 

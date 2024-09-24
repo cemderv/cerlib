@@ -5,8 +5,7 @@
 #pragma once
 
 #include <cerlib/Export.hpp>
-#include <format>
-#include <source_location>
+#include <cerlib/Formatters.hpp>
 
 namespace cer
 {
@@ -33,9 +32,9 @@ CERLIB_API void log_internal(const std::string& message, LogMessageType type);
  * @ingroup Misc
  */
 template <typename... Args>
-void log_info(std::format_string<Args...> fmt, Args&&... args)
+void log_info(cer_fmt::format_string<Args...> fmt, Args&&... args)
 {
-    details::log_internal(std::format(fmt, std::forward<Args>(args)...),
+    details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),
                           details::LogMessageType::Info);
 }
 
@@ -47,9 +46,9 @@ void log_info(std::format_string<Args...> fmt, Args&&... args)
  * @ingroup Misc
  */
 template <typename... Args>
-void log_warning(std::format_string<Args...> fmt, Args&&... args)
+void log_warning(cer_fmt::format_string<Args...> fmt, Args&&... args)
 {
-    details::log_internal(std::format(fmt, std::forward<Args>(args)...),
+    details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),
                           details::LogMessageType::Warning);
 }
 
@@ -61,9 +60,9 @@ void log_warning(std::format_string<Args...> fmt, Args&&... args)
  * @ingroup Misc
  */
 template <typename... Args>
-void log_error(std::format_string<Args...> fmt, Args&&... args)
+void log_error(cer_fmt::format_string<Args...> fmt, Args&&... args)
 {
-    details::log_internal(std::format(fmt, std::forward<Args>(args)...),
+    details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),
                           details::LogMessageType::Error);
 }
 
@@ -77,10 +76,29 @@ void log_error(std::format_string<Args...> fmt, Args&&... args)
  * @ingroup Misc
  */
 template <typename... Args>
-void log_debug([[maybe_unused]] std::format_string<Args...> fmt, [[maybe_unused]] Args&&... args)
+void log_debug([[maybe_unused]] cer_fmt::format_string<Args...> fmt, [[maybe_unused]] Args&&... args)
 {
 #ifndef NDEBUG
-    details::log_internal(std::format(fmt, std::forward<Args>(args)...),
+    details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),
+                          details::LogMessageType::Info);
+#endif
+}
+
+/**
+ * Logs information to the system's output **in debug mode only**,
+ * and only if the CERLIB_ENABLE_VERBOSE_LOGGING option was enabled.
+ *
+ * In release mode, this will result in a no-op.
+ *
+ * See the documentation of `cer::log_info()` for an example.
+ *
+ * @ingroup Misc
+ */
+template <typename... Args>
+void log_verbose([[maybe_unused]] cer_fmt::format_string<Args...> fmt, [[maybe_unused]] Args&&... args)
+{
+#if defined(CERLIB_ENABLE_VERBOSE_LOGGING) && !defined(NDEBUG)
+    details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),
                           details::LogMessageType::Info);
 #endif
 }

@@ -8,7 +8,9 @@
 
 #include <cassert>
 
+// NOLINTBEGIN
 #define LOAD_GAME_IMPL auto& impl = details::GameImpl::instance()
+// NOLINTEND
 
 namespace cer
 {
@@ -32,7 +34,7 @@ Game::Game(bool enable_audio)
 
     auto& game_impl = details::GameImpl::instance();
 
-    game_impl.set_load_func([this] { return load_content(); });
+    game_impl.set_load_func([this] { load_content(); });
     game_impl.set_update_func([this](const GameTime& time) { return update(time); });
     game_impl.set_draw_func([this](const Window& window) { draw(window); });
     game_impl.set_event_func([this](const details::Event& event) {
@@ -59,6 +61,7 @@ Game::Game(bool enable_audio)
                 [this](const TouchFingerEvent& e) { on_touch_finger(e); },
                 [this](const GamepadConnectedEvent& e) { on_gamepad_connected(e); },
                 [this](const GamepadDisconnectedEvent& e) { on_gamepad_disconnected(e); },
+                [this](const TextInputEvent& e) { on_text_input(e); },
             },
             event);
     });
@@ -109,13 +112,13 @@ void Game::load_content()
 {
 }
 
-bool Game::update(GameTime time)
+bool Game::update(const GameTime& time)
 {
     CERLIB_UNUSED(time);
     return true;
 }
 
-void Game::draw(Window window)
+void Game::draw(const Window& window)
 {
     CERLIB_UNUSED(window);
 }
@@ -221,6 +224,11 @@ void Game::on_gamepad_connected(const GamepadConnectedEvent& event)
 }
 
 void Game::on_gamepad_disconnected(const GamepadDisconnectedEvent& event)
+{
+    CERLIB_UNUSED(event);
+}
+
+void Game::on_text_input(const TextInputEvent& event)
 {
     CERLIB_UNUSED(event);
 }

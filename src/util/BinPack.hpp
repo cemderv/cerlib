@@ -61,10 +61,10 @@ class BinPack final
 
     std::optional<Rect> find_position_for_new_node(int  width,
                                                    int  height,
-                                                   int& bestAreaFitFit,
+                                                   int& best_area_fit,
                                                    int& best_short_side_fit) const;
 
-    void insert_new_free_rectangle(const Rect& newFreeRect);
+    void insert_new_free_rectangle(const Rect& new_free_rect);
 
     bool split_free_node(const Rect& free_node, const Rect& used_node);
 

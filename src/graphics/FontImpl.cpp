@@ -32,7 +32,7 @@ FontImpl::FontImpl(std::span<const std::byte> data, bool create_copy_of_data)
     }
     else
     {
-        m_font_data = const_cast<std::byte*>(data.data());
+        m_font_data = const_cast<std::byte*>(data.data()); // NOLINT
     }
 
     initialize();
@@ -55,13 +55,15 @@ FontImpl::~FontImpl() noexcept
 
 void FontImpl::create_built_in_fonts()
 {
-    log_debug("Creating built-in font objects");
+    log_verbose("Creating built-in font objects");
 
+    // NOLINTBEGIN
     s_built_in_font_regular = std::make_unique<FontImpl>(VeraRegular_ttf_span(), false).release();
     s_built_in_font_regular->add_ref();
 
     s_built_in_font_bold = std::make_unique<FontImpl>(VeraBold_ttf_span(), false).release();
     s_built_in_font_bold->add_ref();
+    // NOLINTEND
 }
 
 void FontImpl::destroy_built_in_fonts()
@@ -175,7 +177,10 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterize_glyph(const RasterizedGlyph
     const float font_size_f = static_cast<float>(key.font_size);
     const float scale       = stbtt_ScaleForPixelHeight(&m_font_info, font_size_f);
 
-    int cx1 = 0, cy1 = 0, cx2 = 0, cy2 = 0;
+    int cx1 = 0;
+    int cy1 = 0;
+    int cx2 = 0;
+    int cy2 = 0;
     stbtt_GetCodepointBitmapBox(&m_font_info,
                                 static_cast<int>(key.codepoint),
                                 scale,
@@ -200,9 +205,12 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterize_glyph(const RasterizedGlyph
     const uint32_t x_in_page = static_cast<uint32_t>(inserted_rect->x);
     const uint32_t y_in_page = static_cast<uint32_t>(inserted_rect->y);
 
-    const uint32_t page_width   = m_current_page_iterator->width;
-    const unsigned dst_data_idx = y_in_page * page_width + x_in_page;
-    std::byte*     dst_data     = m_current_page_iterator->atlas_data.get() + dst_data_idx;
+    const uint32_t page_width = m_current_page_iterator->width;
+
+    const size_t dst_data_idx = (static_cast<size_t>(y_in_page) * static_cast<size_t>(page_width)) +
+                                static_cast<size_t>(x_in_page);
+
+    std::byte* dst_data = m_current_page_iterator->atlas_data.get() + dst_data_idx;
 
     stbtt_MakeCodepointBitmap(&m_font_info,
                               reinterpret_cast<unsigned char*>(dst_data),
@@ -243,11 +251,12 @@ void FontImpl::append_new_page()
     constexpr uint32_t height = width;
 
     m_pages.push_back(FontPage{
-        .width      = width,
-        .height     = height,
-        .pack       = BinPack(width, height),
-        .atlas_data = std::make_unique<std::byte[]>(width * height),
-        .atlas      = Image(),
+        .width  = width,
+        .height = height,
+        .pack   = BinPack(width, height),
+        .atlas_data =
+            std::make_unique<std::byte[]>(static_cast<size_t>(width) * static_cast<size_t>(height)),
+        .atlas = Image(),
     });
 
     m_current_page_iterator = m_pages.end() - 1;
@@ -255,17 +264,17 @@ void FontImpl::append_new_page()
 
 void FontImpl::update_page_atlas_image(FontPage& page)
 {
-    log_debug("Updating font page image of size {}x{}", page.width, page.height);
+    log_verbose("Updating font page image of size {}x{}", page.width, page.height);
 
     if (!page.atlas)
     {
-        log_debug("  Reallocating page image");
+        log_verbose("  Reallocating page image");
         page.atlas =
             Image(page.width, page.height, ImageFormat::R8_UNorm, 1, page.atlas_data.get());
     }
     else
     {
-        log_debug("  Writing directly to page image");
+        log_verbose("  Writing directly to page image");
 
 #ifdef CERLIB_HAVE_OPENGL
         verify_opengl_state();

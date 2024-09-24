@@ -9,6 +9,7 @@
 #include "util/NonCopyable.hpp"
 #include "util/Object.hpp"
 #include <map>
+#include <memory>
 #include <span>
 #include <variant>
 #include <vector>
@@ -50,7 +51,8 @@ using Event = std::variant<WindowShownEvent,
                            MouseWheelEvent,
                            TouchFingerEvent,
                            GamepadConnectedEvent,
-                           GamepadDisconnectedEvent>;
+                           GamepadDisconnectedEvent,
+                           TextInputEvent>;
 
 /**
  * Game implementation object.

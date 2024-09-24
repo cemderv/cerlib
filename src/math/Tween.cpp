@@ -98,6 +98,12 @@ bool Tweener::has_ended() const
     return m_elapsed == m_duration;
 }
 
+// NOLINTBEGIN
+
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wunsequenced"
+#endif
+
 float Tweener::back_ease_in(float t, float b, float c, float d)
 {
     return c * (t /= d) * t * ((1.70158f + 1) * t - 1.70158f) + b;
@@ -366,4 +372,6 @@ float Tweener::sinusoidal_ease_in_out(float t, float b, float c, float d)
 {
     return -c / 2 * (std::cos(pi * t / d) - 1) + b;
 }
+
+// NOLINTEND
 } // namespace cer

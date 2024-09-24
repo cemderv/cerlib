@@ -23,12 +23,6 @@ option(
 )
 
 option(
-  CERLIB_ENABLE_DIAGNOSTIC_LOGGING
-  "Enable diagnostic logging. Should only be used for debugging purposes."
-  OFF
-)
-
-option(
   CERLIB_ATOMIC_REFCOUNTING
   "Enable atomic reference counting for cerlib objects"
   OFF
@@ -58,6 +52,12 @@ option(
   ${is_root_directory}
 )
 
+option(
+  CERLIB_ENABLE_VERBOSE_LOGGING
+  "Enable verbose logging during debug mode"
+  OFF
+)
+
 if (ANDROID)
   if (CERLIB_BUILD_TESTBED)
     cerlib_log("Disabling Testbed implicitly due to Android")
@@ -74,5 +74,11 @@ option(
   CERLIB_ENABLE_TESTS
   "Enable unit testing"
   OFF
+)
+
+option(
+  CERLIB_ENABLE_RENDERING_TESTS
+  "Enable rendering unit tests. Requires CERLIB_ENABLE_TESTS=ON"
+  ON
 )
 

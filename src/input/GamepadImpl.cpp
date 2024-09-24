@@ -7,7 +7,6 @@
 #include "cerlib/Color.hpp"
 #include "cerlib/KeyModifier.hpp"
 #include "cerlib/MouseButton.hpp"
-#include "soloud.h"
 
 #include <cassert>
 
@@ -155,10 +154,13 @@ static SDL_SensorType to_sdl_gamepad_sensor_type(GamepadSensorType type)
         case GamepadSensorType::Unknown: return SDL_SENSOR_UNKNOWN;
         case GamepadSensorType::Acceleration: return SDL_SENSOR_ACCEL;
         case GamepadSensorType::Gyroscope: return SDL_SENSOR_GYRO;
+#ifndef __EMSCRIPTEN__
         case GamepadSensorType::AccelerationLeft: return SDL_SENSOR_ACCEL_L;
         case GamepadSensorType::GyroscopeLeft: return SDL_SENSOR_GYRO_L;
         case GamepadSensorType::AccelerationRight: return SDL_SENSOR_ACCEL_R;
         case GamepadSensorType::GyroscopeRight: return SDL_SENSOR_GYRO_R;
+#endif
+        default: break;
     }
 
     return SDL_SENSOR_UNKNOWN;
@@ -187,7 +189,7 @@ std::optional<std::string_view> GamepadImpl::serial_number() const
     const auto serial = SDL_GetGamepadSerial(m_sdl_gamepad);
 #endif
 
-    return serial ? std::string_view(serial) : std::optional<std::string_view>();
+    return serial ? std::string_view(serial) : std::optional<std::string_view>(); // NOLINT
 }
 
 double GamepadImpl::axis_value(GamepadAxis axis) const
@@ -228,7 +230,7 @@ std::optional<SmallDataArray<float, 16>> GamepadImpl::sensor_data(GamepadSensorT
                                                   static_cast<int>(result.size()));
 #endif
 
-    return success == 0 ? result : std::optional<SmallDataArray<float, 16>>();
+    return success == 0 ? result : std::optional<SmallDataArray<float, 16>>(); // NOLINT
 }
 
 float GamepadImpl::sensor_data_rate(GamepadSensorType sensor) const
@@ -293,7 +295,7 @@ SmallDataArray<GamepadTouchpadFingerData, 8> GamepadImpl::touchpad_finger_data(
                                          &state,
                                          &x,
                                          &y,
-                                         &pressure) == SDL_TRUE)
+                                         &pressure))
 #endif
         {
             result[i] = GamepadTouchpadFingerData{
@@ -344,21 +346,20 @@ std::optional<GamepadType> GamepadImpl::type() const
 
 bool GamepadImpl::set_led_color(const Color& color)
 {
+    const Uint8 r =
+        clamp(static_cast<Uint8>(color.r / 255.0f), static_cast<Uint8>(0), static_cast<Uint8>(255));
+
+    const Uint8 g =
+        clamp(static_cast<Uint8>(color.g / 255.0f), static_cast<Uint8>(0), static_cast<Uint8>(255));
+
+    const Uint8 b =
+        clamp(static_cast<Uint8>(color.b / 255.0f), static_cast<Uint8>(0), static_cast<Uint8>(255));
+
 #ifdef __EMSCRIPTEN__
-    return SDL_GameControllerSetLED(
+    return SDL_GameControllerSetLED(m_sdl_gamepad, r, g, b) == SDL_TRUE;
 #else
-    return SDL_SetGamepadLED(
+    return SDL_SetGamepadLED(m_sdl_gamepad, r, g, b);
 #endif
-               m_sdl_gamepad,
-               clamp(static_cast<Uint8>(color.r / 255.0f),
-                     static_cast<Uint8>(0),
-                     static_cast<Uint8>(255)),
-               clamp(static_cast<Uint8>(color.g / 255.0f),
-                     static_cast<Uint8>(0),
-                     static_cast<Uint8>(255)),
-               clamp(static_cast<Uint8>(color.b / 255.0f),
-                     static_cast<Uint8>(0),
-                     static_cast<Uint8>(255))) == SDL_TRUE;
 }
 
 bool GamepadImpl::start_rumble(float             left_motor_intensity,
@@ -377,7 +378,7 @@ bool GamepadImpl::start_rumble(float             left_motor_intensity,
             : static_cast<Uint16>(clamp(right_motor_intensity, 0.0f, 1.0f) *
                                   static_cast<float>(0xFFFF));
 
-    if (m_sdl_gamepad)
+    if (m_sdl_gamepad != nullptr)
     {
 #ifdef __EMSCRIPTEN__
         const auto success = SDL_GameControllerRumble(
@@ -395,7 +396,7 @@ bool GamepadImpl::start_rumble(float             left_motor_intensity,
                 std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
 #endif
 
-        return success == 0;
+        return success == 0; // NOLINT
     }
 
     return false;
@@ -404,34 +405,31 @@ bool GamepadImpl::start_rumble(float             left_motor_intensity,
 bool GamepadImpl::has_sensor(GamepadSensorType sensor) const
 {
 #ifdef __EMSCRIPTEN__
-    return SDL_GameControllerHasSensor(
+    return SDL_GameControllerHasSensor(m_sdl_gamepad, to_sdl_gamepad_sensor_type(sensor)) ==
+           SDL_TRUE;
 #else
-    return SDL_GamepadHasSensor(
+    return SDL_GamepadHasSensor(m_sdl_gamepad, to_sdl_gamepad_sensor_type(sensor));
 #endif
-               m_sdl_gamepad,
-               to_sdl_gamepad_sensor_type(sensor)) == SDL_TRUE;
 }
 
 bool GamepadImpl::is_sensor_enabled(GamepadSensorType sensor) const
 {
 #ifdef __EMSCRIPTEN__
-    return SDL_GameControllerIsSensorEnabled(
+    return SDL_GameControllerIsSensorEnabled(m_sdl_gamepad, to_sdl_gamepad_sensor_type(sensor)) ==
+           SDL_TRUE;
 #else
-    return SDL_GamepadSensorEnabled(
+    return SDL_GamepadSensorEnabled(m_sdl_gamepad, to_sdl_gamepad_sensor_type(sensor));
 #endif
-               m_sdl_gamepad,
-               to_sdl_gamepad_sensor_type(sensor)) == SDL_TRUE;
 }
 
 void GamepadImpl::set_sensor_enabled(GamepadSensorType sensor, bool enabled)
 {
 #ifdef __EMSCRIPTEN__
-    SDL_GameControllerSetSensorEnabled(
+    SDL_GameControllerSetSensorEnabled(m_sdl_gamepad,
+                                       to_sdl_gamepad_sensor_type(sensor),
+                                       enabled ? SDL_TRUE : SDL_FALSE);
 #else
-    SDL_SetGamepadSensorEnabled(
+    SDL_SetGamepadSensorEnabled(m_sdl_gamepad, to_sdl_gamepad_sensor_type(sensor), enabled);
 #endif
-        m_sdl_gamepad,
-        to_sdl_gamepad_sensor_type(sensor),
-        enabled ? SDL_TRUE : SDL_FALSE);
 }
 } // namespace cer::details

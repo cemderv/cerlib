@@ -31,16 +31,17 @@ std::optional<BinPack::Rect> BinPack::insert(int32_t width, int32_t height)
 {
     // Unused in this function. We don't need to know the score after finding the
     // position.
-    auto score1 = std::numeric_limits<int32_t>::max();
-    auto score2 = std::numeric_limits<int32_t>::max();
+    int32_t score1 = std::numeric_limits<int32_t>::max();
+    int32_t score2 = std::numeric_limits<int32_t>::max();
 
-    const auto newNode = find_position_for_new_node(width, height, score1, score2);
-    if (newNode)
+    const std::optional<Rect> new_node = find_position_for_new_node(width, height, score1, score2);
+
+    if (new_node.has_value())
     {
-        place_rect(*newNode);
+        place_rect(*new_node);
     }
 
-    return newNode;
+    return new_node;
 }
 
 void BinPack::insert(std::vector<Size>& rects, std::vector<Rect>& dst)

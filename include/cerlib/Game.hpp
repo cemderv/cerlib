@@ -157,9 +157,9 @@ class CERLIB_API Game
   protected:
     virtual void load_content();
 
-    virtual bool update(GameTime time);
+    virtual bool update(const GameTime& time);
 
-    virtual void draw(Window window);
+    virtual void draw(const Window& window);
 
     virtual void on_window_shown(const WindowShownEvent& event);
 
@@ -202,6 +202,8 @@ class CERLIB_API Game
     virtual void on_gamepad_connected(const GamepadConnectedEvent& event);
 
     virtual void on_gamepad_disconnected(const GamepadDisconnectedEvent& event);
+
+    virtual void on_text_input(const TextInputEvent& event);
 };
 
 /**

@@ -171,7 +171,7 @@ struct BlendState
     bool blending_enabled = false;
 
     /** */
-    Color blend_factor = Color::white();
+    Color blend_factor = white;
 
     /** */
     BlendFunction color_blend_function = BlendFunction::Add;

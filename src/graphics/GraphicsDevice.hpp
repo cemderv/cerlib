@@ -33,7 +33,7 @@ class SpriteBatch;
 class GraphicsDevice
 {
   protected:
-    explicit GraphicsDevice(WindowImpl& main_window);
+    explicit GraphicsDevice();
 
   public:
     NON_COPYABLE_NON_MOVABLE(GraphicsDevice);
@@ -90,7 +90,7 @@ class GraphicsDevice
                         float            rotation,
                         const Vector2&   origin);
 
-    void draw_string(std::string_view                     string,
+    void draw_string(std::string_view                     text,
                      const Font&                          font,
                      uint32_t                             font_size,
                      const Vector2&                       position,

@@ -6,13 +6,7 @@
 
 #include <cstddef>
 #include <cstdint>
-
-#ifndef NDEBUG
 #include <vector>
+
 template <typename T, size_t Capacity = 0>
 using SmallVector = std::vector<T>;
-#else
-#include <gch/small_vector.hpp>
-template <typename T, size_t Capacity = 0>
-using SmallVector = gch::small_vector<T, Capacity>;
-#endif

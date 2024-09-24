@@ -51,11 +51,11 @@ class SoundChannelImpl final : public Object
 
     void set_inaudible_behavior(SoundInaudibleBehavior value);
 
-    void fade_volume(float toVolume, SoundTime fadeDuration);
+    void fade_volume(float to_volume, SoundTime fade_duration);
 
-    void fade_pan(float toPan, SoundTime fadeDuration);
+    void fade_pan(float to_pan, SoundTime fade_duration);
 
-    void fade_relative_play_speed(float toSpeed, SoundTime fadeDuration);
+    void fade_relative_play_speed(float to_speed, SoundTime fade_duration);
 
     void stop_after(SoundTime after);
 

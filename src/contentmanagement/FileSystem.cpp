@@ -6,8 +6,10 @@
 
 #include "cerlib/Logging.hpp"
 #include "util/InternalError.hpp"
+#include "util/StringUtil.hpp"
 #include "util/Util.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <fstream>
@@ -35,7 +37,9 @@ namespace cer::details
 void set_android_asset_manager(void* asset_manager)
 {
     if (asset_manager == nullptr)
+    {
         CER_THROW_INVALID_ARG_STR("No Android asset manager specified.");
+    }
 
 #ifdef __ANDROID__
     s_cerlib_android_asset_manager = static_cast<AAssetManager*>(asset_manager);
@@ -47,33 +51,29 @@ void set_android_asset_manager(void* asset_manager)
 
 static std::string s_file_loading_root_directory;
 
-void cer::filesystem::set_file_loading_root_directory(std::string_view prefix)
+auto cer::filesystem::set_file_loading_root_directory(std::string_view prefix) -> void
 {
     s_file_loading_root_directory = prefix;
 }
 
-auto cer::filesystem::filename_extension(std::string_view filename) -> std::string
+std::string cer::filesystem::filename_extension(std::string_view filename)
 {
-    if (const auto dot_idx = filename.rfind('.'); dot_idx != std::string_view::npos)
+    if (const size_t dot_idx = filename.rfind('.'); dot_idx != std::string_view::npos)
     {
-        auto ext = std::string(filename.substr(dot_idx));
-        for (auto& ch : ext)
-            ch = static_cast<char>(std::tolower(static_cast<int>(ch)));
-
-        return ext;
+        return details::to_lower_case(filename.substr(dot_idx));
     }
 
     return {};
 }
 
 #ifdef __ANDROID__
-static auto GetAndroidAssetManager() -> AAssetManager*
+static AAssetManager* get_android_asset_manager()
 {
-    if (!s_cerlib_android_asset_manager)
+    if (s_cerlib_android_asset_manager == nullptr)
     {
         CER_THROW_LOGIC_ERROR_STR("Attempting to load a file, however no Android asset "
                                   "manager (AAssetManager) is set. Please set "
-                                  "one using setAndroidAssetManager() first.");
+                                  "one using set_android_asset_manager() first.");
     }
 
     return s_cerlib_android_asset_manager;
@@ -90,7 +90,6 @@ struct MemoryStream
     explicit MemoryStream(const void* data, size_t size)
         : data(data)
         , size(static_cast<std::streamsize>(size))
-        , pos(0)
     {
     }
 
@@ -111,28 +110,34 @@ struct MemoryStream
 
     void seekg(const std::streampos& offset, std::ios::seekdir dir)
     {
-        const auto newPos = [&]() -> std::streamoff {
+        const auto new_pos = [&]() -> std::streamoff {
             if (dir == std::ios_base::beg)
+            {
                 return offset;
+            }
 
             if (dir == std::ios_base::cur)
+            {
                 return pos + offset;
+            }
 
             if (dir == std::ios_base::end)
+            {
                 return size - offset;
+            }
 
             return -1;
         }();
 
-        assert(newPos < size);
-        pos = newPos;
+        assert(new_pos < size);
+        pos = new_pos;
     }
 
-    void read(char* dst, std::streamsize byteCount)
+    void read(char* dst, std::streamsize byte_count)
     {
-        assert(pos + byteCount <= size);
-        std::memcpy(dst, static_cast<const char*>(data) + pos, byteCount);
-        pos += byteCount;
+        assert(pos + byte_count <= size);
+        std::memcpy(dst, static_cast<const char*>(data) + pos, byte_count); // NOLINT
+        pos += byte_count;
     }
 
     const void*     data{};
@@ -145,30 +150,32 @@ struct MemoryStream
 std::string cer::filesystem::filename_without_extension(std::string_view filename)
 {
     if (const auto dot_idx = filename.rfind('.'); dot_idx != std::string_view::npos)
+    {
         return std::string{filename.substr(0, dot_idx)};
+    }
 
     return std::string{filename};
 }
 
 static void clean_path(std::string& str, std::optional<bool> with_ending_slash)
 {
-    for (char& ch : str)
-    {
-        if (ch == '\\')
-            ch = '/';
-    }
+    std::ranges::replace(str.begin(), str.end(), '\\', '/');
 
     if (!str.empty())
     {
         if (with_ending_slash.value_or(false))
         {
             if (str.back() != '/')
+            {
                 str.push_back('/');
+            }
         }
         else
         {
             if (str.back() == '/')
+            {
                 str.pop_back();
+            }
         }
     }
 
@@ -179,13 +186,17 @@ static void clean_path(std::string& str, std::optional<bool> with_ending_slash)
 
     while (idx != std::string::npos)
     {
-        const size_t idx_of_previous = str.rfind("/", idx);
+        const size_t idx_of_previous = str.rfind('/', idx);
         if (idx_of_previous == std::string::npos)
+        {
             break;
+        }
 
-        const size_t idx_of_previous2 = str.rfind("/", idx_of_previous - 1);
+        const size_t idx_of_previous2 = str.rfind('/', idx_of_previous - 1);
         if (idx_of_previous2 == std::string::npos)
+        {
             break;
+        }
 
         const size_t end = idx + 2;
 
@@ -220,7 +231,7 @@ std::string cer::filesystem::combine_paths(std::string_view path1, std::string_v
 
 cer::AssetData cer::filesystem::load_asset_data(std::string_view filename)
 {
-    log_debug("Loading binary file '{}'", filename);
+    log_verbose("Loading binary file '{}'", filename);
 
     std::string filename_str{};
 
@@ -241,14 +252,20 @@ cer::AssetData cer::filesystem::load_asset_data(std::string_view filename)
     CFURLRef    asset_url{};
 
     const auto _ = gsl::finally([&] {
-        if (resource_type_ref)
+        if (resource_type_ref != nullptr)
+        {
             CFRelease(resource_type_ref);
+        }
 
-        if (resource_name_ref)
+        if (resource_name_ref != nullptr)
+        {
             CFRelease(resource_name_ref);
+        }
 
-        if (asset_url)
+        if (asset_url != nullptr)
+        {
             CFRelease(asset_url);
+        }
     });
 
     resource_name_ref = CFStringCreateWithCString(kCFAllocatorDefault,
@@ -267,11 +284,11 @@ cer::AssetData cer::filesystem::load_asset_data(std::string_view filename)
                                         resource_type_ref,
                                         nullptr);
 
-    if (asset_url)
+    if (asset_url != nullptr)
     {
         std::array<UInt8, 512> full_asset_path{};
         CFURLGetFileSystemRepresentation(asset_url,
-                                         true,
+                                         static_cast<Boolean>(1),
                                          full_asset_path.data(),
                                          sizeof(full_asset_path));
 
@@ -279,54 +296,69 @@ cer::AssetData cer::filesystem::load_asset_data(std::string_view filename)
             reinterpret_cast<const char*>(full_asset_path.data())};
 
         if (!full_asset_path_str.empty())
+        {
             ifs = std::ifstream(full_asset_path_str.data(), std::ios::binary | std::ios::ate);
+        }
         else
-            log_debug("Full asset path was empty; skipping");
+        {
+            log_verbose("Full asset path was empty; skipping");
+        }
     }
 
     if (!ifs.is_open())
     {
-        log_debug("Falling back to file '{}'", filename_str);
+        log_verbose("Falling back to file '{}'", filename_str);
         ifs = std::ifstream{filename_str.c_str(), std::ios::binary | std::ios::ate};
+
         if (ifs)
-            log_debug("Found the file");
+        {
+            log_verbose("Found the file");
+        }
         else
-            log_debug("Did not find the file");
+        {
+            log_verbose("Did not find the file");
+        }
     }
 
 #elif defined(__ANDROID__)
-    const auto asset_manager = GetAndroidAssetManager();
-    auto       ifs           = MemoryStream();
-    const auto asset_handle =
+    const auto   asset_manager = get_android_asset_manager();
+    MemoryStream ifs;
+    const auto   asset_handle =
         AAssetManager_open(asset_manager, filename_str.c_str(), AASSET_MODE_BUFFER);
 
     const auto _ = gsl::finally([&] { AAsset_close(asset_handle); });
 
-    if (asset_handle)
+    if (asset_handle != nullptr)
     {
-        ifs = MemoryStream(AAsset_getBuffer(asset_handle), AAsset_getLength64(asset_handle));
+        ifs = MemoryStream{AAsset_getBuffer(asset_handle),
+                           static_cast<size_t>(AAsset_getLength64(asset_handle))};
     }
 #else
-    auto ifs = std::ifstream(filename_str.c_str(), std::ios::binary | std::ios::ate);
+    std::ifstream ifs{filename_str.c_str(), std::ios::binary | std::ios::ate};
 #endif
 
     if (!ifs.is_open())
     {
         if (filename == filename_str)
+        {
             CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for reading.", filename);
+        }
 
         CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for reading ({}).",
                                 filename,
                                 filename_str);
     }
 
-    const size_t                 data_size = ifs.tellg();
-    std::unique_ptr<std::byte[]> data      = std::make_unique<std::byte[]>(data_size);
+    const size_t data_size = ifs.tellg();
+    auto         data      = std::make_unique<std::byte[]>(data_size);
 
     ifs.seekg(0, std::ios::beg);
     ifs.read(reinterpret_cast<char*>(data.get()), static_cast<std::streamsize>(data_size));
 
-    return {std::move(data), data_size};
+    return {
+        .data = std::move(data),
+        .size = data_size,
+    };
 }
 
 std::vector<std::byte> cer::filesystem::load_file_data_from_disk(std::string_view filename)
@@ -337,7 +369,9 @@ std::vector<std::byte> cer::filesystem::load_file_data_from_disk(std::string_vie
 #else
     std::ifstream ifs{std::string{filename}, std::ios::binary | std::ios::ate};
     if (!ifs.is_open())
+    {
         CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for reading.", filename);
+    }
 
     const size_t file_size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
@@ -356,7 +390,9 @@ auto cer::filesystem::write_text_to_file_on_disk(std::string_view filename,
     std::ofstream ofs{std::string(filename)};
 
     if (!ofs)
+    {
         CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for writing.", filename);
+    }
 
     ofs << contents;
 }
@@ -373,8 +409,10 @@ std::vector<std::byte> cer::filesystem::decode_image_data_from_file_on_disk(
     int      channels = 0;
     stbi_uc* data     = stbi_load(filename_str.c_str(), &width, &height, &channels, 4);
 
-    if (!data)
+    if (data == nullptr)
+    {
         CER_THROW_RUNTIME_ERROR_STR("Failed to load the image file.");
+    }
 
     const auto _ = gsl::finally([data] { stbi_image_free(data); });
 
@@ -402,7 +440,9 @@ auto cer::filesystem::encode_image_data_to_file_on_disk(std::string_view        
                                           4,
                                           raw_image_data.data(),
                                           gsl::narrow<int>(width * 4));
-        !result)
+        result == 0)
+    {
         CER_THROW_RUNTIME_ERROR_STR("Failed to write the image data to disk.");
+    }
 }
 #endif

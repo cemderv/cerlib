@@ -29,11 +29,13 @@ static constexpr uint32_t D3D11_REQ_MIP_LEVELS                   = 15; // NOLINT
 static constexpr uint32_t D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION   = 16384; // NOLINT
 static constexpr uint32_t D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION = 2048; // NOLINT
 
-#ifndef MAKEFOURCC
-#define MAKEFOURCC(ch0, ch1, ch2, ch3)                                                             \
-    ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) |                                  \
-     ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24))
-#endif
+static constexpr uint32_t make_fourcc(char ch0, char ch1, char ch2, char ch3)
+{
+    return static_cast<uint32_t>(static_cast<uint8_t>(ch0)) |
+           static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8 |
+           static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16 |
+           static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24;
+}
 
 // #pragma pack(push, 1)
 
@@ -51,21 +53,13 @@ struct DdsPixelformat
     uint32_t a_bit_mask{};
 };
 
-static constexpr uint32_t dds_fourcc    = 0x00000004; // NOLINT
-static constexpr uint32_t dds_rgb       = 0x00000040; // NOLINT
-static constexpr uint32_t dds_luminance = 0x00020000; // NOLINT
-static constexpr uint32_t dds_alpha     = 0x00000002; // NOLINT
-
+static constexpr uint32_t dds_fourcc              = 0x00000004; // NOLINT
+static constexpr uint32_t dds_rgb                 = 0x00000040; // NOLINT
+static constexpr uint32_t dds_luminance           = 0x00020000; // NOLINT
+static constexpr uint32_t dds_alpha               = 0x00000002; // NOLINT
 static constexpr uint32_t dds_header_flags_volume = 0x00800000; // NOLINT
-
-static constexpr uint32_t dds_height = 0x00000002; // NOLINT
-
-#define DDS_CUBEMAP_ALLFACES                                                                       \
-    (DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX | DDS_CUBEMAP_POSITIVEY |                       \
-     DDS_CUBEMAP_NEGATIVEY | DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ)
-
-#define DDS_CUBEMAP      0x00000200
-#define DDS_FLAGS_VOLUME 0x00200000
+static constexpr uint32_t dds_height              = 0x00000002; // NOLINT
+static constexpr uint32_t dds_cubemap             = 0x00000200; // NOLINT
 
 struct DdsHeader
 {
@@ -269,11 +263,15 @@ static void get_surface_info(size_t      width,
     {
         size_t num_blocks_wide = 0;
         if (width > 0)
+        {
             num_blocks_wide = std::max<size_t>(1, (width + 3) / 4);
+        }
 
         size_t num_blocks_high = 0;
         if (height > 0)
+        {
             num_blocks_high = std::max<size_t>(1, (height + 3) / 4);
+        }
 
         row_bytes = num_blocks_wide * bcnum_bytes_per_block;
         num_rows  = num_blocks_high;
@@ -292,43 +290,65 @@ static void get_surface_info(size_t      width,
 
     num_bytes = row_bytes * num_rows;
 
-    if (out_num_bytes)
+    if (out_num_bytes != nullptr)
+    {
         *out_num_bytes = num_bytes;
+    }
 
-    if (out_row_bytes)
+    if (out_row_bytes != nullptr)
+    {
         *out_row_bytes = row_bytes;
+    }
 
-    if (out_num_rows)
+    if (out_num_rows != nullptr)
+    {
         *out_num_rows = num_rows;
+    }
 }
 
-#define ISBITMASK(r, g, b, a)                                                                      \
-    (ddpf.r_bit_mask == r && ddpf.g_bit_mask == g && ddpf.b_bit_mask == b && ddpf.a_bit_mask == a)
-
-static auto get_dxgi_format(const DdsPixelformat& ddpf) -> DXGI_FORMAT
+static constexpr bool is_bitmask(
+    const DdsPixelformat& ddpf, uint32_t r, uint32_t g, uint32_t b, uint32_t a)
 {
-    if (ddpf.flags & dds_rgb)
+    return ddpf.r_bit_mask == r && ddpf.g_bit_mask == g && ddpf.b_bit_mask == b &&
+           ddpf.a_bit_mask == a;
+}
+
+static DXGI_FORMAT get_dxgi_format(const DdsPixelformat& ddpf)
+{
+    if ((ddpf.flags & dds_rgb) != 0u)
     {
         switch (ddpf.rgb_bit_count)
         {
             case 32: {
-                if (ISBITMASK(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+                if (is_bitmask(ddpf, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000))
+                {
                     return DXGI_FORMAT_R8G8B8A8_UNORM;
+                }
 
-                if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
+                if (is_bitmask(ddpf, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000))
+                {
                     return DXGI_FORMAT_B8G8R8A8_UNORM;
+                }
 
-                if (ISBITMASK(0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+                if (is_bitmask(ddpf, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000))
+                {
                     return DXGI_FORMAT_B8G8R8X8_UNORM;
+                }
 
-                if (ISBITMASK(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000))
+                if (is_bitmask(ddpf, 0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000))
+                {
                     return DXGI_FORMAT_R10G10B10A2_UNORM;
+                }
 
-                if (ISBITMASK(0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+                if (is_bitmask(ddpf, 0x0000ffff, 0xffff0000, 0x00000000, 0x00000000))
+                {
                     return DXGI_FORMAT_R16G16_UNORM;
+                }
 
-                if (ISBITMASK(0xffffffff, 0x00000000, 0x00000000, 0x00000000))
+                if (is_bitmask(ddpf, 0xffffffff, 0x00000000, 0x00000000, 0x00000000))
+                {
                     return DXGI_FORMAT_R32_FLOAT;
+                }
 
                 break;
             }
@@ -336,69 +356,110 @@ static auto get_dxgi_format(const DdsPixelformat& ddpf) -> DXGI_FORMAT
             case 24: break;
 
             case 16: {
-                if (ISBITMASK(0x7c00, 0x03e0, 0x001f, 0x8000))
+                if (is_bitmask(ddpf, 0x7c00, 0x03e0, 0x001f, 0x8000))
+                {
                     return DXGI_FORMAT_B5G5R5A1_UNORM;
+                }
 
-                if (ISBITMASK(0xf800, 0x07e0, 0x001f, 0x0000))
+                if (is_bitmask(ddpf, 0xf800, 0x07e0, 0x001f, 0x0000))
+                {
                     return DXGI_FORMAT_B5G6R5_UNORM;
+                }
 
-                if (ISBITMASK(0x0f00, 0x00f0, 0x000f, 0xf000))
+                if (is_bitmask(ddpf, 0x0f00, 0x00f0, 0x000f, 0xf000))
+                {
                     return DXGI_FORMAT_B4G4R4A4_UNORM;
+                }
 
                 break;
             }
+            default: break;
         }
     }
-    else if (ddpf.flags & dds_luminance)
+    else if ((ddpf.flags & dds_luminance) != 0u)
     {
         if (8 == ddpf.rgb_bit_count)
         {
-            if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x00000000))
+            if (is_bitmask(ddpf, 0x000000ff, 0x00000000, 0x00000000, 0x00000000))
+            {
                 return DXGI_FORMAT_R8_UNORM;
+            }
         }
 
         if (16 == ddpf.rgb_bit_count)
         {
-            if (ISBITMASK(0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
+            if (is_bitmask(ddpf, 0x0000ffff, 0x00000000, 0x00000000, 0x00000000))
+            {
                 return DXGI_FORMAT_R16_UNORM;
+            }
 
-            if (ISBITMASK(0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+            if (is_bitmask(ddpf, 0x000000ff, 0x00000000, 0x00000000, 0x0000ff00))
+            {
                 return DXGI_FORMAT_R8G8_UNORM;
+            }
         }
     }
-    else if (ddpf.flags & dds_alpha)
+    else if ((ddpf.flags & dds_alpha) != 0u)
     {
         if (8 == ddpf.rgb_bit_count)
+        {
             return DXGI_FORMAT_A8_UNORM;
+        }
     }
-    else if (ddpf.flags & dds_fourcc)
+    else if ((ddpf.flags & dds_fourcc) != 0u)
     {
-        if (MAKEFOURCC('D', 'X', 'T', '1') == ddpf.four_cc)
+        if (make_fourcc('D', 'X', 'T', '1') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC1_UNORM;
-        if (MAKEFOURCC('D', 'X', 'T', '3') == ddpf.four_cc)
+        }
+        if (make_fourcc('D', 'X', 'T', '3') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC2_UNORM;
-        if (MAKEFOURCC('D', 'X', 'T', '5') == ddpf.four_cc)
+        }
+        if (make_fourcc('D', 'X', 'T', '5') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC3_UNORM;
-        if (MAKEFOURCC('D', 'X', 'T', '2') == ddpf.four_cc)
+        }
+        if (make_fourcc('D', 'X', 'T', '2') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC2_UNORM;
-        if (MAKEFOURCC('D', 'X', 'T', '4') == ddpf.four_cc)
+        }
+        if (make_fourcc('D', 'X', 'T', '4') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC3_UNORM;
-        if (MAKEFOURCC('A', 'T', 'I', '1') == ddpf.four_cc)
+        }
+        if (make_fourcc('A', 'T', 'I', '1') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC4_UNORM;
-        if (MAKEFOURCC('B', 'C', '4', 'U') == ddpf.four_cc)
+        }
+        if (make_fourcc('B', 'C', '4', 'U') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC4_UNORM;
-        if (MAKEFOURCC('B', 'C', '4', 'S') == ddpf.four_cc)
+        }
+        if (make_fourcc('B', 'C', '4', 'S') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC4_SNORM;
-        if (MAKEFOURCC('A', 'T', 'I', '2') == ddpf.four_cc)
+        }
+        if (make_fourcc('A', 'T', 'I', '2') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC5_UNORM;
-        if (MAKEFOURCC('B', 'C', '5', 'U') == ddpf.four_cc)
+        }
+        if (make_fourcc('B', 'C', '5', 'U') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC5_UNORM;
-        if (MAKEFOURCC('B', 'C', '5', 'S') == ddpf.four_cc)
+        }
+        if (make_fourcc('B', 'C', '5', 'S') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_BC5_SNORM;
-        if (MAKEFOURCC('R', 'G', 'B', 'G') == ddpf.four_cc)
+        }
+        if (make_fourcc('R', 'G', 'B', 'G') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_R8G8_B8G8_UNORM;
-        if (MAKEFOURCC('G', 'R', 'G', 'B') == ddpf.four_cc)
+        }
+        if (make_fourcc('G', 'R', 'G', 'B') == ddpf.four_cc)
+        {
             return DXGI_FORMAT_G8R8_G8B8_UNORM;
+        }
 
         switch (ddpf.four_cc)
         {
@@ -410,6 +471,7 @@ static auto get_dxgi_format(const DdsPixelformat& ddpf) -> DXGI_FORMAT
             case 114: return DXGI_FORMAT_R32_FLOAT;
             case 115: return DXGI_FORMAT_R32G32_FLOAT;
             case 116: return DXGI_FORMAT_R32G32B32A32_FLOAT;
+            default: break;
         }
     }
 
@@ -425,11 +487,11 @@ static void fill_init_data(size_t                     width,
                            std::span<const std::byte> bit_data,
                            DDSImage&                  init_data)
 {
-    size_t           num_bytes{};
-    size_t           row_bytes{};
-    size_t           num_rows{};
-    const std::byte* p_src_bits = bit_data.data();
-    const std::byte* p_end_bits = bit_data.data() + bit_data.size();
+    size_t num_bytes{};
+    size_t row_bytes{};
+    size_t num_rows{};
+
+    std::span src_bits{bit_data.data(), bit_data.size()};
 
     for (size_t face_index = 0; face_index < array_size; ++face_index)
     {
@@ -443,12 +505,9 @@ static void fill_init_data(size_t                     width,
 
             auto& face = init_data.faces.at(face_index);
             auto& mip  = face.mipmaps.at(mip_index);
-            mip.data   = std::span(p_src_bits, num_bytes);
+            mip.data   = src_bits.subspan(0, num_bytes);
 
-            p_src_bits += num_bytes * d;
-
-            if (p_src_bits > p_end_bits)
-                CER_THROW_RUNTIME_ERROR_STR("Failed to load DDS");
+            src_bits = src_bits.subspan(num_bytes * d);
 
             w = max(w >> 1, static_cast<size_t>(1));
             h = max(h >> 1, static_cast<size_t>(1));
@@ -457,10 +516,9 @@ static void fill_init_data(size_t                     width,
     }
 }
 
-static auto create_image_from_dds(const DdsHeader&           header,
-                                  std::span<const std::byte> bit_data) -> DDSImage
+static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const std::byte> bit_data)
 {
-    auto image   = DDSImage();
+    DDSImage image{};
     image.width  = header.width;
     image.height = header.height;
     image.depth  = header.depth;
@@ -469,22 +527,25 @@ static auto create_image_from_dds(const DdsHeader&           header,
     size_t      array_size{1};
     DXGI_FORMAT dxgi_format{DXGI_FORMAT_UNKNOWN};
 
-    size_t mip_count = header.mip_map_count;
-    if (mip_count == 0)
-        mip_count = 1;
+    const size_t mip_count = header.mip_map_count == 0 ? 1 : header.mip_map_count;
 
-    if (header.ddspf.flags & dds_fourcc && MAKEFOURCC('D', 'X', '1', '0') == header.ddspf.four_cc)
+    if ((header.ddspf.flags & dds_fourcc) != 0u &&
+        make_fourcc('D', 'X', '1', '0') == header.ddspf.four_cc)
     {
-        const auto d3d10ext = reinterpret_cast<const DdsHeaderDxT10*>(
-            reinterpret_cast<const char*>(&header) + sizeof(DdsHeader));
+        const DdsHeaderDxT10* d3d10ext = reinterpret_cast<const DdsHeaderDxT10*>(
+            reinterpret_cast<const char*>(&header) + sizeof(DdsHeader)); // NOLINT
 
         array_size = d3d10ext->array_size;
 
         if (array_size == 0)
+        {
             CER_THROW_RUNTIME_ERROR("DDS has invalid array size ({})", array_size);
+        }
 
         if (bits_per_pixel(d3d10ext->dxgi_format) == 0)
+        {
             CER_THROW_RUNTIME_ERROR_STR("DDS has invalid format");
+        }
 
         dxgi_format = d3d10ext->dxgi_format;
 
@@ -492,26 +553,34 @@ static auto create_image_from_dds(const DdsHeader&           header,
         {
             case D3D11_RESOURCE_DIMENSION_TEXTURE1D:
                 // D3DX writes 1D textures with a fixed Height of 1.
-                if (header.flags & dds_height && image.height != 1)
+                if ((header.flags & dds_height) != 0u && image.height != 1)
+                {
                     CER_THROW_RUNTIME_ERROR("DDS has invalid 1D image height ({})", image.height);
+                }
 
                 image.height = image.depth = 1;
                 break;
 
             case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
-                if (d3d10ext->misc_flag & D3D11_RESOURCE_MISC_TEXTURECUBE)
+                if ((d3d10ext->misc_flag & D3D11_RESOURCE_MISC_TEXTURECUBE) != 0u)
+                {
                     CER_THROW_RUNTIME_ERROR_STR("Cubemaps are not supported");
+                }
 
                 image.depth = 1;
                 break;
 
             case D3D11_RESOURCE_DIMENSION_TEXTURE3D: {
-                if (!(header.flags & dds_header_flags_volume))
+                if ((header.flags & dds_header_flags_volume) == 0u)
+                {
                     CER_THROW_RUNTIME_ERROR_STR("DDS has invalid 3D image flags");
+                }
 
                 if (array_size > 1)
+                {
                     CER_THROW_RUNTIME_ERROR("DDS has invalid array size for 3D image ({})",
                                             array_size);
+                }
 
                 break;
             }
@@ -528,16 +597,20 @@ static auto create_image_from_dds(const DdsHeader&           header,
         dxgi_format = get_dxgi_format(header.ddspf);
 
         if (dxgi_format == DXGI_FORMAT_UNKNOWN)
+        {
             CER_THROW_RUNTIME_ERROR_STR("DDS has invalid image format");
+        }
 
-        if (header.flags & dds_header_flags_volume)
+        if ((header.flags & dds_header_flags_volume) != 0u)
         {
             res_dim = D3D11_RESOURCE_DIMENSION_TEXTURE3D;
         }
         else
         {
-            if (header.caps2 & DDS_CUBEMAP)
+            if ((header.caps2 & dds_cubemap) != 0u)
+            {
                 CER_THROW_RUNTIME_ERROR_STR("Cubemaps are not supported");
+            }
 
             image.depth = 1;
             res_dim     = D3D11_RESOURCE_DIMENSION_TEXTURE2D;
@@ -547,7 +620,9 @@ static auto create_image_from_dds(const DdsHeader&           header,
     }
 
     if (mip_count > D3D11_REQ_MIP_LEVELS)
+    {
         CER_THROW_RUNTIME_ERROR_STR("DDS exceeds number of allowed mipmaps");
+    }
 
     switch (res_dim)
     {
@@ -576,12 +651,15 @@ static auto create_image_from_dds(const DdsHeader&           header,
                 CER_THROW_RUNTIME_ERROR_STR("DDS has invalid dimensions");
             }
             break;
+        default: break;
     }
 
     image.faces.resize(array_size);
 
     for (DDSFace& face : image.faces)
+    {
         face.mipmaps.resize(mip_count);
+    }
 
     fill_init_data(image.width,
                    image.height,
@@ -594,8 +672,10 @@ static auto create_image_from_dds(const DdsHeader&           header,
 
     const std::optional<ImageFormat> format = from_dxgi_format(dxgi_format);
 
-    if (!format)
+    if (!format.has_value())
+    {
         CER_THROW_RUNTIME_ERROR_STR("Unsupported format in DDS data.");
+    }
 
     image.format = *format;
 
@@ -607,31 +687,40 @@ const void* dds_image_data_upload(const DDSImage& dds_image, uint32_t array_inde
     return dds_image.faces.at(array_index).mipmaps.at(mipmap).data.data();
 }
 
-auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>
+std::optional<DDSImage> load(std::span<const std::byte> memory)
 {
     // Validate DDS file in memory.
-    if (memory.size() < (sizeof(uint32_t) + sizeof(DdsHeader)))
+    if (memory.size() < sizeof(uint32_t) + sizeof(DdsHeader))
+    {
         return {};
+    }
 
     const uint32_t dw_magic_number = *reinterpret_cast<const uint32_t*>(memory.data());
 
     if (dw_magic_number != dds_magic)
+    {
         return {};
+    }
 
     const DdsHeader* header = reinterpret_cast<const DdsHeader*>(memory.data() + sizeof(uint32_t));
 
     // Verify the header to validate the DDS file.
     if (header->size != sizeof(DdsHeader) || header->ddspf.size != sizeof(DdsPixelformat))
+    {
         CER_THROW_RUNTIME_ERROR_STR("DDS has invalid header");
+    }
 
     // Check for the DX10 extension.
     bool b_dxt10_header = false;
 
-    if (header->ddspf.flags & dds_fourcc && MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.four_cc)
+    if ((header->ddspf.flags & dds_fourcc) != 0u &&
+        make_fourcc('D', 'X', '1', '0') == header->ddspf.four_cc)
     {
         // Must be long enough for both headers and magic value
         if (memory.size() < (sizeof(DdsHeader) + sizeof(uint32_t) + sizeof(DdsHeaderDxT10)))
+        {
             CER_THROW_RUNTIME_ERROR_STR("DDS has invalid header/magic number");
+        }
 
         b_dxt10_header = true;
     }

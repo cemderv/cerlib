@@ -23,11 +23,8 @@ if (ANDROID)
 endif ()
 
 # Set the path where the cerlib package is located.
-# This is modifiable and depends on where you put the cerlib package.
+# This is modifiable and depends on where you put the cerlib repository.
 set(cerlib_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..)
-
-# Let CMake find the cerlib package and all of its libraries.
-list(APPEND CMAKE_MODULE_PATH ${cerlib_DIR}/cmake)
 
 add_subdirectory(
   ${cerlib_DIR}
@@ -40,10 +37,10 @@ include(${cerlib_DIR}/cmake/support/cerlib.cmake)
 # Include the list of the game's source files.
 file(
   GLOB_RECURSE
-    game_source_files
+  game_source_files
   CONFIGURE_DEPENDS
-    "src/*.hpp"
-    "src/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
 # Register the game as a cerlib-based executable.

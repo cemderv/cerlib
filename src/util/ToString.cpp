@@ -7,40 +7,40 @@
 
 std::string std::to_string(const cer::Color& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(const cer::Vector2& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(const cer::Vector3& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(const cer::Vector4& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(const cer::Matrix& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(cer::ImageFormat value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(const cer::Image& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }
 
 std::string std::to_string(const cer::Rectangle& value)
 {
-    return std::format("{}", value);
+    return cer_fmt::format("{}", value);
 }

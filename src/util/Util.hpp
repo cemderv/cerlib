@@ -95,7 +95,6 @@
 
 #define CERLIB_IMPLEMENT_DERIVED_OBJECT(base_class_name, class_name)                               \
     class_name::class_name()                                                                       \
-        : base_class_name()                                                                        \
     {                                                                                              \
     }                                                                                              \
     class_name::class_name(base_class_name::impl_t* impl)                                          \
@@ -106,7 +105,7 @@
 #define VERIFY_IMPL_ACCESS                                                                         \
     if (!impl)                                                                                     \
     {                                                                                              \
-        CER_THROW_LOGIC_ERROR("Attempting to access an empty {}", type_name);                      \
+        CER_THROW_LOGIC_ERROR_STR("Attempting to access an empty object");                  \
     }
 
 // clang-format off

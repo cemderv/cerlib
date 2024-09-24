@@ -32,7 +32,7 @@ struct DDSImage
     uint32_t                width{};
     uint32_t                height{};
     uint32_t                depth{};
-    ImageFormat             format{0};
+    ImageFormat             format{};
     SmallVector<DDSFace, 2> faces{};
 };
 

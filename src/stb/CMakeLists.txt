@@ -7,7 +7,7 @@ cerlib_Log("STB libraries directory: ${stb_SOURCE_DIR}")
 project(stblib LANGUAGES C)
 add_library(stblib STATIC)
 target_sources(stblib PRIVATE stb.c)
-target_include_directories(stblib PUBLIC ${stb_SOURCE_DIR})
+target_include_directories(stblib SYSTEM PUBLIC ${stb_SOURCE_DIR})
 
 if (ANDROID)
   if (ANDROID_ABI STREQUAL "arm64-v8a")

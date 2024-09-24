@@ -5,9 +5,9 @@
 #pragma once
 
 #include <array>
-#include <cstdint>
-#include <cstddef>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <span>
 
 namespace cer

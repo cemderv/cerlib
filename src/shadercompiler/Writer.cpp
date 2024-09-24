@@ -24,7 +24,7 @@ void Writer::append(std::string_view str)
 {
     if (!m_buffer.empty() && m_buffer.back() == '\n')
     {
-        m_buffer.append(2 * m_indentation, ' ');
+        m_buffer.append(static_cast<size_t>(2) * static_cast<size_t>(m_indentation), ' ');
     }
 
     m_buffer += str;

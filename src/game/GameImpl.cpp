@@ -28,15 +28,11 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #if defined(__ANDROID__)
 #include <android/asset_manager_jni.h>
-#endif
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/html5.h>
 #endif
 
 #if defined(__APPLE__)
@@ -76,6 +72,7 @@
 #  define CER_EVENT_TOUCH_FINGER_MOTION SDL_FINGERMOTION
 #  define SDL_EVENT_GAMEPAD_ADDED       SDL_CONTROLLERDEVICEADDED
 #  define SDL_EVENT_GAMEPAD_REMOVED     SDL_CONTROLLERDEVICEREMOVED
+#  define CER_EVENT_TEXT_INPUT          SDL_TEXTINPUT
 #else
 #  define CER_EVENT_QUIT                SDL_EVENT_QUIT
 #  define CER_EVENT_WINDOW_SHOWN        SDL_EVENT_WINDOW_SHOWN
@@ -98,6 +95,7 @@
 #  define CER_EVENT_TOUCH_FINGER_DOWN   SDL_EVENT_FINGER_DOWN
 #  define CER_EVENT_TOUCH_FINGER_UP     SDL_EVENT_FINGER_UP
 #  define CER_EVENT_TOUCH_FINGER_MOTION SDL_EVENT_FINGER_MOTION
+#  define CER_EVENT_TEXT_INPUT          SDL_EVENT_TEXT_INPUT
 #endif
 // clang-format on
 
@@ -111,7 +109,7 @@ static constexpr bool force_audio_disabled = false;
 
 GameImpl::GameImpl(bool enable_audio)
 {
-    log_debug("Creating game");
+    log_verbose("Creating game");
 
     auto init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
 
@@ -125,18 +123,18 @@ GameImpl::GameImpl(bool enable_audio)
     if (SDL_Init(init_flags) != 0)
     {
 #else
-    if (SDL_Init(init_flags) != SDL_TRUE)
+    if (!SDL_Init(init_flags))
     {
 #endif
         const auto error = SDL_GetError();
         CER_THROW_RUNTIME_ERROR("Failed to initialize the windowing system. Reason: {}", error);
     }
 
-    log_debug("SDL is initialized");
+    log_verbose("SDL is initialized");
 
     if (enable_audio && !force_audio_disabled)
     {
-        log_debug("Audio is enabled, attempting to initialize it");
+        log_verbose("Audio is enabled, attempting to initialize it");
 
         auto success   = false;
         m_audio_device = std::make_unique<AudioDevice>(success);
@@ -147,11 +145,11 @@ GameImpl::GameImpl(bool enable_audio)
         }
         else
         {
-            log_debug("Audio initialized successfully");
+            log_verbose("Audio initialized successfully");
         }
     }
 
-    log_debug("Creating ContentManager");
+    log_verbose("Creating ContentManager");
 
     m_content_manager = std::make_unique<ContentManager>();
 
@@ -194,9 +192,11 @@ void GameImpl::destroy_instance()
 void GameImpl::run()
 {
     if (m_is_running)
+    {
         CER_THROW_LOGIC_ERROR_STR("The game is already running.");
+    }
 
-    log_debug("Starting to run game");
+    log_verbose("Starting to run game");
 
     m_is_running = true;
 
@@ -208,7 +208,9 @@ void GameImpl::run()
         1);
 #else
     while (tick())
-        ;
+    {
+        // Nothing to do
+    }
 #endif
 }
 
@@ -259,15 +261,15 @@ static std::optional<ImageFormat> from_sdl_display_mode_format(Uint32 format)
     return {};
 }
 
-static std::optional<DisplayMode> from_sdl_display_mode(const SDL_DisplayMode& sdlMode)
+static std::optional<DisplayMode> from_sdl_display_mode(const SDL_DisplayMode& sdl_mode)
 {
-    if (const auto format = from_sdl_display_mode_format(sdlMode.format))
+    if (const std::optional<ImageFormat> format = from_sdl_display_mode_format(sdl_mode.format))
     {
         return DisplayMode{
-            .format       = *format,
-            .width        = static_cast<uint32_t>(sdlMode.w),
-            .height       = static_cast<uint32_t>(sdlMode.h),
-            .refresh_rate = static_cast<uint32_t>(sdlMode.refresh_rate),
+            .format       = format,
+            .width        = static_cast<uint32_t>(sdl_mode.w),
+            .height       = static_cast<uint32_t>(sdl_mode.h),
+            .refresh_rate = static_cast<uint32_t>(sdl_mode.refresh_rate),
             // .ContentScale = sdlMode.pixel_density,
             .content_scale = 1.0,
         };
@@ -317,12 +319,16 @@ std::vector<DisplayMode> GameImpl::display_modes(uint32_t display_index) const
             SDL_GetFullscreenDisplayModes(static_cast<SDL_DisplayID>(display_index), &mode_count);
         mode_count > 0 && modes != nullptr)
     {
+        const std::span modes_span{modes, static_cast<size_t>(mode_count)};
+
         list.reserve(static_cast<size_t>(mode_count));
 
         for (int i = 0; i < mode_count; ++i)
         {
-            if (const auto mode = from_sdl_display_mode(*modes[i]))
+            if (const auto mode = from_sdl_display_mode(*modes_span[i]))
+            {
                 list.push_back(*mode);
+            }
         }
     }
 
@@ -410,7 +416,7 @@ void GameImpl::ensure_graphics_device_initialized(WindowImpl& first_window)
 {
     if (!m_graphics_device)
     {
-        log_debug("Initializing device");
+        log_verbose("Initializing device");
 
         try
         {
@@ -450,12 +456,14 @@ void GameImpl::open_initial_gamepads()
     int             count            = 0;
     SDL_JoystickID* sdl_joystick_ids = SDL_GetGamepads(&count);
 
-    for (int i = 0; i < count; ++i)
+    const std::span sdl_joystick_ids_span{sdl_joystick_ids, static_cast<size_t>(count)};
+
+    for (const SDL_JoystickID joystick_id : sdl_joystick_ids_span)
     {
-        if (auto sdl_gamepad = SDL_OpenGamepad(sdl_joystick_ids[i]))
+        if (auto sdl_gamepad = SDL_OpenGamepad(joystick_id))
         {
             GamepadImpl* gamepad_impl =
-                std::make_unique<GamepadImpl>(sdl_joystick_ids[i], sdl_gamepad).release();
+                std::make_unique<GamepadImpl>(joystick_id, sdl_gamepad).release();
 
             m_connected_gamepads.emplace_back(gamepad_impl);
         }
@@ -466,7 +474,9 @@ void GameImpl::open_initial_gamepads()
 bool GameImpl::tick()
 {
     if (!m_is_running)
+    {
         return false;
+    }
 
     if (!m_has_loaded_content)
     {
@@ -483,11 +493,15 @@ bool GameImpl::tick()
     bool should_exit = false;
 
     if (m_audio_device)
+    {
         m_audio_device->purge_sounds();
+    }
 
     const auto do_update = [this, &should_exit](GameTime game_time) {
         if (m_update_func && !m_update_func(game_time))
+        {
             should_exit = true;
+        }
     };
 
     const Uint64 current_time   = SDL_GetPerformanceCounter();
@@ -508,12 +522,12 @@ bool GameImpl::tick()
     {
         for (WindowImpl* window_impl : m_windows)
         {
-            const Window window{window_impl};
+            Window window{window_impl};
             m_graphics_device->start_frame(window);
 
             const auto _ = gsl::finally([this, &window] { m_graphics_device->end_frame(window); });
 
-            m_draw_func(Window(window_impl));
+            m_draw_func(window);
         }
     }
 
@@ -740,7 +754,9 @@ void GameImpl::process_events()
 #endif
 
                 if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                {
                     delta = -delta;
+                }
 
                 raise_event(MouseWheelEvent{
                     .timestamp = event.motion.timestamp,
@@ -821,13 +837,14 @@ void GameImpl::process_events()
                         case CER_EVENT_TOUCH_FINGER_UP: return TouchFingerEventType::Release;
                         case CER_EVENT_TOUCH_FINGER_DOWN: return TouchFingerEventType::Press;
                         case CER_EVENT_TOUCH_FINGER_MOTION: return TouchFingerEventType::Motion;
+                        default: break;
                     }
                     return static_cast<TouchFingerEventType>(-1);
                 }();
 
                 if (type != static_cast<TouchFingerEventType>(-1))
                 {
-                    const Window  window = find_window_by_sdl_window_id(event.tfinger.windowID);
+                    Window        window = find_window_by_sdl_window_id(event.tfinger.windowID);
                     const Vector2 window_size = window.size_px();
                     const Vector2 position =
                         Vector2{event.tfinger.x, event.tfinger.y} * window_size;
@@ -836,7 +853,7 @@ void GameImpl::process_events()
                     const auto evt = TouchFingerEvent{
                         .type      = type,
                         .timestamp = event.tfinger.timestamp,
-                        .window    = window,
+                        .window    = std::move(window),
 #ifdef __EMSCRIPTEN__
                         .touch_id  = static_cast<uint64_t>(event.tfinger.touchId),
                         .finger_id = static_cast<uint64_t>(event.tfinger.fingerId),
@@ -854,6 +871,15 @@ void GameImpl::process_events()
 
                 break;
             }
+            case CER_EVENT_TEXT_INPUT: {
+                Window window = find_window_by_sdl_window_id(event.text.windowID);
+                raise_event(TextInputEvent{
+                    .timestamp = event.text.timestamp,
+                    .window    = std::move(window),
+                    .text      = event.text.text,
+                });
+            }
+            default: break;
         }
     }
 
@@ -900,7 +926,9 @@ WindowImpl* GameImpl::find_window_by_sdl_window(SDL_Window* sdl_window) const
 void GameImpl::raise_event(const Event& event)
 {
     if (m_event_func)
+    {
         m_event_func(event);
+    }
 }
 
 std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&> GameImpl::

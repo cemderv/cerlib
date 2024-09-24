@@ -32,7 +32,7 @@ AudioDevice::AudioDevice(bool& success)
 
 AudioDevice::~AudioDevice() noexcept
 {
-    log_debug("Destroying AudioDevice");
+    log_verbose("Destroying AudioDevice");
 
     if (m_was_initialized_successfully)
     {

@@ -67,11 +67,8 @@ set(cerlib_public_files
 list(TRANSFORM cerlib_public_files PREPEND ${cerlib_include_dir}/)
 
 # Add public files to target
-target_sources(cerlib
-  PUBLIC FILE_SET HEADERS
-  BASE_DIRS ${cerlib_include_dir}
-  FILES ${cerlib_public_files}
-)
+target_sources(cerlib PRIVATE ${cerlib_public_files})
+target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
 
 source_group("Public" FILES ${cerlib_public_files})
 
@@ -125,9 +122,12 @@ target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
 # Link out-of-source dependencies
 target_link_libraries(cerlib PRIVATE
   GSL
-  small_vector
   utf8cpp
   stblib
+)
+
+target_link_libraries(cerlib PUBLIC
+  fmt::fmt-header-only
 )
 
 add_library(cerlib_SDL INTERFACE)
@@ -178,9 +178,10 @@ target_link_libraries(cerlib PUBLIC cerlib_SDL)
 target_link_libraries(cerlib PRIVATE SoLoud)
 
 enable_default_cpp_flags(cerlib)
+enable_clang_tidy(cerlib)
 
-if (CERLIB_ENABLE_DIAGNOSTIC_LOGGING)
-  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_DIAGNOSTIC_LOGGING")
+if (CERLIB_ENABLE_VERBOSE_LOGGING)
+  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_VERBOSE_LOGGING")
 endif ()
 
 cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/VeraRegular.ttf)

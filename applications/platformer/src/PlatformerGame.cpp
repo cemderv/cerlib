@@ -16,7 +16,7 @@ PlatformerGame::PlatformerGame()
                            static_cast<uint32_t>(resolution.y)};
 
     m_window.set_resizable(false);
-    m_window.set_clear_color(cer::Color::green());
+    m_window.set_clear_color(cer::green);
 
     if (m_window.pixel_ratio() != 1.0f)
     {
@@ -49,7 +49,7 @@ void PlatformerGame::load_content()
     load_next_level();
 }
 
-bool PlatformerGame::update(cer::GameTime time)
+bool PlatformerGame::update(const cer::GameTime& time)
 {
     if (time.elapsed_time == 0.0)
     {
@@ -65,7 +65,9 @@ bool PlatformerGame::update(cer::GameTime time)
         return true;
     }
 
-    time.elapsed_time = target_elapsed_time;
+    cer::GameTime corrected_time{time};
+
+    corrected_time.elapsed_time = target_elapsed_time;
     m_time_accumulator -= target_elapsed_time;
 
     if (was_key_just_pressed(cer::Key::Escape))
@@ -95,17 +97,17 @@ bool PlatformerGame::update(cer::GameTime time)
         }
     }
 
-    m_level->update(time);
+    m_level->update(corrected_time);
 
     return true;
 }
 
-void PlatformerGame::draw(cer::Window window)
+void PlatformerGame::draw(const cer::Window& window)
 {
     if (m_canvas)
     {
         set_blend_state(cer::BlendState::non_premultiplied());
-        m_canvas.set_canvas_clear_color(cer::Color::red());
+        m_canvas.set_canvas_clear_color(cer::red);
         set_canvas(m_canvas);
     }
 
@@ -130,11 +132,7 @@ void PlatformerGame::draw_hud()
 
     const auto draw_shadowed_string =
         [&](std::string_view text, cer::Vector2 position, cer::Color color) {
-            draw_string(text,
-                        m_hud_font,
-                        text_size,
-                        position + cer::Vector2{1, 1},
-                        cer::Color::black());
+            draw_string(text, m_hud_font, text_size, position + cer::Vector2{1, 1}, cer::black);
             draw_string(text, m_hud_font, text_size, position, color);
         };
 
@@ -153,29 +151,29 @@ void PlatformerGame::draw_hud()
         seconds_string.insert(0, "0");
     }
 
-    const std::string time_string = std::format("Time: {}:{}", minutes_string, seconds_string);
+    const std::string time_string = cer_fmt::format("Time: {}:{}", minutes_string, seconds_string);
 
     cer::Color time_color;
 
     if (time_remaining > warning_time || m_level->is_exit_reached() ||
         (static_cast<int>(time_remaining) % 2) == 0)
     {
-        time_color = cer::Color::yellow();
+        time_color = cer::yellow;
     }
     else
     {
-        time_color = cer::Color::red();
+        time_color = cer::red;
     }
 
     draw_shadowed_string(time_string, hud_location, time_color);
 
     // Draw score
     const float       time_height  = m_hud_font.measure(time_string, text_size).y;
-    const std::string score_string = std::format("Score: {}", m_total_score);
+    const std::string score_string = cer_fmt::format("Score: {}", m_total_score);
 
     draw_shadowed_string(score_string,
                          hud_location + cer::Vector2{0, time_height * 1.2f},
-                         cer::Color::yellow());
+                         cer::yellow);
 
     // Determine the status overlay message to show.
     cer::Image status;
@@ -203,7 +201,7 @@ void PlatformerGame::load_next_level()
     // Unload the current level first before loading the next level.
     m_level.reset();
 
-    m_level = cer::load_custom_asset_of_type<Level>(std::format("levels/{}.txt", m_level_index),
+    m_level = cer::load_custom_asset_of_type<Level>(cer_fmt::format("levels/{}.txt", m_level_index),
                                                     Level::Args{
                                                         .score = &m_total_score,
                                                     });

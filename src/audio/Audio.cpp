@@ -8,6 +8,8 @@
 #include "cerlib/SoundChannel.hpp"
 #include "game/GameImpl.hpp"
 
+// NOLINTBEGIN
+
 #define LOAD_AUDIO_ENGINE_IMPL_OR_RETURN                                                           \
     if (!is_audio_device_initialized())                                                            \
         return;                                                                                    \
@@ -17,6 +19,8 @@
     if (!is_audio_device_initialized())                                                            \
         return value;                                                                              \
     auto& impl = details::GameImpl::instance().audio_device()
+
+// NOLINTEND
 
 bool cer::is_audio_device_initialized()
 {

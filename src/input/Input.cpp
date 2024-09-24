@@ -49,7 +49,8 @@ cer::Vector2 cer::current_mouse_position()
     SDL_GetMouseState(&X, &Y);
     return {float(X), float(Y)};
 #else
-    float x{}, y{};
+    float x{};
+    float y{};
     SDL_GetMouseState(&x, &y);
     return {x, y};
 #endif

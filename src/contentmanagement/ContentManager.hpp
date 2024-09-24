@@ -117,7 +117,7 @@ auto ContentManager::lazy_load(std::string_view key,
         impl->m_content_manager = this;
         impl->m_asset_name      = key_str;
 
-        log_debug("Loaded asset '{}'", key_str);
+        log_verbose("Loaded asset '{}'", key_str);
 
         m_loaded_assets.emplace(key_str, static_cast<TImpl*>(impl));
 
