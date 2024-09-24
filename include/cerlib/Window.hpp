@@ -52,7 +52,7 @@ class CERLIB_API Window final
      *
      * @param title The title / caption of the window.
      * @param id An optional user-defined ID for the window. Has no meaning within cerlib
-     * and is mutable after construction. See Window::GetID() and Window::SetID().
+     * and is mutable after construction. See Window::id() and Window::set_id().
      * @param position_x The X-position of the window, in logical units. If empty, the
      * position is centered within the display.
      * @param position_y The Y-position of the window, in logical units. If empty, the
@@ -88,13 +88,13 @@ class CERLIB_API Window final
 
     /**
      * Gets the width of the window, in logical units.
-     * To obtain the window's client width in pixels, use GetWidthInPixels().
+     * To obtain the window's client width in pixels, use width_px().
      */
     float width() const;
 
     /**
      * Gets the height of the window, in logical units.
-     * To obtain the window's client height in pixels, use GetHeightInPixels().
+     * To obtain the window's client height in pixels, use height_px().
      */
     float height() const;
 

@@ -12,7 +12,7 @@
 
 ## What it provides
 
-- Cross-platform library focused on 2D game development
+- Simple and lightweight cross-platform library focused on 2D game development
 - App framework
 - Content management system
     - Images: .png, .jpg, .bmp, .dds, .hdr, .tga, .psd, .gif

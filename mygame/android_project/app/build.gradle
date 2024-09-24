@@ -4,9 +4,6 @@ apply plugin: 'com.android.application'
 android {
     namespace "com.cerlib.app"
     compileSdkVersion 34
-
-    // Must be compatible with the NDK that cerlib was built with,
-    // which is this version by default:
     ndkVersion '27.0.12077973'
 
     defaultConfig {

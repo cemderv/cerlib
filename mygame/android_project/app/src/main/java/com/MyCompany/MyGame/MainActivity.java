@@ -13,7 +13,7 @@ public class MainActivity extends SDLActivity {
   protected String[] getLibraries() {
     // TODO: Change "MyGame" to the name of your game.
     // The order of the array elements must remain.
-    return new String[] { "SDL3", "cerlib", "MyGame" };
+    return new String[] { "SDL3", "MyGame" };
   }
 
   @Override
