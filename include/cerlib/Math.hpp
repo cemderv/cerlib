@@ -106,7 +106,7 @@ CERLIB_API int32_t random_int(int32_t min, int32_t max);
  * @param min The minimum allowed value
  * @param max The upper bound
  *
- * @ingroup math
+ * @ingroup Math
  */
 CERLIB_API uint32_t random_uint(uint32_t min, uint32_t max);
 

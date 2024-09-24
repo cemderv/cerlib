@@ -82,25 +82,53 @@ inline Vector4 Color::to_vector4() const
     return {r, g, b, a};
 }
 
-/** A constant white color. */
+/**
+ * A constant white color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color white{1.0f, 1.0f, 1.0f, 1.0f};
 
-/** A constant black color (with an alpha value of 1.0). */
+/**
+ * A constant black color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color black{0.0f, 0.0f, 0.0f, 1.0f};
 
-/** A constant red color. */
+/**
+ * A constant red color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color red{1.0f, 0.0f, 0.0f, 1.0f};
 
-/** A constant green color. */
+/**
+ * A constant green color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color green{0.0f, 0.5f, 0.0f, 1.0f};
 
-/** A constant blue color. */
+/**
+ * A constant blue color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color blue{0.0f, 0.0f, 1.0f, 1.0f};
 
-/** A constant cornflower blue color. */
+/**
+ * A constant cornflower blue color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color cornflowerblue{100.0f / 255.0f, 149.0f / 255.0f, 237.0f / 255.0f, 1};
 
-/** A constant yellow color. */
+/**
+ * A constant yellow color.
+ *
+ * @ingroup Math
+ */
 static constexpr Color yellow{1.0f, 1.0f, 0.0f, 1.0f};
 } // namespace cer
 
