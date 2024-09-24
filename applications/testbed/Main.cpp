@@ -1,6 +1,4 @@
-#include "cerlib/Drawing.hpp"
 #include <cerlib.hpp>
-
 #include <cerlib/Main.hpp>
 
 class Testbed : public cer::Game
@@ -8,7 +6,7 @@ class Testbed : public cer::Game
   public:
     Testbed()
     {
-        window = cer::Window("Testbed");
+        window = cer::Window{"Testbed"};
     }
 
     void load_content() override
@@ -23,7 +21,7 @@ class Testbed : public cer::Game
 
     void draw(const cer::Window& window) override
     {
-        draw_sprite(img, (window.size_px() - img.size()) / 2);
+        cer::draw_sprite(img, (window.size_px() - img.size()) / 2);
     }
 
     cer::Window window;

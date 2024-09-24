@@ -99,7 +99,7 @@ WindowImpl::WindowImpl(std::string_view        title,
     if (!GameImpl::is_instance_initialized())
     {
         CER_THROW_LOGIC_ERROR_STR("The game instance must be initialized prior to creating "
-                                  "any windows. Please call InitGame() first.");
+                                  "any windows. Please call run_game() first.");
     }
 
     GameImpl& app_impl = GameImpl::instance();

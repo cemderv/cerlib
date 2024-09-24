@@ -194,7 +194,7 @@ void Player::apply_physics(cer::GameTime time)
     // Prevent the player from running faster than his top speed.
     m_velocity.x = cer::clamp(m_velocity.x, -max_velocity_x, max_velocity_x);
 
-    // Apply m_Velocity.
+    // Apply velocity.
     m_position += m_velocity * elapsed;
     m_position = round(m_position);
 
