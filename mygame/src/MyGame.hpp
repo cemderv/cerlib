@@ -5,13 +5,13 @@
 class MyGame : public cer::Game {
 public:
   MyGame() {
-    window = cer::Window("My Game Window");
+    window = cer::Window{"My Game Window"};
   }
 
   void load_content() override {
   }
 
-  bool update([[maybe_unused]] cer::GameTime time) override {
+  bool update([[maybe_unused]] const cer::GameTime& time) override {
     // Update game logic. Use the time parameter as a reference point for
     // how much time has passed since the last update:
     // ...
@@ -19,7 +19,7 @@ public:
     return true;
   }
 
-  void draw(cer::Window window) override {
+  void draw([[maybe_unused]] const cer::Window& window) override {
     // Draw game content into window:
     // ...
   }
