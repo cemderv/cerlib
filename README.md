@@ -107,3 +107,7 @@ cerlib has been tested and is confirmed to work with the following compilers:
 - Clang ≥ 16.0.6
 - GCC ≥ 13.3
 - Apple Clang ≥ 15
+
+## Contributing and Feedback
+
+Please see [Contributing](CONTRIBUTING.md) for further details on how to contribute to cerlib.
