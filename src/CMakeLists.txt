@@ -67,11 +67,8 @@ set(cerlib_public_files
 list(TRANSFORM cerlib_public_files PREPEND ${cerlib_include_dir}/)
 
 # Add public files to target
-target_sources(cerlib
-  PUBLIC FILE_SET HEADERS
-  BASE_DIRS ${cerlib_include_dir}
-  FILES ${cerlib_public_files}
-)
+target_sources(cerlib PRIVATE ${cerlib_public_files})
+target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
 
 source_group("Public" FILES ${cerlib_public_files})
 
