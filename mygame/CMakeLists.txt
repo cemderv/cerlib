@@ -39,8 +39,8 @@ file(
   GLOB_RECURSE
   game_source_files
   CONFIGURE_DEPENDS
-  "src/*.hpp"
-  "src/*.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
 # Register the game as a cerlib-based executable.
