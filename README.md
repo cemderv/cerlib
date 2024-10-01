@@ -6,7 +6,7 @@
 
 - [Homepage](https://cerlib.org)
 - [Getting Started](https://cerlib.org/getting-started)
-- [API Reference](https://cerlib.org/docs/latest)
+- [Online Demo](https://cerlib.org/demo)
 
 <img src="https://github.com/cemderv/cerlib/blob/main/misc/cerlib-cover.webp?raw=true" width="600">
 
