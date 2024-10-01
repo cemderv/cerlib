@@ -8,6 +8,8 @@
 - [Getting Started](https://cerlib.org/getting-started)
 - [API Reference](https://cerlib.org/docs/latest)
 
+<img src="https://github.com/cemderv/cerlib/blob/develop/misc/cerlib-cover.webp?raw=true" width="600">
+
 [![CMake Build](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml)
 
 ## What it provides
