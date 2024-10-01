@@ -1,6 +1,6 @@
 # cerlib
 
-<img src="https://github.com/cemderv/cerlib/blob/develop/misc/cerlib-logo-startpage.png?raw=true" width="300">
+<img src="https://github.com/cemderv/cerlib/blob/main/misc/cerlib-logo-startpage.png?raw=true" width="300">
 
 #### cerlib is an easy-to-use 2D game library for C++.
 
@@ -8,7 +8,7 @@
 - [Getting Started](https://cerlib.org/getting-started)
 - [API Reference](https://cerlib.org/docs/latest)
 
-<img src="https://github.com/cemderv/cerlib/blob/develop/misc/cerlib-cover.webp?raw=true" width="600">
+<img src="https://github.com/cemderv/cerlib/blob/main/misc/cerlib-cover.webp?raw=true" width="600">
 
 [![CMake Build](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/cemderv/cerlib/actions/workflows/cmake-multi-platform.yml)
 
