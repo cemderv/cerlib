@@ -137,14 +137,14 @@ struct FrameStats
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_scissor_rects(std::span<const Rectangle> scissor_rects);
+void set_scissor_rects(std::span<const Rectangle> scissor_rects);
 
 /**
  * Gets the currently bound canvas.
  *
  * @ingroup Graphics
  */
-CERLIB_API Image current_canvas();
+Image current_canvas();
 
 /**
  * Sets the active canvas to use as a rendering destination.
@@ -166,7 +166,7 @@ CERLIB_API Image current_canvas();
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_canvas(const Image& canvas);
+void set_canvas(const Image& canvas);
 
 /**
  * Sets the transformation to apply to all subsequent 2D objects.
@@ -175,14 +175,14 @@ CERLIB_API void set_canvas(const Image& canvas);
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_transformation(const Matrix& transformation);
+void set_transformation(const Matrix& transformation);
 
 /**
  * Gets the currently set sprite shader.
  *
  * @ingroup Graphics
  */
-CERLIB_API Shader current_sprite_shader();
+Shader current_sprite_shader();
 
 /**
  * Sets the active custom shader to use for sprite rendering.
@@ -192,7 +192,7 @@ CERLIB_API Shader current_sprite_shader();
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_sprite_shader(const Shader& shader);
+void set_sprite_shader(const Shader& shader);
 
 /**
  * Sets the image sampler to use for sprite rendering.
@@ -202,7 +202,7 @@ CERLIB_API void set_sprite_shader(const Shader& shader);
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_sampler(const Sampler& sampler);
+void set_sampler(const Sampler& sampler);
 
 /**
  * Sets the blend state to use for sprite rendering.
@@ -212,7 +212,7 @@ CERLIB_API void set_sampler(const Sampler& sampler);
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_blend_state(const BlendState& blend_state);
+void set_blend_state(const BlendState& blend_state);
 
 /**
  * Draws a 2D sprite.
@@ -225,7 +225,7 @@ CERLIB_API void set_blend_state(const BlendState& blend_state);
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_sprite(const Image& image, Vector2 position, Color color = white);
+void draw_sprite(const Image& image, Vector2 position, Color color = white);
 
 /**
  * Draws a 2D sprite.
@@ -234,7 +234,7 @@ CERLIB_API void draw_sprite(const Image& image, Vector2 position, Color color = 
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_sprite(const Sprite& sprite);
+void draw_sprite(const Sprite& sprite);
 
 /**
  * Draws 2D text.
@@ -248,12 +248,12 @@ CERLIB_API void draw_sprite(const Sprite& sprite);
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_string(std::string_view                     text,
-                            const Font&                          font,
-                            uint32_t                             font_size,
-                            Vector2                              position,
-                            Color                                color      = white,
-                            const std::optional<TextDecoration>& decoration = std::nullopt);
+void draw_string(std::string_view                     text,
+                 const Font&                          font,
+                 uint32_t                             font_size,
+                 Vector2                              position,
+                 Color                                color      = white,
+                 const std::optional<TextDecoration>& decoration = std::nullopt);
 
 /**
  * Draws 2D text from a pre-created Text object.
@@ -262,7 +262,7 @@ CERLIB_API void draw_string(std::string_view                     text,
  * @param position The top-left position of the text.
  * @param color The color of the text.
  */
-CERLIB_API void draw_text(const Text& text, Vector2 position, const Color& color = white);
+void draw_text(const Text& text, Vector2 position, const Color& color = white);
 
 /**
  * Draws a filled solid color rectangle.
@@ -274,17 +274,17 @@ CERLIB_API void draw_text(const Text& text, Vector2 position, const Color& color
  *
  * @ingroup Graphics
  */
-CERLIB_API void fill_rectangle(Rectangle rectangle,
-                               Color     color    = white,
-                               float     rotation = 0.0f,
-                               Vector2   origin   = Vector2());
+void fill_rectangle(Rectangle rectangle,
+                    Color     color    = white,
+                    float     rotation = 0.0f,
+                    Vector2   origin   = Vector2());
 
 /**
  * Gets statistics about the previous frame.
  *
  * @ingroup Graphics
  */
-CERLIB_API FrameStats frame_stats();
+FrameStats frame_stats();
 
 /**
  * Gets the size of the current canvas, in pixels.
@@ -293,7 +293,7 @@ CERLIB_API FrameStats frame_stats();
  *
  * @ingroup Graphics
  */
-CERLIB_API Vector2 current_canvas_size();
+Vector2 current_canvas_size();
 
 /**
  * Gets the pixel data that is currently stored in a canvas.
@@ -314,12 +314,12 @@ CERLIB_API Vector2 current_canvas_size();
  *
  * @ingroup Graphics
  */
-CERLIB_API void read_canvas_data_into(const Image& canvas,
-                                      uint32_t     x,
-                                      uint32_t     y,
-                                      uint32_t     width,
-                                      uint32_t     height,
-                                      void*        destination);
+void read_canvas_data_into(const Image& canvas,
+                           uint32_t     x,
+                           uint32_t     y,
+                           uint32_t     width,
+                           uint32_t     height,
+                           void*        destination);
 
 /**
  * Gets the pixel data that is currently stored in a canvas.
@@ -336,7 +336,7 @@ CERLIB_API void read_canvas_data_into(const Image& canvas,
  *
  * @ingroup Graphics
  */
-CERLIB_API std::vector<std::byte> read_canvas_data(
+std::vector<std::byte> read_canvas_data(
     const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 
 /**
@@ -348,9 +348,9 @@ CERLIB_API std::vector<std::byte> read_canvas_data(
  *
  * @ingroup Graphics
  */
-CERLIB_API void save_canvas_to_file(const Image&     canvas,
-                                    std::string_view filename,
-                                    ImageFileFormat  format = ImageFileFormat::Png);
+void save_canvas_to_file(const Image&     canvas,
+                         std::string_view filename,
+                         ImageFileFormat  format = ImageFileFormat::Png);
 
 /**
  * Saves the pixel data of a canvas to a buffer in memory.
@@ -362,6 +362,6 @@ CERLIB_API void save_canvas_to_file(const Image&     canvas,
  *
  * @ingroup Graphics
  */
-CERLIB_API std::vector<std::byte> save_canvas_to_memory(
-    const Image& canvas, ImageFileFormat format = ImageFileFormat::Png);
+std::vector<std::byte> save_canvas_to_memory(const Image&    canvas,
+                                             ImageFileFormat format = ImageFileFormat::Png);
 } // namespace cer

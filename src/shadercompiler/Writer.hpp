@@ -21,7 +21,7 @@ enum WriteNewlineLazyTag
     WNewlineLazy,
 };
 
-class CERLIB_API_INTERNAL Writer final
+class Writer final
 {
   public:
     Writer();

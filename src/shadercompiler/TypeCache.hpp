@@ -17,7 +17,7 @@ class SourceLocation;
 class ArrayType;
 class UnresolvedType;
 
-class CERLIB_API_INTERNAL TypeCache final
+class TypeCache final
 {
   public:
     TypeCache();

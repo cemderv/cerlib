@@ -21,7 +21,7 @@ class VarDecl;
 class TempVarNameGen;
 class ForLoopVariableDecl;
 
-class CERLIB_API_INTERNAL Stmt
+class Stmt
 {
   protected:
     explicit Stmt(const SourceLocation& location);
@@ -52,7 +52,7 @@ enum class CompoundStmtKind
     Div,
 };
 
-class CERLIB_API_INTERNAL CompoundStmt final : public Stmt
+class CompoundStmt final : public Stmt
 {
   public:
     CompoundStmt(const SourceLocation& location,
@@ -80,7 +80,7 @@ class CERLIB_API_INTERNAL CompoundStmt final : public Stmt
     std::unique_ptr<Expr> m_rhs;
 };
 
-class CERLIB_API_INTERNAL AssignmentStmt final : public Stmt
+class AssignmentStmt final : public Stmt
 {
   public:
     AssignmentStmt(const SourceLocation& location,
@@ -104,7 +104,7 @@ class CERLIB_API_INTERNAL AssignmentStmt final : public Stmt
     std::unique_ptr<Expr> m_rhs;
 };
 
-class CERLIB_API_INTERNAL ReturnStmt final : public Stmt
+class ReturnStmt final : public Stmt
 {
   public:
     explicit ReturnStmt(const SourceLocation& location, std::unique_ptr<Expr> expr);
@@ -123,7 +123,7 @@ class CERLIB_API_INTERNAL ReturnStmt final : public Stmt
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL ForStmt final : public Stmt
+class ForStmt final : public Stmt
 {
   public:
     ForStmt(const SourceLocation&                location,
@@ -151,7 +151,7 @@ class CERLIB_API_INTERNAL ForStmt final : public Stmt
     std::unique_ptr<CodeBlock>           m_body;
 };
 
-class CERLIB_API_INTERNAL IfStmt final : public Stmt
+class IfStmt final : public Stmt
 {
   public:
     IfStmt(const SourceLocation&      location,
@@ -179,7 +179,7 @@ class CERLIB_API_INTERNAL IfStmt final : public Stmt
     std::unique_ptr<IfStmt>    m_next;
 };
 
-class CERLIB_API_INTERNAL VarStmt final : public Stmt
+class VarStmt final : public Stmt
 {
   public:
     explicit VarStmt(const SourceLocation& location, std::unique_ptr<VarDecl> variable);

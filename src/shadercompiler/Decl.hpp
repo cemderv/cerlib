@@ -22,7 +22,7 @@ class FunctionDecl;
 class StructDecl;
 class ForStmt;
 
-class CERLIB_API_INTERNAL Decl
+class Decl
 {
   protected:
     explicit Decl(const SourceLocation& location, std::string_view name);
@@ -56,7 +56,7 @@ class CERLIB_API_INTERNAL Decl
     const Type*    m_type;
 };
 
-class CERLIB_API_INTERNAL StructFieldDecl final : public Decl
+class StructFieldDecl final : public Decl
 {
     friend class StructDecl;
 
@@ -72,7 +72,7 @@ class CERLIB_API_INTERNAL StructFieldDecl final : public Decl
     void on_verify(SemaContext& context, Scope& scope) override;
 };
 
-class CERLIB_API_INTERNAL StructDecl final : public Decl, public Type
+class StructDecl final : public Decl, public Type
 {
   public:
     using FieldList = SmallVector<std::unique_ptr<StructFieldDecl>, 8>;
@@ -116,7 +116,7 @@ enum class FunctionParamKind
     ShaderStageInput,
 };
 
-class CERLIB_API_INTERNAL FunctionParamDecl final : public Decl
+class FunctionParamDecl final : public Decl
 {
     friend class FunctionDecl;
 
@@ -148,7 +148,7 @@ enum class FunctionKind
     Shader,
 };
 
-class CERLIB_API_INTERNAL ForLoopVariableDecl final : public Decl
+class ForLoopVariableDecl final : public Decl
 {
     friend ForStmt;
 
@@ -166,7 +166,7 @@ class CERLIB_API_INTERNAL ForLoopVariableDecl final : public Decl
     }
 };
 
-class CERLIB_API_INTERNAL FunctionDecl final : public Decl
+class FunctionDecl final : public Decl
 {
   public:
     explicit FunctionDecl(const SourceLocation&                              location,
@@ -212,7 +212,7 @@ class CERLIB_API_INTERNAL FunctionDecl final : public Decl
 /**
  * \brief Represents a global shader parameter declaration.
  */
-class CERLIB_API_INTERNAL ShaderParamDecl final : public Decl
+class ShaderParamDecl final : public Decl
 {
   public:
     explicit ShaderParamDecl(const SourceLocation& location,
@@ -239,7 +239,7 @@ class CERLIB_API_INTERNAL ShaderParamDecl final : public Decl
     std::any              m_default_value;
 };
 
-class CERLIB_API_INTERNAL VarDecl final : public Decl
+class VarDecl final : public Decl
 {
   public:
     explicit VarDecl(const SourceLocation& location,

@@ -7,26 +7,6 @@
 #include <cstddef>
 #include <string_view>
 
-// clang-format off
-#if defined(CERLIB_SHARED_LIBRARY)
-#  if defined(_MSC_VER)
-#    if defined(cerlib_EXPORTS)
-#      define CERLIB_API __declspec(dllexport)
-#    else
-#      define CERLIB_API __declspec(dllimport)
-#    endif
-#  else
-#    if defined(cerlib_EXPORTS)
-#      define CERLIB_API __attribute__((visibility("default")))
-#    else
-#      define CERLIB_API
-#    endif
-#  endif
-#else
-#  define CERLIB_API
-#endif
-// clang-format on
-
 /**
  * Declares that a class is a cerlib-specific object.
  * cerlib objects have automatic memory management via shared reference counting with

@@ -21,7 +21,7 @@ class VarStmt;
 class Expr;
 class TempVarNameGen;
 
-class CERLIB_API_INTERNAL CodeBlock final
+class CodeBlock final
 {
   public:
     using StmtsType = SmallVector<std::unique_ptr<Stmt>, 16>;

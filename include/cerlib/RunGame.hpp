@@ -10,5 +10,5 @@ namespace cer::details
 {
 using MainFunc = int (*)(int, char**);
 
-[[nodiscard]] CERLIB_API int run_game(int a, char* b[], MainFunc c, void* d);
+[[nodiscard]] int run_game(int a, char* b[], MainFunc c, void* d);
 } // namespace cer::details

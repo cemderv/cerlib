@@ -98,7 +98,7 @@ T ceiling(T value);
  *
  * @ingroup Math
  */
-CERLIB_API int32_t random_int(int32_t min, int32_t max);
+int32_t random_int(int32_t min, int32_t max);
 
 /**
  * Calculates a random unsigned integer in the interval `[min, max)`.
@@ -108,7 +108,7 @@ CERLIB_API int32_t random_int(int32_t min, int32_t max);
  *
  * @ingroup Math
  */
-CERLIB_API uint32_t random_uint(uint32_t min, uint32_t max);
+uint32_t random_uint(uint32_t min, uint32_t max);
 
 /**
  * Calculates a random single-precision floating-point value in the interval `[min, max)`.
@@ -118,7 +118,7 @@ CERLIB_API uint32_t random_uint(uint32_t min, uint32_t max);
  *
  * @ingroup Math
  */
-CERLIB_API float random_float(float min = 0.0f, float max = 1.0f);
+float random_float(float min = 0.0f, float max = 1.0f);
 
 /**
  * Calculates a random double-precision floating-point value in the interval `[min, max)`.
@@ -128,7 +128,7 @@ CERLIB_API float random_float(float min = 0.0f, float max = 1.0f);
  *
  * @ingroup Math
  */
-CERLIB_API double random_double(double min = 0.0, double max = 1.0);
+double random_double(double min = 0.0, double max = 1.0);
 
 /**
  * Returns the smaller of two values.
@@ -312,7 +312,7 @@ bool equal_within(T lhs, T rhs, T threshold);
  *
  * @ingroup Math
  */
-CERLIB_API uint32_t mipmap_extent(uint32_t base_extent, uint32_t mipmap);
+uint32_t mipmap_extent(uint32_t base_extent, uint32_t mipmap);
 
 /**
  * Gets the numbers of mipmaps that can be generated for a specific base
@@ -324,7 +324,7 @@ CERLIB_API uint32_t mipmap_extent(uint32_t base_extent, uint32_t mipmap);
  *
  * @ingroup Math
  */
-CERLIB_API uint32_t max_mipmap_count_for_extent(uint32_t base_extent);
+uint32_t max_mipmap_count_for_extent(uint32_t base_extent);
 
 /**
  * Calculates a number that is aligned to a specific alignment.
@@ -334,7 +334,7 @@ CERLIB_API uint32_t max_mipmap_count_for_extent(uint32_t base_extent);
  *
  * @ingroup Math
  */
-CERLIB_API int64_t next_aligned_number(int64_t number, int64_t alignment);
+int64_t next_aligned_number(int64_t number, int64_t alignment);
 } // namespace cer
 
 #include <cmath>

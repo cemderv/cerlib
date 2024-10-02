@@ -17,10 +17,10 @@ static std::string build_full_message(const SourceLocation& location, std::strin
            : location.column == 0
                ? cer_fmt::format("{}({}): error: {}", location.filename, location.line, message)
                : cer_fmt::format("{}({}, {}): error: {}",
-                             location.filename,
-                             location.line,
-                             location.column,
-                             message);
+                                 location.filename,
+                                 location.line,
+                                 location.column,
+                                 message);
 }
 
 Error::Error() = default;

@@ -38,7 +38,7 @@ enum class GraphicsResourceType
  *
  * @ingroup Graphics
  */
-class CERLIB_API GraphicsResource
+class GraphicsResource
 {
     CERLIB_DECLARE_OBJECT(GraphicsResource);
 

@@ -8,13 +8,13 @@
 #if defined(CERLIB_SHARED_LIBRARY) && defined(CERLIB_ENABLE_TESTS)
 #  if defined(_MSC_VER)
 #    if defined(cerlib_EXPORTS)
-#      define CERLIB_API_INTERNAL __declspec(dllexport)
+#      define __declspec(dllexport)
 #    else
-#      define CERLIB_API_INTERNAL __declspec(dllimport)
+#      define __declspec(dllimport)
 #    endif
 #  else
 #    if defined(cerlib_EXPORTS)
-#      define CERLIB_API_INTERNAL __attribute__((visibility("default")))
+#      define __attribute__((visibility("default")))
 #    else
 #      define CERLIB_API_INTERNAL
 #    endif

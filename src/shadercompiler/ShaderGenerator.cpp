@@ -632,9 +632,9 @@ std::string ShaderGenerator::translate_array_type(const ArrayType& type,
                                                   std::string_view variable_name) const
 {
     return cer_fmt::format("{} {}[{}]",
-                       translate_type(type.element_type(), TypeNameContext::Normal),
-                       variable_name,
-                       type.size());
+                           translate_type(type.element_type(), TypeNameContext::Normal),
+                           variable_name,
+                           type.size());
 }
 
 SmallVector<const Decl*, 8> ShaderGenerator::gather_ast_decls_to_generate(

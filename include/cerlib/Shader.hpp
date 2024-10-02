@@ -27,7 +27,7 @@ class ShaderImpl;
  *
  * @ingroup Graphics
  */
-class CERLIB_API Shader final : public GraphicsResource
+class Shader final : public GraphicsResource
 {
     CERLIB_DECLARE_DERIVED_OBJECT(GraphicsResource, Shader);
 

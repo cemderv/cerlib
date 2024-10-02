@@ -22,7 +22,7 @@ namespace details
 class GameImpl;
 class WindowImpl;
 
-CERLIB_API auto run_game_internal() -> void;
+auto run_game_internal() -> void;
 } // namespace details
 
 /**
@@ -100,7 +100,7 @@ struct GameTime
  *
  * @ingroup Game
  */
-class CERLIB_API Game
+class Game
 {
   protected:
     /** Default constructor, intended to be called by deriving classes */

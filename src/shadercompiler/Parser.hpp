@@ -50,7 +50,7 @@ class ParenExpr;
 class TernaryExpr;
 class CodeBlock;
 
-class CERLIB_API_INTERNAL Parser final
+class Parser final
 {
   public:
     explicit Parser(TypeCache& type_cache);

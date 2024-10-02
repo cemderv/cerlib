@@ -16,7 +16,7 @@
 
 namespace cer::details
 {
-class CERLIB_API_INTERNAL Object
+class Object
 {
   public:
     explicit Object();

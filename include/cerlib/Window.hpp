@@ -35,7 +35,7 @@ enum class MessageBoxType
  *
  * @ingroup Game
  */
-class CERLIB_API Window final
+class Window final
 {
     CERLIB_DECLARE_OBJECT(Window);
 

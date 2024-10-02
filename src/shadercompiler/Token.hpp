@@ -84,5 +84,5 @@ struct Token
     SourceLocation   location;
 };
 
-CERLIB_API_INTERNAL std::string_view token_type_to_string(TokenType type);
+std::string_view token_type_to_string(TokenType type);
 } // namespace cer::shadercompiler

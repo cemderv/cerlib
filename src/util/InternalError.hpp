@@ -32,7 +32,7 @@ class InternalError final : public std::exception
 #define CER_THROW_INTERNAL_ERROR(str, ...)                                                         \
     throw cer::InternalError                                                                       \
     {                                                                                              \
-        __FUNCTION__, cer_fmt::format(str, __VA_ARGS__)                                                \
+        __FUNCTION__, cer_fmt::format(str, __VA_ARGS__)                                            \
     }
 
 #define CER_THROW_INTERNAL_ERROR_STR(message)                                                      \
@@ -44,7 +44,7 @@ class InternalError final : public std::exception
 #define CER_THROW_INVALID_ARG(str, ...)                                                            \
     throw std::invalid_argument                                                                    \
     {                                                                                              \
-        cer_fmt::format(str, __VA_ARGS__)                                                              \
+        cer_fmt::format(str, __VA_ARGS__)                                                          \
     }
 
 #define CER_THROW_INVALID_ARG_STR(message)                                                         \
@@ -56,7 +56,7 @@ class InternalError final : public std::exception
 #define CER_THROW_LOGIC_ERROR(str, ...)                                                            \
     throw std::logic_error                                                                         \
     {                                                                                              \
-        cer_fmt::format(str, __VA_ARGS__)                                                              \
+        cer_fmt::format(str, __VA_ARGS__)                                                          \
     }
 
 #define CER_THROW_LOGIC_ERROR_STR(message)                                                         \
@@ -68,7 +68,7 @@ class InternalError final : public std::exception
 #define CER_THROW_RUNTIME_ERROR(str, ...)                                                          \
     throw std::runtime_error                                                                       \
     {                                                                                              \
-        cer_fmt::format(str, __VA_ARGS__)                                                              \
+        cer_fmt::format(str, __VA_ARGS__)                                                          \
     }
 
 #define CER_THROW_RUNTIME_ERROR_STR(message)                                                       \
@@ -78,7 +78,4 @@ class InternalError final : public std::exception
     }
 
 #define CER_THROW_NOT_IMPLEMENTED(feature_name)                                                    \
-    throw std::logic_error                                                                         \
-    {                                                                                              \
-        "The feature '" feature_name "' is not implemented yet."                                   \
-    }
+    throw std::logic_error{"The feature '" feature_name "' is not implemented yet."}

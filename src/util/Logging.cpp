@@ -33,7 +33,8 @@ void log_internal(const std::string& message, LogMessageType type)
     OutputDebugString(full_msg.c_str());
 #elif CERLIB_PLATFORM_ANDROID
     const int log_priority = [type] {
-        switch(type) {
+        switch (type)
+        {
             case LogMessageType::Info: return ANDROID_LOG_INFO;
             case LogMessageType::Warning: return ANDROID_LOG_WARN;
             case LogMessageType::Error: return ANDROID_LOG_ERROR;

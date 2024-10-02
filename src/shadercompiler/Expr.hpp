@@ -21,7 +21,7 @@ class Decl;
 class Scope;
 class BinOpExpr;
 
-class CERLIB_API_INTERNAL Expr
+class Expr
 {
   protected:
     explicit Expr(const SourceLocation& location);
@@ -60,7 +60,7 @@ class CERLIB_API_INTERNAL Expr
     const Decl*    m_symbol{};
 };
 
-class CERLIB_API_INTERNAL RangeExpr final : public Expr
+class RangeExpr final : public Expr
 {
   public:
     explicit RangeExpr(const SourceLocation& location,
@@ -102,7 +102,7 @@ enum class BinOpKind
     LeftShift,
 };
 
-class CERLIB_API_INTERNAL BinOpExpr final : public Expr
+class BinOpExpr final : public Expr
 {
   public:
     explicit BinOpExpr(const SourceLocation& location,
@@ -130,7 +130,7 @@ class CERLIB_API_INTERNAL BinOpExpr final : public Expr
     std::unique_ptr<Expr> m_rhs;
 };
 
-class CERLIB_API_INTERNAL IntLiteralExpr final : public Expr
+class IntLiteralExpr final : public Expr
 {
   public:
     explicit IntLiteralExpr(const SourceLocation& location, int32_t value);
@@ -147,7 +147,7 @@ class CERLIB_API_INTERNAL IntLiteralExpr final : public Expr
     int32_t m_value;
 };
 
-class CERLIB_API_INTERNAL BoolLiteralExpr final : public Expr
+class BoolLiteralExpr final : public Expr
 {
   public:
     explicit BoolLiteralExpr(const SourceLocation& location, bool value);
@@ -164,7 +164,7 @@ class CERLIB_API_INTERNAL BoolLiteralExpr final : public Expr
     bool m_value;
 };
 
-class CERLIB_API_INTERNAL FloatLiteralExpr final : public Expr
+class FloatLiteralExpr final : public Expr
 {
   public:
     explicit FloatLiteralExpr(const SourceLocation& location,
@@ -192,7 +192,7 @@ enum class UnaryOpKind
     LogicalNot,
 };
 
-class CERLIB_API_INTERNAL UnaryOpExpr final : public Expr
+class UnaryOpExpr final : public Expr
 {
   public:
     explicit UnaryOpExpr(const SourceLocation& location,
@@ -214,7 +214,7 @@ class CERLIB_API_INTERNAL UnaryOpExpr final : public Expr
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL StructCtorArg final : public Expr
+class StructCtorArg final : public Expr
 {
   public:
     explicit StructCtorArg(const SourceLocation& location,
@@ -234,7 +234,7 @@ class CERLIB_API_INTERNAL StructCtorArg final : public Expr
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL SymAccessExpr final : public Expr
+class SymAccessExpr final : public Expr
 {
     friend class BinOpExpr;
 
@@ -256,7 +256,7 @@ class CERLIB_API_INTERNAL SymAccessExpr final : public Expr
     Expr*            m_ancestor_expr;
 };
 
-class CERLIB_API_INTERNAL StructCtorCall final : public Expr
+class StructCtorCall final : public Expr
 {
   public:
     explicit StructCtorCall(const SourceLocation&                          location,
@@ -276,7 +276,7 @@ class CERLIB_API_INTERNAL StructCtorCall final : public Expr
     SmallVector<std::unique_ptr<StructCtorArg>, 4> m_args;
 };
 
-class CERLIB_API_INTERNAL FunctionCallExpr final : public Expr
+class FunctionCallExpr final : public Expr
 {
   public:
     explicit FunctionCallExpr(const SourceLocation&                 location,
@@ -298,7 +298,7 @@ class CERLIB_API_INTERNAL FunctionCallExpr final : public Expr
     SmallVector<std::unique_ptr<Expr>, 4> m_args;
 };
 
-class CERLIB_API_INTERNAL SubscriptExpr final : public Expr
+class SubscriptExpr final : public Expr
 {
   public:
     explicit SubscriptExpr(const SourceLocation& location,
@@ -318,7 +318,7 @@ class CERLIB_API_INTERNAL SubscriptExpr final : public Expr
     std::unique_ptr<Expr> m_index_expr;
 };
 
-class CERLIB_API_INTERNAL ScientificIntLiteralExpr final : public Expr
+class ScientificIntLiteralExpr final : public Expr
 {
   public:
     explicit ScientificIntLiteralExpr(const SourceLocation& location, std::string_view value);
@@ -331,7 +331,7 @@ class CERLIB_API_INTERNAL ScientificIntLiteralExpr final : public Expr
     std::string_view m_value;
 };
 
-class CERLIB_API_INTERNAL HexadecimalIntLiteralExpr final : public Expr
+class HexadecimalIntLiteralExpr final : public Expr
 {
   public:
     explicit HexadecimalIntLiteralExpr(const SourceLocation& location, std::string_view value);
@@ -344,7 +344,7 @@ class CERLIB_API_INTERNAL HexadecimalIntLiteralExpr final : public Expr
     std::string_view m_value;
 };
 
-class CERLIB_API_INTERNAL ParenExpr final : public Expr
+class ParenExpr final : public Expr
 {
   public:
     explicit ParenExpr(const SourceLocation& location, std::unique_ptr<Expr> expr);
@@ -361,7 +361,7 @@ class CERLIB_API_INTERNAL ParenExpr final : public Expr
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL TernaryExpr final : public Expr
+class TernaryExpr final : public Expr
 {
   public:
     explicit TernaryExpr(const SourceLocation& location,
@@ -387,7 +387,7 @@ class CERLIB_API_INTERNAL TernaryExpr final : public Expr
     std::unique_ptr<Expr> m_false_expr;
 };
 
-class CERLIB_API_INTERNAL ArrayExpr final : public Expr
+class ArrayExpr final : public Expr
 {
   public:
     explicit ArrayExpr(const SourceLocation& location, std::vector<std::unique_ptr<Expr>> elements);

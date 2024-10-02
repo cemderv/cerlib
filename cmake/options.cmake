@@ -29,12 +29,6 @@ option(
 )
 
 option(
-  CERLIB_SHARED_LIBRARY
-  "Build cerlib as a shared library"
-  OFF
-)
-
-option(
   CERLIB_ENABLE_LTO
   "Enable link-time-optimizations"
   OFF

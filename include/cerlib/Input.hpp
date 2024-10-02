@@ -20,7 +20,7 @@ enum class MouseButton;
  *
  * @ingroup Input
  */
-CERLIB_API bool is_key_down(Key key);
+bool is_key_down(Key key);
 
 /**
  * Gets a value indicating whether a specific key is currently released.
@@ -29,7 +29,7 @@ CERLIB_API bool is_key_down(Key key);
  *
  * @ingroup Input
  */
-CERLIB_API bool is_key_up(Key key);
+bool is_key_up(Key key);
 
 /**
  * Gets a value indicating whether a specific key was released during the current
@@ -39,7 +39,7 @@ CERLIB_API bool is_key_up(Key key);
  *
  * @ingroup Input
  */
-CERLIB_API bool was_key_just_pressed(Key key);
+bool was_key_just_pressed(Key key);
 
 /**
  * Gets a value indicating whether a specific key was pressed during the current
@@ -49,7 +49,7 @@ CERLIB_API bool was_key_just_pressed(Key key);
  *
  * @ingroup Input
  */
-CERLIB_API bool was_key_just_released(Key key);
+bool was_key_just_released(Key key);
 
 /**
  * Gets a value indicating whether a specific mouse button is currently pressed.
@@ -58,7 +58,7 @@ CERLIB_API bool was_key_just_released(Key key);
  *
  * @ingroup Input
  */
-CERLIB_API bool is_mouse_button_down(MouseButton button);
+bool is_mouse_button_down(MouseButton button);
 
 /**
  * Gets a value indicating whether a specific mouse button is currently released.
@@ -67,7 +67,7 @@ CERLIB_API bool is_mouse_button_down(MouseButton button);
  *
  * @ingroup Input
  */
-CERLIB_API bool is_mouse_button_up(MouseButton button);
+bool is_mouse_button_up(MouseButton button);
 
 /**
  * Gets the current mouse position within the currently focused window.
@@ -75,7 +75,7 @@ CERLIB_API bool is_mouse_button_up(MouseButton button);
  *
  * @ingroup Input
  */
-CERLIB_API Vector2 current_mouse_position();
+Vector2 current_mouse_position();
 
 /**
  * Gets the amount of mouse movement within the currently focused window since
@@ -83,12 +83,12 @@ CERLIB_API Vector2 current_mouse_position();
  *
  * @ingroup Input
  */
-CERLIB_API Vector2 current_mouse_position_delta();
+Vector2 current_mouse_position_delta();
 
 /**
  * Gets the amount of mouse wheel movement since the last game tick.
  *
  * @ingroup Input
  */
-CERLIB_API Vector2 current_mouse_wheel_delta();
+Vector2 current_mouse_wheel_delta();
 } // namespace cer

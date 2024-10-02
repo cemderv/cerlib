@@ -32,7 +32,7 @@ class AccessedParams
     }
 };
 
-class CERLIB_API_INTERNAL AST final
+class AST final
 {
   public:
     using DeclsType = SmallVector<std::unique_ptr<Decl>, 8>;
