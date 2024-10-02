@@ -46,6 +46,8 @@ CPMAddPackage(
   SYSTEM
 )
 
+set_target_properties(fmt PROPERTIES FOLDER "Dependencies")
+
 # utfcpp
 CPMAddPackage(
   NAME utfcpp
