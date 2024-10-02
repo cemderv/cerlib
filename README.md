@@ -85,7 +85,7 @@ int main() {
 
 ## Quickstart
 
-This is for those that want to get started quickly.
+This is for those who want to get started quickly.
 It assumes that you have a working C++ 20 toolchain and editor / IDE already.
 
 First, clone the repository:
