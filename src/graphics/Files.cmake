@@ -21,5 +21,8 @@ set(graphics_files
   SpriteBatch.hpp
   Tessellation2D.cpp
   Tessellation2D.hpp
+  TextImpl.hpp
+  TextImpl.cpp
+  Text.cpp
   VertexElement.hpp
 )

@@ -101,6 +101,8 @@ class GraphicsDevice
                      const Color&                         color,
                      const std::optional<TextDecoration>& decoration);
 
+    void draw_text(const Text& text, Vector2 position, const Color& color);
+
     FrameStats frame_stats() const;
 
     Vector2 current_canvas_size() const;

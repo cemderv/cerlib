@@ -14,10 +14,11 @@
 
 namespace cer
 {
-struct Sampler;
 class Font;
 class Shader;
+class Text;
 struct BlendState;
+struct Sampler;
 
 /**
  * Defines various flip factors for 2D sprites that are drawn using DrawSprite().
@@ -253,6 +254,15 @@ CERLIB_API void draw_string(std::string_view                     text,
                             Vector2                              position,
                             Color                                color      = white,
                             const std::optional<TextDecoration>& decoration = std::nullopt);
+
+/**
+ * Draws 2D text from a pre-created Text object.
+ *
+ * @param text The text object to draw.
+ * @param position The top-left position of the text.
+ * @param color The color of the text.
+ */
+CERLIB_API void draw_text(const Text& text, Vector2 position, const Color& color = white);
 
 /**
  * Draws a filled solid color rectangle.

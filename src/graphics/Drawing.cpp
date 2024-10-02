@@ -111,6 +111,12 @@ void cer::draw_string(std::string_view                     text,
     device_impl.draw_string(text, font, font_size, position, color, decoration);
 }
 
+void cer::draw_text(const Text& text, Vector2 position, const Color& color)
+{
+    LOAD_DEVICE_IMPL;
+    device_impl.draw_text(text, position, color);
+}
+
 void cer::fill_rectangle(Rectangle rectangle, Color color, float rotation, Vector2 origin)
 {
     LOAD_DEVICE_IMPL;

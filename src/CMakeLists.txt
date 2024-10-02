@@ -50,6 +50,7 @@ set(cerlib_public_files
   cerlib/Sound.hpp
   cerlib/SoundChannel.hpp
   cerlib/SoundTypes.hpp
+  cerlib/Text.hpp
   cerlib/ToString.hpp
   cerlib/Tween.hpp
   cerlib/Vector2.hpp

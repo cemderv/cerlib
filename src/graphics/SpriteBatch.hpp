@@ -14,7 +14,9 @@
 #include "cerlib/Shader.hpp"
 #include "cerlib/Vector2.hpp"
 #include "cerlib/Vector4.hpp"
+#include "graphics/TextImpl.hpp"
 #include "util/NonCopyable.hpp"
+#include "util/SmallVector.hpp"
 
 #include <gsl/pointers>
 
@@ -70,6 +72,8 @@ class SpriteBatch
                      const Vector2&                       position,
                      const Color&                         color,
                      const std::optional<TextDecoration>& decoration);
+
+    void draw_text(const Text& text, const Vector2& position, const Color& color);
 
     void fill_rectangle(const Rectangle& rectangle,
                         const Color&     color,
@@ -157,6 +161,12 @@ class SpriteBatch
                               const Rectangle&      texture_size_and_inverse,
                               bool                  flip_image_up_down);
 
+    void do_draw_text(std::span<const PreshapedGlyph>     glyphs,
+                      std::span<const TextDecorationRect> decoration_rects,
+                      const Vector2&                      offset,
+                      const Color&                        color);
+
+    bool                           m_is_in_begin_end_pair{};
     gsl::not_null<GraphicsDevice*> m_parent_device;
     gsl::not_null<FrameStats*>     m_frame_stats;
     std::vector<InternalSprite>    m_sprite_queue;
@@ -166,6 +176,9 @@ class SpriteBatch
     BlendState                     m_blend_state;
     Shader                         m_sprite_shader;
     Sampler                        m_sampler;
-    bool                           m_is_in_begin_end_pair{};
+
+    // Used in draw_string() as temporary buffers for text shaping results.
+    SmallVector<PreshapedGlyph>     m_tmp_glyphs;
+    SmallVector<TextDecorationRect> m_tmp_decoration_rects;
 };
 } // namespace cer::details
