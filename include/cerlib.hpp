@@ -32,6 +32,7 @@
 #include <cerlib/Sound.hpp>
 #include <cerlib/SoundChannel.hpp>
 #include <cerlib/SoundTypes.hpp>
+#include <cerlib/Text.hpp>
 #include <cerlib/ToString.hpp>
 #include <cerlib/Tween.hpp>
 #include <cerlib/Util.hpp>

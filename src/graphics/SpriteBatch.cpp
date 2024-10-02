@@ -7,9 +7,11 @@
 #include "GraphicsDevice.hpp"
 #include "ImageImpl.hpp"
 #include "Tessellation2D.hpp"
+#include "TextImpl.hpp"
 #include "cerlib/Font.hpp"
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
+#include "cerlib/Text.hpp"
 #include "util/Util.hpp"
 #include <array>
 #include <cassert>
@@ -99,107 +101,21 @@ void SpriteBatch::draw_string(std::string_view                     text,
                               const std::optional<TextDecoration>& decoration)
 {
     verify_has_begun();
+    assert(font);
 
-    FontImpl* font_impl = font ? font.impl() : FontImpl::built_in(false);
+    shape_text(text, font, font_size, decoration, m_tmp_glyphs, m_tmp_decoration_rects);
 
-    const float line_height  = font_impl->line_height(font_size);
-    const float stroke_width = line_height * 0.1f;
+    do_draw_text(m_tmp_glyphs, m_tmp_decoration_rects, position, color);
+}
 
-    if (!decoration.has_value())
-    {
-        font_impl->for_each_glyph<false>(text, font_size, [&](uint32_t codepoint, Rectangle rect) {
-            const FontImpl::RasterizedGlyph& glyph =
-                font_impl->rasterized_glyph(codepoint, font_size);
+void SpriteBatch::draw_text(const Text& text, const Vector2& position, const Color& color)
+{
+    verify_has_begun();
+    assert(text);
 
-            const FontImpl::FontPage& page = font_impl->page(glyph.page_index);
+    const TextImpl& text_impl = *text.impl();
 
-            rect.x += position.x;
-            rect.y += position.y;
-
-            draw_sprite(
-                Sprite{
-                    .image    = page.atlas,
-                    .dst_rect = rect,
-                    .src_rect = glyph.uv_rect,
-                    .color    = color,
-                    .rotation = 0.0f,
-                    .origin   = Vector2(),
-                    .flip     = SpriteFlip::None,
-                },
-                SpriteShaderKind::Monochromatic);
-
-            return true;
-        });
-    }
-    else
-    {
-        assert(decoration.has_value());
-
-        font_impl->for_each_glyph<true>(
-            text,
-            font_size,
-            [&](uint32_t codepoint, Rectangle rect, const FontImpl::GlyphIterationExtras& extras) {
-                const FontImpl::RasterizedGlyph& glyph =
-                    font_impl->rasterized_glyph(codepoint, font_size);
-
-                const FontImpl::FontPage& page = font_impl->page(glyph.page_index);
-
-                rect.x += position.x;
-                rect.y += position.y;
-
-                draw_sprite(
-                    Sprite{
-                        .image    = page.atlas,
-                        .dst_rect = rect,
-                        .src_rect = glyph.uv_rect,
-                        .color    = color,
-                        .rotation = 0.0f,
-                        .origin   = Vector2(),
-                        .flip     = SpriteFlip::None,
-                    },
-                    SpriteShaderKind::Monochromatic);
-
-                if (extras.is_last_on_line)
-                {
-                    if (const TextUnderline* underline = std::get_if<TextUnderline>(&*decoration))
-                    {
-                        Rectangle underline_rect = extras.line_rect_thus_far;
-                        underline_rect.x += position.x;
-                        underline_rect.y += position.y;
-                        underline_rect.y += underline_rect.height;
-                        underline_rect.height = clamp(underline->thickness.value_or(stroke_width),
-                                                      1.0f,
-                                                      line_height * 0.5f);
-                        underline_rect.y += underline_rect.height / 2.0f;
-
-                        fill_rectangle(underline_rect,
-                                       underline->color.value_or(color),
-                                       0.0f,
-                                       Vector2());
-                    }
-                    else if (const auto* strikethrough =
-                                 std::get_if<TextStrikethrough>(&*decoration))
-                    {
-                        Rectangle underline_rect = extras.line_rect_thus_far;
-                        underline_rect.x += position.x;
-                        underline_rect.y += position.y;
-                        underline_rect.y += underline_rect.height / 2;
-                        underline_rect.height =
-                            clamp(strikethrough->thickness.value_or(stroke_width),
-                                  1.0f,
-                                  line_height * 0.5f);
-                        underline_rect.y -= underline_rect.height / 2.0f;
-
-                        fill_rectangle(underline_rect,
-                                       strikethrough->color.value_or(color),
-                                       0.0f,
-                                       Vector2());
-                    }
-                }
-
-                return true;
-            });
-    }
+    do_draw_text(text_impl.glyphs(), text_impl.decoration_rects(), position, color);
 }
 
 void SpriteBatch::fill_rectangle(const Rectangle& rectangle,
@@ -438,6 +354,29 @@ void SpriteBatch::render_sprite(const InternalSprite& sprite,
             .uv       = uv,
         };
         // NOLINTEND
+    }
+}
+
+void SpriteBatch::do_draw_text(std::span<const PreshapedGlyph>     glyphs,
+                               std::span<const TextDecorationRect> decoration_rects,
+                               const Vector2&                      offset,
+                               const Color&                        color)
+{
+    for (const PreshapedGlyph& glyph : glyphs)
+    {
+        draw_sprite(
+            Sprite{
+                .image    = glyph.image,
+                .dst_rect = glyph.dst_rect.offset(offset),
+                .src_rect = glyph.src_rect,
+                .color    = color,
+            },
+            SpriteShaderKind::Monochromatic);
+    }
+
+    for (const TextDecorationRect& deco : decoration_rects)
+    {
+        fill_rectangle(deco.rect.offset(offset), deco.color.value_or(color), 0.0f, {});
     }
 }
 } // namespace cer::details

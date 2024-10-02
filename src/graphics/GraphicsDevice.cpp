@@ -439,6 +439,12 @@ void GraphicsDevice::draw_string(std::string_view                     text,
     m_sprite_batch->draw_string(text, font, font_size, position, color, decoration);
 }
 
+void GraphicsDevice::draw_text(const Text& text, Vector2 position, const Color& color)
+{
+    ensure_category(Category::SpriteBatch);
+    m_sprite_batch->draw_text(text, position, color);
+}
+
 void GraphicsDevice::fill_rectangle(const Rectangle& rectangle,
                                     const Color&     color,
                                     float            rotation,
