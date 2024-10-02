@@ -95,12 +95,13 @@ git clone https://github.com/cemderv/cerlib
 cd cerlib
 ```
 
-The easiest way to start is to open the `mygame` folder in the editor / IDE of your choice. **It must support CMake-based projects**. You should then be able to select a preset such as `dev` and directly hit play and run your game.
+The easiest way to start is to open the `mygame` folder in the editor / IDE of your choice. **It must support CMake-based projects**. You should then be able to select a preset such as `debug` and directly hit play and run your game.
 
 #### Building from the command line
 
 ```bash
-cmake --workflow --preset dev
+cd mygame
+cmake --workflow --preset debug
 ```
 
 For a detailed introduction and tutorials, please visit the [Getting Started](https://cerlib.org/getting-started) page.
