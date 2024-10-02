@@ -31,11 +31,11 @@
 #include <emscripten/html5.h>
 #endif
 
-#if defined(__ANDROID__)
+#ifdef __ANDROID__
 #include <android/asset_manager_jni.h>
 #endif
 
-#if defined(__APPLE__)
+#if __APPLE__
 #include <TargetConditionals.h>
 #endif
 
@@ -43,8 +43,13 @@
 #include "graphics/opengl/OpenGLGraphicsDevice.hpp"
 #endif
 
-#ifdef LoadImage
-#undef LoadImage
+#ifdef CERLIB_ENABLE_IMGUI
+#include <imgui.h>
+#ifdef __EMSCRIPTEN__
+#include <backends/imgui_impl_sdl2.h>
+#else
+#include <backends/imgui_impl_sdl3.h>
+#endif
 #endif
 
 // clang-format off
@@ -121,11 +126,10 @@ GameImpl::GameImpl(bool enable_audio)
 
 #ifdef __EMSCRIPTEN__
     if (SDL_Init(init_flags) != 0)
-    {
 #else
     if (!SDL_Init(init_flags))
-    {
 #endif
+    {
         const auto error = SDL_GetError();
         CER_THROW_RUNTIME_ERROR("Failed to initialize the windowing system. Reason: {}", error);
     }
@@ -154,6 +158,8 @@ GameImpl::GameImpl(bool enable_audio)
     m_content_manager = std::make_unique<ContentManager>();
 
     open_initial_gamepads();
+
+    initialize_imgui();
 }
 
 GameImpl::~GameImpl() noexcept = default;
@@ -228,6 +234,15 @@ void GameImpl::set_draw_func(const DrawFunc& func)
 {
     m_draw_func = func;
 }
+
+#ifdef CERLIB_ENABLE_IMGUI
+
+void GameImpl::set_imgui_draw_func(const ImGuiDrawFunc& func)
+{
+    m_imgui_draw_func = func;
+}
+
+#endif
 
 void GameImpl::set_event_func(const EventFunc& func)
 {
@@ -416,26 +431,10 @@ void GameImpl::ensure_graphics_device_initialized(WindowImpl& first_window)
 {
     if (!m_graphics_device)
     {
-        log_verbose("Initializing device");
-
-        try
-        {
-#ifdef CERLIB_HAVE_OPENGL
-            m_graphics_device = std::make_unique<OpenGLGraphicsDevice>(first_window);
-#else
-            CER_THROW_RUNTIME_ERROR_STR("OpenGL is not available on this system.");
-#endif
-        }
-        catch (std::exception& ex)
-        {
-            std::ignore = ex;
-            log_debug("Device creation failed: {}", ex.what());
-            m_graphics_device.reset();
-            throw;
-        }
+        create_graphics_device(first_window);
     }
 
-    assert(m_graphics_device);
+    assert(m_graphics_device != nullptr && "Graphics device was somehow not created");
 }
 
 std::span<WindowImpl* const> GameImpl::windows() const
@@ -471,6 +470,42 @@ void GameImpl::open_initial_gamepads()
 #endif
 }
 
+void GameImpl::initialize_imgui()
+{
+#ifdef CERLIB_ENABLE_IMGUI
+    m_imgui_context.reset(ImGui::CreateContext());
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+    ImGui::StyleColorsLight();
+#endif
+}
+
+void GameImpl::create_graphics_device(WindowImpl& first_window)
+{
+    assert(!m_graphics_device && "Graphics device is already initialized");
+
+    log_verbose("Initializing device");
+
+    try
+    {
+#ifdef CERLIB_HAVE_OPENGL
+        m_graphics_device = std::make_unique<OpenGLGraphicsDevice>(first_window);
+#else
+        CER_THROW_RUNTIME_ERROR_STR("OpenGL is not available on this system.");
+#endif
+    }
+    catch (std::exception& ex)
+    {
+        std::ignore = ex;
+        log_debug("Device creation failed: {}", ex.what());
+        m_graphics_device.reset();
+        throw;
+    }
+}
+
 bool GameImpl::tick()
 {
     if (!m_is_running)
@@ -490,46 +525,22 @@ bool GameImpl::tick()
 
     process_events();
 
-    bool should_exit = false;
-
-    if (m_audio_device)
+    if (m_audio_device != nullptr)
     {
         m_audio_device->purge_sounds();
     }
 
-    const auto do_update = [this, &should_exit](GameTime game_time) {
-        if (m_update_func && !m_update_func(game_time))
-        {
-            should_exit = true;
-        }
-    };
+    do_time_measurement();
 
-    const Uint64 current_time   = SDL_GetPerformanceCounter();
-    const Uint64 time_frequency = SDL_GetPerformanceFrequency();
+    bool should_exit = false;
 
-    m_game_time.elapsed_time =
-        m_is_first_tick
-            ? 0
-            : (static_cast<double>(current_time) - static_cast<double>(m_previous_time)) * 1000 /
-                  static_cast<double>(time_frequency) * 0.001;
-
-    m_game_time.total_time += m_game_time.elapsed_time;
-    do_update(m_game_time);
-
-    m_previous_time = current_time;
-
-    if (m_draw_func)
+    // Do update()
+    if (m_update_func && !m_update_func(m_game_time))
     {
-        for (WindowImpl* window_impl : m_windows)
-        {
-            Window window{window_impl};
-            m_graphics_device->start_frame(window);
-
-            const auto _ = gsl::finally([this, &window] { m_graphics_device->end_frame(window); });
-
-            m_draw_func(window);
-        }
+        should_exit = true;
     }
+
+    do_draw();
 
     m_is_first_tick = false;
 
@@ -549,190 +560,213 @@ void GameImpl::process_events()
     SDL_Event event{};
     while (SDL_PollEvent(&event))
     {
-        switch (event.type)
-        {
-            case CER_EVENT_QUIT: {
-                m_is_running = false;
-                break;
-            }
-            case CER_EVENT_WINDOW_SHOWN: {
-                raise_event(WindowShownEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
+        process_single_event(event, input_impl);
+    }
 
-                break;
-            }
-            case CER_EVENT_WINDOW_HIDDEN: {
-                raise_event(WindowHiddenEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
+    input_impl.update_key_states();
+}
 
-                break;
-            }
-            case CER_EVENT_WINDOW_MOVED: {
-                raise_event(WindowMovedEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_RESIZED: {
-                raise_event(WindowResizedEvent{
-                    .timestamp  = event.window.timestamp,
-                    .window     = find_window_by_sdl_window_id(event.window.windowID),
-                    .new_width  = static_cast<uint32_t>(event.window.data1),
-                    .new_height = static_cast<uint32_t>(event.window.data2),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_MINIMIZED: {
-                raise_event(WindowMinimizedEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_MAXIMIZED: {
-                raise_event(WindowMaximizedEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_ENTER: {
-                raise_event(WindowGotMouseFocusEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_LEAVE: {
-                raise_event(WindowLostMouseFocusEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_FOCUS_GAINED: {
-                raise_event(WindowGotKeyboardFocusEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_FOCUS_LOST: {
-                raise_event(WindowLostKeyboardFocusEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_WINDOW_CLOSE: {
-                raise_event(WindowCloseEvent{
-                    .timestamp = event.window.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.window.windowID),
-                });
-
-                break;
-            }
-            case CER_EVENT_KEYDOWN: {
+void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_impl)
+{
+#ifdef CERLIB_ENABLE_IMGUI
 #ifdef __EMSCRIPTEN__
-                const auto [key, modifiers] = InputImpl::from_sdl_keysym(event.key.keysym);
+    ImGui_ImplSDL2_ProcessEvent(&event);
 #else
-                const auto [key, modifiers] =
-                    InputImpl::from_sdl_keysym(event.key.key, event.key.mod);
+    ImGui_ImplSDL3_ProcessEvent(&event);
 #endif
 
-                raise_event(KeyPressEvent{
-                    .timestamp = event.key.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.key.windowID),
-                    .key       = key,
-                    .modifiers = modifiers,
-                    .is_repeat = event.key.repeat != 0,
-                });
-
-                break;
-            }
-            case CER_EVENT_KEYUP: {
-#ifdef __EMSCRIPTEN__
-                const auto [key, modifiers] = InputImpl::from_sdl_keysym(event.key.keysym);
-#else
-                const auto [key, modifiers] =
-                    InputImpl::from_sdl_keysym(event.key.key, event.key.mod);
+    const ImGuiIO& io = ImGui::GetIO();
 #endif
 
-                raise_event(KeyReleaseEvent{
-                    .timestamp = event.key.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.key.windowID),
-                    .key       = key,
-                    .modifiers = modifiers,
-                    .is_repeat = event.key.repeat != 0,
-                });
+    switch (event.type)
+    {
+        case CER_EVENT_QUIT: {
+            m_is_running = false;
+            break;
+        }
+        case CER_EVENT_WINDOW_SHOWN: {
+            raise_event(WindowShownEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
 
+            break;
+        }
+        case CER_EVENT_WINDOW_HIDDEN: {
+            raise_event(WindowHiddenEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_MOVED: {
+            raise_event(WindowMovedEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_RESIZED: {
+            raise_event(WindowResizedEvent{
+                .timestamp  = event.window.timestamp,
+                .window     = find_window_by_sdl_window_id(event.window.windowID),
+                .new_width  = static_cast<uint32_t>(event.window.data1),
+                .new_height = static_cast<uint32_t>(event.window.data2),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_MINIMIZED: {
+            raise_event(WindowMinimizedEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_MAXIMIZED: {
+            raise_event(WindowMaximizedEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_ENTER: {
+            raise_event(WindowGotMouseFocusEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_LEAVE: {
+            raise_event(WindowLostMouseFocusEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_FOCUS_GAINED: {
+            raise_event(WindowGotKeyboardFocusEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_FOCUS_LOST: {
+            raise_event(WindowLostKeyboardFocusEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_WINDOW_CLOSE: {
+            raise_event(WindowCloseEvent{
+                .timestamp = event.window.timestamp,
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
+            });
+
+            break;
+        }
+        case CER_EVENT_KEYDOWN: {
+#ifdef CERLIB_ENABLE_IMGUI
+            if (io.WantCaptureKeyboard)
+            {
                 break;
             }
-            case CER_EVENT_MOUSEMOTION: {
-                const Vector2 position{static_cast<float>(event.motion.x),
-                                       static_cast<float>(event.motion.y)};
+#endif
 
-                const Vector2 delta{static_cast<float>(event.motion.xrel),
-                                    static_cast<float>(event.motion.yrel)};
+#ifdef __EMSCRIPTEN__
+            const auto [key, modifiers] = InputImpl::from_sdl_keysym(event.key.keysym);
+#else
+            const auto [key, modifiers] = InputImpl::from_sdl_keysym(event.key.key, event.key.mod);
+#endif
 
-                raise_event(MouseMoveEvent{
-                    .timestamp = event.motion.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.motion.windowID),
-                    .id        = event.motion.which,
-                    .position  = position,
-                    .delta     = delta,
-                });
+            raise_event(KeyPressEvent{
+                .timestamp = event.key.timestamp,
+                .window    = find_window_by_sdl_window_id(event.key.windowID),
+                .key       = key,
+                .modifiers = modifiers,
+                .is_repeat = event.key.repeat != 0,
+            });
 
+            break;
+        }
+        case CER_EVENT_KEYUP: {
+#ifdef CERLIB_ENABLE_IMGUI
+            if (io.WantCaptureKeyboard)
+            {
                 break;
             }
-            case CER_EVENT_MOUSEBUTTONDOWN:
-            case CER_EVENT_MOUSEBUTTONUP: {
-                const Uint64      timestamp = event.button.timestamp;
-                Window            window    = find_window_by_sdl_window_id(event.button.windowID);
-                const Vector2     position  = {static_cast<float>(event.button.x),
-                                               static_cast<float>(event.button.y)};
-                const auto        id        = event.button.which;
-                const MouseButton button    = InputImpl::from_sdl_mouse_button(event.button.button);
+#endif
 
-                if (event.button.type == CER_EVENT_MOUSEBUTTONDOWN)
+#ifdef __EMSCRIPTEN__
+            const auto [key, modifiers] = InputImpl::from_sdl_keysym(event.key.keysym);
+#else
+            const auto [key, modifiers] = InputImpl::from_sdl_keysym(event.key.key, event.key.mod);
+#endif
+
+            raise_event(KeyReleaseEvent{
+                .timestamp = event.key.timestamp,
+                .window    = find_window_by_sdl_window_id(event.key.windowID),
+                .key       = key,
+                .modifiers = modifiers,
+                .is_repeat = event.key.repeat != 0,
+            });
+
+            break;
+        }
+        case CER_EVENT_MOUSEMOTION: {
+#ifdef CERLIB_ENABLE_IMGUI
+            if (io.WantCaptureMouse)
+            {
+                break;
+            }
+#endif
+
+            const Vector2 position{static_cast<float>(event.motion.x),
+                                   static_cast<float>(event.motion.y)};
+
+            const Vector2 delta{static_cast<float>(event.motion.xrel),
+                                static_cast<float>(event.motion.yrel)};
+
+            raise_event(MouseMoveEvent{
+                .timestamp = event.motion.timestamp,
+                .window    = find_window_by_sdl_window_id(event.motion.windowID),
+                .id        = event.motion.which,
+                .position  = position,
+                .delta     = delta,
+            });
+
+            break;
+        }
+        case CER_EVENT_MOUSEBUTTONDOWN:
+        case CER_EVENT_MOUSEBUTTONUP: {
+#ifdef CERLIB_ENABLE_IMGUI
+            if (io.WantCaptureMouse)
+            {
+                break;
+            }
+#endif
+
+            const Uint64      timestamp = event.button.timestamp;
+            Window            window    = find_window_by_sdl_window_id(event.button.windowID);
+            const Vector2     position  = {static_cast<float>(event.button.x),
+                                           static_cast<float>(event.button.y)};
+            const auto        id        = event.button.which;
+            const MouseButton button    = InputImpl::from_sdl_mouse_button(event.button.button);
+
+            if (event.button.type == CER_EVENT_MOUSEBUTTONDOWN)
+            {
+                if (event.button.clicks == 1)
                 {
-                    if (event.button.clicks == 1)
-                    {
-                        raise_event(MouseButtonPressEvent{
-                            .timestamp = timestamp,
-                            .window    = std::move(window),
-                            .id        = id,
-                            .button    = button,
-                            .position  = position,
-                        });
-                    }
-                    else if (event.button.clicks == 2)
-                    {
-                        raise_event(MouseDoubleClickEvent{
-                            .timestamp = timestamp,
-                            .window    = std::move(window),
-                            .id        = id,
-                            .button    = button,
-                            .position  = position,
-                        });
-                    }
-                }
-                else
-                {
-                    raise_event(MouseButtonReleaseEvent{
+                    raise_event(MouseButtonPressEvent{
                         .timestamp = timestamp,
                         .window    = std::move(window),
                         .id        = id,
@@ -740,150 +774,249 @@ void GameImpl::process_events()
                         .position  = position,
                     });
                 }
-
-                break;
-            }
-            case CER_EVENT_MOUSEWHEEL: {
-                const Vector2 position = {static_cast<float>(event.wheel.x),
-                                          static_cast<float>(event.wheel.y)};
-
-#ifdef __EMSCRIPTEN__
-                Vector2 delta{float(event.wheel.preciseX), float(event.wheel.preciseY)};
-#else
-                Vector2 delta{event.wheel.x, event.wheel.y};
-#endif
-
-                if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+                else if (event.button.clicks == 2)
                 {
-                    delta = -delta;
-                }
-
-                raise_event(MouseWheelEvent{
-                    .timestamp = event.motion.timestamp,
-                    .window    = find_window_by_sdl_window_id(event.motion.windowID),
-                    .id        = event.motion.which,
-                    .position  = position,
-                    .delta     = delta,
-                });
-
-                input_impl.set_mouse_wheel_delta(delta);
-
-                break;
-            }
-            case SDL_EVENT_GAMEPAD_ADDED: {
-#ifdef __EMSCRIPTEN__
-                const SDL_JoystickID sdl_joystick_id = event.jdevice.which;
-#else
-                const SDL_JoystickID sdl_joystick_id = event.gdevice.which;
-#endif
-
-                const auto it_existing_gamepad = find_gamepad_by_sdl_joystick_id(sdl_joystick_id);
-
-                if (it_existing_gamepad == m_connected_gamepads.cend())
-                {
-#ifdef __EMSCRIPTEN__
-                    const auto sdl_gamepad = SDL_GameControllerOpen(sdl_joystick_id);
-#else
-                    SDL_Gamepad* sdl_gamepad = SDL_OpenGamepad(sdl_joystick_id);
-#endif
-
-                    if (sdl_gamepad != nullptr)
-                    {
-                        GamepadImpl* gamepad_impl =
-                            std::make_unique<GamepadImpl>(sdl_joystick_id, sdl_gamepad).release();
-
-                        m_connected_gamepads.emplace_back(gamepad_impl);
-
-                        raise_event(GamepadConnectedEvent{
-                            .gamepad = m_connected_gamepads.back(),
-                        });
-                    }
-                }
-                break;
-            }
-            case SDL_EVENT_GAMEPAD_REMOVED: {
-#ifdef __EMSCRIPTEN__
-                const SDL_JoystickID id = event.cdevice.which;
-#else
-                const SDL_JoystickID id = event.gdevice.which;
-#endif
-
-                const auto it = std::ranges::find_if(m_connected_gamepads, [id](const auto& e) {
-                    return e.impl()->joystick_id() == id;
-                });
-
-                if (it != m_connected_gamepads.cend())
-                {
-                    raise_event(GamepadDisconnectedEvent{
-                        .gamepad = *it,
-                    });
-
-#ifdef __EMSCRIPTEN__
-                    SDL_GameControllerClose(it->impl()->sdl_gamepad());
-#else
-                    SDL_CloseGamepad(it->impl()->sdl_gamepad());
-#endif
-
-                    m_connected_gamepads.erase(it);
-                }
-                break;
-            }
-            case CER_EVENT_TOUCH_FINGER_UP:
-            case CER_EVENT_TOUCH_FINGER_DOWN:
-            case CER_EVENT_TOUCH_FINGER_MOTION: {
-                const auto type = [t = event.type] {
-                    switch (t)
-                    {
-                        case CER_EVENT_TOUCH_FINGER_UP: return TouchFingerEventType::Release;
-                        case CER_EVENT_TOUCH_FINGER_DOWN: return TouchFingerEventType::Press;
-                        case CER_EVENT_TOUCH_FINGER_MOTION: return TouchFingerEventType::Motion;
-                        default: break;
-                    }
-                    return static_cast<TouchFingerEventType>(-1);
-                }();
-
-                if (type != static_cast<TouchFingerEventType>(-1))
-                {
-                    Window        window = find_window_by_sdl_window_id(event.tfinger.windowID);
-                    const Vector2 window_size = window.size_px();
-                    const Vector2 position =
-                        Vector2{event.tfinger.x, event.tfinger.y} * window_size;
-                    const Vector2 delta = Vector2{event.tfinger.dx, event.tfinger.dy} * window_size;
-
-                    const auto evt = TouchFingerEvent{
-                        .type      = type,
-                        .timestamp = event.tfinger.timestamp,
+                    raise_event(MouseDoubleClickEvent{
+                        .timestamp = timestamp,
                         .window    = std::move(window),
-#ifdef __EMSCRIPTEN__
-                        .touch_id  = static_cast<uint64_t>(event.tfinger.touchId),
-                        .finger_id = static_cast<uint64_t>(event.tfinger.fingerId),
-#else
-                        .touch_id  = event.tfinger.touchID,
-                        .finger_id = event.tfinger.fingerID,
-#endif
-                        .position = position,
-                        .delta    = delta,
-                        .pressure = event.tfinger.pressure,
-                    };
-
-                    raise_event(evt);
+                        .id        = id,
+                        .button    = button,
+                        .position  = position,
+                    });
                 }
-
-                break;
             }
-            case CER_EVENT_TEXT_INPUT: {
-                Window window = find_window_by_sdl_window_id(event.text.windowID);
-                raise_event(TextInputEvent{
-                    .timestamp = event.text.timestamp,
+            else
+            {
+                raise_event(MouseButtonReleaseEvent{
+                    .timestamp = timestamp,
                     .window    = std::move(window),
-                    .text      = event.text.text,
+                    .id        = id,
+                    .button    = button,
+                    .position  = position,
                 });
             }
-            default: break;
+
+            break;
+        }
+        case CER_EVENT_MOUSEWHEEL: {
+#ifdef CERLIB_ENABLE_IMGUI
+            if (io.WantCaptureMouse)
+            {
+                break;
+            }
+#endif
+
+            const Vector2 position = {static_cast<float>(event.wheel.x),
+                                      static_cast<float>(event.wheel.y)};
+
+#ifdef __EMSCRIPTEN__
+            Vector2 delta{float(event.wheel.preciseX), float(event.wheel.preciseY)};
+#else
+            Vector2 delta{event.wheel.x, event.wheel.y};
+#endif
+
+            if (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+            {
+                delta = -delta;
+            }
+
+            raise_event(MouseWheelEvent{
+                .timestamp = event.motion.timestamp,
+                .window    = find_window_by_sdl_window_id(event.motion.windowID),
+                .id        = event.motion.which,
+                .position  = position,
+                .delta     = delta,
+            });
+
+            input_impl.set_mouse_wheel_delta(delta);
+
+            break;
+        }
+        case SDL_EVENT_GAMEPAD_ADDED: {
+#ifdef __EMSCRIPTEN__
+            const SDL_JoystickID sdl_joystick_id = event.jdevice.which;
+#else
+            const SDL_JoystickID sdl_joystick_id = event.gdevice.which;
+#endif
+
+            const auto it_existing_gamepad = find_gamepad_by_sdl_joystick_id(sdl_joystick_id);
+
+            if (it_existing_gamepad == m_connected_gamepads.cend())
+            {
+#ifdef __EMSCRIPTEN__
+                const auto sdl_gamepad = SDL_GameControllerOpen(sdl_joystick_id);
+#else
+                SDL_Gamepad* sdl_gamepad = SDL_OpenGamepad(sdl_joystick_id);
+#endif
+
+                if (sdl_gamepad != nullptr)
+                {
+                    GamepadImpl* gamepad_impl =
+                        std::make_unique<GamepadImpl>(sdl_joystick_id, sdl_gamepad).release();
+
+                    m_connected_gamepads.emplace_back(gamepad_impl);
+
+                    raise_event(GamepadConnectedEvent{
+                        .gamepad = m_connected_gamepads.back(),
+                    });
+                }
+            }
+            break;
+        }
+        case SDL_EVENT_GAMEPAD_REMOVED: {
+#ifdef __EMSCRIPTEN__
+            const SDL_JoystickID id = event.cdevice.which;
+#else
+            const SDL_JoystickID id = event.gdevice.which;
+#endif
+
+            const auto it = std::ranges::find_if(m_connected_gamepads, [id](const auto& e) {
+                return e.impl()->joystick_id() == id;
+            });
+
+            if (it != m_connected_gamepads.cend())
+            {
+                raise_event(GamepadDisconnectedEvent{
+                    .gamepad = *it,
+                });
+
+#ifdef __EMSCRIPTEN__
+                SDL_GameControllerClose(it->impl()->sdl_gamepad());
+#else
+                SDL_CloseGamepad(it->impl()->sdl_gamepad());
+#endif
+
+                m_connected_gamepads.erase(it);
+            }
+            break;
+        }
+        case CER_EVENT_TOUCH_FINGER_UP:
+        case CER_EVENT_TOUCH_FINGER_DOWN:
+        case CER_EVENT_TOUCH_FINGER_MOTION: {
+            const auto type = [t = event.type] {
+                switch (t)
+                {
+                    case CER_EVENT_TOUCH_FINGER_UP: return TouchFingerEventType::Release;
+                    case CER_EVENT_TOUCH_FINGER_DOWN: return TouchFingerEventType::Press;
+                    case CER_EVENT_TOUCH_FINGER_MOTION: return TouchFingerEventType::Motion;
+                    default: break;
+                }
+                return static_cast<TouchFingerEventType>(-1);
+            }();
+
+            if (type != static_cast<TouchFingerEventType>(-1))
+            {
+                Window        window      = find_window_by_sdl_window_id(event.tfinger.windowID);
+                const Vector2 window_size = window.size_px();
+                const Vector2 position    = Vector2{event.tfinger.x, event.tfinger.y} * window_size;
+                const Vector2 delta = Vector2{event.tfinger.dx, event.tfinger.dy} * window_size;
+
+                const auto evt = TouchFingerEvent{
+                    .type      = type,
+                    .timestamp = event.tfinger.timestamp,
+                    .window    = std::move(window),
+#ifdef __EMSCRIPTEN__
+                    .touch_id  = static_cast<uint64_t>(event.tfinger.touchId),
+                    .finger_id = static_cast<uint64_t>(event.tfinger.fingerId),
+#else
+                    .touch_id  = event.tfinger.touchID,
+                    .finger_id = event.tfinger.fingerID,
+#endif
+                    .position = position,
+                    .delta    = delta,
+                    .pressure = event.tfinger.pressure,
+                };
+
+                raise_event(evt);
+            }
+
+            break;
+        }
+        case CER_EVENT_TEXT_INPUT: {
+#ifdef CERLIB_ENABLE_IMGUI
+            if (io.WantTextInput)
+            {
+                break;
+            }
+#endif
+
+            Window window = find_window_by_sdl_window_id(event.text.windowID);
+            raise_event(TextInputEvent{
+                .timestamp = event.text.timestamp,
+                .window    = std::move(window),
+                .text      = event.text.text,
+            });
+        }
+        default: break;
+    }
+}
+
+void GameImpl::do_time_measurement()
+{
+    const Uint64 current_time   = SDL_GetPerformanceCounter();
+    const Uint64 time_frequency = SDL_GetPerformanceFrequency();
+
+    m_game_time.elapsed_time =
+        m_is_first_tick
+            ? 0
+            : (static_cast<double>(current_time) - static_cast<double>(m_previous_time)) * 1000 /
+                  static_cast<double>(time_frequency) * 0.001;
+
+    m_game_time.total_time += m_game_time.elapsed_time;
+
+    m_previous_time = current_time;
+}
+
+void GameImpl::do_draw()
+{
+    if (m_draw_func)
+    {
+        for (WindowImpl* window_impl : m_windows)
+        {
+            Window window{window_impl};
+            m_graphics_device->start_frame(window);
+
+            // Ensure that the frame ends even if an exception is thrown during this frame.
+            const auto end_frame_guard = gsl::finally([this, &window] {
+#ifdef CERLIB_ENABLE_IMGUI
+                const auto post_draw_callback = [this, &window] { do_imgui_draw(window); };
+#else
+                const auto post_draw_callback = [] {};
+#endif
+
+                m_graphics_device->end_frame(window, post_draw_callback);
+            });
+
+            m_draw_func(window);
         }
     }
+}
 
-    input_impl.update_key_states();
+void GameImpl::do_imgui_draw(const Window& window)
+{
+#ifdef CERLIB_ENABLE_IMGUI
+    if (m_imgui_draw_func)
+    {
+        m_graphics_device->start_imgui_frame(window);
+
+        // Ensure that the ImGui frame ends even if an exception is thrown during this
+        // frame.
+        const auto end_imgui_frame_guard =
+            gsl::finally([this, &window] { m_graphics_device->end_imgui_frame(window); });
+
+#ifdef __EMSCRIPTEN__
+        ImGui_ImplSDL2_NewFrame();
+#else
+        ImGui_ImplSDL3_NewFrame();
+#endif
+
+        ImGui::NewFrame();
+
+        m_imgui_draw_func(window);
+
+        ImGui::Render();
+    }
+#endif
 }
 
 void GameImpl::notify_window_created(WindowImpl* window)

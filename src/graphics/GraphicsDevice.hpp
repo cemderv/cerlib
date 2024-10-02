@@ -14,9 +14,9 @@
 #include "cerlib/Shader.hpp"
 #include "cerlib/Window.hpp"
 #include "util/NonCopyable.hpp"
-
 #include <gsl/pointers>
 #include <optional>
+#include <span>
 
 #define LOAD_DEVICE_IMPL auto& device_impl = details::GameImpl::instance().graphics_device()
 
@@ -42,7 +42,11 @@ class GraphicsDevice
 
     void start_frame(const Window& window);
 
-    void end_frame(const Window& window);
+    void end_frame(const Window& window, const std::function<void()>& post_draw_callback);
+
+    void start_imgui_frame(const Window& window);
+
+    void end_imgui_frame(const Window& window);
 
     gsl::not_null<ShaderImpl*> demand_create_shader(std::string_view                  name,
                                                     std::string_view                  source_code,
@@ -117,6 +121,10 @@ class GraphicsDevice
     virtual void on_start_frame(const Window& window) = 0;
 
     virtual void on_end_frame(const Window& window) = 0;
+
+    virtual void on_start_imgui_frame(const Window& window) = 0;
+
+    virtual void on_end_imgui_frame(const Window& window) = 0;
 
     virtual void on_set_canvas(const Image& canvas, const Rectangle& viewport) = 0;
 

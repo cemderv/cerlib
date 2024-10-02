@@ -7,6 +7,7 @@
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
 #include "util/InternalError.hpp"
+#include "util/Platform.hpp"
 
 namespace cer::details
 {
@@ -28,13 +29,33 @@ OpenGLWindow::OpenGLWindow(std::string_view        title,
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, min_required_gl_major_version);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, min_required_gl_minor_version);
 
-#ifdef USE_OPENGL_DEBUGGING
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+    // Set GL context flags
+    {
+        int flags = 0;
+
+#ifdef __APPLE__
+        flags |= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
 #endif
 
+#ifdef USE_OPENGL_DEBUGGING
+        flags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+#endif
+
+        if (flags != 0)
+        {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags);
+        }
+    }
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+#ifdef CERLIB_ENABLE_IMGUI
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+#else
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+#endif
 
     create_sdl_window(SDL_WINDOW_OPENGL);
 
@@ -92,5 +113,10 @@ void OpenGLWindow::handle_resize_event()
 void OpenGLWindow::make_context_current()
 {
     SDL_GL_MakeCurrent(sdl_window(), m_gl_context);
+}
+
+SDL_GLContext OpenGLWindow::sdl_gl_context() const
+{
+    return m_gl_context;
 }
 } // namespace cer::details

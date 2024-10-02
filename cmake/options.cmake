@@ -47,6 +47,12 @@ option(
 )
 
 option(
+  CERLIB_ENABLE_IMGUI
+  "Enable and provide ImGui as part of the cerlib API"
+  ON
+)
+
+option(
   CERLIB_BUILD_PLATFORMER_DEMO
   "Build the platformer demo game"
   ${is_root_directory}

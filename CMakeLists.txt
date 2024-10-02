@@ -46,8 +46,6 @@ include(cmake/options.cmake)
 include(cmake/compiler_flags.cmake)
 include(cmake/bin2header.cmake)
 
-set(cerlib_have_opengl TRUE)
-
 # Dependencies & main library
 include(cmake/dependencies.cmake)
 add_subdirectory(src)

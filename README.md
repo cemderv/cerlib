@@ -16,6 +16,7 @@
 
 - Simple and lightweight cross-platform library focused on 2D game development
 - App framework
+  - Based on SDL
 - Content management system
     - Images: .png, .jpg, .bmp, .dds, .hdr, .tga, .psd, .gif
     - Generation of mipmaps

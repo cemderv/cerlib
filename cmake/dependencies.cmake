@@ -26,7 +26,7 @@ CPMAddPackage(
 # SoLoud
 CPMAddPackage(
   NAME SoLoud
-  GITHUB_REPOSITORY c-dervis/soloud
+  GITHUB_REPOSITORY cemderv/soloud
   GIT_TAG v0.0.1
   GIT_SHALLOW
   SYSTEM
@@ -67,11 +67,21 @@ CPMAddPackage(
 # cerlib's OpenGL loader
 CPMAddPackage(
   NAME opengl_loader
-  GITHUB_REPOSITORY c-dervis/opengl-loader
+  GITHUB_REPOSITORY cemderv/opengl-loader
   GIT_TAG v0.0.2
   GIT_SHALLOW
   SYSTEM
 )
+
+# ImGui
+if (CERLIB_ENABLE_IMGUI)
+  CPMAddPackage(
+    NAME ImGui
+    GITHUB_REPOSITORY ocornut/imgui
+    VERSION 1.91.2
+    GIT_SHALLOW
+  )
+endif()
 
 if (NOT EMSCRIPTEN)
   CPMAddPackage(

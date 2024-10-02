@@ -24,6 +24,10 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
 
     void on_end_frame(const Window& window) override;
 
+    void on_start_imgui_frame(const Window& window) override;
+
+    void on_end_imgui_frame(const Window& window) override;
+
     void on_set_canvas(const Image& canvas, const Rectangle& viewport) override;
 
     void on_set_scissor_rects(std::span<const Rectangle> scissor_rects) override;

@@ -32,11 +32,18 @@ Game::Game(bool enable_audio)
 {
     details::GameImpl::init_instance(enable_audio);
 
-    auto& game_impl = details::GameImpl::instance();
+    details::GameImpl& game_impl = details::GameImpl::instance();
 
     game_impl.set_load_func([this] { load_content(); });
+
     game_impl.set_update_func([this](const GameTime& time) { return update(time); });
+
     game_impl.set_draw_func([this](const Window& window) { draw(window); });
+
+#ifdef CERLIB_ENABLE_IMGUI
+    game_impl.set_imgui_draw_func([this](const Window& window) { draw_imgui(window); });
+#endif
+
     game_impl.set_event_func([this](const details::Event& event) {
         std::visit(
             EventSwitch{
@@ -119,6 +126,11 @@ bool Game::update(const GameTime& time)
 }
 
 void Game::draw(const Window& window)
+{
+    CERLIB_UNUSED(window);
+}
+
+void Game::draw_imgui(const Window& window)
 {
     CERLIB_UNUSED(window);
 }
