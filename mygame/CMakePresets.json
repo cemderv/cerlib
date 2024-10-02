@@ -31,13 +31,13 @@
       }
     },
     {
-      "name": "debug-wasm",
+      "name": "wasm-debug",
       "displayName": "Build the game for WebAssembly in debug mode",
       "inherits": "debug",
       "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
     },
     {
-      "name": "release-wasm",
+      "name": "wasm",
       "displayName": "Build the game for WebAssembly in release mode",
       "inherits": "release",
       "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
@@ -82,14 +82,14 @@
       "configurePreset": "release"
     },
     {
-      "name": "debug-wasm",
+      "name": "wasm-debug",
       "inherits": "build-base",
-      "configurePreset": "debug-wasm"
+      "configurePreset": "wasm-debug"
     },
     {
-      "name": "release-wasm",
+      "name": "wasm",
       "inherits": "build-base",
-      "configurePreset": "release-wasm"
+      "configurePreset": "wasm"
     },
     {
       "name": "vs2022",
@@ -104,6 +104,19 @@
   ],
   "workflowPresets": [
     {
+      "name": "debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "debug"
+        },
+        {
+          "type": "build",
+          "name": "debug"
+        }
+      ]
+    },
+    {
       "name": "release",
       "steps": [
         {
@@ -117,15 +130,15 @@
       ]
     },
     {
-      "name": "release-wasm",
+      "name": "wasm",
       "steps": [
         {
           "type": "configure",
-          "name": "release-wasm"
+          "name": "wasm"
         },
         {
           "type": "build",
-          "name": "release-wasm"
+          "name": "wasm"
         }
       ]
     }
