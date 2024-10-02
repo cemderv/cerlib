@@ -78,10 +78,18 @@ void GraphicsDevice::start_frame(const Window& window)
     on_start_frame(window);
 }
 
-void GraphicsDevice::end_frame(const Window& window)
+void GraphicsDevice::end_frame(const Window&                window,
+                               const std::function<void()>& post_draw_callback)
 {
     flush_draw_calls();
+
+    if (post_draw_callback)
+    {
+        post_draw_callback();
+    }
+
     on_end_frame(window);
+
     m_current_window = {};
     m_canvas         = {};
 
@@ -89,6 +97,16 @@ void GraphicsDevice::end_frame(const Window& window)
     {
         impl->m_is_in_use = false;
     }
+}
+
+void GraphicsDevice::start_imgui_frame(const Window& window)
+{
+    on_start_imgui_frame(window);
+}
+
+void GraphicsDevice::end_imgui_frame(const Window& window)
+{
+    on_end_imgui_frame(window);
 }
 
 static ShaderParameterType to_parameter_type(const shadercompiler::Type& type)

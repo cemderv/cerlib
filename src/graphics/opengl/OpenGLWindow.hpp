@@ -27,6 +27,8 @@ class OpenGLWindow final : public WindowImpl
 
     void make_context_current();
 
+    SDL_GLContext sdl_gl_context() const;
+
   private:
     SDL_GLContext m_gl_context{};
 };

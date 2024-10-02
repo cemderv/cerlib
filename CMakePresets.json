@@ -17,6 +17,17 @@
       }
     },
     {
+      "name": "wasm-base",
+      "hidden": true,
+      "inherits": "default",
+      "generator": "Ninja",
+      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "cacheVariables": {
+        "CERLIB_ENABLE_CLANG_TIDY": "OFF",
+        "CERLIB_ENABLE_TESTS": "OFF"
+      }
+    },
+    {
       "name": "dev",
       "inherits": "default",
       "cacheVariables": {
@@ -26,7 +37,7 @@
       }
     },
     {
-      "name": "release-native",
+      "name": "release",
       "inherits": "default",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
@@ -34,18 +45,22 @@
       }
     },
     {
-      "name": "release-wasm",
-      "inherits": "release-native",
-      "generator": "Ninja",
-      "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+      "name": "wasm",
+      "inherits": "wasm-base",
       "cacheVariables": {
-        "CERLIB_ENABLE_CLANG_TIDY": "OFF",
-        "CERLIB_ENABLE_TESTS": "OFF"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
-      "name": "release-android",
-      "inherits": "release-native",
+      "name": "wasm-debug",
+      "inherits": "wasm-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "android",
+      "inherits": "release",
       "generator": "Ninja",
       "toolchainFile": "$env{ANDROID_SDK}/ndk/$env{ANDROID_NDK_VERSION}/build/cmake/android.toolchain.cmake",
       "cacheVariables": {
@@ -68,19 +83,24 @@
       "configurePreset": "dev"
     },
     {
-      "name": "release-native",
+      "name": "release",
       "inherits": "build-base",
-      "configurePreset": "release-native"
+      "configurePreset": "release"
     },
     {
-      "name": "release-wasm",
+      "name": "wasm",
       "inherits": "build-base",
-      "configurePreset": "release-wasm"
+      "configurePreset": "wasm"
     },
     {
-      "name": "release-android",
+      "name": "wasm-debug",
       "inherits": "build-base",
-      "configurePreset": "release-android"
+      "configurePreset": "wasm-debug"
+    },
+    {
+      "name": "android",
+      "inherits": "build-base",
+      "configurePreset": "android"
     }
   ],
   "workflowPresets": [
@@ -98,15 +118,54 @@
       ]
     },
     {
-      "name": "release-native",
+      "name": "release",
       "steps": [
         {
           "type": "configure",
-          "name": "release-native"
+          "name": "release"
         },
         {
           "type": "build",
-          "name": "release-native"
+          "name": "release"
+        }
+      ]
+    },
+    {
+      "name": "wasm",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "wasm"
+        },
+        {
+          "type": "build",
+          "name": "wasm"
+        }
+      ]
+    },
+    {
+      "name": "wasm-debug",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "wasm-debug"
+        },
+        {
+          "type": "build",
+          "name": "wasm-debug"
+        }
+      ]
+    },
+    {
+      "name": "android",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "android"
+        },
+        {
+          "type": "build",
+          "name": "android"
         }
       ]
     }
