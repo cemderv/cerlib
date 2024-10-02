@@ -6,6 +6,8 @@ project(cerlib_imgui LANGUAGES CXX)
 
 add_library(cerlib_imgui STATIC)
 
+target_compile_features(cerlib_imgui PRIVATE cxx_std_17)
+
 # Provide the user access to the ImGui API.
 target_include_directories(cerlib_imgui SYSTEM PUBLIC ${ImGui_SOURCE_DIR})
 
@@ -22,12 +24,12 @@ if (EMSCRIPTEN)
     ${ImGui_SOURCE_DIR}/backends/imgui_impl_sdl2.h
     ${ImGui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
   )
-else()
+else ()
   target_sources(cerlib_imgui PRIVATE
     ${ImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.h
     ${ImGui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
   )
-endif()
+endif ()
 
 # Graphics API-specific files
 if (cerlib_gfx_backend STREQUAL "OpenGL")
@@ -38,8 +40,8 @@ if (cerlib_gfx_backend STREQUAL "OpenGL")
 
   if (ANDROID)
     target_link_libraries(cerlib_imgui PRIVATE GLESv3 EGL)
-  endif()
-endif()
+  endif ()
+endif ()
 
 # We use ImGui's SDL variant, so provide it access to SDL.
 target_link_libraries(cerlib_imgui PRIVATE cerlib_SDL)
