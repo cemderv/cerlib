@@ -25,7 +25,7 @@ class Font;
  *
  * @ingroup Graphics
  */
-class CERLIB_API Text
+class Text
 {
     CERLIB_DECLARE_OBJECT(Text);
 

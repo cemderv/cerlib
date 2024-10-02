@@ -17,7 +17,7 @@ class Expr;
 class Scope;
 class Decl;
 
-class CERLIB_API_INTERNAL Type
+class Type
 {
   protected:
     explicit Type(const SourceLocation& location);
@@ -59,7 +59,7 @@ class CERLIB_API_INTERNAL Type
     SourceLocation m_Location;
 };
 
-class CERLIB_API_INTERNAL IntType final : public Type
+class IntType final : public Type
 {
   public:
     IntType();
@@ -73,7 +73,7 @@ class CERLIB_API_INTERNAL IntType final : public Type
     bool is_scalar_type() const override;
 };
 
-class CERLIB_API_INTERNAL BoolType final : public Type
+class BoolType final : public Type
 {
   public:
     BoolType();
@@ -85,7 +85,7 @@ class CERLIB_API_INTERNAL BoolType final : public Type
     std::string_view type_name() const override;
 };
 
-class CERLIB_API_INTERNAL FloatType final : public Type
+class FloatType final : public Type
 {
   public:
     FloatType();
@@ -99,7 +99,7 @@ class CERLIB_API_INTERNAL FloatType final : public Type
     bool is_scalar_type() const override;
 };
 
-class CERLIB_API_INTERNAL Vector2Type final : public Type
+class Vector2Type final : public Type
 {
   public:
     Vector2Type();
@@ -115,7 +115,7 @@ class CERLIB_API_INTERNAL Vector2Type final : public Type
     bool is_vector_type() const override;
 };
 
-class CERLIB_API_INTERNAL Vector3Type final : public Type
+class Vector3Type final : public Type
 {
   public:
     Vector3Type();
@@ -131,7 +131,7 @@ class CERLIB_API_INTERNAL Vector3Type final : public Type
     bool is_vector_type() const override;
 };
 
-class CERLIB_API_INTERNAL Vector4Type final : public Type
+class Vector4Type final : public Type
 {
   public:
     Vector4Type();
@@ -145,7 +145,7 @@ class CERLIB_API_INTERNAL Vector4Type final : public Type
     Decl* find_member_symbol(const SemaContext& context, std::string_view name) const override;
 };
 
-class CERLIB_API_INTERNAL MatrixType final : public Type
+class MatrixType final : public Type
 {
   public:
     MatrixType();
@@ -159,7 +159,7 @@ class CERLIB_API_INTERNAL MatrixType final : public Type
     bool is_matrix_type() const override;
 };
 
-class CERLIB_API_INTERNAL ImageType final : public Type
+class ImageType final : public Type
 {
   public:
     ImageType();
@@ -173,7 +173,7 @@ class CERLIB_API_INTERNAL ImageType final : public Type
     bool is_image_type() const override;
 };
 
-class CERLIB_API_INTERNAL ArrayType final : public Type
+class ArrayType final : public Type
 {
   public:
     static constexpr uint32_t max_size = 255;
@@ -203,7 +203,7 @@ class CERLIB_API_INTERNAL ArrayType final : public Type
     mutable std::string                m_name;
 };
 
-class CERLIB_API_INTERNAL UnresolvedType final : public Type
+class UnresolvedType final : public Type
 {
   public:
     explicit UnresolvedType(const SourceLocation& location, std::string_view name);

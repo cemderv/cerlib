@@ -18,7 +18,7 @@ enum class LogMessageType
     Error   = 3,
 };
 
-CERLIB_API void log_internal(const std::string& message, LogMessageType type);
+void log_internal(const std::string& message, LogMessageType type);
 } // namespace details
 
 /**
@@ -76,7 +76,8 @@ void log_error(cer_fmt::format_string<Args...> fmt, Args&&... args)
  * @ingroup Misc
  */
 template <typename... Args>
-void log_debug([[maybe_unused]] cer_fmt::format_string<Args...> fmt, [[maybe_unused]] Args&&... args)
+void log_debug([[maybe_unused]] cer_fmt::format_string<Args...> fmt,
+               [[maybe_unused]] Args&&... args)
 {
 #ifndef NDEBUG
     details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),
@@ -95,7 +96,8 @@ void log_debug([[maybe_unused]] cer_fmt::format_string<Args...> fmt, [[maybe_unu
  * @ingroup Misc
  */
 template <typename... Args>
-void log_verbose([[maybe_unused]] cer_fmt::format_string<Args...> fmt, [[maybe_unused]] Args&&... args)
+void log_verbose([[maybe_unused]] cer_fmt::format_string<Args...> fmt,
+                 [[maybe_unused]] Args&&... args)
 {
 #if defined(CERLIB_ENABLE_VERBOSE_LOGGING) && !defined(NDEBUG)
     details::log_internal(cer_fmt::format(fmt, std::forward<Args>(args)...),

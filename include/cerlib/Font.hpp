@@ -25,7 +25,7 @@ struct Vector2;
  *
  * @ingroup Graphics
  */
-class CERLIB_API Font final
+class Font final
 {
     CERLIB_DECLARE_OBJECT(Font);
 

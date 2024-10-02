@@ -18,19 +18,19 @@ class Image;
 struct Rectangle;
 enum class ImageFormat;
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Color& value);
+std::ostream& operator<<(std::ostream& os, const Color& value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Vector2& value);
+std::ostream& operator<<(std::ostream& os, const Vector2& value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Vector3& value);
+std::ostream& operator<<(std::ostream& os, const Vector3& value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Vector4& value);
+std::ostream& operator<<(std::ostream& os, const Vector4& value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Matrix& value);
+std::ostream& operator<<(std::ostream& os, const Matrix& value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, ImageFormat value);
+std::ostream& operator<<(std::ostream& os, ImageFormat value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Image& value);
+std::ostream& operator<<(std::ostream& os, const Image& value);
 
-CERLIB_API std::ostream& operator<<(std::ostream& os, const Rectangle& value);
+std::ostream& operator<<(std::ostream& os, const Rectangle& value);
 } // namespace cer

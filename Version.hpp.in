@@ -30,34 +30,35 @@ enum class TargetPlatform
  *
  * @ingroup Misc
  */
-static constexpr std::tuple library_version = { ${CMAKE_PROJECT_VERSION_MAJOR}, ${CMAKE_PROJECT_VERSION_MINOR}, ${CMAKE_PROJECT_VERSION_PATCH} };
+static constexpr std::tuple library_version = {
+    ${CMAKE_PROJECT_VERSION_MAJOR}, ${CMAKE_PROJECT_VERSION_MINOR}, ${CMAKE_PROJECT_VERSION_PATCH}};
 
 /**
  * Gets the currently used version of cerlib as a display string.
  *
  * @ingroup Misc
  */
-static constexpr std::string_view library_version_string = "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}";
+static constexpr std::string_view library_version_string =
+    "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}";
 
 /**
  * Gets the current target platform.
  *
  * @ingroup Misc
  */
-CERLIB_API TargetPlatform target_platform();
+TargetPlatform target_platform();
 
 /**
  * Gets a value indicating whether the current platform counts as a desktop platform.
  *
  * @ingroup Misc
  */
-CERLIB_API bool is_desktop_platform();
+bool is_desktop_platform();
 
 /**
  * Gets a value indicating whether the current platform counts as a mobile platform.
  *
  * @ingroup Misc
  */
-CERLIB_API bool is_mobile_platform();
+bool is_mobile_platform();
 } // namespace cer
-

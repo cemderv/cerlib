@@ -139,27 +139,27 @@ struct BlendState
      * Gets a blend state with alpha-blending disabled.
      * The source color overwrites the destination color.
      */
-    CERLIB_API static constexpr BlendState opaque();
+    static constexpr BlendState opaque();
 
     /**
      * Gets a blend state with alpha-blending enabled.
      * The state assumes that the RGB channels have been premultiplied with the alpha
      * channel.
      */
-    CERLIB_API static constexpr BlendState alpha_blend();
+    static constexpr BlendState alpha_blend();
 
     /**
      * A blend state with alpha-blending enabled.
      * The state assumes that the RGB channels haven't been premultiplied with the alpha
      * channel.
      */
-    CERLIB_API static constexpr BlendState non_premultiplied();
+    static constexpr BlendState non_premultiplied();
 
     /**
      * Gets a blend state with alpha-blending enabled.
      * The source color is added onto the destination color.
      */
-    CERLIB_API static constexpr BlendState additive();
+    static constexpr BlendState additive();
 
     /** Default comparison */
     bool operator==(const BlendState&) const = default;

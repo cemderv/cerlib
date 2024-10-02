@@ -56,7 +56,7 @@ struct AssetData
  *
  * @ingroup Content
  */
-class CERLIB_API Asset
+class Asset
 {
     friend details::ContentManager;
 
@@ -117,7 +117,7 @@ using CustomAssetLoadFunc = std::function<std::shared_ptr<Asset>(
  *
  * @ingroup Content
  */
-CERLIB_API void set_asset_loading_prefix(std::string_view prefix);
+void set_asset_loading_prefix(std::string_view prefix);
 
 /**
  * Gets the prefix that should be prepended to asset names when loading. May be
@@ -125,7 +125,7 @@ CERLIB_API void set_asset_loading_prefix(std::string_view prefix);
  *
  * @ingroup Content
  */
-CERLIB_API std::string asset_loading_prefix();
+std::string asset_loading_prefix();
 
 /**
  * Lazily loads an Image object from the storage.
@@ -138,7 +138,7 @@ CERLIB_API std::string asset_loading_prefix();
  *
  * @ingroup Content
  */
-CERLIB_API Image load_image(std::string_view name, bool generate_mipmaps = false);
+Image load_image(std::string_view name, bool generate_mipmaps = false);
 
 /**
  * Lazily loads a Shader object from the storage.
@@ -151,8 +151,7 @@ CERLIB_API Image load_image(std::string_view name, bool generate_mipmaps = false
  *
  * @ingroup Content
  */
-CERLIB_API Shader load_shader(std::string_view                  name,
-                              std::span<const std::string_view> defines = {});
+Shader load_shader(std::string_view name, std::span<const std::string_view> defines = {});
 
 /**
  * Lazily loads a Font object from the storage.
@@ -164,7 +163,7 @@ CERLIB_API Shader load_shader(std::string_view                  name,
  *
  * @ingroup Content
  */
-CERLIB_API Font load_font(std::string_view name);
+Font load_font(std::string_view name);
 
 /**
  * Lazily loads a Sound object from the storage.
@@ -176,7 +175,7 @@ CERLIB_API Font load_font(std::string_view name);
  *
  * @ingroup Content
  */
-CERLIB_API Sound load_sound(std::string_view name);
+Sound load_sound(std::string_view name);
 
 /**
  * Registers a function as a custom asset loader for a specific type ID.
@@ -189,8 +188,7 @@ CERLIB_API Sound load_sound(std::string_view name);
  *
  * @ingroup Content
  */
-CERLIB_API void register_custom_asset_loader(std::string_view    type_id,
-                                             CustomAssetLoadFunc load_func);
+void register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func);
 
 /**
  * Removed the custom asset loader for a specific type ID.
@@ -199,7 +197,7 @@ CERLIB_API void register_custom_asset_loader(std::string_view    type_id,
  *
  * @ingroup Content
  */
-CERLIB_API void unregister_custom_asset_loader(std::string_view type_id);
+void unregister_custom_asset_loader(std::string_view type_id);
 
 /**
  * Registers a function as a custom asset loader for a specific type.
@@ -237,9 +235,9 @@ static void register_custom_asset_loader_for_type(CustomAssetLoadFunc load_func)
  *
  * @ingroup Content
  */
-CERLIB_API std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
-                                                    std::string_view name,
-                                                    const std::any&  extra_info);
+std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
+                                         std::string_view name,
+                                         const std::any&  extra_info);
 
 /**
  * Registers a function as a custom asset loader for a specific type.
@@ -281,5 +279,5 @@ static std::shared_ptr<T> load_custom_asset_of_type(std::string_view name,
  *
  * @ingroup Content
  */
-CERLIB_API bool is_asset_loaded(std::string_view name);
+bool is_asset_loaded(std::string_view name);
 } // namespace cer

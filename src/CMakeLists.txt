@@ -6,19 +6,7 @@ set(cerlib_gfx_backend "OpenGL")
 
 add_subdirectory(stb)
 
-set(cerlib_library_type STATIC)
-
-if (CERLIB_SHARED_LIBRARY)
-  set(cerlib_library_type SHARED)
-endif ()
-
-if (EMSCRIPTEN)
-  set(cerlib_library_type STATIC)
-endif ()
-
-cerlib_log("Creating cerlib library of type (${cerlib_library_type})")
-
-add_library(cerlib ${cerlib_library_type})
+add_library(cerlib STATIC)
 
 set(cerlib_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(cerlib_src_dir ${CMAKE_CURRENT_SOURCE_DIR})
@@ -101,11 +89,6 @@ foreach (dir ${src_sub_dirs})
 endforeach ()
 
 set_target_properties(cerlib PROPERTIES FOLDER "cerlib")
-
-if (cerlib_library_type STREQUAL "SHARED")
-  target_compile_definitions(cerlib PUBLIC -DCERLIB_SHARED_LIBRARY)
-  target_compile_definitions(cerlib PRIVATE -Dcerlib_EXPORTS)
-endif ()
 
 if (cerlib_gfx_backend STREQUAL "OpenGL")
   cerlib_log("Using OpenGL")

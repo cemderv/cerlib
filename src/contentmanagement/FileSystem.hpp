@@ -47,13 +47,11 @@ std::vector<std::byte> load_file_data_from_disk(std::string_view filename);
 void write_text_to_file_on_disk(std::string_view filename, std::string_view contents);
 
 #ifdef CERLIB_ENABLE_TESTS
-CERLIB_API_INTERNAL std::vector<std::byte> decode_image_data_from_file_on_disk(
-    std::string_view filename);
+std::vector<std::byte> decode_image_data_from_file_on_disk(std::string_view filename);
 
-CERLIB_API_INTERNAL void encode_image_data_to_file_on_disk(
-    std::string_view           filename,
-    std::span<const std::byte> raw_image_data,
-    uint32_t                   width,
-    uint32_t                   height);
+void encode_image_data_to_file_on_disk(std::string_view           filename,
+                                       std::span<const std::byte> raw_image_data,
+                                       uint32_t                   width,
+                                       uint32_t                   height);
 #endif
 } // namespace cer::filesystem

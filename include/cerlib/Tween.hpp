@@ -38,7 +38,7 @@ enum class TweenLoopMode
  *
  * @ingroup Math
  */
-class CERLIB_API Tweener
+class Tweener
 {
   public:
     /**

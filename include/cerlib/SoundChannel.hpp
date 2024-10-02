@@ -22,7 +22,7 @@ class SoundChannelImpl;
  *
  * @ingroup Audio
  */
-class CERLIB_API SoundChannel
+class SoundChannel
 {
     CERLIB_DECLARE_OBJECT(SoundChannel);
 

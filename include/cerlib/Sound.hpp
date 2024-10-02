@@ -20,7 +20,7 @@ class SoundImpl;
  *
  * @ingroup Audio
  */
-class CERLIB_API Sound
+class Sound
 {
     CERLIB_DECLARE_OBJECT(Sound);
 

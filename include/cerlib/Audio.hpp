@@ -23,7 +23,7 @@ class SoundChannel;
  *
  * @ingroup Audio
  */
-CERLIB_API bool is_audio_device_initialized();
+bool is_audio_device_initialized();
 
 /**
  * Plays a sound.
@@ -37,11 +37,11 @@ CERLIB_API bool is_audio_device_initialized();
  *
  * @ingroup Audio
  */
-[[nodiscard]] CERLIB_API SoundChannel play_sound(const Sound&             sound,
-                                                 float                    volume       = 1.0f,
-                                                 float                    pan          = 0.0f,
-                                                 bool                     start_paused = false,
-                                                 std::optional<SoundTime> delay = std::nullopt);
+[[nodiscard]] SoundChannel play_sound(const Sound&             sound,
+                                      float                    volume       = 1.0f,
+                                      float                    pan          = 0.0f,
+                                      bool                     start_paused = false,
+                                      std::optional<SoundTime> delay        = std::nullopt);
 
 /**
  * Plays a sound without returning its channel.
@@ -53,10 +53,10 @@ CERLIB_API bool is_audio_device_initialized();
  *
  * @ingroup Audio
  */
-CERLIB_API void play_sound_fire_and_forget(const Sound&             sound,
-                                           float                    volume = 1.0f,
-                                           float                    pan    = 0.0f,
-                                           std::optional<SoundTime> delay  = std::nullopt);
+void play_sound_fire_and_forget(const Sound&             sound,
+                                float                    volume = 1.0f,
+                                float                    pan    = 0.0f,
+                                std::optional<SoundTime> delay  = std::nullopt);
 
 /**
  * Plays a sound with its volume set equally to all channels, and without
@@ -64,44 +64,44 @@ CERLIB_API void play_sound_fire_and_forget(const Sound&             sound,
  *
  * @ingroup Audio
  */
-CERLIB_API SoundChannel play_sound_in_background(const Sound& sound,
-                                                 float        volume       = -1.0f,
-                                                 bool         start_paused = false);
+SoundChannel play_sound_in_background(const Sound& sound,
+                                      float        volume       = -1.0f,
+                                      bool         start_paused = false);
 
 /**
  * Stops the playback of all currently playing sounds.
  *
  * @ingroup Audio
  */
-CERLIB_API void stop_all_sounds();
+void stop_all_sounds();
 
 /**
  * Pauses the playback of all currently playing sounds.
  *
  * @ingroup Audio
  */
-CERLIB_API void pause_all_sounds();
+void pause_all_sounds();
 
 /**
  * Resumes the playback of all currently paused sounds.
  *
  * @ingroup Audio
  */
-CERLIB_API void resume_all_sounds();
+void resume_all_sounds();
 
 /**
  * Gets the global audio volume.
  *
  * @ingroup Audio
  */
-CERLIB_API float global_volume();
+float global_volume();
 
 /**
  * Sets the global audio volume.
  *
  * @ingroup Audio
  */
-CERLIB_API void set_global_volume(float value);
+void set_global_volume(float value);
 
 /**
  * Changes the global audio volume over time.
@@ -111,5 +111,5 @@ CERLIB_API void set_global_volume(float value);
  *
  * @ingroup Audio
  */
-CERLIB_API void fade_global_volume(float to_volume, SoundTime fade_duration);
+void fade_global_volume(float to_volume, SoundTime fade_duration);
 } // namespace cer

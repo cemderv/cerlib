@@ -63,7 +63,7 @@ enum class ImageFileFormat
  *
  * @ingroup Graphics
  */
-class CERLIB_API Image : public GraphicsResource
+class Image : public GraphicsResource
 {
     CERLIB_DECLARE_DERIVED_OBJECT(GraphicsResource, Image);
 
@@ -189,7 +189,7 @@ class CERLIB_API Image : public GraphicsResource
  *
  * @ingroup Graphics
  */
-CERLIB_API uint32_t image_format_bits_per_pixel(ImageFormat format);
+uint32_t image_format_bits_per_pixel(ImageFormat format);
 
 /**
  * Gets the number of bytes in a row of a specific image format.
@@ -199,7 +199,7 @@ CERLIB_API uint32_t image_format_bits_per_pixel(ImageFormat format);
  *
  * @ingroup Graphics
  */
-CERLIB_API uint32_t image_row_pitch(uint32_t width, ImageFormat format);
+uint32_t image_row_pitch(uint32_t width, ImageFormat format);
 
 /**
  * Gets the number of bytes in a slice of a specific image format.
@@ -210,7 +210,7 @@ CERLIB_API uint32_t image_row_pitch(uint32_t width, ImageFormat format);
  *
  * @ingroup Graphics
  */
-CERLIB_API uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format);
+uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format);
 
 /**
  * Gets the name of an image format.
@@ -219,5 +219,5 @@ CERLIB_API uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageForm
  *
  * @ingroup Graphics
  */
-CERLIB_API std::string_view image_format_name(ImageFormat format);
+std::string_view image_format_name(ImageFormat format);
 } // namespace cer

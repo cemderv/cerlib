@@ -10,7 +10,7 @@
 
 namespace cer::util
 {
-CERLIB_API void trim_string(std::string& str, std::span<const char> chars = {{' '}});
+void trim_string(std::string& str, std::span<const char> chars = {{' '}});
 
-CERLIB_API std::string string_trimmed(std::string_view str, std::span<const char> chars = {{' '}});
+std::string string_trimmed(std::string_view str, std::span<const char> chars = {{' '}});
 } // namespace cer::util

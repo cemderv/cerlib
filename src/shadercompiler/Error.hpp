@@ -21,7 +21,9 @@ class Error final : public std::exception
     explicit Error(const SourceLocation& location, std::string_view message);
 
     template <typename... Args>
-    explicit Error(const SourceLocation& location, cer_fmt::format_string<Args...> fmt, Args&&... args)
+    explicit Error(const SourceLocation&           location,
+                   cer_fmt::format_string<Args...> fmt,
+                   Args&&... args)
         : Error(location, cer_fmt::format(fmt, std::forward<Args>(args)...))
     {
     }

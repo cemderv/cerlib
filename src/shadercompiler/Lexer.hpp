@@ -41,12 +41,12 @@ static constexpr auto list = std::array{
 };
 } // namespace keyword
 
-CERLIB_API_INTERNAL void do_lexing(std::string_view    code,
-                                   std::string_view    filename_hint,
-                                   bool                do_post_processing,
-                                   std::vector<Token>& tokens);
+void do_lexing(std::string_view    code,
+               std::string_view    filename_hint,
+               bool                do_post_processing,
+               std::vector<Token>& tokens);
 
-CERLIB_API_INTERNAL void assemble_tokens(std::string_view code, std::vector<Token>& tokens);
+void assemble_tokens(std::string_view code, std::vector<Token>& tokens);
 
-CERLIB_API_INTERNAL void remove_unnecessary_tokens(std::vector<Token>& tokens);
+void remove_unnecessary_tokens(std::vector<Token>& tokens);
 } // namespace cer::shadercompiler

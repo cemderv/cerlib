@@ -161,7 +161,7 @@ using GamepadRumbleTime = std::chrono::duration<double>;
  *
  * @ingroup Input
  */
-class CERLIB_API Gamepad final
+class Gamepad final
 {
     CERLIB_DECLARE_OBJECT(Gamepad);
 
