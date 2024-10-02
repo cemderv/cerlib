@@ -9,6 +9,20 @@
 #include "OpenGLWindow.hpp"
 #include "cerlib/Game.hpp"
 #include "cerlib/Logging.hpp"
+#include "util/Util.hpp"
+
+// clang-format off
+#ifdef CERLIB_ENABLE_IMGUI
+#  include <imgui.h>
+#  ifdef __EMSCRIPTEN__
+#    include <backends/imgui_impl_sdl2.h>
+#  else
+#    include <backends/imgui_impl_sdl3.h>
+#  endif
+#  include <backends/imgui_impl_opengl3.h>
+#endif
+// clang-format on
+
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -93,6 +107,31 @@ void OpenGLGraphicsDevice::on_end_frame(const Window& window)
     SDL_GL_SwapWindow(sdl_window);
 }
 
+void OpenGLGraphicsDevice::on_start_imgui_frame(const Window& window)
+{
+    CERLIB_UNUSED(window);
+
+#ifdef CERLIB_ENABLE_IMGUI
+    ImGui_ImplOpenGL3_NewFrame();
+#endif
+}
+
+void OpenGLGraphicsDevice::on_end_imgui_frame(const Window& window)
+{
+    CERLIB_UNUSED(window);
+
+#ifdef CERLIB_ENABLE_IMGUI
+    const ImGuiIO& io = ImGui::GetIO();
+
+    glViewport(0,
+               0,
+               static_cast<GLsizei>(io.DisplaySize.x),
+               static_cast<GLsizei>(io.DisplaySize.y));
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#endif
+}
+
 void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& viewport)
 {
     if (canvas)
@@ -126,7 +165,12 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
 
         const Color color = *clear_color;
         GL_CALL(glClearColor(color.r, color.g, color.b, color.a));
+
+#ifdef CERLIB_ENABLE_IMGUI
+        GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+#else
         GL_CALL(glClear(GL_COLOR_BUFFER_BIT));
+#endif
 
         if (has_color_write_mask_changed)
         {
@@ -386,7 +430,35 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     log_verbose("Initialized OpenGL device. Now calling post_init().");
 
     post_init(std::make_unique<OpenGLSpriteBatch>(this, frame_stats_ptr()));
+
+#ifdef CERLIB_ENABLE_IMGUI
+
+#ifdef __EMSCRIPTEN__
+    if (!ImGui_ImplSDL2_InitForOpenGL(main_window.sdl_window(), opengl_window.sdl_gl_context()))
+#else
+    if (!ImGui_ImplSDL3_InitForOpenGL(main_window.sdl_window(), opengl_window.sdl_gl_context()))
+#endif
+    {
+        throw std::runtime_error{"Failed to initialize ImGui for SDL3 and OpenGL"};
+    }
+
+    if (!ImGui_ImplOpenGL3_Init())
+    {
+        throw std::runtime_error{"Failed to initialize the OpenGL backend of ImGui"};
+    }
+#endif
 }
 
-OpenGLGraphicsDevice::~OpenGLGraphicsDevice() noexcept = default;
+OpenGLGraphicsDevice::~OpenGLGraphicsDevice() noexcept
+{
+#ifdef CERLIB_ENABLE_IMGUI
+    ImGui_ImplOpenGL3_Shutdown();
+
+#ifdef __EMSCRIPTEN__
+    ImGui_ImplSDL2_Shutdown();
+#else
+    ImGui_ImplSDL3_Shutdown();
+#endif
+#endif
+}
 } // namespace cer::details

@@ -161,6 +161,8 @@ class CERLIB_API Game
 
     virtual void draw(const Window& window);
 
+    virtual void draw_imgui(const Window& window);
+
     virtual void on_window_shown(const WindowShownEvent& event);
 
     virtual void on_window_hidden(const WindowHiddenEvent& event);

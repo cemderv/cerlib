@@ -2,6 +2,8 @@
 # This file is part of cerlib.
 # For conditions of distribution and use, see copyright notice in LICENSE.
 
+set(cerlib_gfx_backend "OpenGL")
+
 add_subdirectory(stb)
 
 set(cerlib_library_type STATIC)
@@ -104,7 +106,7 @@ if (cerlib_library_type STREQUAL "SHARED")
   target_compile_definitions(cerlib PRIVATE -Dcerlib_EXPORTS)
 endif ()
 
-if (cerlib_have_opengl)
+if (cerlib_gfx_backend STREQUAL "OpenGL")
   cerlib_log("Using OpenGL")
   include(graphics/opengl/Files.cmake)
   list(TRANSFORM opengl_files PREPEND ${cerlib_src_dir}/graphics/opengl/)
@@ -153,8 +155,21 @@ else ()
 endif ()
 
 if (EMSCRIPTEN)
-  target_compile_options(cerlib PUBLIC "SHELL:-s USE_SDL=2")
-  target_link_options(cerlib PUBLIC "SHELL:-s MIN_WEBGL_VERSION=2" "SHELL:-s FULL_ES3=1")
+  target_compile_options(cerlib PUBLIC
+    "SHELL:-s USE_SDL=2"
+  )
+
+  target_link_options(cerlib PUBLIC
+    "SHELL:-s MIN_WEBGL_VERSION=2"
+    "SHELL:-s FULL_ES3=1"
+    "SHELL:-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]"
+  )
+endif ()
+
+if (CERLIB_ENABLE_IMGUI)
+  add_subdirectory(imgui)
+  target_link_libraries(cerlib PUBLIC cerlib_imgui)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_ENABLE_IMGUI)
 endif ()
 
 if (ANDROID)
