@@ -26,11 +26,25 @@ struct BlendState;
  */
 enum class SpriteFlip
 {
-    None         = 0, /**< The sprite is drawn normally, without any flipping. */
-    Horizontally = 1, /**< The sprite is flipped horizontally around its center. */
-    Vertically   = 2, /**< The sprite is flipped vertically around its center. */
-    Both         = Horizontally | Vertically, /**< The sprite is flipped both horizontally
-and vertically around its center. */
+    /**
+     * The sprite is drawn normally, without any flipping.
+     */
+    None = 0,
+
+    /**
+     * The sprite is flipped horizontally around its center.
+     */
+    Horizontally = 1,
+
+    /**
+     * The sprite is flipped vertically around its center.
+     */
+    Vertically = 2,
+
+    /**
+     * The sprite is flipped both horizontally and vertically around its center.
+     */
+    Both = Horizontally | Vertically,
 };
 
 static SpriteFlip operator|(SpriteFlip lhs, SpriteFlip rhs)
@@ -98,6 +112,13 @@ struct TextStrikethrough
 };
 
 /**
+ * Defines various styles for 2D text objects that are drawn using draw_string() and draw_text().
+ *
+ * @ingroup Graphics
+ */
+using TextDecoration = std::variant<TextUnderline, TextStrikethrough>;
+
+/**
  * Represents drawing statistics of a frame.
  *
  * @ingroup Graphics
@@ -107,13 +128,6 @@ struct FrameStats
     /** The number of draw calls that were performed in total. */
     uint32_t draw_calls = 0;
 };
-
-/**
- * Defines various styles for 2D text objects that are drawn using DrawString().
- *
- * @ingroup Graphics
- */
-using TextDecoration = std::variant<TextUnderline, TextStrikethrough>;
 
 /**
  * Sets the active set of scissor rectangles.
