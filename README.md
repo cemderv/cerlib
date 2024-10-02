@@ -26,6 +26,8 @@
 - Custom sprite shading
     - Simple & safe shading language that transpiles to native shading languages
 - Integrated linear math library with first-class support
+- First-class support for [ImGui](https://github.com/ocornut/imgui)
+    - Automatically available in your game, simply `#include <imgui.h>` and use it
 - Compatibility with graphics debuggers such as [RenderDoc](https://renderdoc.org)
 
 ## What it does not provide
