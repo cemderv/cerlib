@@ -244,6 +244,9 @@ CERLIB_API void draw_string(std::string_view                     text,
 /**
  * Draws 2D text from a pre-created Text object.
  *
+ * @param text The text object to draw.
+ * @param position The top-left position of the text.
+ * @param color The color of the text.
  */
 CERLIB_API void draw_text(const Text& text, Vector2 position, const Color& color = white);
 
