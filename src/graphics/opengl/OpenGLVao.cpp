@@ -36,7 +36,7 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
         for (const auto& element : vertex_elements)
         {
-            const auto maybe_size = [element]() -> std::optional<GLsizei> {
+            const auto maybe_size = [element]() -> std::optional<size_t> {
                 switch (element)
                 {
                     case VertexElement::Int: return sizeof(int32_t);
@@ -52,8 +52,8 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
             const auto size = maybe_size.value();
 
-            element_sizes_in_bytes.push_back(size);
-            vertex_stride += size;
+            element_sizes_in_bytes.push_back(GLsizei(size));
+            vertex_stride += GLsizei(size);
             ++index;
         }
 
