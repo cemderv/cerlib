@@ -25,27 +25,27 @@
     class_name();                                                                                  \
     explicit class_name(impl_t* impl);                                                             \
     class_name(const class_name& copyFrom);                                                        \
-    class_name& operator=(const class_name& copyFrom);                                             \
+    auto operator=(const class_name& copyFrom)->class_name&;                                       \
     class_name(class_name&& moveFrom) noexcept;                                                    \
-    class_name& operator=(class_name&& moveFrom) noexcept;                                         \
+    auto operator=(class_name&& moveFrom) noexcept -> class_name&;                                 \
     ~class_name() noexcept;                                                                        \
     explicit operator bool() const                                                                 \
     {                                                                                              \
         return m_impl != nullptr;                                                                  \
     }                                                                                              \
-    bool operator==(const class_name& other) const                                                 \
+    auto operator==(const class_name& other) const->bool                                           \
     {                                                                                              \
         return m_impl == other.m_impl;                                                             \
     }                                                                                              \
-    bool operator!=(const class_name& other) const                                                 \
+    auto operator!=(const class_name& other) const->bool                                           \
     {                                                                                              \
         return m_impl != other.m_impl;                                                             \
     }                                                                                              \
-    bool operator<(const class_name& other) const                                                  \
+    auto operator<(const class_name& other) const->bool                                            \
     {                                                                                              \
         return m_impl < other.m_impl;                                                              \
     }                                                                                              \
-    impl_t* impl() const                                                                           \
+    auto impl() const -> impl_t*                                                                   \
     {                                                                                              \
         return m_impl;                                                                             \
     }                                                                                              \
@@ -60,15 +60,15 @@
   public:                                                                                          \
     class_name();                                                                                  \
     explicit class_name(base_class_name::impl_t* impl);                                            \
-    bool operator==(const class_name& other) const                                                 \
+    auto operator==(const class_name& other) const->bool                                           \
     {                                                                                              \
         return impl() == other.impl();                                                             \
     }                                                                                              \
-    bool operator!=(const class_name& other) const                                                 \
+    auto operator!=(const class_name& other) const->bool                                           \
     {                                                                                              \
         return impl() != other.impl();                                                             \
     }                                                                                              \
-    bool operator<(const class_name& other) const                                                  \
+    auto operator<(const class_name& other) const->bool                                            \
     {                                                                                              \
         return impl() < other.impl();                                                              \
     }

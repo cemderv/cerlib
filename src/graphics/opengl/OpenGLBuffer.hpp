@@ -23,7 +23,7 @@ class OpenGLBuffer final
 
     OpenGLBuffer(OpenGLBuffer&& other) noexcept;
 
-    OpenGLBuffer& operator=(OpenGLBuffer&& other) noexcept;
+    auto operator=(OpenGLBuffer&& other) noexcept -> OpenGLBuffer&;
 
     ~OpenGLBuffer() noexcept;
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 #include <any>
 #include <functional>
@@ -33,12 +33,12 @@ class ContentManager;
  */
 struct AssetData
 {
-    std::span<const std::byte> as_span() const
+    auto as_span() const -> std::span<const std::byte>
     {
         return {data.get(), size};
     }
 
-    std::string_view as_string_view() const
+    auto as_string_view() const -> std::string_view
     {
         return {reinterpret_cast<const char*>(data.get()), size};
     }
@@ -66,15 +66,15 @@ class Asset
   public:
     Asset(const Asset&) = default;
 
-    Asset& operator=(const Asset&) = default;
+    auto operator=(const Asset&) -> Asset& = default;
 
     Asset(Asset&&) noexcept = default;
 
-    Asset& operator=(Asset&&) noexcept = default;
+    auto operator=(Asset&&) noexcept -> Asset& = default;
 
     virtual ~Asset() noexcept;
 
-    std::string_view asset_name() const;
+    auto asset_name() const -> std::string_view;
 
   private:
     details::ContentManager* m_content_manager{};
@@ -125,7 +125,7 @@ void set_asset_loading_prefix(std::string_view prefix);
  *
  * @ingroup Content
  */
-std::string asset_loading_prefix();
+auto asset_loading_prefix() -> std::string;
 
 /**
  * Lazily loads an Image object from the storage.
@@ -138,7 +138,7 @@ std::string asset_loading_prefix();
  *
  * @ingroup Content
  */
-Image load_image(std::string_view name, bool generate_mipmaps = false);
+auto load_image(std::string_view name, bool generate_mipmaps = false) -> Image;
 
 /**
  * Lazily loads a Shader object from the storage.
@@ -151,7 +151,7 @@ Image load_image(std::string_view name, bool generate_mipmaps = false);
  *
  * @ingroup Content
  */
-Shader load_shader(std::string_view name, std::span<const std::string_view> defines = {});
+auto load_shader(std::string_view name, std::span<const std::string_view> defines = {}) -> Shader;
 
 /**
  * Lazily loads a Font object from the storage.
@@ -163,7 +163,7 @@ Shader load_shader(std::string_view name, std::span<const std::string_view> defi
  *
  * @ingroup Content
  */
-Font load_font(std::string_view name);
+auto load_font(std::string_view name) -> Font;
 
 /**
  * Lazily loads a Sound object from the storage.
@@ -175,7 +175,7 @@ Font load_font(std::string_view name);
  *
  * @ingroup Content
  */
-Sound load_sound(std::string_view name);
+auto load_sound(std::string_view name) -> Sound;
 
 /**
  * Registers a function as a custom asset loader for a specific type ID.
@@ -235,9 +235,8 @@ static void register_custom_asset_loader_for_type(CustomAssetLoadFunc load_func)
  *
  * @ingroup Content
  */
-std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
-                                         std::string_view name,
-                                         const std::any&  extra_info);
+auto load_custom_asset(std::string_view type_id, std::string_view name, const std::any& extra_info)
+    -> std::shared_ptr<Asset>;
 
 /**
  * Registers a function as a custom asset loader for a specific type.
@@ -255,15 +254,14 @@ std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
  * @ingroup Content
  */
 template <typename T>
-static std::shared_ptr<T> load_custom_asset_of_type(std::string_view name,
-                                                    const std::any&  extra_info)
+static auto load_custom_asset_of_type(std::string_view name, const std::any& extra_info)
+    -> std::shared_ptr<T>
     requires(std::is_base_of_v<Asset, T>)
 {
-    const std::shared_ptr<Asset> asset = load_custom_asset(typeid(T).name(), name, extra_info);
+    const auto asset      = load_custom_asset(typeid(T).name(), name, extra_info);
+    auto       asset_type = std::dynamic_pointer_cast<T>(asset);
 
-    std::shared_ptr<T> asset_type = std::dynamic_pointer_cast<T>(asset);
-
-    if (!asset_type)
+    if (asset_type == nullptr)
     {
         throw std::invalid_argument("The loaded asset type differs from the desired type T.");
     }
@@ -279,5 +277,5 @@ static std::shared_ptr<T> load_custom_asset_of_type(std::string_view name,
  *
  * @ingroup Content
  */
-bool is_asset_loaded(std::string_view name);
+auto is_asset_loaded(std::string_view name) -> bool;
 } // namespace cer

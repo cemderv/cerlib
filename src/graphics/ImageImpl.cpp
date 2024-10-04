@@ -25,37 +25,37 @@ ImageImpl::ImageImpl(gsl::not_null<GraphicsDevice*> parent_device,
 {
 }
 
-bool ImageImpl::is_canvas() const
+auto ImageImpl::is_canvas() const -> bool
 {
     return m_is_canvas;
 }
 
-WindowImpl* ImageImpl::window_for_canvas() const
+auto ImageImpl::window_for_canvas() const -> WindowImpl*
 {
     return m_window_for_canvas;
 }
 
-uint32_t ImageImpl::width() const
+auto ImageImpl::width() const -> uint32_t
 {
     return m_width;
 }
 
-uint32_t ImageImpl::height() const
+auto ImageImpl::height() const -> uint32_t
 {
     return m_height;
 }
 
-ImageFormat ImageImpl::format() const
+auto ImageImpl::format() const -> ImageFormat
 {
     return m_format;
 }
 
-uint32_t ImageImpl::mipmap_count() const
+auto ImageImpl::mipmap_count() const -> uint32_t
 {
     return m_mipmap_count;
 }
 
-std::optional<Color> ImageImpl::canvas_clear_color() const
+auto ImageImpl::canvas_clear_color() const -> std::optional<Color>
 {
     return m_canvas_clear_color;
 }

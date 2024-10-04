@@ -13,10 +13,32 @@
 #include "shadercompiler/TypeCache.hpp"
 #include <snitch/snitch.hpp>
 
-using namespace cer;
-using namespace cer::shadercompiler;
+using cer::shadercompiler::ArrayType;
+using cer::shadercompiler::asa;
+using cer::shadercompiler::BinOpExpr;
+using cer::shadercompiler::BinOpKind;
+using cer::shadercompiler::Decl;
+using cer::shadercompiler::Expr;
+using cer::shadercompiler::FloatLiteralExpr;
+using cer::shadercompiler::FloatType;
+using cer::shadercompiler::FunctionCallExpr;
+using cer::shadercompiler::FunctionDecl;
+using cer::shadercompiler::IfStmt;
+using cer::shadercompiler::IntLiteralExpr;
+using cer::shadercompiler::isa;
+using cer::shadercompiler::Parser;
+using cer::shadercompiler::ReturnStmt;
+using cer::shadercompiler::ShaderParamDecl;
+using cer::shadercompiler::Stmt;
+using cer::shadercompiler::StructCtorCall;
+using cer::shadercompiler::StructDecl;
+using cer::shadercompiler::SymAccessExpr;
+using cer::shadercompiler::Token;
+using cer::shadercompiler::TypeCache;
+using cer::shadercompiler::VarStmt;
+using cer::shadercompiler::Vector4Type;
 
-static constexpr std::string_view basic_expressions = R"(
+static constexpr auto basic_expressions = std::string_view{R"(
 float Test()
 {
   const x = 1+2*3;
@@ -35,9 +57,9 @@ float Test()
   const x = 1 >= 2;
   const x = 1 - abs(2, 3) <= y;
 }
-)";
+)"};
 
-static constexpr std::string_view simple_if_stmt = R"(
+static constexpr auto simple_if_stmt = std::string_view{R"(
 float test()
 {
   if (1 > 2)
@@ -45,9 +67,9 @@ float test()
     return 3.0;
   }
 }
-)";
+)"};
 
-static constexpr std::string_view simple_if_stmt2 = R"(
+static constexpr auto simple_if_stmt2 = std::string_view{R"(
 float test()
 {
   if (1.0 - abs(2.0) <= epsilon)
@@ -55,9 +77,9 @@ float test()
     return 3.0;
   }
 }
-)";
+)"};
 
-static constexpr std::string_view simple_shader_code = R"(
+static constexpr auto simple_shader_code = std::string_view{R"(
 float Value1;
 int[32] Value2_;
 
@@ -84,24 +106,24 @@ OutputVertex vs_main(InputVertex input)
     cer_position = input.position * Vector4(1.0, a, c, Value1)
   };
 }
-)";
+)"};
 
 TEST_CASE("Shader parser", "[shaderc]")
 {
     SECTION("Simple expressions")
     {
-        TypeCache type_cache;
-        Parser    parser{type_cache};
+        auto type_cache = TypeCache{};
+        auto parser     = Parser{type_cache};
 
         std::vector<Token> tokens;
         do_lexing(basic_expressions, "SomeFile", true, tokens);
 
-        const SmallVector<std::unique_ptr<Decl>, 8> decls = parser.parse(tokens);
+        const inplace_vector<std::unique_ptr<Decl>, 8> decls = parser.parse(tokens);
 
         REQUIRE(decls.size() == 1u);
         REQUIRE(isa<FunctionDecl>(*decls.front()));
-        FunctionDecl* const                           func = asa<FunctionDecl>(decls.front().get());
-        const SmallVector<std::unique_ptr<Stmt>, 16>& stmts = func->body()->stmts();
+        FunctionDecl* const func = asa<FunctionDecl>(decls.front().get());
+        const inplace_vector<std::unique_ptr<Stmt>, 16>& stmts = func->body()->stmts();
         REQUIRE(stmts.size() == 14u);
 
         // 1 + 2 * 3

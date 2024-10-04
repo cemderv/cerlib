@@ -12,7 +12,7 @@ AllowShortBlocksOnASingleLine: 'false'
 AllowShortCaseLabelsOnASingleLine: 'true'
 AllowShortFunctionsOnASingleLine: 'false'
 AllowShortIfStatementsOnASingleLine: 'false'
-AllowShortLambdasOnASingleLine: 'true'
+AllowShortLambdasOnASingleLine: 'false'
 AllowShortLoopsOnASingleLine: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None

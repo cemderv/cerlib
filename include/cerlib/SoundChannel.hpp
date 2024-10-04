@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/SoundTypes.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -30,12 +30,12 @@ class SoundChannel
     /**
      * Gets the unique ID of the channel.
      */
-    uint32_t id() const;
+    auto id() const -> uint32_t;
 
     /**
      * Gets a value indicating whether the channel is paused.
      */
-    bool is_paused() const;
+    auto is_paused() const -> bool;
 
     /**
      * Sets a value indicating whether the channel is paused.
@@ -48,7 +48,7 @@ class SoundChannel
     /**
      * Gets the playback speed of the channel.
      */
-    float relative_playback_speed() const;
+    auto relative_playback_speed() const -> float;
 
     /**
      * Sets the playback speed of the channel.
@@ -72,7 +72,7 @@ class SoundChannel
     /**
      * Gets the channel's current volume.
      */
-    float volume() const;
+    auto volume() const -> float;
 
     /**
      * Sets the channel's current volume.
@@ -82,7 +82,7 @@ class SoundChannel
     /**
      * Gets the channel's current pan.
      */
-    float pan() const;
+    auto pan() const -> float;
 
     /**
      * Sets the channel's current pan.
@@ -97,7 +97,7 @@ class SoundChannel
     /**
      * Gets a value indicating whether the channel is currently looping.
      */
-    bool is_looping() const;
+    auto is_looping() const -> bool;
 
     /**
      * Sets whether the channel should loop.
@@ -107,7 +107,7 @@ class SoundChannel
     /**
      * Gets the time point at which the channel is looping.
      */
-    SoundTime loop_point() const;
+    auto loop_point() const -> SoundTime;
 
     /**
      * Sets the time point at which the channel should loop.
@@ -160,6 +160,6 @@ class SoundChannel
     /**
      * Gets the channel's current playback position.
      */
-    SoundTime stream_position() const;
+    auto stream_position() const -> SoundTime;
 };
 } // namespace cer

@@ -88,9 +88,9 @@ class GameImpl final : public Object
 
     static void init_instance(bool enable_audio);
 
-    static GameImpl& instance();
+    static auto instance() -> GameImpl&;
 
-    static bool is_instance_initialized();
+    static auto is_instance_initialized() -> bool;
 
     static void destroy_instance();
 
@@ -108,33 +108,33 @@ class GameImpl final : public Object
 
     void set_event_func(const EventFunc& func);
 
-    ContentManager& content_manager();
+    auto content_manager() -> ContentManager&;
 
-    uint32_t display_count() const;
+    auto display_count() const -> uint32_t;
 
-    std::optional<DisplayMode> current_display_mode(uint32_t display_index) const;
+    auto current_display_mode(uint32_t display_index) const -> std::optional<DisplayMode>;
 
-    std::vector<DisplayMode> display_modes(uint32_t display_index) const;
+    auto display_modes(uint32_t display_index) const -> std::vector<DisplayMode>;
 
-    float display_content_scale(uint32_t display_index) const;
+    auto display_content_scale(uint32_t display_index) const -> float;
 
-    DisplayOrientation display_orientation(uint32_t display_index) const;
+    auto display_orientation(uint32_t display_index) const -> DisplayOrientation;
 
-    Window keyboard_focused_window() const;
+    auto keyboard_focused_window() const -> Window;
 
-    Window mouse_focused_window() const;
+    auto mouse_focused_window() const -> Window;
 
-    bool is_audio_device_initialized() const;
+    auto is_audio_device_initialized() const -> bool;
 
-    GraphicsDevice& graphics_device();
+    auto graphics_device() -> GraphicsDevice&;
 
-    AudioDevice& audio_device();
+    auto audio_device() -> AudioDevice&;
 
     void ensure_graphics_device_initialized(WindowImpl& first_window);
 
-    std::span<WindowImpl* const> windows() const;
+    auto windows() const -> std::span<WindowImpl* const>;
 
-    std::vector<Gamepad> gamepads() const;
+    auto gamepads() const -> std::vector<Gamepad>;
 
   private:
     void open_initial_gamepads();
@@ -143,7 +143,7 @@ class GameImpl final : public Object
 
     void create_graphics_device(WindowImpl& first_window);
 
-    bool tick();
+    auto tick() -> bool;
 
     void process_events();
 
@@ -159,14 +159,14 @@ class GameImpl final : public Object
 
     void notify_window_destroyed(WindowImpl* window);
 
-    Window find_window_by_sdl_window_id(Uint32 sdl_window_id) const;
+    auto find_window_by_sdl_window_id(Uint32 sdl_window_id) const -> Window;
 
-    WindowImpl* find_window_by_sdl_window(SDL_Window* sdl_window) const;
+    auto find_window_by_sdl_window(SDL_Window* sdl_window) const -> WindowImpl*;
 
     void raise_event(const Event& event);
 
-    std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&> find_gamepad_by_sdl_joystick_id(
-        SDL_JoystickID sdl_joystick_id) const;
+    auto find_gamepad_by_sdl_joystick_id(SDL_JoystickID sdl_joystick_id) const
+        -> std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&>;
 
     bool       m_is_running{};
     bool       m_is_first_tick{true};

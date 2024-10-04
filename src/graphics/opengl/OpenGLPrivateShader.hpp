@@ -6,7 +6,7 @@
 
 #include "OpenGLPrerequisites.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 #include <span>
 #include <string>
 #include <string_view>
@@ -24,12 +24,12 @@ class OpenGLPrivateShader final
 
     OpenGLPrivateShader(OpenGLPrivateShader&& other) noexcept;
 
-    OpenGLPrivateShader& operator=(OpenGLPrivateShader&& other) noexcept;
+    auto operator=(OpenGLPrivateShader&& other) noexcept -> OpenGLPrivateShader&;
 
     ~OpenGLPrivateShader() noexcept;
 
-    std::string              name;
-    GLuint                   gl_handle{};
-    SmallVector<std::string> attributes;
+    std::string                 name;
+    GLuint                      gl_handle{};
+    inplace_vector<std::string> attributes;
 };
 } // namespace cer::details

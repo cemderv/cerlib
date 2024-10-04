@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -94,16 +94,19 @@ enum class Comparison
  */
 struct Sampler
 {
-    static constexpr Sampler point_repeat();
-    static constexpr Sampler point_clamp();
-    static constexpr Sampler linear_repeat();
-    static constexpr Sampler linear_clamp();
+    static constexpr auto point_repeat() -> Sampler;
+
+    static constexpr auto point_clamp() -> Sampler;
+
+    static constexpr auto linear_repeat() -> Sampler;
+
+    static constexpr auto linear_clamp() -> Sampler;
 
     /** Default comparison */
-    bool operator==(const Sampler&) const = default;
+    auto operator==(const Sampler&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Sampler&) const = default;
+    auto operator!=(const Sampler&) const -> bool = default;
 
     ImageFilter        filter             = ImageFilter::Linear;
     ImageAddressMode   address_u          = ImageAddressMode::ClampToEdgeTexels;
@@ -112,7 +115,7 @@ struct Sampler
     SamplerBorderColor border_color       = SamplerBorderColor::OpaqueBlack;
 };
 
-constexpr Sampler Sampler::point_repeat()
+constexpr auto Sampler::point_repeat() -> Sampler
 {
     return {
         .filter    = ImageFilter::Point,
@@ -121,7 +124,7 @@ constexpr Sampler Sampler::point_repeat()
     };
 }
 
-constexpr Sampler Sampler::point_clamp()
+constexpr auto Sampler::point_clamp() -> Sampler
 {
     return {
         .filter    = ImageFilter::Point,
@@ -130,7 +133,7 @@ constexpr Sampler Sampler::point_clamp()
     };
 }
 
-constexpr Sampler Sampler::linear_repeat()
+constexpr auto Sampler::linear_repeat() -> Sampler
 {
     return {
         .filter    = ImageFilter::Linear,
@@ -139,7 +142,7 @@ constexpr Sampler Sampler::linear_repeat()
     };
 }
 
-constexpr Sampler Sampler::linear_clamp()
+constexpr auto Sampler::linear_clamp() -> Sampler
 {
     return {
         .filter    = ImageFilter::Linear,

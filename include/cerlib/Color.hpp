@@ -33,16 +33,16 @@ struct Color
     constexpr Color(float r, float g, float b, float a = 1.0f);
 
     /** Obtains the color value as a Vector3 representation. */
-    Vector3 to_vector3() const;
+    auto to_vector3() const -> Vector3;
 
     /** Obtains the color value as a Vector4 representation. */
-    Vector4 to_vector4() const;
+    auto to_vector4() const -> Vector4;
 
     /** Default comparison */
-    bool operator==(const Color&) const = default;
+    auto operator==(const Color&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Color&) const = default;
+    auto operator!=(const Color&) const -> bool = default;
 
     /** The value of the color's red channel */
     float r{};
@@ -65,10 +65,11 @@ struct Color
  *
  * @ingroup Math
  */
-Color random_color(std::optional<float> alpha = std::nullopt);
+auto random_color(std::optional<float> alpha = std::nullopt) -> Color;
 
-Color operator*(const Color& lhs, float rhs);
-Color operator*(float lhs, const Color& rhs);
+auto operator*(const Color& lhs, float rhs) -> Color;
+
+auto operator*(float lhs, const Color& rhs) -> Color;
 } // namespace cer
 
 #include <cerlib/Vector3.hpp>
@@ -84,12 +85,12 @@ constexpr Color::Color(float r, float g, float b, float a)
 {
 }
 
-inline Vector3 Color::to_vector3() const
+inline auto Color::to_vector3() const -> Vector3
 {
     return {r, g, b};
 }
 
-inline Vector4 Color::to_vector4() const
+inline auto Color::to_vector4() const -> Vector4
 {
     return {r, g, b, a};
 }
@@ -144,7 +145,7 @@ static constexpr Color cornflowerblue{100.0f / 255.0f, 149.0f / 255.0f, 237.0f /
 static constexpr Color yellow{1.0f, 1.0f, 0.0f, 1.0f};
 } // namespace cer
 
-inline cer::Color cer::random_color(std::optional<float> alpha)
+inline auto cer::random_color(std::optional<float> alpha) -> cer::Color
 {
     if (!alpha.has_value())
     {
@@ -159,7 +160,7 @@ inline cer::Color cer::random_color(std::optional<float> alpha)
     };
 }
 
-inline cer::Color cer::operator*(const Color& lhs, float rhs)
+inline auto cer::operator*(const Color& lhs, float rhs) -> cer::Color
 {
     return {
         lhs.r * rhs,
@@ -169,7 +170,7 @@ inline cer::Color cer::operator*(const Color& lhs, float rhs)
     };
 }
 
-inline cer::Color cer::operator*(float lhs, const Color& rhs)
+inline auto cer::operator*(float lhs, const Color& rhs) -> cer::Color
 {
     return {
         lhs * rhs.r,

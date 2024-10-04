@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <span>
 
 namespace cer

@@ -45,19 +45,19 @@ struct Vector3
     constexpr Vector3(float x, float y, float z);
 
     /** Default comparison */
-    bool operator==(const Vector3&) const = default;
+    auto operator==(const Vector3&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Vector3&) const = default;
+    auto operator!=(const Vector3&) const -> bool = default;
 
     /** The value of the X component */
-    float x{};
+    float x = 0.0f;
 
     /** The value of the Y component */
-    float y{};
+    float y = 0.0f;
 
     /** The value of the Z component */
-    float z{};
+    float z = 0.0f;
 };
 
 /**
@@ -65,28 +65,28 @@ struct Vector3
  *
  * @ingroup Math
  */
-float length(const Vector3& vector);
+auto length(const Vector3& vector) -> float;
 
 /**
  * Calculates the squared length of a 3D vector.
  *
  * @ingroup Math
  */
-float length_squared(const Vector3& vector);
+auto length_squared(const Vector3& vector) -> float;
 
 /**
  * Calculates the normalized version of a 3D vector.
  *
  * @ingroup Math
  */
-Vector3 normalize(const Vector3& vector);
+auto normalize(const Vector3& vector) -> Vector3;
 
 /**
  * Calculates the rounded version of a 3D vector.
  *
  * @ingroup Math
  */
-Vector3 round(const Vector3& vector);
+auto round(const Vector3& vector) -> Vector3;
 
 /**
  * Calculates a version of a 3D vector with all of its components being their
@@ -94,35 +94,35 @@ Vector3 round(const Vector3& vector);
  *
  * @ingroup Math
  */
-Vector3 abs(const Vector3& vector);
+auto abs(const Vector3& vector) -> Vector3;
 
 /**
  * Calculates the sine of a 3D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector3 sin(const Vector3& vector);
+auto sin(const Vector3& vector) -> Vector3;
 
 /**
  * Calculates the cosine of a 3D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector3 cos(const Vector3& vector);
+auto cos(const Vector3& vector) -> Vector3;
 
 /**
  * Calculates the tangent of a 3D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector3 tan(const Vector3& vector);
+auto tan(const Vector3& vector) -> Vector3;
 
 /**
  * Calculates the value of `base` raised to the power `exp` (3D vector).
  *
  * @ingroup Math
  */
-Vector3 pow(const Vector3& base, const Vector3& exp);
+auto pow(const Vector3& base, const Vector3& exp) -> Vector3;
 
 /**
  * Rounds a 3D vector's elements down to their nearest integers.
@@ -131,7 +131,7 @@ Vector3 pow(const Vector3& base, const Vector3& exp);
  *
  * @ingroup Math
  */
-Vector3 floor(const Vector3& value);
+auto floor(const Vector3& value) -> Vector3;
 
 /**
  * Rounds a 3D vector's elements up to their nearest integers.
@@ -140,21 +140,21 @@ Vector3 floor(const Vector3& value);
  *
  * @ingroup Math
  */
-Vector3 ceiling(const Vector3& value);
+auto ceiling(const Vector3& value) -> Vector3;
 
 /**
  * Calculates a random 3D vector.
  *
  * @ingroup Math
  */
-Vector3 random_vector3(float min = 0.0f, float max = 1.0f);
+auto random_vector3(float min = 0.0f, float max = 1.0f) -> Vector3;
 
 /**
  * Calculates the dot product of two 3D vectors.
  *
  * @ingroup Math
  */
-float dot(const Vector3& lhs, const Vector3& rhs);
+auto dot(const Vector3& lhs, const Vector3& rhs) -> float;
 
 /**
  * Calculates the distance between two 3D vectors.
@@ -164,7 +164,7 @@ float dot(const Vector3& lhs, const Vector3& rhs);
  *
  * @ingroup Math
  */
-float distance(const Vector3& lhs, const Vector3& rhs);
+auto distance(const Vector3& lhs, const Vector3& rhs) -> float;
 
 /**
  * Calculates the squared distance between two 3D vectors.
@@ -174,7 +174,7 @@ float distance(const Vector3& lhs, const Vector3& rhs);
  *
  * @ingroup Math
  */
-float distance_squared(const Vector3& lhs, const Vector3& rhs);
+auto distance_squared(const Vector3& lhs, const Vector3& rhs) -> float;
 
 /**
  * Performs a linear interpolation from one 3D vector to another.
@@ -184,7 +184,7 @@ float distance_squared(const Vector3& lhs, const Vector3& rhs);
  *
  * @ingroup Math
  */
-Vector3 lerp(const Vector3& start, const Vector3& end, float t);
+auto lerp(const Vector3& start, const Vector3& end, float t) -> Vector3;
 
 /**
  * Performs a smoothstep interpolation from one 3D vector to another.
@@ -195,7 +195,7 @@ Vector3 lerp(const Vector3& start, const Vector3& end, float t);
  *
  * @ingroup Math
  */
-Vector3 smoothstep(const Vector3& start, const Vector3& end, float t);
+auto smoothstep(const Vector3& start, const Vector3& end, float t) -> Vector3;
 
 /**
  * Clamps a 3D vector into a specific range.
@@ -206,7 +206,7 @@ Vector3 smoothstep(const Vector3& start, const Vector3& end, float t);
  *
  * @ingroup Math
  */
-Vector3 clamp(const Vector3& value, const Vector3& min, const Vector3& max);
+auto clamp(const Vector3& value, const Vector3& min, const Vector3& max) -> Vector3;
 
 /**
  * Gets a value indicating whether all components of a 3D vector are exactly
@@ -216,7 +216,7 @@ Vector3 clamp(const Vector3& value, const Vector3& min, const Vector3& max);
  *
  * @ingroup Math
  */
-bool is_zero(const Vector3& vector);
+auto is_zero(const Vector3& vector) -> bool;
 
 /**
  * Gets a value indicating whether two 3D vectors are equal within a specific
@@ -229,9 +229,9 @@ bool is_zero(const Vector3& vector);
  *
  * @ingroup Math
  */
-bool are_equal_within(const Vector3& lhs,
+auto are_equal_within(const Vector3& lhs,
                       const Vector3& rhs,
-                      float          threshold = std::numeric_limits<float>::epsilon());
+                      float          threshold = std::numeric_limits<float>::epsilon()) -> bool;
 
 /**
  * Calculates the smaller of two 3D vectors.
@@ -247,7 +247,7 @@ bool are_equal_within(const Vector3& lhs,
  *
  * @ingroup Math
  */
-static Vector3 min(const Vector3& lhs, const Vector3& rhs);
+static auto min(const Vector3& lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Calculates the larger of two 3D vectors.
@@ -263,105 +263,105 @@ static Vector3 min(const Vector3& lhs, const Vector3& rhs);
  *
  * @ingroup Math
  */
-static Vector3 max(const Vector3& lhs, const Vector3& rhs);
+static auto max(const Vector3& lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Adds two 3D vectors.
  *
  * @ingroup Math
  */
-Vector3 operator+(const Vector3& lhs, const Vector3& rhs);
+auto operator+(const Vector3& lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Subtracts two 3D vectors.
  *
  * @ingroup Math
  */
-Vector3 operator-(const Vector3& lhs, const Vector3& rhs);
+auto operator-(const Vector3& lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Multiplies two 3D vectors.
  *
  * @ingroup Math
  */
-Vector3 operator*(const Vector3& lhs, const Vector3& rhs);
+auto operator*(const Vector3& lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Multiplies a 3D vector by a number.
  *
  * @ingroup Math
  */
-Vector3 operator*(const Vector3& lhs, float rhs);
+auto operator*(const Vector3& lhs, float rhs) -> Vector3;
 
 /**
  * Multiplies a 3D vector by a number.
  *
  * @ingroup Math
  */
-Vector3 operator*(float lhs, const Vector3& rhs);
+auto operator*(float lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Divides a 3D vector by another 3D vector.
  *
  * @ingroup Math
  */
-Vector3 operator/(const Vector3& lhs, const Vector3& rhs);
+auto operator/(const Vector3& lhs, const Vector3& rhs) -> Vector3;
 
 /**
  * Divides a 3D vector by a number.
  *
  * @ingroup Math
  */
-Vector3 operator/(const Vector3& lhs, float rhs);
+auto operator/(const Vector3& lhs, float rhs) -> Vector3;
 
 /**
  * Adds a 3D vector to another 3D vector.
  *
  * @ingroup Math
  */
-Vector3& operator+=(Vector3& vector, const Vector3& rhs);
+auto operator+=(Vector3& vector, const Vector3& rhs) -> Vector3&;
 
 /**
  * Subtracts a 3D vector from another 3D vector.
  *
  * @ingroup Math
  */
-Vector3& operator-=(Vector3& vector, const Vector3& rhs);
+auto operator-=(Vector3& vector, const Vector3& rhs) -> Vector3&;
 
 /**
  * Scales a 3D vector by another 3D vector.
  *
  * @ingroup Math
  */
-Vector3& operator*=(Vector3& vector, const Vector3& rhs);
+auto operator*=(Vector3& vector, const Vector3& rhs) -> Vector3&;
 
 /**
  * Scales a 3D vector by a number.
  *
  * @ingroup Math
  */
-Vector3& operator*=(Vector3& vector, float rhs);
+auto operator*=(Vector3& vector, float rhs) -> Vector3&;
 
 /**
  * Divides a 3D vector by another 3D vector.
  *
  * @ingroup Math
  */
-Vector3& operator/=(Vector3& vector, const Vector3& rhs);
+auto operator/=(Vector3& vector, const Vector3& rhs) -> Vector3&;
 
 /**
  * Divides a 3D vector by a number.
  *
  * @ingroup Math
  */
-Vector3& operator/=(Vector3& vector, float rhs);
+auto operator/=(Vector3& vector, float rhs) -> Vector3&;
 
 /**
  * Negates a 3D vector.
  *
  * @ingroup Math
  */
-Vector3 operator-(const Vector3& value);
+auto operator-(const Vector3& value) -> Vector3;
 } // namespace cer
 
 template <>
@@ -420,23 +420,23 @@ constexpr Vector3::Vector3(float x, float y, float z)
 }
 } // namespace cer
 
-inline float cer::length(const Vector3& vector)
+inline auto cer::length(const Vector3& vector) -> float
 {
     return std::sqrt(length_squared(vector));
 }
 
-inline float cer::length_squared(const Vector3& vector)
+inline auto cer::length_squared(const Vector3& vector) -> float
 {
     return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
 }
 
-inline cer::Vector3 cer::normalize(const Vector3& vector)
+inline auto cer::normalize(const Vector3& vector) -> cer::Vector3
 {
     const auto len = length(vector);
     return is_zero(len) ? Vector3() : vector / len;
 }
 
-inline cer::Vector3 cer::round(const Vector3& vector)
+inline auto cer::round(const Vector3& vector) -> cer::Vector3
 {
     return {
         round(vector.x),
@@ -445,7 +445,7 @@ inline cer::Vector3 cer::round(const Vector3& vector)
     };
 }
 
-inline cer::Vector3 cer::abs(const Vector3& vector)
+inline auto cer::abs(const Vector3& vector) -> cer::Vector3
 {
     return {
         abs(vector.x),
@@ -454,7 +454,7 @@ inline cer::Vector3 cer::abs(const Vector3& vector)
     };
 }
 
-inline cer::Vector3 cer::sin(const Vector3& vector)
+inline auto cer::sin(const Vector3& vector) -> cer::Vector3
 {
     return {
         sin(vector.x),
@@ -463,7 +463,7 @@ inline cer::Vector3 cer::sin(const Vector3& vector)
     };
 }
 
-inline cer::Vector3 cer::cos(const Vector3& vector)
+inline auto cer::cos(const Vector3& vector) -> cer::Vector3
 {
     return {
         cos(vector.x),
@@ -472,7 +472,7 @@ inline cer::Vector3 cer::cos(const Vector3& vector)
     };
 }
 
-inline cer::Vector3 cer::tan(const Vector3& vector)
+inline auto cer::tan(const Vector3& vector) -> cer::Vector3
 {
     return {
         tan(vector.x),
@@ -481,7 +481,7 @@ inline cer::Vector3 cer::tan(const Vector3& vector)
     };
 }
 
-inline cer::Vector3 cer::pow(const Vector3& base, const Vector3& exp)
+inline auto cer::pow(const Vector3& base, const Vector3& exp) -> cer::Vector3
 {
     return {
         pow(base.x, exp.x),
@@ -490,7 +490,7 @@ inline cer::Vector3 cer::pow(const Vector3& base, const Vector3& exp)
     };
 }
 
-inline cer::Vector3 cer::floor(const Vector3& value)
+inline auto cer::floor(const Vector3& value) -> cer::Vector3
 {
     return {
         floor(value.x),
@@ -499,7 +499,7 @@ inline cer::Vector3 cer::floor(const Vector3& value)
     };
 }
 
-inline cer::Vector3 cer::ceiling(const Vector3& value)
+inline auto cer::ceiling(const Vector3& value) -> cer::Vector3
 {
     return {
         ceiling(value.x),
@@ -508,7 +508,7 @@ inline cer::Vector3 cer::ceiling(const Vector3& value)
     };
 }
 
-inline cer::Vector3 cer::random_vector3(float min, float max)
+inline auto cer::random_vector3(float min, float max) -> cer::Vector3
 {
     return {
         random_float(min, max),
@@ -517,22 +517,22 @@ inline cer::Vector3 cer::random_vector3(float min, float max)
     };
 }
 
-inline float cer::dot(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::dot(const Vector3& lhs, const Vector3& rhs) -> float
 {
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
-inline float cer::distance(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::distance(const Vector3& lhs, const Vector3& rhs) -> float
 {
     return length(rhs - lhs);
 }
 
-inline float cer::distance_squared(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::distance_squared(const Vector3& lhs, const Vector3& rhs) -> float
 {
     return length_squared(rhs - lhs);
 }
 
-inline cer::Vector3 cer::lerp(const Vector3& start, const Vector3& end, float t)
+inline auto cer::lerp(const Vector3& start, const Vector3& end, float t) -> cer::Vector3
 {
     return {
         lerp(start.x, end.x, t),
@@ -541,7 +541,7 @@ inline cer::Vector3 cer::lerp(const Vector3& start, const Vector3& end, float t)
     };
 }
 
-inline cer::Vector3 cer::smoothstep(const Vector3& start, const Vector3& end, float t)
+inline auto cer::smoothstep(const Vector3& start, const Vector3& end, float t) -> cer::Vector3
 {
     return {
         smoothstep(start.x, end.x, t),
@@ -550,7 +550,7 @@ inline cer::Vector3 cer::smoothstep(const Vector3& start, const Vector3& end, fl
     };
 }
 
-inline cer::Vector3 cer::clamp(const Vector3& value, const Vector3& min, const Vector3& max)
+inline auto cer::clamp(const Vector3& value, const Vector3& min, const Vector3& max) -> cer::Vector3
 {
     return {
         clamp(value.x, min.x, max.x),
@@ -564,13 +564,13 @@ inline auto cer::is_zero(const Vector3& vector) -> bool
     return is_zero(vector.x) && is_zero(vector.y) && is_zero(vector.z);
 }
 
-inline bool cer::are_equal_within(const Vector3& lhs, const Vector3& rhs, float threshold)
+inline auto cer::are_equal_within(const Vector3& lhs, const Vector3& rhs, float threshold) -> bool
 {
     return equal_within(lhs.x, rhs.x, threshold) && equal_within(lhs.y, rhs.y, threshold) &&
            equal_within(lhs.z, rhs.z, threshold);
 }
 
-inline cer::Vector3 cer::min(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::min(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
 {
     return {
         min(lhs.x, rhs.x),
@@ -579,7 +579,7 @@ inline cer::Vector3 cer::min(const Vector3& lhs, const Vector3& rhs)
     };
 }
 
-inline cer::Vector3 cer::max(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::max(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
 {
     return {
         max(lhs.x, rhs.x),
@@ -588,7 +588,7 @@ inline cer::Vector3 cer::max(const Vector3& lhs, const Vector3& rhs)
     };
 }
 
-inline cer::Vector3& cer::operator+=(Vector3& vector, const Vector3& rhs)
+inline auto cer::operator+=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
 {
     vector.x += rhs.x;
     vector.y += rhs.y;
@@ -596,7 +596,7 @@ inline cer::Vector3& cer::operator+=(Vector3& vector, const Vector3& rhs)
     return vector;
 }
 
-inline cer::Vector3& cer::operator-=(Vector3& vector, const Vector3& rhs)
+inline auto cer::operator-=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
 {
     vector.x -= rhs.x;
     vector.y -= rhs.y;
@@ -604,7 +604,7 @@ inline cer::Vector3& cer::operator-=(Vector3& vector, const Vector3& rhs)
     return vector;
 }
 
-inline cer::Vector3& cer::operator*=(Vector3& vector, const Vector3& rhs)
+inline auto cer::operator*=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
 {
     vector.x *= rhs.x;
     vector.y *= rhs.y;
@@ -612,7 +612,7 @@ inline cer::Vector3& cer::operator*=(Vector3& vector, const Vector3& rhs)
     return vector;
 }
 
-inline cer::Vector3& cer::operator*=(Vector3& vector, float rhs)
+inline auto cer::operator*=(Vector3& vector, float rhs) -> cer::Vector3&
 {
     vector.x *= rhs;
     vector.y *= rhs;
@@ -620,7 +620,7 @@ inline cer::Vector3& cer::operator*=(Vector3& vector, float rhs)
     return vector;
 }
 
-inline cer::Vector3& cer::operator/=(Vector3& vector, const Vector3& rhs)
+inline auto cer::operator/=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
 {
     vector.x /= rhs.x;
     vector.y /= rhs.y;
@@ -628,7 +628,7 @@ inline cer::Vector3& cer::operator/=(Vector3& vector, const Vector3& rhs)
     return vector;
 }
 
-inline cer::Vector3& cer::operator/=(Vector3& vector, float rhs)
+inline auto cer::operator/=(Vector3& vector, float rhs) -> cer::Vector3&
 {
     vector.x /= rhs;
     vector.y /= rhs;
@@ -636,7 +636,7 @@ inline cer::Vector3& cer::operator/=(Vector3& vector, float rhs)
     return vector;
 }
 
-inline cer::Vector3 cer::operator-(const Vector3& value)
+inline auto cer::operator-(const Vector3& value) -> cer::Vector3
 {
     return {
         -value.x,
@@ -645,7 +645,7 @@ inline cer::Vector3 cer::operator-(const Vector3& value)
     };
 }
 
-inline cer::Vector3 cer::operator+(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::operator+(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
 {
     return {
         lhs.x + rhs.x,
@@ -654,7 +654,7 @@ inline cer::Vector3 cer::operator+(const Vector3& lhs, const Vector3& rhs)
     };
 }
 
-inline cer::Vector3 cer::operator-(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::operator-(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
 {
     return {
         lhs.x - rhs.x,
@@ -663,7 +663,7 @@ inline cer::Vector3 cer::operator-(const Vector3& lhs, const Vector3& rhs)
     };
 }
 
-inline cer::Vector3 cer::operator*(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::operator*(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
 {
     return {
         lhs.x * rhs.x,
@@ -672,7 +672,7 @@ inline cer::Vector3 cer::operator*(const Vector3& lhs, const Vector3& rhs)
     };
 }
 
-inline cer::Vector3 cer::operator*(const Vector3& lhs, float rhs)
+inline auto cer::operator*(const Vector3& lhs, float rhs) -> cer::Vector3
 {
     return {
         lhs.x * rhs,
@@ -681,12 +681,12 @@ inline cer::Vector3 cer::operator*(const Vector3& lhs, float rhs)
     };
 }
 
-inline cer::Vector3 cer::operator*(float lhs, const Vector3& rhs)
+inline auto cer::operator*(float lhs, const Vector3& rhs) -> cer::Vector3
 {
     return rhs * lhs;
 }
 
-inline cer::Vector3 cer::operator/(const Vector3& lhs, const Vector3& rhs)
+inline auto cer::operator/(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
 {
     return {
         lhs.x / rhs.x,
@@ -695,7 +695,7 @@ inline cer::Vector3 cer::operator/(const Vector3& lhs, const Vector3& rhs)
     };
 }
 
-inline cer::Vector3 cer::operator/(const Vector3& lhs, float rhs)
+inline auto cer::operator/(const Vector3& lhs, float rhs) -> cer::Vector3
 {
     return {
         lhs.x / rhs,

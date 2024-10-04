@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <string_view>
 
 namespace cer
@@ -44,10 +44,10 @@ class GraphicsResource
 
   public:
     /** Gets the type of the resource. */
-    GraphicsResourceType type() const;
+    auto type() const -> GraphicsResourceType;
 
     /** Gets the debuggable name of the resource. */
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     /**
      * Sets the debuggable name of the resource.

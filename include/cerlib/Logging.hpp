@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/Formatters.hpp>
 
 namespace cer

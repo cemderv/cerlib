@@ -5,42 +5,42 @@
 #include "cerlib/ToString.hpp"
 #include "cerlib/Formatters.hpp"
 
-std::string std::to_string(const cer::Color& value)
+auto std::to_string(const cer::Color& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(const cer::Vector2& value)
+auto std::to_string(const cer::Vector2& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(const cer::Vector3& value)
+auto std::to_string(const cer::Vector3& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(const cer::Vector4& value)
+auto std::to_string(const cer::Vector4& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(const cer::Matrix& value)
+auto std::to_string(const cer::Matrix& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(cer::ImageFormat value)
+auto std::to_string(cer::ImageFormat value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(const cer::Image& value)
+auto std::to_string(const cer::Image& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }
 
-std::string std::to_string(const cer::Rectangle& value)
+auto std::to_string(const cer::Rectangle& value) -> std::string
 {
     return cer_fmt::format("{}", value);
 }

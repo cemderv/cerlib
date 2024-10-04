@@ -28,9 +28,9 @@ class Error final : public std::exception
     {
     }
 
-    const char* what() const noexcept override;
+    auto what() const noexcept -> const char* override;
 
-    std::string_view full_message() const;
+    auto full_message() const -> std::string_view;
 
   private:
     std::string m_full_message;

@@ -13,7 +13,7 @@
 
 namespace cer::details
 {
-SoLoud::time to_soloud_time(const SoundTime& seconds)
+auto to_soloud_time(const SoundTime& seconds) -> SoLoud::time
 {
     return seconds.count();
 }
@@ -41,15 +41,18 @@ AudioDevice::~AudioDevice() noexcept
     }
 }
 
-SoundChannel AudioDevice::play_sound(
-    const Sound& sound, float volume, float pan, bool start_paused, std::optional<SoundTime> delay)
+auto AudioDevice::play_sound(const Sound&             sound,
+                             float                    volume,
+                             float                    pan,
+                             bool                     start_paused,
+                             std::optional<SoundTime> delay) -> SoundChannel
 {
     if (!sound)
     {
         return {};
     }
 
-    SoLoud::handle channel_handle =
+    const auto channel_handle =
         delay ? m_soloud.playClocked(to_soloud_time(*delay),
                                      sound.impl()->soloud_audio_source(),
                                      volume,
@@ -89,16 +92,16 @@ void AudioDevice::play_sound_fire_and_forget(const Sound&             sound,
     m_playing_sounds.insert(sound);
 }
 
-SoundChannel AudioDevice::play_sound_in_background(const Sound& sound,
-                                                   float        volume,
-                                                   bool         start_paused)
+auto AudioDevice::play_sound_in_background(const Sound& sound, float volume, bool start_paused)
+    -> SoundChannel
 {
     if (!sound)
     {
         return {};
     }
 
-    SoundChannel channel = play_sound(sound, volume, 0.0f, start_paused, std::nullopt);
+    auto channel = play_sound(sound, volume, 0.0f, start_paused, std::nullopt);
+
     m_soloud.setPanAbsolute(channel.id(), 1.0f, 1.0f);
 
     m_playing_sounds.insert(sound);
@@ -121,7 +124,7 @@ void AudioDevice::resume_all_sounds()
     m_soloud.setPauseAll(false);
 }
 
-float AudioDevice::global_volume() const
+auto AudioDevice::global_volume() const -> float
 {
     return m_soloud.getGlobalVolume();
 }
@@ -136,12 +139,12 @@ void AudioDevice::fade_global_volume(float to_volume, SoundTime fade_duration)
     m_soloud.fadeGlobalVolume(to_volume, to_soloud_time(fade_duration));
 }
 
-SoLoud::Soloud* AudioDevice::soloud()
+auto AudioDevice::soloud() -> SoLoud::Soloud*
 {
     return &m_soloud;
 }
 
-const SoLoud::Soloud* AudioDevice::soloud() const
+auto AudioDevice::soloud() const -> const SoLoud::Soloud*
 {
     return &m_soloud;
 }
@@ -153,7 +156,7 @@ void AudioDevice::purge_sounds()
     });
 }
 
-size_t AudioDevice::SoundHash::operator()(const Sound& sound) const
+auto AudioDevice::SoundHash::operator()(const Sound& sound) const -> size_t
 {
     return reinterpret_cast<size_t>(sound.impl());
 }

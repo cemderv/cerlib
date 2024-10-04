@@ -5,9 +5,8 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/InternalExport.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 #include <gsl/pointers>
 #include <span>
 
@@ -24,7 +23,7 @@ class TempVarNameGen;
 class CodeBlock final
 {
   public:
-    using StmtsType = SmallVector<std::unique_ptr<Stmt>, 16>;
+    using StmtsType = inplace_vector<std::unique_ptr<Stmt>, 16>;
 
     explicit CodeBlock(const SourceLocation& location, StmtsType stmts);
 
@@ -36,15 +35,15 @@ class CodeBlock final
                 Scope&                                      scope,
                 std::span<const gsl::not_null<const Decl*>> extra_symbols) const;
 
-    SmallVector<gsl::not_null<VarStmt*>, 8> variables() const;
+    auto variables() const -> inplace_vector<gsl::not_null<VarStmt*>, 8>;
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
-    const StmtsType& stmts() const;
+    auto stmts() const -> const StmtsType&;
 
     void remove_stmt(const Stmt& stmt);
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool;
 
   private:
     SourceLocation m_location;

@@ -15,7 +15,8 @@ constexpr SourceLocation SourceLocation::std = {
     0,
 };
 
-SourceLocation SourceLocation::from_to(const SourceLocation& start, const SourceLocation& end)
+auto SourceLocation::from_to(const SourceLocation& start, const SourceLocation& end)
+    -> SourceLocation
 {
     assert(start.filename == end.filename);
     assert(start.start_index < end.start_index);
@@ -23,6 +24,6 @@ SourceLocation SourceLocation::from_to(const SourceLocation& start, const Source
     return {start.filename,
             start.line,
             start.column,
-            static_cast<uint16_t>(start.start_index + end.start_index)};
+            uint16_t(start.start_index + end.start_index)};
 }
 } // namespace cer::shadercompiler

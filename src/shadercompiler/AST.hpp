@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "util/InternalExport.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
 #include "util/StringViewUnorderedSet.hpp"
+#include "util/inplace_vector.hpp"
 #include <gsl/pointers>
 #include <string>
 
@@ -23,8 +22,8 @@ class ShaderParamDecl;
 class AccessedParams
 {
   public:
-    SmallVector<gsl::not_null<const ShaderParamDecl*>, 8> scalars{};
-    SmallVector<gsl::not_null<const ShaderParamDecl*>, 8> resources{};
+    inplace_vector<gsl::not_null<const ShaderParamDecl*>, 8> scalars{};
+    inplace_vector<gsl::not_null<const ShaderParamDecl*>, 8> resources{};
 
     explicit operator bool() const
     {
@@ -35,7 +34,7 @@ class AccessedParams
 class AST final
 {
   public:
-    using DeclsType = SmallVector<std::unique_ptr<Decl>, 8>;
+    using DeclsType = inplace_vector<std::unique_ptr<Decl>, 8>;
 
     explicit AST(std::string_view              filename,
                  DeclsType                     decls,
@@ -51,26 +50,26 @@ class AST final
 
     void verify(SemaContext& context, Scope& global_scope);
 
-    std::string_view filename() const;
+    auto filename() const -> std::string_view;
 
-    DeclsType& decls();
+    auto decls() -> DeclsType&;
 
-    const DeclsType& decls() const;
+    auto decls() const -> const DeclsType&;
 
-    bool is_top_level_symbol(const SemaContext& context, const Decl& symbol) const;
+    auto is_top_level_symbol(const SemaContext& context, const Decl& symbol) const -> bool;
 
-    bool has_parameters() const;
+    auto has_parameters() const -> bool;
 
-    bool is_symbol_accessed_anywhere(const Decl& symbol) const;
+    auto is_symbol_accessed_anywhere(const Decl& symbol) const -> bool;
 
-    const StringViewUnorderedSet* user_specified_defines() const;
+    auto user_specified_defines() const -> const StringViewUnorderedSet*;
 
-    bool is_verified() const;
+    auto is_verified() const -> bool;
 
   private:
-    std::string                           m_filename;
-    SmallVector<std::unique_ptr<Decl>, 8> m_decls;
-    const StringViewUnorderedSet*         m_user_specified_defines;
-    bool                                  m_is_verified{};
+    std::string                              m_filename;
+    inplace_vector<std::unique_ptr<Decl>, 8> m_decls;
+    const StringViewUnorderedSet*            m_user_specified_defines;
+    bool                                     m_is_verified{};
 };
 } // namespace cer::shadercompiler

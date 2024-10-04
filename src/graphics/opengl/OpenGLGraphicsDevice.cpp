@@ -30,13 +30,13 @@
 namespace cer::details
 {
 #ifdef USE_OPENGL_DEBUGGING
-static void OpenGlDebugMessageCallback(GLenum        source,
-                                       GLenum        type,
-                                       GLuint        id,
-                                       GLenum        severity,
-                                       GLsizei       length,
-                                       const GLchar* message,
-                                       const void*   user_param)
+static void open_gl_debug_message_callback([[maybe_unused]] GLenum      source,
+                                           GLenum                       type,
+                                           [[maybe_unused]] GLuint      id,
+                                           GLenum                       severity,
+                                           [[maybe_unused]] GLsizei     length,
+                                           const GLchar*                message,
+                                           [[maybe_unused]] const void* user_param)
 {
     if (type == GL_DEBUG_TYPE_ERROR_ARB)
     {
@@ -64,7 +64,8 @@ static void OpenGlDebugMessageCallback(GLenum        source,
 
 void OpenGLGraphicsDevice::on_start_frame(const Window& window)
 {
-    auto opengl_window = dynamic_cast<OpenGLWindow*>(window.impl());
+    auto* opengl_window = dynamic_cast<OpenGLWindow*>(window.impl());
+
     assert(opengl_window != nullptr);
 
     opengl_window->make_context_current();
@@ -90,9 +91,9 @@ void OpenGLGraphicsDevice::on_start_frame(const Window& window)
     }
 #endif
 
-    if (const auto canvas = current_canvas())
+    if (const auto& canvas = current_canvas())
     {
-        const auto opengl_canvas = dynamic_cast<OpenGLImage*>(canvas.impl());
+        const auto* opengl_canvas = dynamic_cast<OpenGLImage*>(canvas.impl());
         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, opengl_canvas->gl_framebuffer_handle));
     }
     else
@@ -103,7 +104,7 @@ void OpenGLGraphicsDevice::on_start_frame(const Window& window)
 
 void OpenGLGraphicsDevice::on_end_frame(const Window& window)
 {
-    const auto sdl_window = window.impl()->sdl_window();
+    auto* sdl_window = window.impl()->sdl_window();
     SDL_GL_SwapWindow(sdl_window);
 }
 
@@ -121,12 +122,9 @@ void OpenGLGraphicsDevice::on_end_imgui_frame(const Window& window)
     CERLIB_UNUSED(window);
 
 #ifdef CERLIB_ENABLE_IMGUI
-    const ImGuiIO& io = ImGui::GetIO();
+    const auto& io = ImGui::GetIO();
 
-    glViewport(0,
-               0,
-               static_cast<GLsizei>(io.DisplaySize.x),
-               static_cast<GLsizei>(io.DisplaySize.y));
+    glViewport(0, 0, GLsizei(io.DisplaySize.x), GLsizei(io.DisplaySize.y));
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 #endif
@@ -136,7 +134,7 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
 {
     if (canvas)
     {
-        const auto opengl_canvas = dynamic_cast<OpenGLImage*>(canvas.impl());
+        const auto* opengl_canvas = dynamic_cast<OpenGLImage*>(canvas.impl());
         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, opengl_canvas->gl_framebuffer_handle));
     }
     else
@@ -144,15 +142,15 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
         GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
 
-    GL_CALL(glViewport(static_cast<GLint>(viewport.x),
-                       static_cast<GLint>(viewport.y),
-                       static_cast<GLsizei>(viewport.width),
-                       static_cast<GLsizei>(viewport.height)));
+    GL_CALL(glViewport(GLint(viewport.x),
+                       GLint(viewport.y),
+                       GLsizei(viewport.width),
+                       GLsizei(viewport.height)));
 
-    if (const std::optional<Color> clear_color =
+    if (const auto clear_color =
             canvas ? canvas.canvas_clear_color() : current_window().clear_color())
     {
-        auto previous_mask = std::array<GLint, 4>();
+        auto previous_mask = std::array<GLint, 4>{};
         GL_CALL(glGetIntegerv(GL_COLOR_WRITEMASK, previous_mask.data()));
 
         auto has_color_write_mask_changed = false;
@@ -163,7 +161,7 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
             has_color_write_mask_changed = true;
         }
 
-        const Color color = *clear_color;
+        const auto color = *clear_color;
         GL_CALL(glClearColor(color.r, color.g, color.b, color.a));
 
 #ifdef CERLIB_ENABLE_IMGUI
@@ -174,10 +172,10 @@ void OpenGLGraphicsDevice::on_set_canvas(const Image& canvas, const Rectangle& v
 
         if (has_color_write_mask_changed)
         {
-            GL_CALL(glColorMask(static_cast<GLboolean>(previous_mask[0]),
-                                static_cast<GLboolean>(previous_mask[1]),
-                                static_cast<GLboolean>(previous_mask[2]),
-                                static_cast<GLboolean>(previous_mask[3])));
+            GL_CALL(glColorMask(GLboolean(previous_mask[0]),
+                                GLboolean(previous_mask[1]),
+                                GLboolean(previous_mask[2]),
+                                GLboolean(previous_mask[3])));
         }
     }
 }
@@ -194,15 +192,15 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
     }
 #endif
 
-    SmallVector<GLint, 8> scissor_rects_gl{};
+    inplace_vector<GLint, 8> scissor_rects_gl{};
     scissor_rects_gl.reserve(scissor_rects.size());
 
-    for (const Rectangle& rect : scissor_rects)
+    for (const auto& rect : scissor_rects)
     {
-        scissor_rects_gl.emplace_back(static_cast<GLint>(rect.left()));
-        scissor_rects_gl.emplace_back(static_cast<GLint>(rect.bottom()));
-        scissor_rects_gl.emplace_back(static_cast<GLint>(rect.width));
-        scissor_rects_gl.emplace_back(static_cast<GLint>(rect.height));
+        scissor_rects_gl.emplace_back(GLint(rect.left()));
+        scissor_rects_gl.emplace_back(GLint(rect.bottom()));
+        scissor_rects_gl.emplace_back(GLint(rect.width));
+        scissor_rects_gl.emplace_back(GLint(rect.height));
     }
 
     if (scissor_rects.empty())
@@ -216,34 +214,33 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
 #ifdef CERLIB_GFX_IS_GLES
     GL_CALL(glScissor(scissor_rects_gl[0],
                       scissor_rects_gl[1],
-                      static_cast<GLsizei>(scissor_rects_gl[2]),
-                      static_cast<GLsizei>(scissor_rects_gl[3])));
+                      GLsizei(scissor_rects_gl[2]),
+                      GLsizei(scissor_rects_gl[3])));
 #else
-    GL_CALL(
-        glScissorArrayv(0, static_cast<GLsizei>(scissor_rects.size()), scissor_rects_gl.data()));
+    GL_CALL(glScissorArrayv(0, GLsizei(scissor_rects.size()), scissor_rects_gl.data()));
 #endif
 }
 
-gsl::not_null<ImageImpl*> OpenGLGraphicsDevice::create_canvas(const Window& window,
-                                                              uint32_t      width,
-                                                              uint32_t      height,
-                                                              ImageFormat   format)
+auto OpenGLGraphicsDevice::create_canvas(const Window& window,
+                                         uint32_t      width,
+                                         uint32_t      height,
+                                         ImageFormat   format) -> gsl::not_null<ImageImpl*>
 {
     return std::make_unique<OpenGLImage>(this, window.impl(), width, height, format).release();
 }
 
-gsl::not_null<ImageImpl*> OpenGLGraphicsDevice::create_image(
-    uint32_t                   width,
-    uint32_t                   height,
-    ImageFormat                format,
-    uint32_t                   mipmap_count,
-    const Image::DataCallback& data_callback)
+auto OpenGLGraphicsDevice::create_image(uint32_t                   width,
+                                        uint32_t                   height,
+                                        ImageFormat                format,
+                                        uint32_t                   mipmap_count,
+                                        const Image::DataCallback& data_callback)
+    -> gsl::not_null<ImageImpl*>
 {
     return std::make_unique<OpenGLImage>(this, width, height, format, mipmap_count, data_callback)
         .release();
 }
 
-const OpenGLFeatures& OpenGLGraphicsDevice::opengl_features() const
+auto OpenGLGraphicsDevice::opengl_features() const -> const OpenGLFeatures&
 {
     return m_features;
 }
@@ -267,36 +264,36 @@ void OpenGLGraphicsDevice::read_canvas_data_into(
 {
     assert(canvas);
 
-    const auto opengl_image = dynamic_cast<OpenGLImage*>(canvas.impl());
+    auto* opengl_image = dynamic_cast<OpenGLImage*>(canvas.impl());
     assert(opengl_image != nullptr);
 
-    GLuint previously_bound_fbo{};
+    GLuint previously_bound_fbo = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&previously_bound_fbo));
 
-    const GLuint fbo_handle = opengl_image->gl_framebuffer_handle;
+    const auto fbo_handle = opengl_image->gl_framebuffer_handle;
 
     // A canvas cannot be bound while we're trying to read from it.
-    // This is ensured by the top-lvel GetCanvasDataInto() function (via exception).
+    // This is ensured by the top-level GetCanvasDataInto() function (via exception).
     assert(previously_bound_fbo != fbo_handle);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
 
-    const OpenGLFormatTriplet opengl_format_triplet = opengl_image->gl_format_triplet;
-    const ImageFormat         canvas_format         = canvas.format();
-    const auto                row_pitch             = image_row_pitch(width, canvas_format);
-    const auto                pixel_data_size       = row_pitch * height;
-    const auto                tmp_buffer = std::make_unique<std::byte[]>(pixel_data_size);
+    const auto opengl_format_triplet = opengl_image->gl_format_triplet;
+    const auto canvas_format         = canvas.format();
+    const auto row_pitch             = image_row_pitch(width, canvas_format);
+    const auto pixel_data_size       = row_pitch * height;
+    const auto tmp_buffer            = std::make_unique<std::byte[]>(pixel_data_size);
 
-    glReadPixels(static_cast<GLint>(x),
-                 static_cast<GLint>(y),
-                 static_cast<GLsizei>(width),
-                 static_cast<GLsizei>(height),
+    glReadPixels(GLint(x),
+                 GLint(y),
+                 GLsizei(width),
+                 GLsizei(height),
                  opengl_format_triplet.base_format,
                  opengl_format_triplet.type,
                  tmp_buffer.get());
 
     // Flip data vertically because OpenGL.
-    auto dst_row = static_cast<std::byte*>(destination);
+    auto* dst_row = static_cast<std::byte*>(destination);
 
     for (uint32_t row = 0; row < height; ++row)
     {
@@ -308,22 +305,23 @@ void OpenGLGraphicsDevice::read_canvas_data_into(
     glBindFramebuffer(GL_FRAMEBUFFER, previously_bound_fbo);
 }
 
-std::unique_ptr<ShaderImpl> OpenGLGraphicsDevice::create_native_user_shader(
-    std::string_view native_code, ShaderImpl::ParameterList parameters)
+auto OpenGLGraphicsDevice::create_native_user_shader(std::string_view          native_code,
+                                                     ShaderImpl::ParameterList parameters)
+    -> std::unique_ptr<ShaderImpl>
 {
     return std::make_unique<OpenGLUserShader>(this, native_code, std::move(parameters));
 }
 
 OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
 {
-    OpenGLWindow& opengl_window = dynamic_cast<OpenGLWindow&>(main_window);
+    auto& opengl_window = dynamic_cast<OpenGLWindow&>(main_window);
     opengl_window.make_context_current();
 
     // Load OpenGL function pointers
     {
         const auto get_proc = reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress);
 
-        int gl_loading_success =
+        auto gl_loading_success =
 #ifdef CERLIB_GFX_IS_GLES
             gladLoadGLES2Loader(get_proc);
 #else
@@ -341,8 +339,8 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
 
 #if defined(GL_MAJOR_VERSION) && defined(GL_MINOR_VERSION)
     // Verify required OpenGL version
-    GLint gl_major_version{};
-    GLint gl_minor_version{};
+    GLint gl_major_version = 0;
+    GLint gl_minor_version = 0;
     GL_CALL(glGetIntegerv(GL_MAJOR_VERSION, &gl_major_version));
     GL_CALL(glGetIntegerv(GL_MINOR_VERSION, &gl_minor_version));
 #else
@@ -379,7 +377,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     {
         log_verbose("  Device supports GL_debug_output; enabling it");
         GL_CALL(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB));
-        GL_CALL(glDebugMessageCallbackARB(OpenGlDebugMessageCallback, this));
+        GL_CALL(glDebugMessageCallbackARB(open_gl_debug_message_callback, this));
     }
 #endif
 
@@ -407,7 +405,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
     // TODO: check glBufferStorageExt
 
 #ifndef CERLIB_GFX_IS_GLES
-    if (GLAD_GL_ARB_buffer_storage != 0 && glBufferStorage)
+    if (GLAD_GL_ARB_buffer_storage != 0 && glBufferStorage != nullptr)
     {
         log_verbose("  Device supports OpenGL feature BufferStorage");
         m_features.buffer_storage = true;
@@ -420,7 +418,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
         m_features.texture_storage = true;
     }
 
-    if (GLAD_GL_ARB_bindless_texture != 0 && glCreateTextures)
+    if (GLAD_GL_ARB_bindless_texture != 0 && glCreateTextures != nullptr)
     {
         log_verbose("  Device supports OpenGL feature BindlessTextures");
         m_features.bindless_textures = true;

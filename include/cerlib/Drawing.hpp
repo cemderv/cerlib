@@ -48,12 +48,12 @@ enum class SpriteFlip
     Both = Horizontally | Vertically,
 };
 
-static SpriteFlip operator|(SpriteFlip lhs, SpriteFlip rhs)
+static auto operator|(SpriteFlip lhs, SpriteFlip rhs) -> SpriteFlip
 {
-    return static_cast<SpriteFlip>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return SpriteFlip(int(lhs) | int(rhs));
 }
 
-static SpriteFlip& operator|=(SpriteFlip& lhs, SpriteFlip rhs)
+static auto operator|=(SpriteFlip& lhs, SpriteFlip rhs) -> SpriteFlip&
 {
     lhs = lhs | rhs;
     return lhs;
@@ -67,10 +67,10 @@ static SpriteFlip& operator|=(SpriteFlip& lhs, SpriteFlip rhs)
 struct Sprite
 {
     /** Default comparison */
-    bool operator==(const Sprite&) const = default;
+    auto operator==(const Sprite&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Sprite&) const = default;
+    auto operator!=(const Sprite&) const -> bool = default;
 
     Image                    image{};
     Rectangle                dst_rect{};
@@ -144,7 +144,7 @@ void set_scissor_rects(std::span<const Rectangle> scissor_rects);
  *
  * @ingroup Graphics
  */
-Image current_canvas();
+auto current_canvas() -> Image;
 
 /**
  * Sets the active canvas to use as a rendering destination.
@@ -182,7 +182,7 @@ void set_transformation(const Matrix& transformation);
  *
  * @ingroup Graphics
  */
-Shader current_sprite_shader();
+auto current_sprite_shader() -> Shader;
 
 /**
  * Sets the active custom shader to use for sprite rendering.
@@ -284,7 +284,7 @@ void fill_rectangle(Rectangle rectangle,
  *
  * @ingroup Graphics
  */
-FrameStats frame_stats();
+auto frame_stats() -> FrameStats;
 
 /**
  * Gets the size of the current canvas, in pixels.
@@ -293,7 +293,7 @@ FrameStats frame_stats();
  *
  * @ingroup Graphics
  */
-Vector2 current_canvas_size();
+auto current_canvas_size() -> Vector2;
 
 /**
  * Gets the pixel data that is currently stored in a canvas.
@@ -336,8 +336,8 @@ void read_canvas_data_into(const Image& canvas,
  *
  * @ingroup Graphics
  */
-std::vector<std::byte> read_canvas_data(
-    const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+auto read_canvas_data(const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    -> std::vector<std::byte>;
 
 /**
  * Saves the pixel data of a canvas to a file.
@@ -362,6 +362,6 @@ void save_canvas_to_file(const Image&     canvas,
  *
  * @ingroup Graphics
  */
-std::vector<std::byte> save_canvas_to_memory(const Image&    canvas,
-                                             ImageFileFormat format = ImageFileFormat::Png);
+auto save_canvas_to_memory(const Image& canvas, ImageFileFormat format = ImageFileFormat::Png)
+    -> std::vector<std::byte>;
 } // namespace cer

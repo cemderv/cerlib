@@ -35,21 +35,22 @@ class ContentManager final
 
     void set_asset_loading_prefix(std::string_view prefix);
 
-    std::string_view asset_loading_prefix() const;
+    auto asset_loading_prefix() const -> std::string_view;
 
-    Image load_image(std::string_view name, bool generate_mipmaps);
+    auto load_image(std::string_view name, bool generate_mipmaps) -> Image;
 
-    Shader load_shader(std::string_view name, std::span<const std::string_view> defines = {});
+    auto load_shader(std::string_view name, std::span<const std::string_view> defines = {})
+        -> Shader;
 
-    Font load_font(std::string_view name);
+    auto load_font(std::string_view name) -> Font;
 
-    Sound load_sound(std::string_view name);
+    auto load_sound(std::string_view name) -> Sound;
 
-    std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
-                                             std::string_view name,
-                                             const std::any&  extra_info);
+    auto load_custom_asset(std::string_view type_id,
+                           std::string_view name,
+                           const std::any&  extra_info) -> std::shared_ptr<Asset>;
 
-    bool is_loaded(std::string_view name) const;
+    auto is_loaded(std::string_view name) const -> bool;
 
     void register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func);
 
@@ -88,7 +89,7 @@ auto ContentManager::lazy_load(std::string_view key,
     static_assert(std::is_base_of_v<Asset, TImpl>, "Type must derive from Asset");
 
     // TODO: we can optimize this: use key directly if asset prefix is empty
-    const auto key_str = m_asset_loading_prefix + std::string(key);
+    const auto key_str = m_asset_loading_prefix + std::string{key};
 
     if (const auto it = m_loaded_assets.find(key_str); it != m_loaded_assets.cend())
     {
@@ -103,25 +104,25 @@ auto ContentManager::lazy_load(std::string_view key,
         }
 
         // Construct object, increment reference count to impl object.
-        auto obj = TBase();
+        auto obj = TBase{};
+
         set_impl(obj, *ref);
+
         return obj;
     }
-    else
-    {
-        // Load fresh object, store its impl pointer in the map, but return the object.
-        const auto name_str = m_asset_loading_prefix + std::string(name);
-        auto       asset    = load_func(name_str);
-        auto       impl     = asset.impl();
 
-        impl->m_content_manager = this;
-        impl->m_asset_name      = key_str;
+    // Load fresh object, store its impl pointer in the map, but return the object.
+    const auto name_str = m_asset_loading_prefix + std::string(name);
+    auto       asset    = load_func(name_str);
+    auto       impl     = asset.impl();
 
-        log_verbose("Loaded asset '{}'", key_str);
+    impl->m_content_manager = this;
+    impl->m_asset_name      = key_str;
 
-        m_loaded_assets.emplace(key_str, static_cast<TImpl*>(impl));
+    log_verbose("Loaded asset '{}'", key_str);
 
-        return asset;
-    }
+    m_loaded_assets.emplace(key_str, static_cast<TImpl*>(impl));
+
+    return asset;
 }
 } // namespace cer::details

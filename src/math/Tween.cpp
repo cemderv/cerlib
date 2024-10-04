@@ -54,7 +54,7 @@ void Tweener::update(double elapsed_time)
     }
     else
     {
-        m_position = m_func(static_cast<float>(m_elapsed), m_from, m_change, m_duration);
+        m_position = m_func(float(m_elapsed), m_from, m_change, m_duration);
     }
 }
 
@@ -83,17 +83,17 @@ void Tweener::reverse()
     m_from    = m_position;
 }
 
-float Tweener::percentage() const
+auto Tweener::percentage() const -> float
 {
-    return m_to == 0.0f ? 0.0f : (static_cast<float>(m_position) / m_to);
+    return m_to == 0.0f ? 0.0f : (float(m_position) / m_to);
 }
 
-bool Tweener::is_running() const
+auto Tweener::is_running() const -> bool
 {
     return m_is_running;
 }
 
-bool Tweener::has_ended() const
+auto Tweener::has_ended() const -> bool
 {
     return m_elapsed == m_duration;
 }
@@ -104,17 +104,17 @@ bool Tweener::has_ended() const
 #pragma clang diagnostic ignored "-Wunsequenced"
 #endif
 
-float Tweener::back_ease_in(float t, float b, float c, float d)
+auto Tweener::back_ease_in(float t, float b, float c, float d) -> float
 {
     return c * (t /= d) * t * ((1.70158f + 1) * t - 1.70158f) + b;
 }
 
-float Tweener::back_ease_out(float t, float b, float c, float d)
+auto Tweener::back_ease_out(float t, float b, float c, float d) -> float
 {
     return c * ((t = t / d - 1) * t * ((1.70158f + 1) * t + 1.70158f) + 1) + b;
 }
 
-float Tweener::back_ease_in_out(float t, float b, float c, float d)
+auto Tweener::back_ease_in_out(float t, float b, float c, float d) -> float
 {
     float s = 1.70158f;
 
@@ -126,7 +126,7 @@ float Tweener::back_ease_in_out(float t, float b, float c, float d)
     return c / 2 * ((t -= 2) * t * (((s *= (1.525f)) + 1) * t + s) + 2) + b;
 }
 
-float Tweener::bounce_ease_out(float t, float b, float c, float d)
+auto Tweener::bounce_ease_out(float t, float b, float c, float d) -> float
 {
     if ((t /= d) < 1 / 2.75)
     {
@@ -146,12 +146,12 @@ float Tweener::bounce_ease_out(float t, float b, float c, float d)
     return c * (7.5625f * (t -= (2.625f / 2.75f)) * t + .984375f) + b;
 }
 
-float Tweener::bounce_ease_in(float t, float b, float c, float d)
+auto Tweener::bounce_ease_in(float t, float b, float c, float d) -> float
 {
     return c - bounce_ease_out(d - t, 0, c, d) + b;
 }
 
-float Tweener::bounce_ease_in_out(float t, float b, float c, float d)
+auto Tweener::bounce_ease_in_out(float t, float b, float c, float d) -> float
 {
     if (t < d / 2)
     {
@@ -161,17 +161,17 @@ float Tweener::bounce_ease_in_out(float t, float b, float c, float d)
     return bounce_ease_out(t * 2 - d, 0, c, d) * .5f + c * 0.5f + b;
 }
 
-float Tweener::circular_ease_in(float t, float b, float c, float d)
+auto Tweener::circular_ease_in(float t, float b, float c, float d) -> float
 {
     return -c * (std::sqrt(1 - (t /= d) * t) - 1) + b;
 }
 
-float Tweener::circular_ease_out(float t, float b, float c, float d)
+auto Tweener::circular_ease_out(float t, float b, float c, float d) -> float
 {
     return c * std::sqrt(1 - (t = t / d - 1) * t) + b;
 }
 
-float Tweener::circular_ease_in_out(float t, float b, float c, float d)
+auto Tweener::circular_ease_in_out(float t, float b, float c, float d) -> float
 {
     if ((t /= d / 2) < 1)
     {
@@ -181,17 +181,17 @@ float Tweener::circular_ease_in_out(float t, float b, float c, float d)
     return c / 2 * (std::sqrt(1 - (t -= 2) * t) + 1) + b;
 }
 
-float Tweener::cubic_ease_in(float t, float b, float c, float d)
+auto Tweener::cubic_ease_in(float t, float b, float c, float d) -> float
 {
     return c * (t /= d) * t * t + b;
 }
 
-float Tweener::cubic_ease_out(float t, float b, float c, float d)
+auto Tweener::cubic_ease_out(float t, float b, float c, float d) -> float
 {
     return c * ((t = t / d - 1) * t * t + 1) + b;
 }
 
-float Tweener::cubic_ease_in_out(float t, float b, float c, float d)
+auto Tweener::cubic_ease_in_out(float t, float b, float c, float d) -> float
 {
     if ((t /= d / 2) < 1)
     {
@@ -201,7 +201,7 @@ float Tweener::cubic_ease_in_out(float t, float b, float c, float d)
     return c / 2 * ((t -= 2) * t * t + 2) + b;
 }
 
-float Tweener::elastic_ease_in(float t, float b, float c, float d)
+auto Tweener::elastic_ease_in(float t, float b, float c, float d) -> float
 {
     if (t == 0)
     {
@@ -218,7 +218,7 @@ float Tweener::elastic_ease_in(float t, float b, float c, float d)
     return -(c * std::pow(2.0f, 10.0f * (t -= 1)) * std::sin((t * d - s) * (2 * pi) / p)) + b;
 }
 
-float Tweener::elastic_ease_out(float t, float b, float c, float d)
+auto Tweener::elastic_ease_out(float t, float b, float c, float d) -> float
 {
     if (t == 0)
     {
@@ -236,7 +236,7 @@ float Tweener::elastic_ease_out(float t, float b, float c, float d)
     return c * std::pow(2.0f, -10.0f * t) * std::sin((t * d - s) * (2 * pi) / p) + c + b;
 }
 
-float Tweener::elastic_ease_in_out(float t, float b, float c, float d)
+auto Tweener::elastic_ease_in_out(float t, float b, float c, float d) -> float
 {
     if (t == 0)
     {
@@ -263,17 +263,17 @@ float Tweener::elastic_ease_in_out(float t, float b, float c, float d)
            b;
 }
 
-float Tweener::exponential_ease_in(float t, float b, float c, float d)
+auto Tweener::exponential_ease_in(float t, float b, float c, float d) -> float
 {
     return t == 0 ? b : c * std::pow(2.0f, 10.0f * (t / d - 1)) + b;
 }
 
-float Tweener::exponential_ease_out(float t, float b, float c, float d)
+auto Tweener::exponential_ease_out(float t, float b, float c, float d) -> float
 {
     return t == d ? b + c : c * (-std::pow(2.0f, -10.0f * t / d) + 1) + b;
 }
 
-float Tweener::exponential_ease_in_out(float t, float b, float c, float d)
+auto Tweener::exponential_ease_in_out(float t, float b, float c, float d) -> float
 {
     if (t == 0)
     {
@@ -293,22 +293,22 @@ float Tweener::exponential_ease_in_out(float t, float b, float c, float d)
     return c / 2 * (-std::pow(2.0f, -10.0f * --t) + 2) + b;
 }
 
-float Tweener::linear(float t, float b, float c, float d)
+auto Tweener::linear(float t, float b, float c, float d) -> float
 {
     return c * t / d + b;
 }
 
-float Tweener::quadratic_ease_in(float t, float b, float c, float d)
+auto Tweener::quadratic_ease_in(float t, float b, float c, float d) -> float
 {
     return c * (t /= d) * t + b;
 }
 
-float Tweener::quadratic_ease_out(float t, float b, float c, float d)
+auto Tweener::quadratic_ease_out(float t, float b, float c, float d) -> float
 {
     return -c * (t /= d) * (t - 2) + b;
 }
 
-float Tweener::quadratic_ease_in_out(float t, float b, float c, float d)
+auto Tweener::quadratic_ease_in_out(float t, float b, float c, float d) -> float
 {
     if ((t /= d / 2) < 1)
     {
@@ -318,17 +318,17 @@ float Tweener::quadratic_ease_in_out(float t, float b, float c, float d)
     return -c / 2 * ((--t) * (t - 2) - 1) + b;
 }
 
-float Tweener::quartic_ease_in(float t, float b, float c, float d)
+auto Tweener::quartic_ease_in(float t, float b, float c, float d) -> float
 {
     return c * (t /= d) * t * t * t + b;
 }
 
-float Tweener::quartic_ease_out(float t, float b, float c, float d)
+auto Tweener::quartic_ease_out(float t, float b, float c, float d) -> float
 {
     return -c * ((t = t / d - 1) * t * t * t - 1) + b;
 }
 
-float Tweener::quartic_ease_in_out(float t, float b, float c, float d)
+auto Tweener::quartic_ease_in_out(float t, float b, float c, float d) -> float
 {
     if ((t /= d / 2) < 1)
     {
@@ -338,17 +338,17 @@ float Tweener::quartic_ease_in_out(float t, float b, float c, float d)
     return -c / 2 * ((t -= 2) * t * t * t - 2) + b;
 }
 
-float Tweener::quintic_ease_in(float t, float b, float c, float d)
+auto Tweener::quintic_ease_in(float t, float b, float c, float d) -> float
 {
     return c * (t /= d) * t * t * t * t + b;
 }
 
-float Tweener::quintic_ease_out(float t, float b, float c, float d)
+auto Tweener::quintic_ease_out(float t, float b, float c, float d) -> float
 {
     return c * ((t = t / d - 1) * t * t * t * t + 1) + b;
 }
 
-float Tweener::quintic_ease_in_out(float t, float b, float c, float d)
+auto Tweener::quintic_ease_in_out(float t, float b, float c, float d) -> float
 {
     if ((t /= d / 2) < 1)
     {
@@ -358,17 +358,17 @@ float Tweener::quintic_ease_in_out(float t, float b, float c, float d)
     return c / 2 * ((t -= 2) * t * t * t * t + 2) + b;
 }
 
-float Tweener::sinusoidal_ease_in(float t, float b, float c, float d)
+auto Tweener::sinusoidal_ease_in(float t, float b, float c, float d) -> float
 {
     return -c * std::cos(t / d * (pi / 2)) + c + b;
 }
 
-float Tweener::sinusoidal_ease_out(float t, float b, float c, float d)
+auto Tweener::sinusoidal_ease_out(float t, float b, float c, float d) -> float
 {
     return c * std::sin(t / d * (pi / 2)) + b;
 }
 
-float Tweener::sinusoidal_ease_in_out(float t, float b, float c, float d)
+auto Tweener::sinusoidal_ease_in_out(float t, float b, float c, float d) -> float
 {
     return -c / 2 * (std::cos(pi * t / d) - 1) + b;
 }

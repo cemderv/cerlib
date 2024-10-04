@@ -29,12 +29,12 @@ static constexpr uint32_t D3D11_REQ_MIP_LEVELS                   = 15; // NOLINT
 static constexpr uint32_t D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION   = 16384; // NOLINT
 static constexpr uint32_t D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION = 2048; // NOLINT
 
-static constexpr uint32_t make_fourcc(char ch0, char ch1, char ch2, char ch3)
+static constexpr auto make_fourcc(char ch0, char ch1, char ch2, char ch3) -> uint32_t
 {
-    return static_cast<uint32_t>(static_cast<uint8_t>(ch0)) |
-           static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8 |
-           static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16 |
-           static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24;
+    return uint32_t(uint8_t(ch0)) |
+           uint32_t(uint8_t(ch1)) << 8 |
+           uint32_t(uint8_t(ch2)) << 16 |
+           uint32_t(uint8_t(ch3)) << 24;
 }
 
 // #pragma pack(push, 1)
@@ -90,7 +90,7 @@ struct DdsHeaderDxT10
 
 // #pragma pack(pop)
 
-static size_t bits_per_pixel(DXGI_FORMAT fmt)
+static auto bits_per_pixel(DXGI_FORMAT fmt) -> size_t
 {
     switch (fmt)
     {
@@ -306,14 +306,14 @@ static void get_surface_info(size_t      width,
     }
 }
 
-static constexpr bool is_bitmask(
-    const DdsPixelformat& ddpf, uint32_t r, uint32_t g, uint32_t b, uint32_t a)
+static constexpr auto is_bitmask(
+    const DdsPixelformat& ddpf, uint32_t r, uint32_t g, uint32_t b, uint32_t a) -> bool
 {
     return ddpf.r_bit_mask == r && ddpf.g_bit_mask == g && ddpf.b_bit_mask == b &&
            ddpf.a_bit_mask == a;
 }
 
-static DXGI_FORMAT get_dxgi_format(const DdsPixelformat& ddpf)
+static auto get_dxgi_format(const DdsPixelformat& ddpf) -> DXGI_FORMAT
 {
     if ((ddpf.flags & dds_rgb) != 0u)
     {
@@ -509,14 +509,15 @@ static void fill_init_data(size_t                     width,
 
             src_bits = src_bits.subspan(num_bytes * d);
 
-            w = max(w >> 1, static_cast<size_t>(1));
-            h = max(h >> 1, static_cast<size_t>(1));
-            d = max(d >> 1, static_cast<size_t>(1));
+            w = max(w >> 1, size_t(1));
+            h = max(h >> 1, size_t(1));
+            d = max(d >> 1, size_t(1));
         }
     }
 }
 
-static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const std::byte> bit_data)
+static auto create_image_from_dds(const DdsHeader& header, std::span<const std::byte> bit_data)
+    -> DDSImage
 {
     DDSImage image{};
     image.width  = header.width;
@@ -682,12 +683,13 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
     return image;
 }
 
-const void* dds_image_data_upload(const DDSImage& dds_image, uint32_t array_index, uint32_t mipmap)
+auto dds_image_data_upload(const DDSImage& dds_image, uint32_t array_index, uint32_t mipmap)
+    -> const void*
 {
     return dds_image.faces.at(array_index).mipmaps.at(mipmap).data.data();
 }
 
-std::optional<DDSImage> load(std::span<const std::byte> memory)
+auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>
 {
     // Validate DDS file in memory.
     if (memory.size() < sizeof(uint32_t) + sizeof(DdsHeader))

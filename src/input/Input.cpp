@@ -12,56 +12,56 @@
 #include <SDL3/SDL.h>
 #endif
 
-bool cer::is_key_down(Key key)
+auto cer::is_key_down(Key key) -> bool
 {
     return details::InputImpl::instance().is_key_down(key);
 }
 
-bool cer::is_key_up(Key key)
+auto cer::is_key_up(Key key) -> bool
 {
     return !is_key_down(key);
 }
 
-bool cer::was_key_just_pressed(Key key)
+auto cer::was_key_just_pressed(Key key) -> bool
 {
     return details::InputImpl::instance().was_key_just_pressed(key);
 }
 
-bool cer::was_key_just_released(Key key)
+auto cer::was_key_just_released(Key key) -> bool
 {
     return details::InputImpl::instance().was_key_just_released(key);
 }
 
-bool cer::is_mouse_button_down(MouseButton button)
+auto cer::is_mouse_button_down(MouseButton button) -> bool
 {
     return details::InputImpl::instance().is_mouse_button_down(button);
 }
 
-bool cer::is_mouse_button_up(MouseButton button)
+auto cer::is_mouse_button_up(MouseButton button) -> bool
 {
     return !is_mouse_button_down(button);
 }
 
-cer::Vector2 cer::current_mouse_position()
+auto cer::current_mouse_position() -> cer::Vector2
 {
 #ifdef __EMSCRIPTEN__
     int X{}, Y{};
     SDL_GetMouseState(&X, &Y);
     return {float(X), float(Y)};
 #else
-    float x{};
-    float y{};
+    auto x = 0.0f;
+    auto y = 0.0f;
     SDL_GetMouseState(&x, &y);
     return {x, y};
 #endif
 }
 
-cer::Vector2 cer::current_mouse_position_delta()
+auto cer::current_mouse_position_delta() -> cer::Vector2
 {
     return details::InputImpl::instance().mouse_position_delta();
 }
 
-cer::Vector2 cer::current_mouse_wheel_delta()
+auto cer::current_mouse_wheel_delta() -> cer::Vector2
 {
     return details::InputImpl::instance().mouse_wheel_delta();
 }

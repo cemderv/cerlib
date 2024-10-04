@@ -30,19 +30,19 @@ class ImageImpl : public GraphicsResourceImpl
                        ImageFormat                    format,
                        uint32_t                       mipmap_count);
 
-    bool is_canvas() const;
+    auto is_canvas() const -> bool;
 
-    WindowImpl* window_for_canvas() const;
+    auto window_for_canvas() const -> WindowImpl*;
 
-    uint32_t width() const;
+    auto width() const -> uint32_t;
 
-    uint32_t height() const;
+    auto height() const -> uint32_t;
 
-    ImageFormat format() const;
+    auto format() const -> ImageFormat;
 
-    uint32_t mipmap_count() const;
+    auto mipmap_count() const -> uint32_t;
 
-    std::optional<Color> canvas_clear_color() const;
+    auto canvas_clear_color() const -> std::optional<Color>;
 
     void set_canvas_clear_color(const std::optional<Color>& value);
 

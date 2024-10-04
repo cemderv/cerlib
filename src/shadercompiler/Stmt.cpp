@@ -18,7 +18,7 @@ namespace cer::shadercompiler
 {
 Stmt::~Stmt() noexcept = default;
 
-const SourceLocation& Stmt::location() const
+auto Stmt::location() const -> const SourceLocation&
 {
     return m_location;
 }
@@ -50,22 +50,22 @@ void VarStmt::on_verify(SemaContext& context, Scope& scope)
     m_variable->verify(context, scope);
 }
 
-std::string_view VarStmt::name() const
+auto VarStmt::name() const -> std::string_view
 {
     return m_variable->name();
 }
 
-const VarDecl& VarStmt::variable() const
+auto VarStmt::variable() const -> const VarDecl&
 {
     return *m_variable;
 }
 
-std::unique_ptr<VarDecl> VarStmt::steal_variable()
+auto VarStmt::steal_variable() -> std::unique_ptr<VarDecl>
 {
     return std::move(m_variable);
 }
 
-bool VarStmt::accesses_symbol(const Decl& symbol, bool transitive) const
+auto VarStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     CERLIB_UNUSED(transitive);
 
@@ -86,7 +86,7 @@ void ReturnStmt::on_verify(SemaContext& context, Scope& scope)
     m_expr->verify(context, scope);
 }
 
-const Expr& ReturnStmt::expr() const
+auto ReturnStmt::expr() const -> const Expr&
 {
     return *m_expr;
 }
@@ -112,27 +112,27 @@ void CompoundStmt::on_verify(SemaContext& context, Scope& scope)
     m_rhs->verify(context, scope);
 }
 
-CompoundStmtKind CompoundStmt::kind() const
+auto CompoundStmt::kind() const -> CompoundStmtKind
 {
     return m_kind;
 }
 
-const Expr& CompoundStmt::lhs() const
+auto CompoundStmt::lhs() const -> const Expr&
 {
     return *m_lhs;
 }
 
-const Expr& CompoundStmt::rhs() const
+auto CompoundStmt::rhs() const -> const Expr&
 {
     return *m_rhs;
 }
 
-bool CompoundStmt::accesses_symbol(const Decl& symbol, bool transitive) const
+auto CompoundStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_lhs->accesses_symbol(symbol, transitive) || m_rhs->accesses_symbol(symbol, transitive);
 }
 
-bool ReturnStmt::accesses_symbol(const Decl& symbol, bool transitive) const
+auto ReturnStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_expr->accesses_symbol(symbol, transitive);
 }
@@ -154,7 +154,7 @@ ForStmt::~ForStmt() noexcept = default;
 
 void ForStmt::on_verify(SemaContext& context, Scope& scope)
 {
-    const std::string_view loop_variable_name = m_loop_variable->name();
+    const auto loop_variable_name = m_loop_variable->name();
 
     if (scope.contains_symbol_here_or_up(loop_variable_name))
     {
@@ -171,17 +171,17 @@ void ForStmt::on_verify(SemaContext& context, Scope& scope)
     scope.remove_symbol(*m_loop_variable);
 }
 
-const ForLoopVariableDecl& ForStmt::loop_variable() const
+auto ForStmt::loop_variable() const -> const ForLoopVariableDecl&
 {
     return *m_loop_variable;
 }
 
-const RangeExpr& ForStmt::range() const
+auto ForStmt::range() const -> const RangeExpr&
 {
     return *m_range;
 }
 
-const CodeBlock& ForStmt::body() const
+auto ForStmt::body() const -> const CodeBlock&
 {
     return *m_body;
 }
@@ -232,22 +232,22 @@ void IfStmt::on_verify(SemaContext& context, Scope& scope)
     }
 }
 
-const Expr* IfStmt::condition_expr() const
+auto IfStmt::condition_expr() const -> const Expr*
 {
     return m_condition_expr.get();
 }
 
-const CodeBlock& IfStmt::body() const
+auto IfStmt::body() const -> const CodeBlock&
 {
     return *m_body;
 }
 
-const IfStmt* IfStmt::next() const
+auto IfStmt::next() const -> const IfStmt*
 {
     return m_next.get();
 }
 
-bool IfStmt::accesses_symbol(const Decl& symbol, bool transitive) const
+auto IfStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     if (m_condition_expr != nullptr && m_condition_expr->accesses_symbol(symbol, transitive))
     {
@@ -289,17 +289,17 @@ void AssignmentStmt::on_verify(SemaContext& context, Scope& scope)
     SemaContext::verify_symbol_assignment(*m_lhs);
 }
 
-const Expr& AssignmentStmt::lhs() const
+auto AssignmentStmt::lhs() const -> const Expr&
 {
     return *m_lhs;
 }
 
-const Expr& AssignmentStmt::rhs() const
+auto AssignmentStmt::rhs() const -> const Expr&
 {
     return *m_rhs;
 }
 
-bool AssignmentStmt::accesses_symbol(const Decl& symbol, bool transitive) const
+auto AssignmentStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_lhs->accesses_symbol(symbol, transitive) || m_rhs->accesses_symbol(symbol, transitive);
 }

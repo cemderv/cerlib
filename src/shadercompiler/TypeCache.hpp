@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "util/InternalExport.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 #include <gsl/pointers>
 #include <memory>
 
@@ -30,17 +29,17 @@ class TypeCache final
 
     ~TypeCache() noexcept;
 
-    gsl::not_null<ArrayType*> create_array_type(const SourceLocation& location,
-                                                std::string_view      element_type_name,
-                                                std::unique_ptr<Expr> size_expr);
+    auto create_array_type(const SourceLocation& location,
+                           std::string_view      element_type_name,
+                           std::unique_ptr<Expr> size_expr) -> gsl::not_null<ArrayType*>;
 
-    gsl::not_null<UnresolvedType*> create_unresolved_type(const SourceLocation& location,
-                                                          std::string_view      name);
+    auto create_unresolved_type(const SourceLocation& location, std::string_view name)
+        -> gsl::not_null<UnresolvedType*>;
 
     void clear();
 
   private:
-    SmallVector<std::unique_ptr<ArrayType>, 32>      m_array_types;
-    SmallVector<std::unique_ptr<UnresolvedType>, 32> m_unresolved_types;
+    inplace_vector<std::unique_ptr<ArrayType>, 32>      m_array_types;
+    inplace_vector<std::unique_ptr<UnresolvedType>, 32> m_unresolved_types;
 };
 } // namespace cer::shadercompiler

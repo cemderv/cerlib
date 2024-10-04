@@ -12,13 +12,13 @@ namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(SoundChannel);
 
-uint32_t SoundChannel::id() const
+auto SoundChannel::id() const -> uint32_t
 {
     DECLARE_THIS_IMPL;
     return impl->id();
 }
 
-bool SoundChannel::is_paused() const
+auto SoundChannel::is_paused() const -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->is_paused();
@@ -30,7 +30,7 @@ void SoundChannel::set_paused(bool value)
     impl->set_is_paused(value);
 }
 
-float SoundChannel::relative_playback_speed() const
+auto SoundChannel::relative_playback_speed() const -> float
 {
     DECLARE_THIS_IMPL;
     return impl->relative_play_speed();
@@ -54,7 +54,7 @@ void SoundChannel::stop()
     impl->stop();
 }
 
-float SoundChannel::volume() const
+auto SoundChannel::volume() const -> float
 {
     DECLARE_THIS_IMPL;
     return impl->volume();
@@ -66,7 +66,7 @@ void SoundChannel::set_volume(float value)
     impl->set_volume(clamp(value, 0.0f, 3.0f));
 }
 
-float SoundChannel::pan() const
+auto SoundChannel::pan() const -> float
 {
     DECLARE_THIS_IMPL;
     return impl->pan();
@@ -84,7 +84,7 @@ void SoundChannel::set_protected(bool value)
     impl->set_is_protected(value);
 }
 
-bool SoundChannel::is_looping() const
+auto SoundChannel::is_looping() const -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->is_looping();
@@ -96,7 +96,7 @@ void SoundChannel::set_looping(bool value)
     impl->set_is_looping(value);
 }
 
-SoundTime SoundChannel::loop_point() const
+std::chrono::duration<double> SoundChannel::loop_point() const
 {
     DECLARE_THIS_IMPL;
     return impl->loop_point();
@@ -144,7 +144,7 @@ void SoundChannel::pause_after(SoundTime after)
     impl->pause_after(after);
 }
 
-SoundTime SoundChannel::stream_position() const
+auto SoundChannel::stream_position() const -> SoundTime
 {
     DECLARE_THIS_IMPL;
     return impl->stream_position();

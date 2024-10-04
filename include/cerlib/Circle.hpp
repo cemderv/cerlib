@@ -27,10 +27,10 @@ struct Circle
     constexpr Circle(Vector2 center, float radius);
 
     /** Default comparison */
-    bool operator==(const Circle&) const = default;
+    auto operator==(const Circle&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Circle&) const = default;
+    auto operator!=(const Circle&) const -> bool = default;
 
     /** The center of the circle. */
     Vector2 center;

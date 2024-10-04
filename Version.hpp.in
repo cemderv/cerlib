@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <string_view>
 #include <tuple>
 
@@ -30,7 +29,7 @@ enum class TargetPlatform
  *
  * @ingroup Misc
  */
-static constexpr std::tuple library_version = {
+static constexpr auto library_version = std::tuple{
     ${CMAKE_PROJECT_VERSION_MAJOR}, ${CMAKE_PROJECT_VERSION_MINOR}, ${CMAKE_PROJECT_VERSION_PATCH}};
 
 /**
@@ -38,27 +37,27 @@ static constexpr std::tuple library_version = {
  *
  * @ingroup Misc
  */
-static constexpr std::string_view library_version_string =
-    "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}";
+static constexpr auto library_version_string =
+    std::string_view{"${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"};
 
 /**
  * Gets the current target platform.
  *
  * @ingroup Misc
  */
-TargetPlatform target_platform();
+auto target_platform() -> TargetPlatform;
 
 /**
  * Gets a value indicating whether the current platform counts as a desktop platform.
  *
  * @ingroup Misc
  */
-bool is_desktop_platform();
+auto is_desktop_platform() -> bool;
 
 /**
  * Gets a value indicating whether the current platform counts as a mobile platform.
  *
  * @ingroup Misc
  */
-bool is_mobile_platform();
+auto is_mobile_platform() -> bool;
 } // namespace cer

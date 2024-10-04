@@ -14,19 +14,19 @@ struct MultiStringHash
     using hash_type      = std::hash<std::string_view>;
     using is_transparent = void;
 
-    size_t operator()(const std::string& str) const
+    auto operator()(const std::string& str) const -> size_t
     {
-        return hash_type()(str);
+        return hash_type{}(str);
     }
 
-    size_t operator()(const char* str) const
+    auto operator()(const char* str) const -> size_t
     {
-        return hash_type()(str);
+        return hash_type{}(str);
     }
 
-    size_t operator()(std::string_view str) const
+    auto operator()(std::string_view str) const -> size_t
     {
-        return hash_type()(str);
+        return hash_type{}(str);
     }
 };
 } // namespace cer::details

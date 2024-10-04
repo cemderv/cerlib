@@ -2,7 +2,7 @@
 // This file is part of cerlib.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include "cerlib/Export.hpp"
+#include "cerlib/details/ObjectMacros.hpp"
 #include "util/Object.hpp"
 #include "util/Util.hpp"
 #include <gsl/pointers>
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-static std::vector<std::string> s_info_list;
+static auto s_info_list = std::vector<std::string>{};
 
 namespace details
 {
@@ -87,7 +87,6 @@ class Dog : public Animal
 {
     CERLIB_DECLARE_DERIVED_OBJECT(Animal, Dog);
 
-  public:
     explicit Dog(int base_id, int dog_id)
     {
         set_impl(*this, std::make_unique<details::DogImpl>(base_id, dog_id).release());
@@ -172,13 +171,14 @@ TEST_CASE("Object")
 
     SECTION("Wrapper object construction")
     {
-        auto an = Animal();
+        auto an = Animal{};
+
         REQUIRE(!an);
         REQUIRE(an.impl() == nullptr);
 
         REQUIRE(s_info_list.empty());
 
-        an = Animal(1);
+        an = Animal{1};
         REQUIRE(an);
         REQUIRE(an.animal_id() != 0);
         REQUIRE(an.impl() != nullptr);
@@ -202,7 +202,7 @@ TEST_CASE("Object")
         REQUIRE(s_info_list.size() == 2u);
         REQUIRE(s_info_list.at(1) == "~AnimalImpl(1)");
 
-        an = Animal(2);
+        an = Animal{2};
         REQUIRE(an);
         REQUIRE(an.animal_id() != 0);
         REQUIRE(an.impl() != nullptr);
@@ -211,7 +211,7 @@ TEST_CASE("Object")
         REQUIRE(s_info_list.size() == 3u);
         REQUIRE(s_info_list.at(2) == "AnimalImpl(2)");
 
-        an = Animal(3);
+        an = Animal{3};
         REQUIRE(s_info_list.size() == 5u);
         REQUIRE(s_info_list.at(3) == "AnimalImpl(3)");
         REQUIRE(s_info_list.at(4) == "~AnimalImpl(2)");
@@ -221,11 +221,11 @@ TEST_CASE("Object")
 
     SECTION("Shared references")
     {
-        auto an1 = Animal(1);
+        auto an1 = Animal{1};
         auto an2 = an1;
 
         REQUIRE(s_info_list.size() == 1u);
-        REQUIRE(s_info_list[0] == "AnimalImpl(1)");
+        REQUIRE(s_info_list.at(0) == "AnimalImpl(1)");
 
         REQUIRE(an1 == an2);
         REQUIRE(an1);
@@ -246,17 +246,17 @@ TEST_CASE("Object")
 
         an3 = {};
         REQUIRE(s_info_list.size() == 2u);
-        REQUIRE(s_info_list[1] == "~AnimalImpl(1)");
+        REQUIRE(s_info_list.at(1) == "~AnimalImpl(1)");
     }
 
     s_info_list.clear();
 
     SECTION("inheritance")
     {
-        auto d = Dog();
+        auto d = Dog{};
         REQUIRE(!d);
 
-        d = Dog(1, 2);
+        d = Dog{1, 2};
         REQUIRE(d);
         REQUIRE(d.animal_id() == 1);
         REQUIRE(d.dog_id() == 2);
@@ -283,14 +283,14 @@ TEST_CASE("Object")
 
     SECTION("Object holder")
     {
-        auto holder = AnimalHolder(Dog(1, 2));
+        auto holder = AnimalHolder{Dog{1, 2}};
 
         REQUIRE(s_info_list.size() == 3u);
         REQUIRE(s_info_list.at(0) == "AnimalImpl(1)");
         REQUIRE(s_info_list.at(1) == "DogImpl(1,2)");
         REQUIRE(s_info_list.at(2) == "AnimalHolderImpl()");
 
-        holder.set_child(Dog(3, 4));
+        holder.set_child(Dog{3, 4});
 
         REQUIRE(s_info_list.size() == 7u);
         REQUIRE(s_info_list.at(3) == "AnimalImpl(3)");
@@ -298,7 +298,7 @@ TEST_CASE("Object")
         REQUIRE(s_info_list.at(5) == "~DogImpl(1,2)");
         REQUIRE(s_info_list.at(6) == "~AnimalImpl(1)");
 
-        holder.set_child(Animal(5));
+        holder.set_child(Animal{5});
 
         REQUIRE(s_info_list.size() == 10u);
         REQUIRE(s_info_list.at(7) == "AnimalImpl(5)");

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -26,8 +26,8 @@ template <typename T>
 concept Number = std::is_arithmetic_v<T>;
 
 static constexpr float pi      = std::numbers::pi_v<float>;
-static constexpr float two_pi  = static_cast<float>(std::numbers::pi_v<double> * 2.0);
-static constexpr float half_pi = static_cast<float>(std::numbers::pi_v<double> * 0.5);
+static constexpr float two_pi  = float(std::numbers::pi_v<double> * 2.0);
+static constexpr float half_pi = float(std::numbers::pi_v<double> * 0.5);
 
 /**
  * Calculates the sine of a value, specified in radians.
@@ -35,7 +35,7 @@ static constexpr float half_pi = static_cast<float>(std::numbers::pi_v<double> *
  * @ingroup Math
  */
 template <std::floating_point T>
-T sin(T value);
+auto sin(T value) -> T;
 
 /**
  * Calculates the cosine of a value, specified in radians.
@@ -43,7 +43,7 @@ T sin(T value);
  * @ingroup Math
  */
 template <std::floating_point T>
-T cos(T value);
+auto cos(T value) -> T;
 
 /**
  * Calculates the tangent of a value, specified in radians.
@@ -51,7 +51,7 @@ T cos(T value);
  * @ingroup Math
  */
 template <std::floating_point T>
-T tan(T value);
+auto tan(T value) -> T;
 
 /**
  * Calculates the nearest value of a value,
@@ -60,7 +60,7 @@ T tan(T value);
  * @ingroup Math
  */
 template <std::floating_point T>
-T round(T value);
+auto round(T value) -> T;
 
 /**
  * Calculates the value of `base` raised to the power `exp`.
@@ -68,7 +68,7 @@ T round(T value);
  * @ingroup Math
  */
 template <std::floating_point T>
-T pow(T base, T exp);
+auto pow(T base, T exp) -> T;
 
 /**
  * Rounds a number down to its nearest integer.
@@ -78,7 +78,7 @@ T pow(T base, T exp);
  * @ingroup Math
  */
 template <std::floating_point T>
-T floor(T value);
+auto floor(T value) -> T;
 
 /**
  * Rounds a number up to its nearest integer.
@@ -88,7 +88,7 @@ T floor(T value);
  * @ingroup Math
  */
 template <std::floating_point T>
-T ceiling(T value);
+auto ceiling(T value) -> T;
 
 /**
  * Calculates a random integer in the interval `[min, max)`.
@@ -98,7 +98,7 @@ T ceiling(T value);
  *
  * @ingroup Math
  */
-int32_t random_int(int32_t min, int32_t max);
+auto random_int(int32_t min, int32_t max) -> int32_t;
 
 /**
  * Calculates a random unsigned integer in the interval `[min, max)`.
@@ -108,7 +108,7 @@ int32_t random_int(int32_t min, int32_t max);
  *
  * @ingroup Math
  */
-uint32_t random_uint(uint32_t min, uint32_t max);
+auto random_uint(uint32_t min, uint32_t max) -> uint32_t;
 
 /**
  * Calculates a random single-precision floating-point value in the interval `[min, max)`.
@@ -118,7 +118,7 @@ uint32_t random_uint(uint32_t min, uint32_t max);
  *
  * @ingroup Math
  */
-float random_float(float min = 0.0f, float max = 1.0f);
+auto random_float(float min = 0.0f, float max = 1.0f) -> float;
 
 /**
  * Calculates a random double-precision floating-point value in the interval `[min, max)`.
@@ -128,7 +128,7 @@ float random_float(float min = 0.0f, float max = 1.0f);
  *
  * @ingroup Math
  */
-double random_double(double min = 0.0, double max = 1.0);
+auto random_double(double min = 0.0, double max = 1.0) -> double;
 
 /**
  * Returns the smaller of two values.
@@ -136,7 +136,7 @@ double random_double(double min = 0.0, double max = 1.0);
  * @ingroup Math
  */
 template <Number T>
-constexpr T min(T lhs, T rhs);
+constexpr auto min(T lhs, T rhs) -> T;
 
 /**
  * Returns the smallest of three values.
@@ -144,7 +144,7 @@ constexpr T min(T lhs, T rhs);
  * @ingroup Math
  */
 template <Number T>
-constexpr T min(T value1, T value2, T value3);
+constexpr auto min(T value1, T value2, T value3) -> T;
 
 /**
  * Returns the larger of two values.
@@ -152,7 +152,7 @@ constexpr T min(T value1, T value2, T value3);
  * @ingroup Math
  */
 template <Number T>
-constexpr T max(T lhs, T rhs);
+constexpr auto max(T lhs, T rhs) -> T;
 
 /**
  * Returns the largest of three values.
@@ -160,7 +160,7 @@ constexpr T max(T lhs, T rhs);
  * @ingroup Math
  */
 template <Number T>
-constexpr T max(T value1, T value2, T value3);
+constexpr auto max(T value1, T value2, T value3) -> T;
 
 /**
  * Returns the absolute of a value.
@@ -168,7 +168,7 @@ constexpr T max(T value1, T value2, T value3);
  * @ingroup Math
  */
 template <Number T>
-constexpr T abs(T value);
+constexpr auto abs(T value) -> T;
 
 /**
  * Converts degrees to radians.
@@ -176,7 +176,7 @@ constexpr T abs(T value);
  * @ingroup Math
  */
 template <std::floating_point T>
-constexpr T radians(T degrees);
+constexpr auto radians(T degrees) -> T;
 
 /**
  * Converts radians to degrees.
@@ -184,7 +184,7 @@ constexpr T radians(T degrees);
  * @ingroup Math
  */
 template <std::floating_point T>
-constexpr T degrees(T radians);
+constexpr auto degrees(T radians) -> T;
 
 /**
  * Calculates the unsigned distance between two values.
@@ -192,7 +192,7 @@ constexpr T degrees(T radians);
  * @ingroup Math
  */
 template <std::floating_point T>
-constexpr T distance(T lhs, T rhs);
+constexpr auto distance(T lhs, T rhs) -> T;
 
 /**
  * Clamps a value to a range.
@@ -205,7 +205,7 @@ constexpr T distance(T lhs, T rhs);
  * @ingroup Math
  */
 template <Number T>
-constexpr T clamp(T value, T min, T max);
+constexpr auto clamp(T value, T min, T max) -> T;
 
 /**
  * Linearly interpolates a value depending on a factor.
@@ -225,7 +225,7 @@ constexpr T clamp(T value, T min, T max);
  * @ingroup Math
  */
 template <std::floating_point T>
-constexpr T lerp(T start, T end, T t);
+constexpr auto lerp(T start, T end, T t) -> T;
 
 /**
  * Reverses a linear interpolation, producing an interpolation factor.
@@ -244,10 +244,10 @@ constexpr T lerp(T start, T end, T t);
  * @ingroup Math
  */
 template <std::floating_point T>
-constexpr T inverse_lerp(T start, T end, T value);
+constexpr auto inverse_lerp(T start, T end, T value) -> T;
 
 template <std::floating_point T>
-constexpr T smoothstep(T start, T end, T t);
+constexpr auto smoothstep(T start, T end, T t) -> T;
 
 /**
  * Proportionally maps a value from one range to another.
@@ -262,7 +262,7 @@ constexpr T smoothstep(T start, T end, T t);
  * @ingroup Math
  */
 template <std::floating_point T>
-constexpr T remap(T input_min, T input_max, T output_min, T output_max, T value);
+constexpr auto remap(T input_min, T input_max, T output_min, T output_max, T value) -> T;
 
 /**
  * Gets a value indicating whether a number is exactly equal to zero.
@@ -270,7 +270,7 @@ constexpr T remap(T input_min, T input_max, T output_min, T output_max, T value)
  * @ingroup Math
  */
 template <std::floating_point T>
-bool is_zero(T number);
+auto is_zero(T number) -> bool;
 
 /**
  * Gets a value indicating a number is almost zero.
@@ -278,7 +278,7 @@ bool is_zero(T number);
  * @ingroup Math
  */
 template <std::floating_point T>
-bool is_within_epsilon(T number);
+auto is_within_epsilon(T number) -> bool;
 
 /**
  * Gets a value indicating whether two numbers are almost equal (threshold
@@ -287,7 +287,7 @@ bool is_within_epsilon(T number);
  * @ingroup Math
  */
 template <std::floating_point T>
-bool equal_within_epsilon(T lhs, T rhs);
+auto equal_within_epsilon(T lhs, T rhs) -> bool;
 
 /**
  * Gets a value indicating whether two numbers are equal within a specific
@@ -300,7 +300,7 @@ bool equal_within_epsilon(T lhs, T rhs);
  * @ingroup Math
  */
 template <std::floating_point T>
-bool equal_within(T lhs, T rhs, T threshold);
+auto equal_within(T lhs, T rhs, T threshold) -> bool;
 
 /**
  * Gets the extent of a mipmap at a specific level.
@@ -312,7 +312,7 @@ bool equal_within(T lhs, T rhs, T threshold);
  *
  * @ingroup Math
  */
-uint32_t mipmap_extent(uint32_t base_extent, uint32_t mipmap);
+auto mipmap_extent(uint32_t base_extent, uint32_t mipmap) -> uint32_t;
 
 /**
  * Gets the numbers of mipmaps that can be generated for a specific base
@@ -324,7 +324,7 @@ uint32_t mipmap_extent(uint32_t base_extent, uint32_t mipmap);
  *
  * @ingroup Math
  */
-uint32_t max_mipmap_count_for_extent(uint32_t base_extent);
+auto max_mipmap_count_for_extent(uint32_t base_extent) -> uint32_t;
 
 /**
  * Calculates a number that is aligned to a specific alignment.
@@ -334,126 +334,130 @@ uint32_t max_mipmap_count_for_extent(uint32_t base_extent);
  *
  * @ingroup Math
  */
-int64_t next_aligned_number(int64_t number, int64_t alignment);
+auto next_aligned_number(int64_t number, int64_t alignment) -> int64_t;
 } // namespace cer
 
 #include <cmath>
 
 template <std::floating_point T>
-T cer::sin(T value)
+auto cer::sin(T value) -> T
 {
     return std::sin(value);
 }
 
 template <std::floating_point T>
-T cer::cos(T value)
+auto cer::cos(T value) -> T
 {
     return std::cos(value);
 }
 
 template <std::floating_point T>
-T cer::tan(T value)
+auto cer::tan(T value) -> T
 {
     return std::tan(value);
 }
 
 template <std::floating_point T>
-T cer::round(T value)
+auto cer::round(T value) -> T
 {
     return std::round(value);
 }
 
 template <std::floating_point T>
-T cer::pow(T base, T exp)
+auto cer::pow(T base, T exp) -> T
 {
     return std::pow(base, exp);
 }
 
 template <std::floating_point T>
-T cer::floor(T value)
+auto cer::floor(T value) -> T
 {
     return std::floor(value);
 }
 
 template <std::floating_point T>
-T cer::ceiling(T value)
+auto cer::ceiling(T value) -> T
 {
     return std::ceil(value);
 }
 
 template <cer::Number T>
-constexpr T cer::min(T lhs, T rhs)
+constexpr auto cer::min(T lhs, T rhs) -> T
 {
     return lhs < rhs ? lhs : rhs;
 }
 
 template <cer::Number T>
-constexpr T cer::min(T value1, T value2, T value3)
+constexpr auto cer::min(T value1, T value2, T value3) -> T
 {
     return min(value1, min(value2, value3));
 }
 
 template <cer::Number T>
-constexpr T cer::max(T lhs, T rhs)
+constexpr auto cer::max(T lhs, T rhs) -> T
 {
     return rhs < lhs ? lhs : rhs;
 }
 
 template <cer::Number T>
-constexpr T cer::max(T value1, T value2, T value3)
+constexpr auto cer::max(T value1, T value2, T value3) -> T
 {
     return max(value1, max(value2, value3));
 }
 
 template <cer::Number T>
-constexpr T cer::abs(T value)
+constexpr auto cer::abs(T value) -> T
 {
     return std::abs(value);
 }
 
 template <std::floating_point T>
-constexpr T cer::radians(T degrees)
+constexpr auto cer::radians(T degrees) -> T
 {
-    return degrees * static_cast<T>(pi / 180.0);
+    return degrees * T(pi / 180.0);
 }
 
 template <std::floating_point T>
-constexpr T cer::degrees(T radians)
+constexpr auto cer::degrees(T radians) -> T
 {
-    return radians * static_cast<T>(180.0 / pi);
+    return radians * T(180.0 / pi);
 }
 
 template <std::floating_point T>
-constexpr T cer::distance(T lhs, T rhs)
+constexpr auto cer::distance(T lhs, T rhs) -> T
 {
     return abs(lhs - rhs);
 }
 
 template <cer::Number T>
-constexpr T cer::clamp(T value, T min, T max)
+constexpr auto cer::clamp(T value, T min, T max) -> T
 {
     if (value < min)
+    {
         value = min;
+    }
     else if (value > max)
+    {
         value = max;
+    }
 
     return value;
 }
 
 template <std::floating_point T>
-constexpr T cer::lerp(T start, T end, T t)
+constexpr auto cer::lerp(T start, T end, T t) -> T
 {
-    return start + (end - start) * t;
+    return start + ((end - start) * t);
 }
 
 template <std::floating_point T>
-constexpr T cer::inverse_lerp(T start, T end, T value)
+constexpr auto cer::inverse_lerp(T start, T end, T value) -> T
 {
     return (value - start) / (end - start);
 }
 
 template <std::floating_point T>
-constexpr T cer::smoothstep(T start, T end, T t)
+constexpr auto cer::smoothstep(T start, T end, T t) -> T
 {
     t = t > 1 ? 1 : t < 0 ? 0 : t;
     t = t * t * (3.0f - 3.0f * t);
@@ -461,32 +465,32 @@ constexpr T cer::smoothstep(T start, T end, T t)
 }
 
 template <std::floating_point T>
-constexpr T cer::remap(T input_min, T input_max, T output_min, T output_max, T value)
+constexpr auto cer::remap(T input_min, T input_max, T output_min, T output_max, T value) -> T
 {
     const auto t = inverse_lerp(input_min, input_max, value);
     return lerp(output_min, output_max, t);
 }
 
 template <std::floating_point T>
-bool cer::is_zero(T number)
+auto cer::is_zero(T number) -> bool
 {
     return number == T(0);
 }
 
 template <std::floating_point T>
-bool cer::is_within_epsilon(T number)
+auto cer::is_within_epsilon(T number) -> bool
 {
     return are_numbers_within_epsilon(number, 0.0f);
 }
 
 template <std::floating_point T>
-bool cer::equal_within_epsilon(T lhs, T rhs)
+auto cer::equal_within_epsilon(T lhs, T rhs) -> bool
 {
     return equal_within(lhs, rhs, std::numeric_limits<T>::epsilon());
 }
 
 template <std::floating_point T>
-bool cer::equal_within(T lhs, T rhs, T threshold)
+auto cer::equal_within(T lhs, T rhs, T threshold) -> bool
 {
     return abs(lhs - rhs) <= threshold;
 }

@@ -20,18 +20,18 @@ Font::Font(std::span<const std::byte> data)
     set_impl(*this, std::make_unique<details::FontImpl>(data, true).release());
 }
 
-Font Font::built_in(bool bold)
+auto Font::built_in(bool bold) -> Font
 {
     return Font{details::FontImpl::built_in(bold)};
 }
 
-Vector2 Font::measure(std::string_view text, uint32_t size) const
+auto Font::measure(std::string_view text, uint32_t size) const -> Vector2
 {
     assert(m_impl);
     return m_impl->measure(text, size);
 }
 
-float Font::line_height(uint32_t size) const
+auto Font::line_height(uint32_t size) const -> float
 {
     assert(m_impl);
     return m_impl->line_height(size);

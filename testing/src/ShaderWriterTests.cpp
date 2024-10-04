@@ -12,7 +12,7 @@ TEST_CASE("Shader writer", "[shaderc]")
 {
     SECTION("Mixed writing")
     {
-        Writer writer;
+        auto writer = Writer{};
         writer << "Hello";
         REQUIRE(writer.buffer() == "Hello");
         writer << ' ';
@@ -25,7 +25,7 @@ TEST_CASE("Shader writer", "[shaderc]")
 
     SECTION("Braces")
     {
-        Writer w;
+        auto w = Writer{};
         w << "func Test() ";
         w.open_brace();
         w << "Hello" << WNewline;
@@ -36,7 +36,7 @@ TEST_CASE("Shader writer", "[shaderc]")
 
     SECTION("Clearing")
     {
-        Writer w;
+        auto w = Writer{};
         w << "Hello World";
         REQUIRE(w.buffer() == "Hello World");
         w.clear();

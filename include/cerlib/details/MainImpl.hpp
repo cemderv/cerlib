@@ -110,7 +110,7 @@ TInt E32Main()
 }
 
 #else
-int main(int argc, char* argv[])
+auto main(int argc, char* argv[]) -> int
 {
     return cer::details::run_game(argc, argv, SDL_main, nullptr);
 }

@@ -30,10 +30,11 @@ class SourceLocation final
     {
     }
 
-    static SourceLocation from_to(const SourceLocation& start, const SourceLocation& end);
+    static auto from_to(const SourceLocation& start, const SourceLocation& end) -> SourceLocation;
 
-    bool operator==(const SourceLocation&) const = default;
-    bool operator!=(const SourceLocation&) const = default;
+    auto operator==(const SourceLocation&) const -> bool = default;
+
+    auto operator!=(const SourceLocation&) const -> bool = default;
 
     std::string_view filename;
     uint16_t         line;

@@ -28,8 +28,8 @@ Player::Player(Level* level, cer::Vector2 position)
     m_die_animation       = {"sprites/player/die.png", 0.1f, false};
 
     // Calculate bounds within texture size.
-    const auto  frame_width  = static_cast<float>(m_idle_animation.frame_width());
-    const auto  frame_height = static_cast<float>(m_idle_animation.frame_height());
+    const auto  frame_width  = float(m_idle_animation.frame_width());
+    const auto  frame_height = float(m_idle_animation.frame_height());
     const float width        = cer::round(frame_width * 0.4f);
     const float left         = cer::round((frame_width - width) / 2);
     const float height       = cer::round(frame_width * 0.8f);
@@ -61,10 +61,10 @@ void Player::handle_collisions()
     // Get the player's bounding rectangle and find neighboring tiles.
     cer::Rectangle bounds = bounding_rect();
 
-    const auto left_tile   = static_cast<int>(cer::floor(bounds.left() / Tile::width));
-    const auto right_tile  = static_cast<int>(cer::ceiling(bounds.right() / Tile::width)) - 1;
-    const auto top_tile    = static_cast<int>(cer::floor(bounds.top() / Tile::height));
-    const auto bottom_tile = static_cast<int>(cer::ceiling(bounds.bottom() / Tile::height)) - 1;
+    const auto left_tile   = int(cer::floor(bounds.left() / Tile::width));
+    const auto right_tile  = int(cer::ceiling(bounds.right() / Tile::width)) - 1;
+    const auto top_tile    = int(cer::floor(bounds.top() / Tile::height));
+    const auto bottom_tile = int(cer::ceiling(bounds.bottom() / Tile::height)) - 1;
 
     // Reset flag to search for ground collision.
     m_is_on_ground = false;

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "NonCopyable.hpp"
-#include "util/InternalExport.hpp"
 
 #ifdef CERLIB_ATOMIC_REFCOUNTING
 #include <atomic>
@@ -27,9 +26,9 @@ class Object
 
     void add_ref();
 
-    uint64_t release();
+    auto release() -> uint64_t;
 
-    uint64_t ref_count() const;
+    auto ref_count() const -> uint64_t;
 
   private:
 #ifdef CERLIB_ATOMIC_REFCOUNTING

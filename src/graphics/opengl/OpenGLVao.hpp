@@ -22,7 +22,7 @@ class OpenGLVao final
 
     OpenGLVao(OpenGLVao&&) noexcept;
 
-    OpenGLVao& operator=(OpenGLVao&& other) noexcept;
+    auto operator=(OpenGLVao&& other) noexcept -> OpenGLVao&;
 
     ~OpenGLVao() noexcept;
 

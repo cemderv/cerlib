@@ -41,13 +41,13 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
                 "The length of a line is different from all preceding lines."};
         }
 
-        m_width = static_cast<int>(line.size());
+        m_width = int(line.size());
     }
 
-    m_height = static_cast<int>(lines.size());
+    m_height = int(lines.size());
 
     // Allocate the tile grid.
-    m_tiles.resize(static_cast<size_t>(m_width) * static_cast<size_t>(m_height));
+    m_tiles.resize(size_t(m_width) * size_t(m_height));
 
     // Loop over every tile position to load each tile.
     for (int y = 0; y < m_height; ++y)
@@ -153,7 +153,7 @@ void Level::update_gems(cer::GameTime time)
 {
     const auto player_rect = m_player.bounding_rect();
 
-    for (int i = 0; i < static_cast<int>(m_gems.size()); ++i)
+    for (int i = 0; i < int(m_gems.size()); ++i)
     {
         Gem& gem = m_gems[i];
         gem.update(time);
@@ -216,7 +216,7 @@ void Level::draw_tiles()
             {
                 // Draw it in screen space.
                 cer::draw_sprite(image,
-                                 cer::Vector2{static_cast<float>(x), static_cast<float>(y)} *
+                                 cer::Vector2{float(x), float(y)} *
                                      Tile::size);
             }
         }
@@ -239,8 +239,8 @@ void Level::update(cer::GameTime time)
     else if (m_is_exit_reached)
     {
         // Animate the time being converted into points.
-        int seconds = static_cast<int>(cer::round(time.elapsed_time * 100.0f));
-        seconds     = cer::min(seconds, static_cast<int>(cer::ceiling(m_time_remaining)));
+        int seconds = int(cer::round(time.elapsed_time * 100.0f));
+        seconds     = cer::min(seconds, int(cer::ceiling(m_time_remaining)));
         m_time_remaining -= seconds;
         *m_score += seconds * points_per_second;
 
@@ -313,8 +313,8 @@ void Level::draw()
 
 cer::Rectangle Level::bounds(int x, int y) const
 {
-    return {static_cast<float>(x) * Tile::width,
-            static_cast<float>(y) * Tile::height,
+    return {float(x) * Tile::width,
+            float(y) * Tile::height,
             Tile::width,
             Tile::height};
 }

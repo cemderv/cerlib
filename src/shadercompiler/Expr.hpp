@@ -5,9 +5,8 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/InternalExport.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 #include <any>
 #include <memory>
 #include <span>
@@ -32,7 +31,7 @@ class Expr
 
     void set_symbol(const Decl* symbol);
 
-    bool is_verified() const;
+    auto is_verified() const -> bool;
 
   public:
     NON_COPYABLE_NON_MOVABLE(Expr);
@@ -41,17 +40,17 @@ class Expr
 
     void verify(SemaContext& context, Scope& scope);
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
-    const Type& type() const;
+    auto type() const -> const Type&;
 
-    const Decl* symbol() const;
+    auto symbol() const -> const Decl*;
 
-    virtual std::any evaluate_constant_value(SemaContext& context, Scope& scope) const;
+    virtual auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any;
 
-    virtual bool is_literal() const;
+    virtual auto is_literal() const -> bool;
 
-    virtual bool accesses_symbol(const Decl& symbol, bool transitive) const;
+    virtual auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool;
 
   private:
     SourceLocation m_location;
@@ -69,11 +68,11 @@ class RangeExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& start() const;
+    auto start() const -> const Expr&;
 
-    const Expr& end() const;
+    auto end() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_start;
@@ -112,17 +111,17 @@ class BinOpExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    BinOpKind bin_op_kind() const;
+    auto bin_op_kind() const -> BinOpKind;
 
-    const Expr& lhs() const;
+    auto lhs() const -> const Expr&;
 
-    const Expr& rhs() const;
+    auto rhs() const -> const Expr&;
 
-    bool is(BinOpKind kind) const;
+    auto is(BinOpKind kind) const -> bool;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     BinOpKind             m_bin_op_kind;
@@ -137,11 +136,11 @@ class IntLiteralExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    int32_t value() const;
+    auto value() const -> int32_t;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool is_literal() const override;
+    auto is_literal() const -> bool override;
 
   private:
     int32_t m_value;
@@ -154,11 +153,11 @@ class BoolLiteralExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    bool value() const;
+    auto value() const -> bool;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool is_literal() const override;
+    auto is_literal() const -> bool override;
 
   private:
     bool m_value;
@@ -173,13 +172,13 @@ class FloatLiteralExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view string_value() const;
+    auto string_value() const -> std::string_view;
 
-    double value() const;
+    auto value() const -> double;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool is_literal() const override;
+    auto is_literal() const -> bool override;
 
   private:
     std::string_view m_string_value;
@@ -201,13 +200,13 @@ class UnaryOpExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    UnaryOpKind unary_op_kind() const;
+    auto unary_op_kind() const -> UnaryOpKind;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     UnaryOpKind           m_kind;
@@ -223,11 +222,11 @@ class StructCtorArg final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::string_view      m_name;
@@ -243,13 +242,13 @@ class SymAccessExpr final : public Expr
 
     explicit SymAccessExpr(const SourceLocation& location, Decl& symbol);
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::string_view m_name;
@@ -259,43 +258,43 @@ class SymAccessExpr final : public Expr
 class StructCtorCall final : public Expr
 {
   public:
-    explicit StructCtorCall(const SourceLocation&                          location,
-                            std::unique_ptr<Expr>                          callee,
-                            SmallVector<std::unique_ptr<StructCtorArg>, 4> args);
+    explicit StructCtorCall(const SourceLocation&                             location,
+                            std::unique_ptr<Expr>                             callee,
+                            inplace_vector<std::unique_ptr<StructCtorArg>, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& callee() const;
+    auto callee() const -> const Expr&;
 
-    std::span<const std::unique_ptr<StructCtorArg>> args() const;
+    auto args() const -> std::span<const std::unique_ptr<StructCtorArg>>;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>                          m_callee;
-    SmallVector<std::unique_ptr<StructCtorArg>, 4> m_args;
+    std::unique_ptr<Expr>                             m_callee;
+    inplace_vector<std::unique_ptr<StructCtorArg>, 4> m_args;
 };
 
 class FunctionCallExpr final : public Expr
 {
   public:
-    explicit FunctionCallExpr(const SourceLocation&                 location,
-                              std::unique_ptr<Expr>                 callee,
-                              SmallVector<std::unique_ptr<Expr>, 4> args);
+    explicit FunctionCallExpr(const SourceLocation&                    location,
+                              std::unique_ptr<Expr>                    callee,
+                              inplace_vector<std::unique_ptr<Expr>, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& callee() const;
+    auto callee() const -> const Expr&;
 
-    std::span<const std::unique_ptr<Expr>> args() const;
+    auto args() const -> std::span<const std::unique_ptr<Expr>>;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
   private:
-    std::unique_ptr<Expr>                 m_callee;
-    SmallVector<std::unique_ptr<Expr>, 4> m_args;
+    std::unique_ptr<Expr>                    m_callee;
+    inplace_vector<std::unique_ptr<Expr>, 4> m_args;
 };
 
 class SubscriptExpr final : public Expr
@@ -307,11 +306,11 @@ class SubscriptExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    const Expr& index_expr() const;
+    auto index_expr() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_expr;
@@ -325,7 +324,7 @@ class ScientificIntLiteralExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view value() const;
+    auto value() const -> std::string_view;
 
   private:
     std::string_view m_value;
@@ -338,7 +337,7 @@ class HexadecimalIntLiteralExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view value() const;
+    auto value() const -> std::string_view;
 
   private:
     std::string_view m_value;
@@ -351,11 +350,11 @@ class ParenExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_expr;
@@ -371,15 +370,15 @@ class TernaryExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& condition_expr() const;
+    auto condition_expr() const -> const Expr&;
 
-    const Expr& true_expr() const;
+    auto true_expr() const -> const Expr&;
 
-    const Expr& false_expr() const;
+    auto false_expr() const -> const Expr&;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_condition_expr;
@@ -394,11 +393,11 @@ class ArrayExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::span<const std::unique_ptr<Expr>> elements() const;
+    auto elements() const -> std::span<const std::unique_ptr<Expr>>;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::vector<std::unique_ptr<Expr>> m_elements;

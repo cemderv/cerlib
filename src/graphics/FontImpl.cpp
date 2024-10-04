@@ -75,17 +75,17 @@ void FontImpl::destroy_built_in_fonts()
     s_built_in_font_bold = nullptr;
 }
 
-gsl::owner<FontImpl*> FontImpl::built_in(bool bold)
+auto FontImpl::built_in(bool bold) -> gsl::owner<FontImpl*>
 {
     return bold ? s_built_in_font_bold : s_built_in_font_regular;
 }
 
-Vector2 FontImpl::measure(std::string_view text, uint32_t font_size) const
+auto FontImpl::measure(std::string_view text, uint32_t font_size) const -> Vector2
 {
-    float left{};
-    float right{};
-    float top{};
-    float bottom{};
+    auto left   = 0.0f;
+    auto right  = 0.0f;
+    auto top    = 0.0f;
+    auto bottom = 0.0f;
 
     for_each_glyph(text, font_size, [&](uint32_t, const Rectangle& rect) {
         left   = min(left, rect.left());
@@ -98,12 +98,13 @@ Vector2 FontImpl::measure(std::string_view text, uint32_t font_size) const
     return {right - left, bottom - top};
 }
 
-const FontImpl::FontPage& FontImpl::page(uint32_t index) const
+auto FontImpl::page(uint32_t index) const -> const FontImpl::FontPage&
 {
     return m_pages[index];
 }
 
-const FontImpl::RasterizedGlyph& FontImpl::rasterized_glyph(uint32_t codepoint, uint32_t font_size)
+auto FontImpl::rasterized_glyph(uint32_t codepoint, uint32_t font_size)
+    -> const FontImpl::RasterizedGlyph&
 {
     if (!m_initialized_sizes.contains(font_size))
     {
@@ -129,7 +130,7 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterized_glyph(uint32_t codepoint, 
         m_page_images_to_update.clear();
     }
 
-    const RasterizedGlyphKey key{
+    const auto key = RasterizedGlyphKey{
         .codepoint = codepoint,
         .font_size = font_size,
     };
@@ -144,14 +145,14 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterized_glyph(uint32_t codepoint, 
     return rasterize_glyph(key, true);
 }
 
-float FontImpl::line_height(uint32_t size) const
+auto FontImpl::line_height(uint32_t size) const -> float
 {
-    const float  scale    = stbtt_ScaleForPixelHeight(&m_font_info, static_cast<float>(size));
-    const double ascent   = static_cast<double>(m_ascent) * scale;
-    const double descent  = static_cast<double>(m_descent) * scale;
-    const double line_gap = static_cast<double>(m_line_gap) * scale;
+    const auto scale    = stbtt_ScaleForPixelHeight(&m_font_info, float(size));
+    const auto ascent   = double(m_ascent) * scale;
+    const auto descent  = double(m_descent) * scale;
+    const auto line_gap = double(m_line_gap) * scale;
 
-    return static_cast<float>(ascent - descent + line_gap);
+    return float(ascent - descent + line_gap);
 }
 
 void FontImpl::initialize()
@@ -164,8 +165,8 @@ void FontImpl::initialize()
     stbtt_GetFontVMetrics(&m_font_info, &m_ascent, &m_descent, &m_line_gap);
 }
 
-const FontImpl::RasterizedGlyph& FontImpl::rasterize_glyph(const RasterizedGlyphKey& key,
-                                                           bool update_page_image_immediately)
+auto FontImpl::rasterize_glyph(const RasterizedGlyphKey& key, bool update_page_image_immediately)
+    -> const FontImpl::RasterizedGlyph&
 {
     if (m_pages.empty())
     {
@@ -174,15 +175,16 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterize_glyph(const RasterizedGlyph
 
     assert(m_current_page_iterator != m_pages.cend());
 
-    const float font_size_f = static_cast<float>(key.font_size);
-    const float scale       = stbtt_ScaleForPixelHeight(&m_font_info, font_size_f);
+    const auto font_size_f = float(key.font_size);
+    const auto scale       = stbtt_ScaleForPixelHeight(&m_font_info, font_size_f);
 
-    int cx1 = 0;
-    int cy1 = 0;
-    int cx2 = 0;
-    int cy2 = 0;
+    auto cx1 = 0;
+    auto cy1 = 0;
+    auto cx2 = 0;
+    auto cy2 = 0;
+
     stbtt_GetCodepointBitmapBox(&m_font_info,
-                                static_cast<int>(key.codepoint),
+                                int(key.codepoint),
                                 scale,
                                 scale,
                                 &cx1,
@@ -190,27 +192,25 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterize_glyph(const RasterizedGlyph
                                 &cx2,
                                 &cy2);
 
-    const int bitmap_width  = cx2 - cx1;
-    const int bitmap_height = cy2 - cy1;
+    const auto bitmap_width  = cx2 - cx1;
+    const auto bitmap_height = cy2 - cy1;
 
-    std::optional<BinPack::Rect> inserted_rect =
-        m_current_page_iterator->pack.insert(bitmap_width, bitmap_height);
+    auto inserted_rect = m_current_page_iterator->pack.insert(bitmap_width, bitmap_height);
 
-    if (!inserted_rect)
+    if (!inserted_rect.has_value())
     {
         append_new_page();
         inserted_rect = m_current_page_iterator->pack.insert(bitmap_width, bitmap_height);
     }
 
-    const uint32_t x_in_page = static_cast<uint32_t>(inserted_rect->x);
-    const uint32_t y_in_page = static_cast<uint32_t>(inserted_rect->y);
+    assert(inserted_rect.has_value());
 
-    const uint32_t page_width = m_current_page_iterator->width;
+    const auto x_in_page    = uint32_t(inserted_rect->x);
+    const auto y_in_page    = uint32_t(inserted_rect->y);
+    const auto page_width   = m_current_page_iterator->width;
+    const auto dst_data_idx = (size_t(y_in_page) * size_t(page_width)) + size_t(x_in_page);
 
-    const size_t dst_data_idx = (static_cast<size_t>(y_in_page) * static_cast<size_t>(page_width)) +
-                                static_cast<size_t>(x_in_page);
-
-    std::byte* dst_data = m_current_page_iterator->atlas_data.get() + dst_data_idx;
+    auto* dst_data = m_current_page_iterator->atlas_data.get() + dst_data_idx;
 
     stbtt_MakeCodepointBitmap(&m_font_info,
                               reinterpret_cast<unsigned char*>(dst_data),
@@ -228,17 +228,18 @@ const FontImpl::RasterizedGlyph& FontImpl::rasterize_glyph(const RasterizedGlyph
     else
     {
         m_page_images_to_update.insert(
-            static_cast<size_t>(std::distance(m_pages.begin(), m_current_page_iterator)));
+            size_t(std::distance(m_pages.begin(), m_current_page_iterator)));
     }
 
-    const auto it = m_rasterized_glyphs
-                        .emplace(key,
-                                 RasterizedGlyph{
-                                     .uv_rect    = inserted_rect->to_rectangle(),
-                                     .page_index = static_cast<uint32_t>(
-                                         std::distance(m_pages.begin(), m_current_page_iterator)),
-                                 })
-                        .first;
+    const auto it =
+        m_rasterized_glyphs
+            .emplace(
+                key,
+                RasterizedGlyph{
+                    .uv_rect    = inserted_rect->to_rectangle(),
+                    .page_index = uint32_t(std::distance(m_pages.begin(), m_current_page_iterator)),
+                })
+            .first;
 
     return it->second;
 }
@@ -247,16 +248,15 @@ void FontImpl::append_new_page()
 {
     //  const auto caps = cer::capabilities();
     //  const auto width = cer::min(1024u, caps.maxImage2DExtent());
-    constexpr uint32_t width  = 1024;
-    constexpr uint32_t height = width;
+    constexpr auto width  = 1024u;
+    constexpr auto height = width;
 
     m_pages.push_back(FontPage{
-        .width  = width,
-        .height = height,
-        .pack   = BinPack(width, height),
-        .atlas_data =
-            std::make_unique<std::byte[]>(static_cast<size_t>(width) * static_cast<size_t>(height)),
-        .atlas = Image(),
+        .width      = width,
+        .height     = height,
+        .pack       = {width, height},
+        .atlas_data = std::make_unique<std::byte[]>(size_t(width) * size_t(height)),
+        .atlas      = Image(),
     });
 
     m_current_page_iterator = m_pages.end() - 1;
@@ -279,9 +279,9 @@ void FontImpl::update_page_atlas_image(FontPage& page)
 #ifdef CERLIB_HAVE_OPENGL
         verify_opengl_state();
 
-        const GLuint gl_handle = static_cast<OpenGLImage*>(page.atlas.impl())->gl_handle;
+        const auto gl_handle = static_cast<OpenGLImage*>(page.atlas.impl())->gl_handle;
 
-        GLuint previous_handle{};
+        auto previous_handle = GLuint{};
         glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&previous_handle));
 
         if (previous_handle != gl_handle)
@@ -289,15 +289,14 @@ void FontImpl::update_page_atlas_image(FontPage& page)
             glBindTexture(GL_TEXTURE_2D, gl_handle);
         }
 
-        const OpenGLFormatTriplet format_triplet =
-            convert_to_opengl_pixel_format(page.atlas.format());
+        const auto format_triplet = convert_to_opengl_pixel_format(page.atlas.format());
 
         glTexSubImage2D(GL_TEXTURE_2D,
                         0,
                         0,
                         0,
-                        static_cast<GLsizei>(page.width),
-                        static_cast<GLsizei>(page.height),
+                        GLsizei(page.width),
+                        GLsizei(page.height),
                         format_triplet.base_format,
                         format_triplet.type,
                         page.atlas_data.get());

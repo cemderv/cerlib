@@ -8,13 +8,12 @@
 
 namespace cer::shadercompiler::naming
 {
-static constexpr std::string_view forbidden_identifier_prefix{"cer_"};
-static constexpr std::string_view shader_stage_input_param{"Input"};
-static constexpr std::string_view shader_entry_point{"main"};
+static constexpr auto forbidden_identifier_prefix = std::string_view{"cer_"};
+static constexpr auto shader_stage_input_param    = std::string_view{"Input"};
+static constexpr auto shader_entry_point          = std::string_view{"main"};
+static constexpr auto sprite_batch_image_param    = std::string_view{"sprite_image"};
+static constexpr auto sprite_batch_color_attrib   = std::string_view{"sprite_color"};
+static constexpr auto sprite_batch_uv_attrib      = std::string_view{"sprite_uv"};
 
-static constexpr std::string_view sprite_batch_image_param{"sprite_image"};
-static constexpr std::string_view sprite_batch_color_attrib{"sprite_color"};
-static constexpr std::string_view sprite_batch_uv_attrib{"sprite_uv"};
-
-bool is_identifier_forbidden(std::string_view identifier);
+auto is_identifier_forbidden(std::string_view identifier) -> bool;
 } // namespace cer::shadercompiler::naming

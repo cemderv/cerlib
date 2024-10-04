@@ -8,5 +8,6 @@
 #include <cstdint>
 #include <vector>
 
+// This is a placeholder until std::inplace_vector is widely supported.
 template <typename T, size_t Capacity = 0>
-using SmallVector = std::vector<T>;
+using inplace_vector = std::vector<T>;

@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/GraphicsResource.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Matrix.hpp>
 #include <cerlib/Vector2.hpp>
 #include <cerlib/Vector3.hpp>
 #include <cerlib/Vector4.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <span>
 #include <string_view>
 
@@ -31,7 +31,6 @@ class Shader final : public GraphicsResource
 {
     CERLIB_DECLARE_DERIVED_OBJECT(GraphicsResource, Shader);
 
-  public:
     /**
      * Creates a shader from source code.
      *
@@ -93,32 +92,32 @@ class Shader final : public GraphicsResource
     void set_value(std::string_view name, const Image& image);
 
     /** Gets the float value of a parameter. */
-    std::optional<float> float_value(std::string_view name) const;
+    auto float_value(std::string_view name) const -> std::optional<float>;
 
     /** Gets the signed 32-bit integer value of a parameter. */
-    std::optional<int32_t> int_value(std::string_view name) const;
+    auto int_value(std::string_view name) const -> std::optional<int32_t>;
 
     /** Gets the boolean value of a parameter. */
-    std::optional<bool> bool_value(std::string_view name) const;
+    auto bool_value(std::string_view name) const -> std::optional<bool>;
 
     /** Gets the 2D vector value of a parameter. */
-    std::optional<Vector2> vector2_value(std::string_view name) const;
+    auto vector2_value(std::string_view name) const -> std::optional<Vector2>;
 
     /** Gets the 3D vector value of a parameter. */
-    std::optional<Vector3> vector3_value(std::string_view name) const;
+    auto vector3_value(std::string_view name) const -> std::optional<Vector3>;
 
     /** Gets the 4D vector value of a parameter. */
-    std::optional<Vector4> vector4_value(std::string_view name) const;
+    auto vector4_value(std::string_view name) const -> std::optional<Vector4>;
 
     /** Gets the matrix value of a parameter. */
-    std::optional<Matrix> matrix_value(std::string_view name) const;
+    auto matrix_value(std::string_view name) const -> std::optional<Matrix>;
 
     /** Gets the image value of a parameter. */
-    std::optional<Image> image_value(std::string_view name) const;
+    auto image_value(std::string_view name) const -> std::optional<Image>;
 
     /** Gets a value indicating whether the shader contains a parameter with a specific
      * name. */
-    bool has_parameter(std::string_view name) const;
+    auto has_parameter(std::string_view name) const -> bool;
 
     /**
      * Creates a separate instance of the built-in grayscale shader.
@@ -126,6 +125,6 @@ class Shader final : public GraphicsResource
      * The shader provides the following parameters:
      *   - "saturation" (float): The color saturation of the sprite. Default value: 0.0.
      */
-    static Shader create_grayscale();
+    static auto create_grayscale() -> Shader;
 };
 } // namespace cer

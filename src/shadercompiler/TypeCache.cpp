@@ -13,13 +13,13 @@ TypeCache::TypeCache() = default;
 
 TypeCache::TypeCache(TypeCache&&) noexcept = default;
 
-TypeCache& TypeCache::operator=(TypeCache&&) noexcept = default;
+auto TypeCache::operator=(TypeCache&&) noexcept -> TypeCache& = default;
 
 TypeCache::~TypeCache() noexcept = default;
 
-gsl::not_null<ArrayType*> TypeCache::create_array_type(const SourceLocation& location,
-                                                       std::string_view      element_type_name,
-                                                       std::unique_ptr<Expr> size_expr)
+auto TypeCache::create_array_type(const SourceLocation& location,
+                                  std::string_view      element_type_name,
+                                  std::unique_ptr<Expr> size_expr) -> gsl::not_null<ArrayType*>
 {
     m_array_types.push_back(
         std::make_unique<ArrayType>(location,
@@ -29,8 +29,8 @@ gsl::not_null<ArrayType*> TypeCache::create_array_type(const SourceLocation& loc
     return m_array_types.back().get();
 }
 
-gsl::not_null<UnresolvedType*> TypeCache::create_unresolved_type(const SourceLocation& location,
-                                                                 std::string_view      name)
+auto TypeCache::create_unresolved_type(const SourceLocation& location, std::string_view name)
+    -> gsl::not_null<UnresolvedType*>
 {
     m_unresolved_types.push_back(std::make_unique<UnresolvedType>(location, name));
     return m_unresolved_types.back().get();

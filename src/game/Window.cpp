@@ -27,7 +27,7 @@ Window::Window(std::string_view        title,
                bool                    allow_high_dpi)
     : m_impl(nullptr)
 {
-    details::WindowImpl* impl{};
+    details::WindowImpl* impl = nullptr;
 
 #ifdef CERLIB_HAVE_OPENGL
     impl = std::make_unique<details::OpenGLWindow>(title,
@@ -42,12 +42,12 @@ Window::Window(std::string_view        title,
     CER_THROW_RUNTIME_ERROR_STR("OpenGL is not available on this system.");
 #endif
 
-    assert(impl);
+    assert(impl != nullptr);
 
     set_impl(*this, impl);
 }
 
-uint32_t Window::id() const
+auto Window::id() const -> uint32_t
 {
     DECLARE_THIS_IMPL;
     return impl->id();
@@ -65,45 +65,45 @@ void Window::set_size(uint32_t width, uint32_t height)
     impl->set_size(width, height);
 }
 
-float Window::width() const
+auto Window::width() const -> float
 {
     return size().x;
 }
 
-float Window::height() const
+auto Window::height() const -> float
 {
     return size().y;
 }
 
-Vector2 Window::size() const
+auto Window::size() const -> Vector2
 {
     DECLARE_THIS_IMPL;
     return impl->size();
 }
 
-float Window::width_px() const
+auto Window::width_px() const -> float
 {
     return size_px().x;
 }
 
-float Window::height_px() const
+auto Window::height_px() const -> float
 {
     return size_px().y;
 }
 
-Vector2 Window::size_px() const
+auto Window::size_px() const -> Vector2
 {
     DECLARE_THIS_IMPL;
     return impl->size_px();
 }
 
-float Window::pixel_ratio() const
+auto Window::pixel_ratio() const -> float
 {
     DECLARE_THIS_IMPL;
     return impl->pixel_ratio();
 }
 
-std::string_view Window::title() const
+auto Window::title() const -> std::string_view
 {
     DECLARE_THIS_IMPL;
     return impl->title();
@@ -199,13 +199,13 @@ void Window::set_resize_callback(const ResizeCallback& value)
     impl->set_resize_callback(value);
 }
 
-uint32_t Window::display_index() const
+auto Window::display_index() const -> uint32_t
 {
     DECLARE_THIS_IMPL;
     return impl->display_index();
 }
 
-uint32_t Window::sync_interval() const
+auto Window::sync_interval() const -> uint32_t
 {
     DECLARE_THIS_IMPL;
     return impl->sync_interval();
@@ -223,7 +223,7 @@ void Window::set_clear_color(std::optional<Color> value)
     impl->set_clear_color(value);
 }
 
-std::optional<Color> Window::clear_color() const
+auto Window::clear_color() const -> std::optional<Color>
 {
     DECLARE_THIS_IMPL;
     return impl->clear_color();

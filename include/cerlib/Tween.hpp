@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -64,13 +64,13 @@ class Tweener
     void reverse();
 
     /** Gets the current value of the property. */
-    float value() const;
+    auto value() const -> float;
 
     /**
      * Gets a percentage value indicating how far the tweener has progressed, in
      * the range `[0.0 .. 1.0]`.
      */
-    float percentage() const;
+    auto percentage() const -> float;
 
     /**
      * Gets a value indicating whether the tweener is running.
@@ -80,103 +80,103 @@ class Tweener
      * that calls to `update()` will be ignored. It is still the user's responsibility to
      * update the tweener manually using `update()`.
      */
-    bool is_running() const;
+    auto is_running() const -> bool;
 
     /** Gets a value indicating whether the tweener has reached its end. */
-    bool has_ended() const;
+    auto has_ended() const -> bool;
 
     /** Built-in tweening function */
-    static float back_ease_in(float t, float b, float c, float d);
+    static auto back_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float back_ease_out(float t, float b, float c, float d);
+    static auto back_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float back_ease_in_out(float t, float b, float c, float d);
+    static auto back_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float bounce_ease_out(float t, float b, float c, float d);
+    static auto bounce_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float bounce_ease_in(float t, float b, float c, float d);
+    static auto bounce_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float bounce_ease_in_out(float t, float b, float c, float d);
+    static auto bounce_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float circular_ease_in(float t, float b, float c, float d);
+    static auto circular_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float circular_ease_out(float t, float b, float c, float d);
+    static auto circular_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float circular_ease_in_out(float t, float b, float c, float d);
+    static auto circular_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float cubic_ease_in(float t, float b, float c, float d);
+    static auto cubic_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float cubic_ease_out(float t, float b, float c, float d);
+    static auto cubic_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float cubic_ease_in_out(float t, float b, float c, float d);
+    static auto cubic_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float elastic_ease_in(float t, float b, float c, float d);
+    static auto elastic_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float elastic_ease_out(float t, float b, float c, float d);
+    static auto elastic_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float elastic_ease_in_out(float t, float b, float c, float d);
+    static auto elastic_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float exponential_ease_in(float t, float b, float c, float d);
+    static auto exponential_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float exponential_ease_out(float t, float b, float c, float d);
+    static auto exponential_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float exponential_ease_in_out(float t, float b, float c, float d);
+    static auto exponential_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float linear(float t, float b, float c, float d);
+    static auto linear(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quadratic_ease_in(float t, float b, float c, float d);
+    static auto quadratic_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quadratic_ease_out(float t, float b, float c, float d);
+    static auto quadratic_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quadratic_ease_in_out(float t, float b, float c, float d);
+    static auto quadratic_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quartic_ease_in(float t, float b, float c, float d);
+    static auto quartic_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quartic_ease_out(float t, float b, float c, float d);
+    static auto quartic_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quartic_ease_in_out(float t, float b, float c, float d);
+    static auto quartic_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quintic_ease_in(float t, float b, float c, float d);
+    static auto quintic_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quintic_ease_out(float t, float b, float c, float d);
+    static auto quintic_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float quintic_ease_in_out(float t, float b, float c, float d);
+    static auto quintic_ease_in_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float sinusoidal_ease_in(float t, float b, float c, float d);
+    static auto sinusoidal_ease_in(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float sinusoidal_ease_out(float t, float b, float c, float d);
+    static auto sinusoidal_ease_out(float t, float b, float c, float d) -> float;
 
     /** Built-in tweening function */
-    static float sinusoidal_ease_in_out(float t, float b, float c, float d);
+    static auto sinusoidal_ease_in_out(float t, float b, float c, float d) -> float;
 
   private:
     float             m_position{};

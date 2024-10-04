@@ -25,7 +25,7 @@
 
 namespace cer::shadercompiler
 {
-static std::string_view bin_op_kind_display_string(BinOpKind kind)
+static auto bin_op_kind_display_string(BinOpKind kind) -> std::string_view
 {
     switch (kind)
     {
@@ -67,7 +67,7 @@ void Expr::verify(SemaContext& context, Scope& scope)
     }
 }
 
-std::any Expr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto Expr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
@@ -75,29 +75,29 @@ std::any Expr::evaluate_constant_value(SemaContext& context, Scope& scope) const
     return {};
 }
 
-bool Expr::is_literal() const
+auto Expr::is_literal() const -> bool
 {
     return false;
 }
 
-bool Expr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto Expr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     CERLIB_UNUSED(transitive);
 
     return m_symbol == &symbol;
 }
 
-const SourceLocation& Expr::location() const
+auto Expr::location() const -> const SourceLocation&
 {
     return m_location;
 }
 
-const Type& Expr::type() const
+auto Expr::type() const -> const Type&
 {
     return *m_type;
 }
 
-const Decl* Expr::symbol() const
+auto Expr::symbol() const -> const Decl*
 {
     return m_symbol;
 }
@@ -108,7 +108,7 @@ Expr::Expr(const SourceLocation& location)
 {
 }
 
-bool Expr::is_verified() const
+auto Expr::is_verified() const -> bool
 {
     return m_is_verified;
 }
@@ -136,12 +136,12 @@ IntLiteralExpr::IntLiteralExpr(const SourceLocation& location, int32_t value)
     set_type(IntType::instance());
 }
 
-int32_t IntLiteralExpr::value() const
+auto IntLiteralExpr::value() const -> int32_t
 {
     return m_value;
 }
 
-std::any IntLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto IntLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
@@ -149,7 +149,7 @@ std::any IntLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& sc
     return m_value;
 }
 
-bool IntLiteralExpr::is_literal() const
+auto IntLiteralExpr::is_literal() const -> bool
 {
     return true;
 }
@@ -167,12 +167,12 @@ BoolLiteralExpr::BoolLiteralExpr(const SourceLocation& location, bool value)
     set_type(BoolType::instance());
 }
 
-bool BoolLiteralExpr::value() const
+auto BoolLiteralExpr::value() const -> bool
 {
     return m_value;
 }
 
-std::any BoolLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto BoolLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
@@ -180,7 +180,7 @@ std::any BoolLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& s
     return m_value;
 }
 
-bool BoolLiteralExpr::is_literal() const
+auto BoolLiteralExpr::is_literal() const -> bool
 {
     return true;
 }
@@ -191,7 +191,7 @@ void FloatLiteralExpr::on_verify(SemaContext& context, Scope& scope)
     CERLIB_UNUSED(scope);
 }
 
-std::string_view FloatLiteralExpr::string_value() const
+auto FloatLiteralExpr::string_value() const -> std::string_view
 {
     return m_string_value;
 }
@@ -206,12 +206,12 @@ FloatLiteralExpr::FloatLiteralExpr(const SourceLocation& location,
     set_type(FloatType::instance());
 }
 
-double FloatLiteralExpr::value() const
+auto FloatLiteralExpr::value() const -> double
 {
     return m_value;
 }
 
-std::any FloatLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto FloatLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
@@ -219,7 +219,7 @@ std::any FloatLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& 
     return m_value;
 }
 
-bool FloatLiteralExpr::is_literal() const
+auto FloatLiteralExpr::is_literal() const -> bool
 {
     return true;
 }
@@ -230,7 +230,7 @@ void BinOpExpr::on_verify(SemaContext& context, Scope& scope)
 
     if (is(BinOpKind::MemberAccess))
     {
-        if (SymAccessExpr* sym_access = asa<SymAccessExpr>(m_rhs.get()))
+        if (auto* sym_access = asa<SymAccessExpr>(m_rhs.get()))
         {
             sym_access->m_ancestor_expr = m_lhs.get();
         }
@@ -247,9 +247,9 @@ void BinOpExpr::on_verify(SemaContext& context, Scope& scope)
     else
     {
         // The binary operation dictates our type.
-        const BinOpTable& bin_op_table = context.bin_op_table();
+        const auto& bin_op_table = context.bin_op_table();
 
-        const Type* result_type =
+        const auto* result_type =
             bin_op_table.bin_op_result_type(m_bin_op_kind, m_lhs->type(), m_rhs->type());
 
         if (result_type == nullptr)
@@ -265,10 +265,10 @@ void BinOpExpr::on_verify(SemaContext& context, Scope& scope)
     }
 }
 
-std::any BinOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto BinOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
-    const std::any lhs = m_lhs->evaluate_constant_value(context, scope);
-    const std::any rhs = m_rhs->evaluate_constant_value(context, scope);
+    const auto lhs = m_lhs->evaluate_constant_value(context, scope);
+    const auto rhs = m_rhs->evaluate_constant_value(context, scope);
 
     if (lhs.has_value() && rhs.has_value())
     {
@@ -277,8 +277,8 @@ std::any BinOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) 
             return {};
         }
 
-        if (const int32_t *lhs_int = std::any_cast<int32_t>(&lhs),
-            *rhs_int               = std::any_cast<int32_t>(&rhs);
+        if (const auto *lhs_int = std::any_cast<int32_t>(&lhs),
+            *rhs_int            = std::any_cast<int32_t>(&rhs);
             lhs_int != nullptr && rhs_int != nullptr)
         {
             switch (m_bin_op_kind)
@@ -302,8 +302,8 @@ std::any BinOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) 
             }
         }
 
-        if (const float *lhs_float = std::any_cast<float>(&lhs),
-            *rhs_float             = std::any_cast<float>(&rhs);
+        if (const auto *lhs_float = std::any_cast<float>(&lhs),
+            *rhs_float            = std::any_cast<float>(&rhs);
             lhs_float != nullptr && rhs_float != nullptr)
         {
             switch (m_bin_op_kind)
@@ -322,8 +322,8 @@ std::any BinOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) 
             }
         }
 
-        if (const Vector2 *lhs_vector2 = std::any_cast<Vector2>(&lhs),
-            *rhs_vector2               = std::any_cast<Vector2>(&rhs);
+        if (const auto *lhs_vector2 = std::any_cast<Vector2>(&lhs),
+            *rhs_vector2            = std::any_cast<Vector2>(&rhs);
             lhs_vector2 != nullptr && rhs_vector2 != nullptr)
         {
             switch (m_bin_op_kind)
@@ -342,7 +342,7 @@ std::any BinOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) 
     return {};
 }
 
-bool BinOpExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto BinOpExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_lhs->accesses_symbol(symbol, transitive) || m_rhs->accesses_symbol(symbol, transitive);
 }
@@ -358,22 +358,22 @@ BinOpExpr::BinOpExpr(const SourceLocation& location,
 {
 }
 
-BinOpKind BinOpExpr::bin_op_kind() const
+auto BinOpExpr::bin_op_kind() const -> BinOpKind
 {
     return m_bin_op_kind;
 }
 
-const Expr& BinOpExpr::lhs() const
+auto BinOpExpr::lhs() const -> const Expr&
 {
     return *m_lhs;
 }
 
-const Expr& BinOpExpr::rhs() const
+auto BinOpExpr::rhs() const -> const Expr&
 {
     return *m_rhs;
 }
 
-bool BinOpExpr::is(BinOpKind kind) const
+auto BinOpExpr::is(BinOpKind kind) const -> bool
 {
     return m_bin_op_kind == kind;
 }
@@ -383,14 +383,14 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
     m_callee->verify(context, scope);
     set_symbol(m_callee->symbol());
 
-    const FunctionDecl* ctor = asa<FunctionDecl>(symbol());
+    const auto* ctor = asa<FunctionDecl>(symbol());
 
     if (ctor == nullptr || !ctor->is_struct_ctor())
     {
         throw Error{location(), "call does not represent a struct initialization"};
     }
 
-    const StructDecl* strct = asa<StructDecl>(&ctor->type());
+    const auto* strct = asa<StructDecl>(&ctor->type());
 
     assert(strct != nullptr);
 
@@ -398,9 +398,9 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
     {
         std::unordered_set<std::string_view> already_initialized_fields;
 
-        for (const std::unique_ptr<StructCtorArg>& arg : m_args)
+        for (const auto& arg : m_args)
         {
-            const std::string_view field_name = arg->name();
+            const auto field_name = arg->name();
 
             if (already_initialized_fields.contains(field_name))
             {
@@ -409,7 +409,7 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
                             field_name};
             }
 
-            const StructFieldDecl* field = strct->find_field(field_name);
+            const auto* field = strct->find_field(field_name);
 
             if (field == nullptr)
             {
@@ -426,7 +426,7 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
             already_initialized_fields.insert(field_name);
         }
 
-        for (const std::unique_ptr<StructFieldDecl>& field : strct->get_fields())
+        for (const auto& field : strct->get_fields())
         {
             if (const auto it = already_initialized_fields.find(field->name());
                 it == already_initialized_fields.cend())
@@ -442,26 +442,26 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
     set_type(symbol()->type());
 }
 
-StructCtorCall::StructCtorCall(const SourceLocation&                          location,
-                               std::unique_ptr<Expr>                          callee,
-                               SmallVector<std::unique_ptr<StructCtorArg>, 4> args)
+StructCtorCall::StructCtorCall(const SourceLocation&                             location,
+                               std::unique_ptr<Expr>                             callee,
+                               inplace_vector<std::unique_ptr<StructCtorArg>, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
     , m_args(std::move(args))
 {
 }
 
-const Expr& StructCtorCall::callee() const
+auto StructCtorCall::callee() const -> const Expr&
 {
     return *m_callee;
 }
 
-std::span<const std::unique_ptr<StructCtorArg>> StructCtorCall::args() const
+auto StructCtorCall::args() const -> std::span<const std::unique_ptr<StructCtorArg>>
 {
     return m_args;
 }
 
-bool StructCtorCall::accesses_symbol(const Decl& symbol, bool transitive) const
+auto StructCtorCall::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     if (m_callee->accesses_symbol(symbol, transitive))
     {
@@ -470,11 +470,11 @@ bool StructCtorCall::accesses_symbol(const Decl& symbol, bool transitive) const
 
     if (transitive)
     {
-        if (const SymAccessExpr* sym_access = asa<SymAccessExpr>(m_callee.get()))
+        if (const auto* sym_access = asa<SymAccessExpr>(m_callee.get()))
         {
-            if (const FunctionDecl* func = asa<FunctionDecl>(sym_access->symbol()))
+            if (const auto* func = asa<FunctionDecl>(sym_access->symbol()))
             {
-                if (const StructDecl* strct = asa<StructDecl>(&func->type()); strct == &symbol)
+                if (const auto* strct = asa<StructDecl>(&func->type()); strct == &symbol)
                 {
                     return true;
                 }
@@ -502,7 +502,7 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
 
     m_index_expr->verify(context, scope);
 
-    const Type& index_type = m_index_expr->type();
+    const auto& index_type = m_index_expr->type();
 
     if (&index_type != &IntType::instance())
     {
@@ -512,7 +512,7 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
                     IntType::instance().type_name()};
     }
 
-    const ArrayType* array_type = asa<ArrayType>(&symbol()->type());
+    const auto* array_type = asa<ArrayType>(&symbol()->type());
 
     if (array_type == nullptr)
     {
@@ -521,15 +521,15 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
                     symbol()->type().type_name()};
     }
 
-    const uint32_t array_size = array_type->size();
+    const auto array_size = array_type->size();
 
-    std::optional<uint32_t> constant_index;
+    auto constant_index = std::optional<uint32_t>{};
     {
-        const std::any constant_value = m_index_expr->evaluate_constant_value(context, scope);
+        const auto constant_value = m_index_expr->evaluate_constant_value(context, scope);
 
         if (constant_value.has_value())
         {
-            if (const int32_t* int_index = std::any_cast<int32_t>(&constant_value))
+            if (const auto* int_index = std::any_cast<int32_t>(&constant_value))
             {
                 if (*int_index < 0)
                 {
@@ -540,7 +540,7 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
 
                 constant_index = gsl::narrow_cast<uint32_t>(*int_index);
             }
-            else if (const uint32_t* uint_index = std::any_cast<uint32_t>(&constant_value))
+            else if (const auto* uint_index = std::any_cast<uint32_t>(&constant_value))
             {
                 constant_index = *uint_index;
             }
@@ -561,17 +561,17 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
     set_type(array_type->element_type());
 }
 
-const Expr& SubscriptExpr::expr() const
+auto SubscriptExpr::expr() const -> const Expr&
 {
     return *m_expr;
 }
 
-const Expr& SubscriptExpr::index_expr() const
+auto SubscriptExpr::index_expr() const -> const Expr&
 {
     return *m_index_expr;
 }
 
-bool SubscriptExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto SubscriptExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_expr->accesses_symbol(symbol, transitive) ||
            m_index_expr->accesses_symbol(symbol, transitive);
@@ -597,14 +597,14 @@ SymAccessExpr::SymAccessExpr(const SourceLocation& location, Decl& symbol)
 
 void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
 {
-    const BuiltInSymbols& built_ins = context.built_in_symbols();
+    const auto& built_ins = context.built_in_symbols();
 
     if (m_ancestor_expr != nullptr)
     {
         // This is a member access. Search the symbol within the type (i.e. a
         // member).
-        const Type& ancestor_type = m_ancestor_expr->type();
-        const Decl* member_symbol = ancestor_type.find_member_symbol(context, m_name);
+        const auto& ancestor_type = m_ancestor_expr->type();
+        const auto* member_symbol = ancestor_type.find_member_symbol(context, m_name);
 
         if (member_symbol == nullptr)
         {
@@ -621,31 +621,29 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
         // We're looking up a symbol that represents a function call.
         // Because we support overloading, we have to look for the correct function
         // depending on the currently passed argument types.
-        const SmallVector<gsl::not_null<const Expr*>, 4>& args = scope.function_call_args();
+        const auto& args                      = scope.function_call_args();
+        auto        was_function_found_at_all = false;
+        auto        all_functions_that_match  = inplace_vector<const FunctionDecl*, 8>{};
 
-        bool was_function_found_at_all = false;
-
-        SmallVector<const FunctionDecl*, 8> all_functions_that_match;
-
-        for (const gsl::not_null<const Decl*>& symbol : scope.find_symbols(m_name, true))
+        for (const auto& symbol : scope.find_symbols(m_name, true))
         {
-            if (const FunctionDecl* function = asa<FunctionDecl>(symbol.get()))
+            if (const auto* function = asa<FunctionDecl>(symbol.get()))
             {
-                const bool accepts_implicitly_cast_arguments =
+                const auto accepts_implicitly_cast_arguments =
                     built_ins.accepts_implicitly_cast_arguments(*function);
 
                 was_function_found_at_all = true;
 
-                const std::span<const std::unique_ptr<FunctionParamDecl>> params =
-                    function->parameters();
+                const auto params = function->parameters();
 
                 if (params.size() != args.size())
                 {
                     continue;
                 }
 
-                bool do_param_types_match = true;
-                for (uint32_t i = 0; i < args.size(); ++i)
+                auto do_param_types_match = true;
+
+                for (size_t i = 0; i < args.size(); ++i)
                 {
                     if (!SemaContext::can_assign(params[i]->type(),
                                                  *args[i],
@@ -665,9 +663,9 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
         }
 
         const auto build_call_string = [&] {
-            std::string str{m_name};
+            auto str = std::string{m_name};
             str += '(';
-            for (const gsl::not_null<const Expr*>& arg : args)
+            for (const auto& arg : args)
             {
                 str += arg->type().type_name();
                 if (arg != args.back().get())
@@ -723,9 +721,9 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
     set_type(symbol()->type());
 }
 
-std::any SymAccessExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto SymAccessExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
-    if (const VarDecl* variable = asa<VarDecl>(symbol()))
+    if (const auto* variable = asa<VarDecl>(symbol()))
     {
         return variable->expr().evaluate_constant_value(context, scope);
     }
@@ -733,7 +731,7 @@ std::any SymAccessExpr::evaluate_constant_value(SemaContext& context, Scope& sco
     return {};
 }
 
-bool SymAccessExpr::accesses_symbol(const Decl& symbol, bool /*transitive*/) const
+auto SymAccessExpr::accesses_symbol(const Decl& symbol, bool /*transitive*/) const -> bool
 {
     return this->symbol() == &symbol;
 }
@@ -745,17 +743,17 @@ SymAccessExpr::SymAccessExpr(const SourceLocation& location, std::string_view na
 {
 }
 
-std::string_view SymAccessExpr::name() const
+auto SymAccessExpr::name() const -> std::string_view
 {
     return symbol() != nullptr ? symbol()->name() : m_name;
 }
 
 void FunctionCallExpr::on_verify(SemaContext& context, Scope& scope)
 {
-    SmallVector<gsl::not_null<const Expr*>, 4> args;
+    auto args = inplace_vector<gsl::not_null<const Expr*>, 4>{};
     args.reserve(m_args.size());
 
-    for (const std::unique_ptr<Expr>& arg : m_args)
+    for (const auto& arg : m_args)
     {
         arg->verify(context, scope);
         args.emplace_back(arg.get());
@@ -772,7 +770,7 @@ void FunctionCallExpr::on_verify(SemaContext& context, Scope& scope)
 
     set_type(symbol()->type());
 
-    if (const FunctionDecl* called_function = asa<FunctionDecl>(m_callee->symbol()))
+    if (const auto* called_function = asa<FunctionDecl>(m_callee->symbol()))
     {
         if (called_function->is_shader())
         {
@@ -781,12 +779,12 @@ void FunctionCallExpr::on_verify(SemaContext& context, Scope& scope)
     }
 }
 
-std::span<const std::unique_ptr<Expr>> FunctionCallExpr::args() const
+auto FunctionCallExpr::args() const -> std::span<const std::unique_ptr<Expr>>
 {
     return m_args;
 }
 
-bool FunctionCallExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto FunctionCallExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     if (m_callee->accesses_symbol(symbol, transitive))
     {
@@ -795,11 +793,11 @@ bool FunctionCallExpr::accesses_symbol(const Decl& symbol, bool transitive) cons
 
     if (transitive)
     {
-        if (const SymAccessExpr* sym_access = asa<SymAccessExpr>(m_callee.get()))
+        if (const auto* sym_access = asa<SymAccessExpr>(m_callee.get()))
         {
-            if (const FunctionDecl* func = asa<FunctionDecl>(sym_access->symbol()); func != nullptr)
+            if (const auto* func = asa<FunctionDecl>(sym_access->symbol()); func != nullptr)
             {
-                if (const StructDecl* strct = asa<StructDecl>(&func->type()); strct == &symbol)
+                if (const auto* strct = asa<StructDecl>(&func->type()); strct == &symbol)
                 {
                     return true;
                 }
@@ -812,25 +810,25 @@ bool FunctionCallExpr::accesses_symbol(const Decl& symbol, bool transitive) cons
         }
     }
 
-    return std::ranges::any_of(m_args, [&symbol, transitive](const std::unique_ptr<Expr>& expr) {
+    return std::ranges::any_of(m_args, [&symbol, transitive](const auto& expr) {
         return expr->accesses_symbol(symbol, transitive);
     });
 }
 
-std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     assert(is_verified());
 
-    const BuiltInSymbols& built_ins = context.built_in_symbols();
-    const Decl&           symbol    = *this->callee().symbol();
+    const auto& built_ins = context.built_in_symbols();
+    const auto& symbol    = *this->callee().symbol();
 
     const auto get_arg_constant_values = [this, &context, &scope] {
-        SmallVector<std::any, 4> arg_values;
+        auto arg_values = inplace_vector<std::any, 4>{};
         arg_values.reserve(m_args.size());
 
-        for (const std::unique_ptr<Expr>& arg : m_args)
+        for (const auto& arg : m_args)
         {
-            std::any value = arg->evaluate_constant_value(context, scope);
+            auto value = arg->evaluate_constant_value(context, scope);
             if (!value.has_value())
             {
                 arg_values.clear();
@@ -844,26 +842,26 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
     };
 
     const auto expect_and_get_float = [](const std::any& value) {
-        if (const float* f = std::any_cast<float>(&value))
+        if (const auto* f = std::any_cast<float>(&value))
         {
             return *f;
         }
 
-        if (const int32_t* i = std::any_cast<int32_t>(&value))
+        if (const auto* i = std::any_cast<int32_t>(&value))
         {
-            return static_cast<float>(*i);
+            return float(*i);
         }
 
-        if (const uint32_t* ui = std::any_cast<uint32_t>(&value))
+        if (const auto* ui = std::any_cast<uint32_t>(&value))
         {
-            return static_cast<float>(*ui);
+            return float(*ui);
         }
 
         CER_THROW_INTERNAL_ERROR_STR("expected float argument");
     };
 
     const auto expect_and_get_vector2 = [](const std::any& value) {
-        if (const Vector2* v = std::any_cast<Vector2>(&value))
+        if (const auto* v = std::any_cast<Vector2>(&value))
         {
             return *v;
         }
@@ -873,7 +871,7 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
     };
 
     const auto expect_and_get_vector3 = [](const std::any& value) {
-        if (const Vector3* v = std::any_cast<Vector3>(&value))
+        if (const auto* v = std::any_cast<Vector3>(&value))
         {
             return *v;
         }
@@ -884,7 +882,8 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
 
     if (built_ins.is_float_ctor(symbol))
     {
-        const SmallVector<std::any, 4> values = get_arg_constant_values();
+        const auto values = get_arg_constant_values();
+
         if (values.empty())
         {
             return {};
@@ -905,7 +904,8 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
 
     if (built_ins.is_vector2_ctor(symbol))
     {
-        const SmallVector<std::any, 4> values = get_arg_constant_values();
+        const auto values = get_arg_constant_values();
+
         if (values.empty())
         {
             return {};
@@ -913,17 +913,15 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
 
         if (&symbol == built_ins.vector2_ctor_x_y.get())
         {
-            const float x = expect_and_get_float(values[0]);
-            const float y = expect_and_get_float(values[1]);
+            const auto x = expect_and_get_float(values.at(0));
+            const auto y = expect_and_get_float(values.at(1));
 
             return Vector2{x, y};
         }
 
         if (&symbol == built_ins.vector2_ctor_xy.get())
         {
-            const Vector2 xy = expect_and_get_vector2(values[0]);
-
-            return Vector2{xy};
+            return Vector2{expect_and_get_float(values.at(0))};
         }
 
         CER_THROW_INTERNAL_ERROR_STR("unknown Vector constructor call");
@@ -932,6 +930,7 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
     if (built_ins.is_vector4_ctor(symbol))
     {
         const auto values = get_arg_constant_values();
+
         if (values.empty())
         {
             return {};
@@ -939,35 +938,35 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
 
         if (&symbol == built_ins.vector4_ctor_x_y_z_w.get())
         {
-            const float x = expect_and_get_float(values.at(0));
-            const float y = expect_and_get_float(values.at(1));
-            const float z = expect_and_get_float(values.at(2));
-            const float w = expect_and_get_float(values.at(3));
+            const auto x = expect_and_get_float(values.at(0));
+            const auto y = expect_and_get_float(values.at(1));
+            const auto z = expect_and_get_float(values.at(2));
+            const auto w = expect_and_get_float(values.at(3));
 
             return Vector4{x, y, z, w};
         }
 
         if (&symbol == built_ins.vector4_ctor_xy_zw.get())
         {
-            const Vector2 xy = expect_and_get_vector2(values.at(0));
-            const Vector2 zw = expect_and_get_vector2(values.at(1));
+            const auto xy = expect_and_get_vector2(values.at(0));
+            const auto zw = expect_and_get_vector2(values.at(1));
 
             return Vector4{xy, zw};
         }
 
         if (&symbol == built_ins.vector4_ctor_xy_z_w.get())
         {
-            const Vector2 xy = expect_and_get_vector2(values.at(0));
-            const float   z  = expect_and_get_float(values.at(1));
-            const float   w  = expect_and_get_float(values.at(2));
+            const auto xy = expect_and_get_vector2(values.at(0));
+            const auto z  = expect_and_get_float(values.at(1));
+            const auto w  = expect_and_get_float(values.at(2));
 
             return Vector4{xy, z, w};
         }
 
         if (&symbol == built_ins.vector4_ctor_xyz_w.get())
         {
-            const Vector3 xyz = expect_and_get_vector3(values.at(0));
-            const float   w   = expect_and_get_float(values.at(1));
+            const auto xyz = expect_and_get_vector3(values.at(0));
+            const auto w   = expect_and_get_float(values.at(1));
 
             return Vector4{xyz, w};
         }
@@ -978,14 +977,14 @@ std::any FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& 
     return {};
 }
 
-const Expr& FunctionCallExpr::callee() const
+auto FunctionCallExpr::callee() const -> const Expr&
 {
     return *m_callee;
 }
 
-FunctionCallExpr::FunctionCallExpr(const SourceLocation&                 location,
-                                   std::unique_ptr<Expr>                 callee,
-                                   SmallVector<std::unique_ptr<Expr>, 4> args)
+FunctionCallExpr::FunctionCallExpr(const SourceLocation&                    location,
+                                   std::unique_ptr<Expr>                    callee,
+                                   inplace_vector<std::unique_ptr<Expr>, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
     , m_args(std::move(args))
@@ -1006,7 +1005,7 @@ void ScientificIntLiteralExpr::on_verify(SemaContext& context, Scope& scope)
     CERLIB_UNUSED(scope);
 }
 
-std::string_view ScientificIntLiteralExpr::value() const
+auto ScientificIntLiteralExpr::value() const -> std::string_view
 {
     return m_value;
 }
@@ -1026,7 +1025,7 @@ HexadecimalIntLiteralExpr::HexadecimalIntLiteralExpr(const SourceLocation& locat
 {
 }
 
-std::string_view HexadecimalIntLiteralExpr::value() const
+auto HexadecimalIntLiteralExpr::value() const -> std::string_view
 {
     return m_value;
 }
@@ -1056,17 +1055,17 @@ void RangeExpr::on_verify(SemaContext& context, Scope& scope)
     set_type(m_start->type());
 }
 
-const Expr& RangeExpr::start() const
+auto RangeExpr::start() const -> const Expr&
 {
     return *m_start;
 }
 
-const Expr& RangeExpr::end() const
+auto RangeExpr::end() const -> const Expr&
 {
     return *m_end;
 }
 
-bool RangeExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto RangeExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_start->accesses_symbol(symbol, transitive) ||
            m_end->accesses_symbol(symbol, transitive);
@@ -1089,17 +1088,17 @@ void UnaryOpExpr::on_verify(SemaContext& context, Scope& scope)
     set_symbol(m_expr->symbol());
 }
 
-UnaryOpKind UnaryOpExpr::unary_op_kind() const
+auto UnaryOpExpr::unary_op_kind() const -> UnaryOpKind
 {
     return m_kind;
 }
 
-const Expr& UnaryOpExpr::expr() const
+auto UnaryOpExpr::expr() const -> const Expr&
 {
     return *m_expr;
 }
 
-std::any UnaryOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto UnaryOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     const std::any value = m_expr->evaluate_constant_value(context, scope);
 
@@ -1108,21 +1107,21 @@ std::any UnaryOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope
         return {};
     }
 
-    if (const int32_t* i = std::any_cast<int32_t>(&value))
+    if (const auto* i = std::any_cast<int32_t>(&value))
     {
         if (m_kind == UnaryOpKind::Negate)
         {
             return -*i;
         }
     }
-    else if (const float* f = std::any_cast<float>(&value))
+    else if (const auto* f = std::any_cast<float>(&value))
     {
         if (m_kind == UnaryOpKind::Negate)
         {
             return -*f;
         }
     }
-    else if (const bool* b = std::any_cast<bool>(&value))
+    else if (const auto* b = std::any_cast<bool>(&value))
     {
         if (m_kind == UnaryOpKind::LogicalNot)
         {
@@ -1133,7 +1132,7 @@ std::any UnaryOpExpr::evaluate_constant_value(SemaContext& context, Scope& scope
     return {};
 }
 
-bool UnaryOpExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto UnaryOpExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_expr->accesses_symbol(symbol, transitive);
 }
@@ -1153,17 +1152,17 @@ void StructCtorArg::on_verify(SemaContext& context, Scope& scope)
     set_type(m_expr->type());
 }
 
-std::string_view StructCtorArg::name() const
+auto StructCtorArg::name() const -> std::string_view
 {
     return m_name;
 }
 
-const Expr& StructCtorArg::expr() const
+auto StructCtorArg::expr() const -> const Expr&
 {
     return *m_expr;
 }
 
-bool StructCtorArg::accesses_symbol(const Decl& symbol, bool transitive) const
+auto StructCtorArg::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_expr->accesses_symbol(symbol, transitive);
 }
@@ -1181,17 +1180,17 @@ void ParenExpr::on_verify(SemaContext& context, Scope& scope)
     set_symbol(m_expr->symbol());
 }
 
-const Expr& ParenExpr::expr() const
+auto ParenExpr::expr() const -> const Expr&
 {
     return *m_expr;
 }
 
-std::any ParenExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto ParenExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
     return m_expr->evaluate_constant_value(context, scope);
 }
 
-bool ParenExpr::accesses_symbol(const Decl& symbol, bool transitive) const
+auto ParenExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return m_expr->accesses_symbol(symbol, transitive);
 }
@@ -1226,45 +1225,45 @@ void TernaryExpr::on_verify(SemaContext& context, Scope& scope)
     set_type(m_true_expr->type());
 }
 
-const Expr& TernaryExpr::condition_expr() const
+auto TernaryExpr::condition_expr() const -> const Expr&
 {
     return *m_condition_expr;
 }
 
-const Expr& TernaryExpr::true_expr() const
+auto TernaryExpr::true_expr() const -> const Expr&
 {
     return *m_true_expr;
 }
 
-const Expr& TernaryExpr::false_expr() const
+auto TernaryExpr::false_expr() const -> const Expr&
 {
     return *m_false_expr;
 }
 
-std::any TernaryExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const
+auto TernaryExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
 {
-    const std::any condition_value = m_condition_expr->evaluate_constant_value(context, scope);
+    const auto condition_value = m_condition_expr->evaluate_constant_value(context, scope);
 
     if (!condition_value.has_value())
     {
         return {};
     }
 
-    std::any true_value = m_true_expr->evaluate_constant_value(context, scope);
+    auto true_value = m_true_expr->evaluate_constant_value(context, scope);
 
     if (!true_value.has_value())
     {
         return {};
     }
 
-    std::any false_value = m_false_expr->evaluate_constant_value(context, scope);
+    auto false_value = m_false_expr->evaluate_constant_value(context, scope);
 
     if (!false_value.has_value())
     {
         return {};
     }
 
-    if (const bool* bool_value = std::any_cast<bool>(&condition_value))
+    if (const auto* bool_value = std::any_cast<bool>(&condition_value))
     {
         assert(true_value.type() == false_value.type());
 

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 #include <gsl/pointers>
 #include <span>
 #include <string_view>
@@ -36,7 +36,7 @@ class Scope final
 
     ~Scope() noexcept;
 
-    std::span<const gsl::not_null<const Decl*>> symbols() const;
+    auto symbols() const -> std::span<const gsl::not_null<const Decl*>>;
 
     void add_symbol(const Decl& symbol);
 
@@ -44,19 +44,19 @@ class Scope final
 
     void remove_symbol(const Decl& symbol);
 
-    const Decl* find_symbol(std::string_view name, bool fall_back_to_parent = true) const;
+    auto find_symbol(std::string_view name, bool fall_back_to_parent = true) const -> const Decl*;
 
-    const Decl* find_symbol_with_similar_name(std::string_view name,
-                                              bool             fall_back_to_parent = true) const;
+    auto find_symbol_with_similar_name(std::string_view name, bool fall_back_to_parent = true) const
+        -> const Decl*;
 
-    SmallVector<gsl::not_null<const Decl*>, 4> find_symbols(std::string_view name,
-                                                            bool fall_back_to_parent = true) const;
+    auto find_symbols(std::string_view name, bool fall_back_to_parent = true) const
+        -> inplace_vector<gsl::not_null<const Decl*>, 4>;
 
-    bool contains_symbol_only_here(std::string_view name) const;
+    auto contains_symbol_only_here(std::string_view name) const -> bool;
 
-    bool contains_symbol_here_or_up(std::string_view name) const;
+    auto contains_symbol_here_or_up(std::string_view name) const -> bool;
 
-    std::span<const gsl::not_null<const Type*>> types() const;
+    auto types() const -> std::span<const gsl::not_null<const Type*>>;
 
     void add_type(const Type& type);
 
@@ -64,41 +64,41 @@ class Scope final
 
     void remove_type(const Type& type);
 
-    const Type* find_type(std::string_view name, bool fall_back_to_parent = true) const;
+    auto find_type(std::string_view name, bool fall_back_to_parent = true) const -> const Type*;
 
-    bool contains_type_only_here(std::string_view name) const;
+    auto contains_type_only_here(std::string_view name) const -> bool;
 
-    bool contains_type_here_or_up(std::string_view name) const;
+    auto contains_type_here_or_up(std::string_view name) const -> bool;
 
-    Scope* parent() const;
+    auto parent() const -> Scope*;
 
-    std::span<const std::unique_ptr<Scope>> children() const;
+    auto children() const -> std::span<const std::unique_ptr<Scope>>;
 
-    Scope& push_child();
+    auto push_child() -> Scope&;
 
     void pop_child();
 
-    ScopeContext context() const;
+    auto context() const -> ScopeContext;
 
     void push_context(ScopeContext value);
 
     void pop_context();
 
-    const FunctionDecl* current_function() const;
+    auto current_function() const -> const FunctionDecl*;
 
     void set_current_function(const FunctionDecl* value);
 
-    const SmallVector<gsl::not_null<const Expr*>, 4>& function_call_args() const;
+    auto function_call_args() const -> const inplace_vector<gsl::not_null<const Expr*>, 4>&;
 
-    void set_function_call_args(SmallVector<gsl::not_null<const Expr*>, 4> args);
+    void set_function_call_args(inplace_vector<gsl::not_null<const Expr*>, 4> args);
 
   private:
-    SmallVector<gsl::not_null<const Decl*>, 8> m_symbols;
-    SmallVector<gsl::not_null<const Type*>, 8> m_types;
-    Scope*                                     m_parent{};
-    SmallVector<std::unique_ptr<Scope>, 4>     m_children;
-    SmallVector<ScopeContext, 4>               m_context_stack;
-    const FunctionDecl*                        m_current_function{};
-    SmallVector<gsl::not_null<const Expr*>, 4> m_function_call_args;
+    inplace_vector<gsl::not_null<const Decl*>, 8> m_symbols;
+    inplace_vector<gsl::not_null<const Type*>, 8> m_types;
+    Scope*                                        m_parent{};
+    inplace_vector<std::unique_ptr<Scope>, 4>     m_children;
+    inplace_vector<ScopeContext, 4>               m_context_stack;
+    const FunctionDecl*                           m_current_function{};
+    inplace_vector<gsl::not_null<const Expr*>, 4> m_function_call_args;
 };
 } // namespace cer::shadercompiler

@@ -16,7 +16,7 @@
 #include "cerlib/Vector4.hpp"
 #include "graphics/TextImpl.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 
 #include <gsl/pointers>
 
@@ -40,11 +40,11 @@ class SpriteBatch
         Vector2 uv;
     };
 
-    static constexpr uint32_t max_batch_size      = 2048;
-    static constexpr uint32_t min_batch_size      = 128;
-    static constexpr uint32_t initial_queue_size  = 512;
-    static constexpr uint32_t vertices_per_sprite = 4;
-    static constexpr uint32_t indices_per_sprite  = 6;
+    static constexpr auto max_batch_size      = 2048u;
+    static constexpr auto min_batch_size      = 128u;
+    static constexpr auto initial_queue_size  = 512u;
+    static constexpr auto vertices_per_sprite = 4u;
+    static constexpr auto indices_per_sprite  = 6u;
 
     enum class SpriteShaderKind
     {
@@ -107,32 +107,32 @@ class SpriteBatch
                               const Rectangle& texture_size_and_inverse,
                               bool             flip_image_up_down) const;
 
-    gsl::not_null<GraphicsDevice*> parent_device() const
+    auto parent_device() const -> gsl::not_null<GraphicsDevice*>
     {
         return m_parent_device;
     }
 
-    Matrix current_transformation() const
+    auto current_transformation() const -> Matrix
     {
         return m_transformation;
     }
 
-    const BlendState& current_blend_state() const
+    auto current_blend_state() const -> const BlendState&
     {
         return m_blend_state;
     }
 
-    const Sampler& current_sampler() const
+    auto current_sampler() const -> const Sampler&
     {
         return m_sampler;
     }
 
-    FrameStats& frame_stats()
+    auto frame_stats() -> FrameStats&
     {
         return *m_frame_stats;
     }
 
-    const Shader& sprite_shader() const
+    auto sprite_shader() const -> const Shader&
     {
         return m_sprite_shader;
     }
@@ -144,7 +144,7 @@ class SpriteBatch
         Rectangle        dst;
         Rectangle        src;
         Color            color;
-        Vector2          origin{};
+        Vector2          origin;
         float            rotation{};
         SpriteFlip       flip{SpriteFlip::None};
         SpriteShaderKind shader_kind{SpriteShaderKind::Default};
@@ -178,7 +178,7 @@ class SpriteBatch
     Sampler                        m_sampler;
 
     // Used in draw_string() as temporary buffers for text shaping results.
-    SmallVector<PreshapedGlyph>     m_tmp_glyphs;
-    SmallVector<TextDecorationRect> m_tmp_decoration_rects;
+    inplace_vector<PreshapedGlyph>     m_tmp_glyphs;
+    inplace_vector<TextDecorationRect> m_tmp_decoration_rects;
 };
 } // namespace cer::details

@@ -14,6 +14,7 @@
 #include <cerlib/Vector3.hpp>
 #include <cerlib/Vector4.hpp>
 #include <fmt/core.h>
+
 #define cer_fmt fmt
 
 template <>

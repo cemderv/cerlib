@@ -30,7 +30,7 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
 
     GL_CALL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 
-    auto previous_texture = GLuint();
+    GLuint previous_texture = 0;
     GL_CALL(glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&previous_texture)));
 
     GL_CALL(glBindTexture(GL_TEXTURE_2D, gl_handle));
@@ -42,8 +42,7 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
 
 #ifndef CERLIB_GFX_IS_GLES
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
-    GL_CALL(
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(mipmap_count - 1)));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, GLint(mipmap_count - 1)));
 #endif
 
     last_applied_sampler = Sampler::linear_clamp();
@@ -55,10 +54,10 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
         const auto mip_data   = data_callback(m);
 
         GL_CALL(glTexImage2D(GL_TEXTURE_2D,
-                             static_cast<GLint>(m),
+                             GLint(m),
                              format_gl.internal_format,
-                             static_cast<GLsizei>(mip_width),
-                             static_cast<GLsizei>(mip_height),
+                             GLsizei(mip_width),
+                             GLsizei(mip_height),
                              /*border: */ 0,
                              format_gl.base_format,
                              format_gl.type,
@@ -80,10 +79,12 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
 
     verify_opengl_state();
 
-    auto previous_texture = GLuint();
+    GLuint previous_texture = 0;
     GL_CALL(glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&previous_texture)));
 
-    auto defer1 = gsl::finally([&] { glBindTexture(GL_TEXTURE_2D, previous_texture); });
+    auto defer1 = gsl::finally([&] {
+        glBindTexture(GL_TEXTURE_2D, previous_texture);
+    });
 
     GL_CALL(glGenTextures(1, &gl_handle));
 
@@ -107,8 +108,8 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     GL_CALL(glTexImage2D(GL_TEXTURE_2D,
                          0,
                          gl_format_triplet.internal_format,
-                         static_cast<GLsizei>(width),
-                         static_cast<GLsizei>(height),
+                         GLsizei(width),
+                         GLsizei(height),
                          0,
                          gl_format_triplet.base_format,
                          gl_format_triplet.type,
@@ -125,10 +126,12 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
 
     verify_opengl_state();
 
-    auto previous_fbo = GLuint();
+    GLuint previous_fbo = 0;
     GL_CALL(glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&previous_fbo)));
 
-    auto defer2 = gsl::finally([&] { glBindFramebuffer(GL_FRAMEBUFFER, previous_fbo); });
+    auto defer2 = gsl::finally([&] {
+        glBindFramebuffer(GL_FRAMEBUFFER, previous_fbo);
+    });
 
     GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, gl_framebuffer_handle));
     GL_CALL(

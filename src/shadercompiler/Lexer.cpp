@@ -23,22 +23,22 @@ enum class CharClassification
     Symbol,
 };
 
-static bool is_digit(char ch)
+static auto is_digit(char ch) -> bool
 {
     return ch >= '0' && ch <= '9';
 }
 
-static bool is_letter(char ch)
+static auto is_letter(char ch) -> bool
 {
     return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
 }
 
-static bool is_symbol(char ch)
+static auto is_symbol(char ch) -> bool
 {
     return !is_digit(ch) && !is_letter(ch);
 }
 
-static bool is_identifier(std::string_view str)
+static auto is_identifier(std::string_view str) -> bool
 {
     if (const char first = str.front(); is_digit(first) || !is_letter(first))
     {
@@ -56,12 +56,12 @@ static bool is_identifier(std::string_view str)
     return true;
 }
 
-static bool is_keyword(std::string_view str)
+static auto is_keyword(std::string_view str) -> bool
 {
     return std::ranges::find(keyword::list, str) != keyword::list.cend();
 }
 
-static std::optional<TokenType> get_single_char_token_type(char ch)
+static auto get_single_char_token_type(char ch) -> std::optional<TokenType>
 {
     if (is_digit(ch))
     {
@@ -101,7 +101,7 @@ static std::optional<TokenType> get_single_char_token_type(char ch)
     }
 }
 
-static CharClassification get_char_classification(char ch)
+static auto get_char_classification(char ch) -> CharClassification
 {
     if (is_digit(ch))
     {
@@ -116,17 +116,17 @@ static CharClassification get_char_classification(char ch)
     return CharClassification::Symbol;
 }
 
-static bool should_ignore_char(char ch)
+static auto should_ignore_char(char ch) -> bool
 {
     return ch == '\r' || ch == '\t';
 }
 
-static bool is_int(std::string_view str)
+static auto is_int(std::string_view str) -> bool
 {
     return std::ranges::all_of(str, is_digit);
 }
 
-static std::string_view get_trimmed(std::string_view str)
+static auto get_trimmed(std::string_view str) -> std::string_view
 {
     const auto should_remove = [](char ch) {
         return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t';
@@ -146,9 +146,10 @@ static std::string_view get_trimmed(std::string_view str)
     return str;
 }
 
-static TokenType determine_token_type(const SourceLocation& location, std::string_view value)
+static auto determine_token_type(const SourceLocation& location, std::string_view value)
+    -> TokenType
 {
-    std::optional<TokenType> type;
+    auto type = std::optional<TokenType>{};
 
     if (value.size() == 1)
     {
@@ -200,22 +201,22 @@ void do_lexing(std::string_view    code,
     tokens.clear();
     tokens.emplace_back(TokenType::BeginningOfFile, std::string_view(), SourceLocation());
 
-    size_t previous_token_index  = 0;
-    size_t previous_token_column = 1;
+    auto previous_token_index  = size_t(0);
+    auto previous_token_column = size_t(1);
 
-    uint32_t line   = 1;
-    uint32_t column = 1;
+    auto line   = 1u;
+    auto column = 1u;
 
-    CharClassification previous_classification = get_char_classification(code.front());
+    auto previous_classification = get_char_classification(code.front());
 
-    bool is_currently_in_identifier_token =
+    auto is_currently_in_identifier_token =
         previous_classification == CharClassification::Letter || code.front() == '_';
 
     for (size_t i = 0, size = code.size(); i < size; ++i)
     {
-        const char               ch             = code[i];
-        const CharClassification classification = get_char_classification(ch);
-        bool                     should_cut     = classification != previous_classification;
+        const auto ch             = code[i];
+        const auto classification = get_char_classification(ch);
+        auto       should_cut     = classification != previous_classification;
 
         if (ch != '_' && classification == CharClassification::Symbol)
         {
@@ -240,10 +241,10 @@ void do_lexing(std::string_view    code,
 
             if (!value.empty())
             {
-                const SourceLocation location{filename_hint,
-                                              static_cast<uint16_t>(line),
-                                              static_cast<uint16_t>(previous_token_column),
-                                              static_cast<uint16_t>(previous_token_index)};
+                const auto location = SourceLocation{filename_hint,
+                                                     uint16_t(line),
+                                                     uint16_t(previous_token_column),
+                                                     uint16_t(previous_token_index)};
 
                 tokens.emplace_back(determine_token_type(location, value), value, location);
             }
@@ -275,7 +276,7 @@ void do_lexing(std::string_view    code,
     tokens.emplace_back(TokenType::EndOfFile, std::string_view(), SourceLocation());
 }
 
-static bool are_tokens_neighbors(std::span<const TokenIterator> tokens)
+static auto are_tokens_neighbors(std::span<const TokenIterator> tokens) -> bool
 {
     assert(tokens.size() > 1);
 
@@ -301,9 +302,9 @@ static bool are_tokens_neighbors(std::span<const TokenIterator> tokens)
 
 // Checks whether a string represents a valid hexadecimal suffix (the part that follows
 // '0x').
-static bool is_hex_suffix(std::string_view str)
+static auto is_hex_suffix(std::string_view str) -> bool
 {
-    size_t len = str.size();
+    auto len = str.size();
 
     if (len == 9)
     {
@@ -334,22 +335,22 @@ static bool is_hex_suffix(std::string_view str)
     return true;
 }
 
-static TokenIterator merge_tokens(std::string_view    code,
-                                  std::vector<Token>& tokens,
-                                  TokenIterator       first,
-                                  TokenIterator       last,
-                                  TokenType           result_type)
+static auto merge_tokens(std::string_view    code,
+                         std::vector<Token>& tokens,
+                         TokenIterator       first,
+                         TokenIterator       last,
+                         TokenType           result_type) -> TokenIterator
 {
     assert(first < last);
 
-    const SourceLocation first_location = first->location;
-    const SourceLocation last_location  = last->location;
+    const auto& first_location = first->location;
+    const auto& last_location  = last->location;
 
     // Verify that both tokens are in the same translation unit.
     assert(first_location.filename == last_location.filename);
 
-    const size_t start_index = first_location.start_index;
-    const size_t end_index   = last_location.start_index + last->value.size();
+    const auto start_index = first_location.start_index;
+    const auto end_index   = last_location.start_index + last->value.size();
 
     first->type  = result_type;
     first->value = code.substr(start_index, end_index - start_index);
@@ -473,32 +474,48 @@ static void assemble_multi_char_tokens(std::string_view code, std::vector<Token>
     };
 
     static constexpr auto s_transformations = std::array{
-        TokenTransform{TokenType::LeftAngleBracket,
-                       TokenType::LeftAngleBracket,
-                       TokenType::LeftShift}, // <<
-        TokenTransform{TokenType::RightAngleBracket,
-                       TokenType::RightAngleBracket,
-                       TokenType::RightShift}, // >>
-        TokenTransform{TokenType::LeftAngleBracket,
-                       TokenType::Equal,
-                       TokenType::LessThanOrEqual}, // <=
-        TokenTransform{TokenType::RightAngleBracket,
-                       TokenType::Equal,
-                       TokenType::GreaterThanOrEqual}, // >=
-        TokenTransform{TokenType::Equal, TokenType::Equal, TokenType::LogicalEqual}, // ==
-        TokenTransform{TokenType::ExclamationMark,
-                       TokenType::Equal,
-                       TokenType::LogicalNotEqual}, // !=
-        TokenTransform{TokenType::Ampersand, TokenType::Ampersand, TokenType::LogicalAnd}, // &&
-        TokenTransform{TokenType::Bar, TokenType::Bar, TokenType::LogicalOr}, // ||
-        TokenTransform{TokenType::Plus, TokenType::Equal, TokenType::CompoundAdd}, // +=
-        TokenTransform{TokenType::Hyphen, TokenType::Equal, TokenType::CompoundSubtract}, // -=
-        TokenTransform{TokenType::Asterisk, TokenType::Equal, TokenType::CompoundMultiply}, // *=
-        TokenTransform{TokenType::ForwardSlash, TokenType::Equal, TokenType::CompoundDivide}, // /=
-        TokenTransform{TokenType::Dot, TokenType::Dot, TokenType::DotDot}, // ..
-        TokenTransform{TokenType::Hyphen,
-                       TokenType::RightAngleBracket,
-                       TokenType::RightArrow}, // ->
+        TokenTransform{.first  = TokenType::LeftAngleBracket,
+                       .second = TokenType::LeftAngleBracket,
+                       .result = TokenType::LeftShift}, // <<
+        TokenTransform{.first  = TokenType::RightAngleBracket,
+                       .second = TokenType::RightAngleBracket,
+                       .result = TokenType::RightShift}, // >>
+        TokenTransform{.first  = TokenType::LeftAngleBracket,
+                       .second = TokenType::Equal,
+                       .result = TokenType::LessThanOrEqual}, // <=
+        TokenTransform{.first  = TokenType::RightAngleBracket,
+                       .second = TokenType::Equal,
+                       .result = TokenType::GreaterThanOrEqual}, // >=
+        TokenTransform{.first  = TokenType::Equal,
+                       .second = TokenType::Equal,
+                       .result = TokenType::LogicalEqual}, // ==
+        TokenTransform{.first  = TokenType::ExclamationMark,
+                       .second = TokenType::Equal,
+                       .result = TokenType::LogicalNotEqual}, // !=
+        TokenTransform{.first  = TokenType::Ampersand,
+                       .second = TokenType::Ampersand,
+                       .result = TokenType::LogicalAnd}, // &&
+        TokenTransform{.first  = TokenType::Bar,
+                       .second = TokenType::Bar,
+                       .result = TokenType::LogicalOr}, // ||
+        TokenTransform{.first  = TokenType::Plus,
+                       .second = TokenType::Equal,
+                       .result = TokenType::CompoundAdd}, // +=
+        TokenTransform{.first  = TokenType::Hyphen,
+                       .second = TokenType::Equal,
+                       .result = TokenType::CompoundSubtract}, // -=
+        TokenTransform{.first  = TokenType::Asterisk,
+                       .second = TokenType::Equal,
+                       .result = TokenType::CompoundMultiply}, // *=
+        TokenTransform{.first  = TokenType::ForwardSlash,
+                       .second = TokenType::Equal,
+                       .result = TokenType::CompoundDivide}, // /=
+        TokenTransform{.first  = TokenType::Dot,
+                       .second = TokenType::Dot,
+                       .result = TokenType::DotDot}, // ..
+        TokenTransform{.first  = TokenType::Hyphen,
+                       .second = TokenType::RightAngleBracket,
+                       .result = TokenType::RightArrow}, // ->
     };
 
     if (tokens.empty())
@@ -562,6 +579,7 @@ void remove_unnecessary_tokens(std::vector<Token>& tokens)
             }
 
             tk0 = tokens.erase(tk0, last_tk);
+
             if (tk0 > tokens.begin())
             {
                 --tk0;

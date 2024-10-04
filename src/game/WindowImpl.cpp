@@ -17,7 +17,7 @@
 
 namespace cer::details
 {
-static int get_sdl_window_flags(bool allow_high_dpi)
+static auto get_sdl_window_flags(bool allow_high_dpi) -> int
 {
     int flags = 0;
 
@@ -46,16 +46,10 @@ static int get_sdl_window_flags(bool allow_high_dpi)
     return flags;
 }
 
-static
-#ifdef __EMSCRIPTEN__
-    int
-#else
-    SDL_bool
-#endif
-    sdl_window_event_watcher(void* userdata, SDL_Event* event)
+static auto sdl_window_event_watcher(void* userdata, SDL_Event* event)
 {
-    WindowImpl*       window     = static_cast<WindowImpl*>(userdata);
-    const SDL_Window* sdl_window = window->sdl_window();
+    auto*       window     = static_cast<WindowImpl*>(userdata);
+    const auto* sdl_window = window->sdl_window();
 
 #ifdef __EMSCRIPTEN__
     if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_RESIZED)
@@ -65,6 +59,7 @@ static
     {
 #endif
         const auto win = SDL_GetWindowFromID(event->window.windowID);
+
         if (win == sdl_window)
         {
             window->handle_resize_event();
@@ -104,13 +99,11 @@ WindowImpl::WindowImpl(std::string_view        title,
                                   "any windows. Please call run_game() first.");
     }
 
-    GameImpl& app_impl = GameImpl::instance();
+    auto& app_impl = GameImpl::instance();
 
     if (is_mobile_platform() || target_platform() == TargetPlatform::Web)
     {
-        const auto windows = app_impl.windows();
-
-        if (!windows.empty())
+        if (const auto windows = app_impl.windows(); !windows.empty())
         {
             CER_THROW_LOGIC_ERROR_STR("The current system does not support more than one window.");
         }
@@ -126,7 +119,7 @@ void WindowImpl::show_message_box(MessageBoxType   type,
                                   std::string_view message,
                                   const Window&    parent_window)
 {
-    const Uint32 flags = [type]() -> Uint32 {
+    const auto flags = [type]() -> Uint32 {
         switch (type)
         {
             case MessageBoxType::Information: return SDL_MESSAGEBOX_INFORMATION;
@@ -137,17 +130,17 @@ void WindowImpl::show_message_box(MessageBoxType   type,
         return 0;
     }();
 
-    const std::string title_str{title};
-    const std::string message_str{message};
+    const auto title_str   = std::string{title};
+    const auto message_str = std::string{message};
 
-    SDL_Window* parent_sdl_window = parent_window ? parent_window.impl()->sdl_window() : nullptr;
+    auto* parent_sdl_window = parent_window ? parent_window.impl()->sdl_window() : nullptr;
 
     SDL_ShowSimpleMessageBox(flags, title_str.c_str(), message_str.c_str(), parent_sdl_window);
 }
 
 void WindowImpl::activate_onscreen_keyboard()
 {
-    if (cer::is_mobile_platform())
+    if (is_mobile_platform())
     {
 #ifdef __EMSCRIPTEN__
         SDL_StartTextInput();
@@ -159,7 +152,7 @@ void WindowImpl::activate_onscreen_keyboard()
 
 void WindowImpl::deactivate_onscreen_keyboard()
 {
-    if (cer::is_mobile_platform())
+    if (is_mobile_platform())
     {
 #ifdef __EMSCRIPTEN__
         SDL_StopTextInput();
@@ -209,11 +202,11 @@ WindowImpl::~WindowImpl() noexcept
         m_sdl_window = nullptr;
     }
 
-    GameImpl& app_impl = GameImpl::instance();
+    auto& app_impl = GameImpl::instance();
     app_impl.notify_window_destroyed(this);
 }
 
-uint32_t WindowImpl::id() const
+auto WindowImpl::id() const -> uint32_t
 {
     return m_id;
 }
@@ -223,52 +216,52 @@ void WindowImpl::set_id(uint32_t value)
     m_id = value;
 }
 
-Vector2 WindowImpl::size() const
+auto WindowImpl::size() const -> Vector2
 {
-    int width{};
-    int height{};
+    int width  = 0;
+    int height = 0;
     SDL_GetWindowSize(m_sdl_window, &width, &height);
-    return {static_cast<float>(width), static_cast<float>(height)};
+    return {float(width), float(height)};
 }
 
-Vector2 WindowImpl::size_px() const
+auto WindowImpl::size_px() const -> Vector2
 {
 #ifdef __EMSCRIPTEN__
     return size() * pixel_ratio();
 #else
-    int width_px{};
-    int height_px{};
+    int width_px  = 0;
+    int height_px = 0;
     SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
-    return {static_cast<float>(width_px), static_cast<float>(height_px)};
+    return {float(width_px), float(height_px)};
 #endif
 }
 
-float WindowImpl::pixel_ratio() const
+auto WindowImpl::pixel_ratio() const -> float
 {
 #ifdef __EMSCRIPTEN__
     return emscripten_get_device_pixel_ratio();
 #else
 
-    int width{};
-    int height{};
+    int width  = 0;
+    int height = 0;
     SDL_GetWindowSize(m_sdl_window, &width, &height);
 
-    int width_px{};
-    int height_px{};
+    int width_px  = 0;
+    int height_px = 0;
     SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
 
-    return static_cast<float>(static_cast<double>(width_px) / static_cast<double>(width));
+    return float(double(width_px) / double(width));
 #endif
 }
 
-std::string_view WindowImpl::title() const
+auto WindowImpl::title() const -> std::string_view
 {
     return SDL_GetWindowTitle(m_sdl_window);
 }
 
 void WindowImpl::set_title(std::string_view value)
 {
-    const std::string str{value};
+    const auto str = std::string{value};
     SDL_SetWindowTitle(m_sdl_window, str.c_str());
 }
 
@@ -351,21 +344,21 @@ void WindowImpl::set_resize_callback(const Window::ResizeCallback& value)
     m_resize_callback = value;
 }
 
-uint32_t WindowImpl::display_index() const
+auto WindowImpl::display_index() const -> uint32_t
 {
 #ifdef __EMSCRIPTEN__
     return uint32_t(SDL_GetWindowDisplayIndex(m_sdl_window));
 #else
-    return static_cast<uint32_t>(SDL_GetDisplayForWindow(m_sdl_window)); // NOLINT
+    return uint32_t(SDL_GetDisplayForWindow(m_sdl_window)); // NOLINT
 #endif
 }
 
-SDL_Window* WindowImpl::sdl_window() const
+auto WindowImpl::sdl_window() const -> SDL_Window*
 {
     return m_sdl_window;
 }
 
-uint32_t WindowImpl::sync_interval() const
+auto WindowImpl::sync_interval() const -> uint32_t
 {
     return m_sync_interval;
 }
@@ -380,7 +373,7 @@ void WindowImpl::set_clear_color(std::optional<Color> value)
     m_clear_color = value;
 }
 
-std::optional<Color> WindowImpl::clear_color() const
+auto WindowImpl::clear_color() const -> std::optional<Color>
 {
     return m_clear_color;
 }

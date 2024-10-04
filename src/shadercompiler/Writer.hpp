@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include "util/InternalExport.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -40,37 +39,37 @@ class Writer final
 
     void clear();
 
-    Writer& operator<<(std::string_view str);
+    auto operator<<(std::string_view str) -> Writer&;
 
-    Writer& operator<<(const std::string& str);
+    auto operator<<(const std::string& str) -> Writer&;
 
-    Writer& operator<<(const char* str);
+    auto operator<<(const char* str) -> Writer&;
 
-    Writer& operator<<(char ch);
+    auto operator<<(char ch) -> Writer&;
 
-    Writer& operator<<(int value);
+    auto operator<<(int value) -> Writer&;
 
-    Writer& operator<<(unsigned int value);
+    auto operator<<(unsigned int value) -> Writer&;
 
-    Writer& operator<<(bool value);
+    auto operator<<(bool value) -> Writer&;
 
-    Writer& operator<<(WriterNewlineTag);
+    auto operator<<(WriterNewlineTag) -> Writer&;
 
-    Writer& operator<<(WriteNewlineLazyTag);
+    auto operator<<(WriteNewlineLazyTag) -> Writer&;
 
-    Writer& operator<<(float) = delete;
+    auto operator<<(float) -> Writer& = delete;
 
-    Writer& operator<<(double) = delete;
+    auto operator<<(double) -> Writer& = delete;
 
     void pad(uint32_t count);
 
-    std::string_view buffer() const;
+    auto buffer() const -> std::string_view;
 
-    std::string take_buffer();
+    auto take_buffer() -> std::string;
 
-    size_t buffer_length() const;
+    auto buffer_length() const -> size_t;
 
-    int current_column() const;
+    auto current_column() const -> int;
 
   private:
     std::string m_buffer;

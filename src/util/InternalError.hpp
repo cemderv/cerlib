@@ -19,7 +19,7 @@ class InternalError final : public std::exception
     {
     }
 
-    const char* what() const noexcept override
+    auto what() const noexcept -> const char* override
     {
         return m_message.c_str();
     }

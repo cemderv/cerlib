@@ -5,7 +5,6 @@
 #include "TextImpl.hpp"
 
 #include "cerlib/Font.hpp"
-#include "util/InternalError.hpp"
 #include <cassert>
 
 namespace cer::details
@@ -23,12 +22,12 @@ TextImpl::TextImpl(std::string_view                     text,
                m_decoration_rects);
 }
 
-std::span<const PreshapedGlyph> TextImpl::glyphs() const
+auto TextImpl::glyphs() const -> std::span<const PreshapedGlyph>
 {
     return m_glyphs;
 }
 
-std::span<const TextDecorationRect> TextImpl::decoration_rects() const
+auto TextImpl::decoration_rects() const -> std::span<const TextDecorationRect>
 {
     return m_decoration_rects;
 }

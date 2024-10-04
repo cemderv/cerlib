@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <iosfwd>
 
 namespace cer
@@ -18,19 +18,19 @@ class Image;
 struct Rectangle;
 enum class ImageFormat;
 
-std::ostream& operator<<(std::ostream& os, const Color& value);
+auto operator<<(std::ostream& os, const Color& value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, const Vector2& value);
+auto operator<<(std::ostream& os, const Vector2& value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, const Vector3& value);
+auto operator<<(std::ostream& os, const Vector3& value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, const Vector4& value);
+auto operator<<(std::ostream& os, const Vector4& value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, const Matrix& value);
+auto operator<<(std::ostream& os, const Matrix& value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, ImageFormat value);
+auto operator<<(std::ostream& os, ImageFormat value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, const Image& value);
+auto operator<<(std::ostream& os, const Image& value) -> std::ostream&;
 
-std::ostream& operator<<(std::ostream& os, const Rectangle& value);
+auto operator<<(std::ostream& os, const Rectangle& value) -> std::ostream&;
 } // namespace cer
