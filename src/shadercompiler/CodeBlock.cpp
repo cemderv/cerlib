@@ -37,9 +37,9 @@ void CodeBlock::verify(SemaContext&                                context,
     scope.pop_child();
 }
 
-SmallVector<gsl::not_null<VarStmt*>, 8> CodeBlock::variables() const
+auto CodeBlock::variables() const -> inplace_vector<gsl::not_null<VarStmt*>, 8>
 {
-    SmallVector<gsl::not_null<VarStmt*>, 8> vars;
+    inplace_vector<gsl::not_null<VarStmt*>, 8> vars;
     vars.reserve(m_stmts.size());
 
     for (const std::unique_ptr<Stmt>& stmt : m_stmts)
@@ -65,19 +65,19 @@ void CodeBlock::remove_stmt(const Stmt& stmt)
     }
 }
 
-bool CodeBlock::accesses_symbol(const Decl& symbol, bool transitive) const
+auto CodeBlock::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
     return std::ranges::any_of(m_stmts, [&symbol, transitive](const std::unique_ptr<Stmt>& e) {
         return e->accesses_symbol(symbol, transitive);
     });
 }
 
-const SourceLocation& CodeBlock::location() const
+auto CodeBlock::location() const -> const SourceLocation&
 {
     return m_location;
 }
 
-const CodeBlock::StmtsType& CodeBlock::stmts() const
+auto CodeBlock::stmts() const -> const CodeBlock::StmtsType&
 {
     return m_stmts;
 }

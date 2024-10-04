@@ -16,8 +16,7 @@ Text::Text(std::string_view                     text,
            const std::optional<TextDecoration>& decoration)
     : m_impl(nullptr)
 {
-    std::unique_ptr<details::TextImpl> impl =
-        std::make_unique<details::TextImpl>(text, font, font_size, decoration);
+    auto impl = std::make_unique<details::TextImpl>(text, font, font_size, decoration);
 
     set_impl(*this, impl.release());
 }

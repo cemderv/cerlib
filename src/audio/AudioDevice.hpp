@@ -20,7 +20,7 @@ class SoundChannel;
 
 namespace cer::details
 {
-SoLoud::time to_soloud_time(const SoundTime& seconds);
+auto to_soloud_time(const SoundTime& seconds) -> SoLoud::time;
 
 class AudioDevice
 {
@@ -31,18 +31,19 @@ class AudioDevice
 
     ~AudioDevice() noexcept;
 
-    SoundChannel play_sound(const Sound&             sound,
-                            float                    volume,
-                            float                    pan,
-                            bool                     start_paused,
-                            std::optional<SoundTime> delay);
+    auto play_sound(const Sound&             sound,
+                    float                    volume,
+                    float                    pan,
+                    bool                     start_paused,
+                    std::optional<SoundTime> delay) -> SoundChannel;
 
     void play_sound_fire_and_forget(const Sound&             sound,
                                     float                    volume,
                                     float                    pan,
                                     std::optional<SoundTime> delay);
 
-    SoundChannel play_sound_in_background(const Sound& sound, float volume, bool start_paused);
+    auto play_sound_in_background(const Sound& sound, float volume, bool start_paused)
+        -> SoundChannel;
 
     void stop_all_sounds();
 
@@ -50,15 +51,15 @@ class AudioDevice
 
     void resume_all_sounds();
 
-    float global_volume() const;
+    auto global_volume() const -> float;
 
     void set_global_volume(float value);
 
     void fade_global_volume(float to_volume, SoundTime fade_duration);
 
-    SoLoud::Soloud* soloud();
+    auto soloud() -> SoLoud::Soloud*;
 
-    const SoLoud::Soloud* soloud() const;
+    auto soloud() const -> const SoLoud::Soloud*;
 
     void purge_sounds();
 
@@ -68,7 +69,7 @@ class AudioDevice
         auto operator()(const Sound& sound) const -> size_t;
     };
 
-    SoLoud::Soloud                       m_soloud{};
+    SoLoud::Soloud                       m_soloud;
     bool                                 m_was_initialized_successfully{};
     std::unordered_set<Sound, SoundHash> m_playing_sounds;
 };

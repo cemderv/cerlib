@@ -26,12 +26,12 @@ class MockGame final : public Game
         m_grayscale_shader = Shader::create_grayscale();
     }
 
-    bool update(const GameTime& time) override
+    bool update([[maybe_unused]] const GameTime& time) override
     {
         return !m_have_executed_tests;
     }
 
-    void draw(const Window& window) override
+    void draw([[maybe_unused]] const Window& window) override
     {
         SECTION("basic_sprite")
         {

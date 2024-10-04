@@ -8,34 +8,34 @@
 
 namespace cer
 {
-static std::mt19937& random_device()
+static auto random_device() -> std::mt19937&
 {
-    thread_local std::mt19937 s_generator;
+    thread_local auto s_generator = std::mt19937{};
     return s_generator;
 }
 } // namespace cer
 
-int32_t cer::random_int(int32_t min, int32_t max)
+auto cer::random_int(int32_t min, int32_t max) -> int32_t
 {
-    return std::uniform_int_distribution(min, max)(random_device());
+    return std::uniform_int_distribution{min, max}(random_device());
 }
 
-uint32_t cer::random_uint(uint32_t min, uint32_t max)
+auto cer::random_uint(uint32_t min, uint32_t max) -> uint32_t
 {
-    return std::uniform_int_distribution(min, max)(random_device());
+    return std::uniform_int_distribution{min, max}(random_device());
 }
 
-float cer::random_float(float min, float max)
+auto cer::random_float(float min, float max) -> float
 {
-    return std::uniform_real_distribution(min, max)(random_device());
+    return std::uniform_real_distribution{min, max}(random_device());
 }
 
-double cer::random_double(double min, double max)
+auto cer::random_double(double min, double max) -> double
 {
-    return std::uniform_real_distribution(min, max)(random_device());
+    return std::uniform_real_distribution{min, max}(random_device());
 }
 
-uint32_t cer::mipmap_extent(uint32_t base_extent, uint32_t mipmap)
+auto cer::mipmap_extent(uint32_t base_extent, uint32_t mipmap) -> uint32_t
 {
     auto extent = base_extent;
 
@@ -47,7 +47,7 @@ uint32_t cer::mipmap_extent(uint32_t base_extent, uint32_t mipmap)
     return extent;
 }
 
-uint32_t cer::max_mipmap_count_for_extent(uint32_t base_extent)
+auto cer::max_mipmap_count_for_extent(uint32_t base_extent) -> uint32_t
 {
     uint32_t max_mipmap_count = 0u;
 
@@ -59,7 +59,7 @@ uint32_t cer::max_mipmap_count_for_extent(uint32_t base_extent)
     return max_mipmap_count;
 }
 
-int64_t cer::next_aligned_number(int64_t number, int64_t alignment)
+auto cer::next_aligned_number(int64_t number, int64_t alignment) -> int64_t
 {
     return number - 1 + (alignment & -alignment);
 }

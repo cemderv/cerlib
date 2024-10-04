@@ -10,9 +10,9 @@
 
 namespace cer::details
 {
-std::span<const VertexElement> TessellatedVertex::elements()
+auto TessellatedVertex::elements() -> std::span<const VertexElement>
 {
-    static constexpr std::array s_elements_instance{
+    static constexpr auto s_elements_instance = std::array{
         VertexElement::Vector2,
         VertexElement::Vector2,
         VertexElement::Float,
@@ -28,33 +28,32 @@ void tessellate_draw_line(std::span<TessellatedVertex> dst,
                           const Color&                 color,
                           float                        stroke_width)
 {
-    const Vector2 normal = line_normal(start, end);
+    const auto normal  = line_normal(start, end);
+    const auto offset1 = -normal;
+    const auto offset2 = normal;
 
-    const Vector2 offset1 = -normal;
-    const Vector2 offset2 = normal;
-
-    const TessellatedVertex v0{
+    const auto v0 = TessellatedVertex{
         .position     = start,
         .normal       = offset1,
         .stroke_width = stroke_width,
         .color        = color,
     };
 
-    const TessellatedVertex v1{
+    const auto v1 = TessellatedVertex{
         .position     = start,
         .normal       = offset2,
         .stroke_width = stroke_width,
         .color        = color,
     };
 
-    const TessellatedVertex v2{
+    const auto v2 = TessellatedVertex{
         .position     = end,
         .normal       = offset1,
         .stroke_width = stroke_width,
         .color        = color,
     };
 
-    const TessellatedVertex v3{
+    const auto v3 = TessellatedVertex{
         .position     = end,
         .normal       = offset2,
         .stroke_width = stroke_width,

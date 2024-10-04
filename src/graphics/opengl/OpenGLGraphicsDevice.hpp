@@ -32,18 +32,17 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
 
     void on_set_scissor_rects(std::span<const Rectangle> scissor_rects) override;
 
-    gsl::not_null<ImageImpl*> create_canvas(const Window& window,
-                                            uint32_t      width,
-                                            uint32_t      height,
-                                            ImageFormat   format) override;
+    auto create_canvas(const Window& window, uint32_t width, uint32_t height, ImageFormat format)
+        -> gsl::not_null<ImageImpl*> override;
 
-    gsl::not_null<ImageImpl*> create_image(uint32_t                   width,
-                                           uint32_t                   height,
-                                           ImageFormat                format,
-                                           uint32_t                   mipmap_count,
-                                           const Image::DataCallback& data_callback) override;
+    auto create_image(uint32_t                   width,
+                      uint32_t                   height,
+                      ImageFormat                format,
+                      uint32_t                   mipmap_count,
+                      const Image::DataCallback& data_callback)
+        -> gsl::not_null<ImageImpl*> override;
 
-    const OpenGLFeatures& opengl_features() const;
+    auto opengl_features() const -> const OpenGLFeatures&;
 
     void bind_vao(const OpenGLVao& vao);
 
@@ -57,8 +56,9 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
                                void*        destination) override;
 
   protected:
-    std::unique_ptr<ShaderImpl> create_native_user_shader(
-        std::string_view native_code, ShaderImpl::ParameterList parameters) override;
+    auto create_native_user_shader(std::string_view          native_code,
+                                   ShaderImpl::ParameterList parameters)
+        -> std::unique_ptr<ShaderImpl> override;
 
   private:
     struct PerOpenGLContextState

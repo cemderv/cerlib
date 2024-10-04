@@ -20,7 +20,7 @@ OpenGLBuffer::OpenGLBuffer(GLenum target, size_t size_in_bytes, GLenum usage, co
     }
 
     GL_CALL(glBindBuffer(target, gl_handle));
-    GL_CALL(glBufferData(target, static_cast<GLsizeiptr>(size_in_bytes), data, usage));
+    GL_CALL(glBufferData(target, GLsizeiptr(size_in_bytes), data, usage));
 }
 
 OpenGLBuffer::OpenGLBuffer(OpenGLBuffer&& other) noexcept
@@ -29,7 +29,7 @@ OpenGLBuffer::OpenGLBuffer(OpenGLBuffer&& other) noexcept
     other.gl_handle = 0;
 }
 
-OpenGLBuffer& OpenGLBuffer::operator=(OpenGLBuffer&& other) noexcept
+auto OpenGLBuffer::operator=(OpenGLBuffer&& other) noexcept -> OpenGLBuffer&
 {
     if (&other != this)
     {

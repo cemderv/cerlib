@@ -17,7 +17,7 @@ void Object::add_ref()
     ++m_ref_count;
 }
 
-uint64_t Object::release()
+auto Object::release() -> uint64_t
 {
 #ifdef CERLIB_ATOMIC_REFCOUNTING
     assert(m_ref_count.load() > 0);
@@ -25,7 +25,7 @@ uint64_t Object::release()
     assert(m_ref_count > 0);
 #endif
 
-    const uint64_t new_ref_count = --m_ref_count;
+    const auto new_ref_count = --m_ref_count;
 
     if (new_ref_count == 0)
     {
@@ -35,7 +35,7 @@ uint64_t Object::release()
     return new_ref_count;
 }
 
-uint64_t Object::ref_count() const
+auto Object::ref_count() const -> uint64_t
 {
 #ifdef CERLIB_ATOMIC_REFCOUNTING
     return m_ref_count.load();

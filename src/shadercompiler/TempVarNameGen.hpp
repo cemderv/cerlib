@@ -15,7 +15,7 @@ class TempVarNameGen final
   public:
     explicit TempVarNameGen(const CodeBlock* block = nullptr);
 
-    std::string next(std::string_view hint = {});
+    auto next(std::string_view hint = {}) -> std::string;
 
   private:
     std::string m_prefix;

@@ -5,8 +5,6 @@
 #pragma once
 
 #include "SourceLocation.hpp"
-#include "util/InternalExport.hpp"
-
 #include <string_view>
 
 namespace cer::shadercompiler
@@ -74,7 +72,7 @@ struct Token
     {
     }
 
-    bool is(TokenType t) const
+    auto is(TokenType t) const -> bool
     {
         return this->type == t;
     }
@@ -84,5 +82,5 @@ struct Token
     SourceLocation   location;
 };
 
-std::string_view token_type_to_string(TokenType type);
+auto token_type_to_string(TokenType type) -> std::string_view;
 } // namespace cer::shadercompiler

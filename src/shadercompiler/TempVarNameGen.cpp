@@ -20,21 +20,23 @@ TempVarNameGen::TempVarNameGen(const CodeBlock* block)
 
     if (block != nullptr)
     {
-        for (const std::unique_ptr<Stmt>& stmt : block->stmts())
+        for (const auto& stmt : block->stmts())
         {
-            const VarStmt* lbe = asa<VarStmt>(stmt.get());
+            const auto* lbe = asa<VarStmt>(stmt.get());
+
             if (lbe == nullptr)
             {
                 continue;
             }
 
-            const std::string_view name = lbe->name();
+            const auto name = lbe->name();
+
             if (!name.starts_with(m_prefix))
             {
                 continue;
             }
 
-            if (const int num = std::stoi(std::string{name.substr(m_prefix.size())});
+            if (const auto num = std::stoi(std::string{name.substr(m_prefix.size())});
                 num >= m_counter)
             {
                 m_counter = num + 1;
@@ -43,10 +45,10 @@ TempVarNameGen::TempVarNameGen(const CodeBlock* block)
     }
 }
 
-std::string TempVarNameGen::next(std::string_view hint)
+auto TempVarNameGen::next(std::string_view hint) -> std::string
 {
-    std::string str = hint.empty() ? cer_fmt::format("{}{}", m_prefix, m_counter)
-                                   : cer_fmt::format("{}{}_{}", m_prefix, m_counter, hint);
+    auto str = hint.empty() ? cer_fmt::format("{}{}", m_prefix, m_counter)
+                            : cer_fmt::format("{}{}_{}", m_prefix, m_counter, hint);
 
     ++m_counter;
 

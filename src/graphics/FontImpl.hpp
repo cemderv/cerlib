@@ -54,28 +54,28 @@ class FontImpl final : public Object, public Asset
 
     static void destroy_built_in_fonts();
 
-    static gsl::owner<FontImpl*> built_in(bool bold);
+    static auto built_in(bool bold) -> gsl::owner<FontImpl*>;
 
-    Vector2 measure(std::string_view text, uint32_t font_size) const;
+    auto measure(std::string_view text, uint32_t font_size) const -> Vector2;
 
     template <bool ComputeExtras = false, typename TAction>
     void for_each_glyph(std::string_view text, uint32_t font_size, const TAction& action) const
     {
-        const auto font_sizef = static_cast<float>(font_size);
+        const auto font_sizef = float(font_size);
 
         auto pen_x = 0.0;
         auto pen_y = 0.0;
 
         const auto scale = stbtt_ScaleForPixelHeight(&m_font_info, font_sizef);
 
-        const auto ascent   = static_cast<double>(m_ascent) * scale;
-        const auto descent  = static_cast<double>(m_descent) * scale;
-        const auto line_gap = static_cast<double>(m_line_gap) * scale;
+        const auto ascent   = double(m_ascent) * scale;
+        const auto descent  = double(m_descent) * scale;
+        const auto line_gap = double(m_line_gap) * scale;
 
         auto it     = utf8::iterator(text.begin(), text.begin(), text.end());
         auto it_end = utf8::iterator(text.end(), text.begin(), text.end());
 
-        auto codepoint = static_cast<utf8::utfchar32_t>(0);
+        auto codepoint = utf8::utfchar32_t(0);
         if (it != it_end)
         {
             codepoint = *it;
@@ -87,12 +87,12 @@ class FontImpl final : public Object, public Asset
 
         if constexpr (ComputeExtras)
         {
-            extras.line_increment = static_cast<float>(line_increment);
-            extras.ascent         = static_cast<float>(ascent);
-            extras.descent        = static_cast<float>(descent);
+            extras.line_increment = float(line_increment);
+            extras.ascent         = float(ascent);
+            extras.descent        = float(descent);
         }
 
-        constexpr auto newline = static_cast<utf8::utfchar32_t>('\n');
+        constexpr auto newline = utf8::utfchar32_t('\n');
 
         while (it != it_end)
         {
@@ -115,9 +115,13 @@ class FontImpl final : public Object, public Asset
                 continue;
             }
 
-            int bleft = 0, btop = 0, bright = 0, bbottom = 0;
+            auto bleft   = 0;
+            auto btop    = 0;
+            auto bright  = 0;
+            auto bbottom = 0;
+
             stbtt_GetCodepointBitmapBox(&m_font_info,
-                                        static_cast<int>(codepoint),
+                                        int(codepoint),
                                         scale,
                                         scale,
                                         &bleft,
@@ -125,19 +129,17 @@ class FontImpl final : public Object, public Asset
                                         &bright,
                                         &bbottom);
 
-            const float x = static_cast<float>(pen_x);
-            const float y = static_cast<float>(pen_y + ascent + btop);
+            const auto x = float(pen_x);
+            const auto y = float(pen_y + ascent + btop);
 
-            int advance_x = 0;
-            stbtt_GetCodepointHMetrics(&m_font_info,
-                                       static_cast<int>(codepoint),
-                                       &advance_x,
-                                       nullptr);
+            auto advance_x = 0;
 
-            const float width  = static_cast<float>(bright - bleft);
-            const float height = static_cast<float>(bbottom - btop);
+            stbtt_GetCodepointHMetrics(&m_font_info, int(codepoint), &advance_x, nullptr);
 
-            const Rectangle rect{x, y, width, height};
+            const auto width  = float(bright - bleft);
+            const auto height = float(bbottom - btop);
+
+            const auto rect = Rectangle{x, y, width, height};
 
             if constexpr (ComputeExtras)
             {
@@ -152,7 +154,7 @@ class FontImpl final : public Object, public Asset
                     const auto t = min(extras.line_rect_thus_far.top(), rect.top());
                     const auto b = max(extras.line_rect_thus_far.bottom(), rect.bottom());
 
-                    extras.line_rect_thus_far = Rectangle(l, t, r - l, b - t);
+                    extras.line_rect_thus_far = Rectangle{l, t, r - l, b - t};
                 }
             }
 
@@ -190,11 +192,11 @@ class FontImpl final : public Object, public Asset
         }
     }
 
-    const FontPage& page(uint32_t index) const;
+    auto page(uint32_t index) const -> const FontPage&;
 
-    const RasterizedGlyph& rasterized_glyph(uint32_t codepoint, uint32_t font_size);
+    auto rasterized_glyph(uint32_t codepoint, uint32_t font_size) -> const RasterizedGlyph&;
 
-    float line_height(uint32_t size) const;
+    auto line_height(uint32_t size) const -> float;
 
   private:
     struct RasterizedGlyphKey
@@ -205,7 +207,7 @@ class FontImpl final : public Object, public Asset
 
     struct RasterizedGlyphKeyHash
     {
-        size_t operator()(const RasterizedGlyphKey& key) const
+        auto operator()(const RasterizedGlyphKey& key) const -> size_t
         {
             return key.codepoint ^ key.font_size;
         }
@@ -213,7 +215,7 @@ class FontImpl final : public Object, public Asset
 
     struct RasterizedGlyphKeyEqual
     {
-        bool operator()(const RasterizedGlyphKey& lhs, const RasterizedGlyphKey& rhs) const
+        auto operator()(const RasterizedGlyphKey& lhs, const RasterizedGlyphKey& rhs) const -> bool
         {
             return lhs.codepoint == rhs.codepoint && lhs.font_size == rhs.font_size;
         }
@@ -226,8 +228,8 @@ class FontImpl final : public Object, public Asset
 
     void initialize();
 
-    const RasterizedGlyph& rasterize_glyph(const RasterizedGlyphKey& key,
-                                           bool                      update_page_image_immediately);
+    auto rasterize_glyph(const RasterizedGlyphKey& key, bool update_page_image_immediately)
+        -> const RasterizedGlyph&;
 
     void append_new_page();
 

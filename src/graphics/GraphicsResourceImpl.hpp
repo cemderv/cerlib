@@ -29,11 +29,11 @@ class GraphicsResourceImpl : public Object, public Asset
 
     ~GraphicsResourceImpl() noexcept override;
 
-    GraphicsDevice& parent_device();
+    auto parent_device() -> GraphicsDevice&;
 
-    GraphicsResourceType type() const;
+    auto type() const -> GraphicsResourceType;
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     virtual void set_name(std::string_view name);
 

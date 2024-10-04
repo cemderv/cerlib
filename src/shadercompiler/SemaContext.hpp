@@ -26,13 +26,14 @@ class SemaContext final
 
     ~SemaContext() noexcept = default;
 
-    const AST& ast() const;
+    auto ast() const -> const AST&;
 
-    const BuiltInSymbols& built_in_symbols() const;
+    auto built_in_symbols() const -> const BuiltInSymbols&;
 
-    const BinOpTable& bin_op_table() const;
+    auto bin_op_table() const -> const BinOpTable&;
 
-    static bool can_assign(const Type& target_type, const Expr& rhs, bool is_implicit_cast_allowed);
+    static auto can_assign(const Type& target_type, const Expr& rhs, bool is_implicit_cast_allowed)
+        -> bool;
 
     static void verify_type_assignment(const Type& target_type,
                                        const Expr& rhs,

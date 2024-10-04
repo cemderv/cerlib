@@ -8,7 +8,7 @@ set(util_files
   Object.cpp
   Object.hpp
   OStreamCompat.cpp
-  SmallVector.hpp
+  inplace_vector.hpp
   StringUnorderedMap.hpp
   StringUtil.hpp
   StringUtil.cpp

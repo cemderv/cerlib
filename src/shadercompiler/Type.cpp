@@ -20,65 +20,65 @@
 
 namespace cer::shadercompiler
 {
-const Type* Type::member_type(std::string_view name) const
+auto Type::member_type(std::string_view name) const -> const Type*
 {
     CERLIB_UNUSED(name);
     return nullptr;
 }
 
-Decl* Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+auto Type::find_member_symbol(const SemaContext& context, std::string_view name) const -> Decl*
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(name);
     return nullptr;
 }
 
-bool Type::can_be_in_constant_buffer() const
+auto Type::can_be_in_constant_buffer() const -> bool
 {
     return !is_image_type() && !is_user_defined_struct();
 }
 
-bool Type::can_be_shader_parameter() const
+auto Type::can_be_shader_parameter() const -> bool
 {
     return true;
 }
 
-bool Type::is_unresolved() const
+auto Type::is_unresolved() const -> bool
 {
     return isa<UnresolvedType>(this);
 }
 
-bool Type::is_array() const
+auto Type::is_array() const -> bool
 {
     return isa<ArrayType>(this);
 }
 
-bool Type::is_scalar_type() const
+auto Type::is_scalar_type() const -> bool
 {
     return false;
 }
 
-bool Type::is_vector_type() const
+auto Type::is_vector_type() const -> bool
 {
     return false;
 }
 
-bool Type::is_matrix_type() const
+auto Type::is_matrix_type() const -> bool
 {
     return false;
 }
 
-bool Type::is_image_type() const
+auto Type::is_image_type() const -> bool
 {
     return false;
 }
 
-bool Type::is_user_defined_struct() const
+auto Type::is_user_defined_struct() const -> bool
 {
     return isa<StructDecl>(this);
 }
 
-const SourceLocation& Type::location() const
+auto Type::location() const -> const SourceLocation&
 {
     return m_Location;
 }
@@ -93,25 +93,25 @@ IntType::IntType()
 {
 }
 
-const Type& IntType::instance()
+auto IntType::instance() -> const Type&
 {
-    static IntType s_instance;
+    static auto s_instance = IntType{};
     return s_instance;
 }
 
-const Type& IntType::resolve(SemaContext& context, Scope& scope) const
+auto IntType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view IntType::type_name() const
+auto IntType::type_name() const -> std::string_view
 {
     return "int";
 }
 
-bool IntType::is_scalar_type() const
+auto IntType::is_scalar_type() const -> bool
 {
     return true;
 }
@@ -121,20 +121,20 @@ BoolType::BoolType()
 {
 }
 
-const Type& BoolType::instance()
+auto BoolType::instance() -> const Type&
 {
-    static BoolType s_instance;
+    static auto s_instance = BoolType{};
     return s_instance;
 }
 
-const Type& BoolType::resolve(SemaContext& context, Scope& scope) const
+auto BoolType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view BoolType::type_name() const
+auto BoolType::type_name() const -> std::string_view
 {
     return "bool";
 }
@@ -144,25 +144,25 @@ FloatType::FloatType()
 {
 }
 
-const Type& FloatType::instance()
+auto FloatType::instance() -> const Type&
 {
-    static FloatType s_instance;
+    static auto s_instance = FloatType{};
     return s_instance;
 }
 
-const Type& FloatType::resolve(SemaContext& context, Scope& scope) const
+auto FloatType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view FloatType::type_name() const
+auto FloatType::type_name() const -> std::string_view
 {
     return "float";
 }
 
-bool FloatType::is_scalar_type() const
+auto FloatType::is_scalar_type() const -> bool
 {
     return true;
 }
@@ -172,35 +172,37 @@ Vector2Type::Vector2Type()
 {
 }
 
-const Type& Vector2Type::instance()
+auto Vector2Type::instance() -> const Type&
 {
-    static Vector2Type s_instance;
+    static auto s_instance = Vector2Type{};
     return s_instance;
 }
 
-const Type& Vector2Type::resolve(SemaContext& context, Scope& scope) const
+auto Vector2Type::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view Vector2Type::type_name() const
+auto Vector2Type::type_name() const -> std::string_view
 {
     return "Vector2";
 }
 
-Decl* Vector2Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+auto Vector2Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+    -> Decl*
 {
-    const std::vector<std::unique_ptr<Decl>>& fields = context.built_in_symbols().vector2_fields;
+    const auto& fields = context.built_in_symbols().vector2_fields;
 
-    const auto it =
-        std::ranges::find_if(fields, [name](const auto& e) { return e->name() == name; });
+    const auto it = std::ranges::find_if(fields, [name](const auto& e) {
+        return e->name() == name;
+    });
 
     return it != fields.cend() ? it->get() : nullptr;
 }
 
-bool Vector2Type::is_vector_type() const
+auto Vector2Type::is_vector_type() const -> bool
 {
     return true;
 }
@@ -210,36 +212,37 @@ Vector3Type::Vector3Type()
 {
 }
 
-const Type& Vector3Type::instance()
+auto Vector3Type::instance() -> const Type&
 {
-    static Vector3Type s_instance;
+    static auto s_instance = Vector3Type{};
     return s_instance;
 }
 
-const Type& Vector3Type::resolve(SemaContext& context, Scope& scope) const
+auto Vector3Type::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view Vector3Type::type_name() const
+auto Vector3Type::type_name() const -> std::string_view
 {
     return "Vector3";
 }
 
-Decl* Vector3Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+auto Vector3Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+    -> Decl*
 {
-    const std::vector<std::unique_ptr<Decl>>& fields = context.built_in_symbols().vector3_fields;
+    const auto& fields = context.built_in_symbols().vector3_fields;
 
-    const auto it = std::ranges::find_if(fields, [name](const std::unique_ptr<Decl>& e) {
+    const auto it = std::ranges::find_if(fields, [name](const auto& e) {
         return e->name() == name;
     });
 
     return it != fields.cend() ? it->get() : nullptr;
 }
 
-bool Vector3Type::is_vector_type() const
+auto Vector3Type::is_vector_type() const -> bool
 {
     return true;
 }
@@ -249,29 +252,30 @@ Vector4Type::Vector4Type()
 {
 }
 
-const Type& Vector4Type::instance()
+auto Vector4Type::instance() -> const Type&
 {
-    static Vector4Type s_instance;
+    static auto s_instance = Vector4Type{};
     return s_instance;
 }
 
-const Type& Vector4Type::resolve(SemaContext& context, Scope& scope) const
+auto Vector4Type::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view Vector4Type::type_name() const
+auto Vector4Type::type_name() const -> std::string_view
 {
     return "Vector4";
 }
 
-Decl* Vector4Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+auto Vector4Type::find_member_symbol(const SemaContext& context, std::string_view name) const
+    -> Decl*
 {
-    const std::vector<std::unique_ptr<Decl>>& fields = context.built_in_symbols().vector4_fields;
+    const auto& fields = context.built_in_symbols().vector4_fields;
 
-    const auto it = std::ranges::find_if(fields, [name](const std::unique_ptr<Decl>& e) {
+    const auto it = std::ranges::find_if(fields, [name](const auto& e) {
         return e->name() == name;
     });
 
@@ -283,25 +287,25 @@ MatrixType::MatrixType()
 {
 }
 
-const Type& MatrixType::instance()
+auto MatrixType::instance() -> const Type&
 {
     static MatrixType s_instance;
     return s_instance;
 }
 
-const Type& MatrixType::resolve(SemaContext& context, Scope& scope) const
+auto MatrixType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
     return instance();
 }
 
-std::string_view MatrixType::type_name() const
+auto MatrixType::type_name() const -> std::string_view
 {
     return "Matrix";
 }
 
-bool MatrixType::is_matrix_type() const
+auto MatrixType::is_matrix_type() const -> bool
 {
     return true;
 }
@@ -317,17 +321,17 @@ ArrayType::ArrayType(const SourceLocation& location,
 
 ArrayType::~ArrayType() noexcept = default;
 
-const Type& ArrayType::element_type() const
+auto ArrayType::element_type() const -> const Type&
 {
     return *m_element_type;
 }
 
-const Expr& ArrayType::size_expr() const
+auto ArrayType::size_expr() const -> const Expr&
 {
     return *m_size_expr;
 }
 
-const Type& ArrayType::resolve(SemaContext& context, Scope& scope) const
+auto ArrayType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     if (!m_element_type->is_unresolved())
     {
@@ -342,7 +346,7 @@ const Type& ArrayType::resolve(SemaContext& context, Scope& scope) const
 
     m_size_expr->verify(context, scope);
 
-    const Type& size_type = m_size_expr->type();
+    const auto& size_type = m_size_expr->type();
 
     if (&size_type != &IntType::instance())
     {
@@ -352,16 +356,16 @@ const Type& ArrayType::resolve(SemaContext& context, Scope& scope) const
                     IntType::instance().type_name()};
     }
 
-    const std::any constant_value = m_size_expr->evaluate_constant_value(context, scope);
+    const auto constant_value = m_size_expr->evaluate_constant_value(context, scope);
 
     if (!constant_value.has_value())
     {
         throw Error{location(), "expression does not evaluate to a constant integer value"};
     }
 
-    std::optional<uint32_t> size;
+    auto size = std::optional<uint32_t>{};
 
-    if (const int32_t* const int_size = std::any_cast<int32_t>(&constant_value))
+    if (const auto* const int_size = std::any_cast<int32_t>(&constant_value))
     {
         if (*int_size < 0)
         {
@@ -372,7 +376,7 @@ const Type& ArrayType::resolve(SemaContext& context, Scope& scope) const
 
         size = gsl::narrow_cast<uint32_t>(*int_size);
     }
-    else if (const uint32_t* uint_size = std::any_cast<uint32_t>(&constant_value))
+    else if (const auto* uint_size = std::any_cast<uint32_t>(&constant_value))
     {
         size = *uint_size;
     }
@@ -399,18 +403,18 @@ const Type& ArrayType::resolve(SemaContext& context, Scope& scope) const
     return *this;
 }
 
-uint32_t ArrayType::size() const
+unsigned int ArrayType::size() const
 {
     assert(!m_element_type->is_unresolved());
     return m_size;
 }
 
-std::string_view ArrayType::type_name() const
+std::basic_string_view<char> ArrayType::type_name() const
 {
     return m_name;
 }
 
-bool ArrayType::can_be_shader_parameter() const
+auto ArrayType::can_be_shader_parameter() const -> bool
 {
     assert(!m_element_type->is_unresolved());
 
@@ -435,11 +439,11 @@ UnresolvedType::UnresolvedType(const SourceLocation& location, std::string_view 
 {
 }
 
-const Type& UnresolvedType::resolve(SemaContext& context, Scope& scope) const
+auto UnresolvedType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
 
-    const Type* resolved_type = scope.find_type(m_name);
+    const auto* resolved_type = scope.find_type(m_name);
 
     if (resolved_type == nullptr)
     {
@@ -449,7 +453,7 @@ const Type& UnresolvedType::resolve(SemaContext& context, Scope& scope) const
     return *resolved_type;
 }
 
-std::string_view UnresolvedType::type_name() const
+auto UnresolvedType::type_name() const -> std::string_view
 {
     return m_name;
 }
@@ -459,13 +463,13 @@ ImageType::ImageType()
 {
 }
 
-const Type& ImageType::instance()
+auto ImageType::instance() -> const Type&
 {
     static ImageType s_instance;
     return s_instance;
 }
 
-const Type& ImageType::resolve(SemaContext& context, Scope& scope) const
+auto ImageType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
@@ -473,12 +477,12 @@ const Type& ImageType::resolve(SemaContext& context, Scope& scope) const
     return instance();
 }
 
-std::string_view ImageType::type_name() const
+auto ImageType::type_name() const -> std::string_view
 {
     return "Image";
 }
 
-bool ImageType::is_image_type() const
+auto ImageType::is_image_type() const -> bool
 {
     return true;
 }

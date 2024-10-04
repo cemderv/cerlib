@@ -31,38 +31,112 @@ struct BinOpInfo
 };
 
 static constexpr auto bin_op_precedence_table = std::array{
-    BinOpInfo{TokenType::Dot, 11, BinOpKind::MemberAccess},
-    BinOpInfo{TokenType::Asterisk, 10, BinOpKind::Multiply},
-    BinOpInfo{TokenType::ForwardSlash, 9, BinOpKind::Divide},
-    BinOpInfo{TokenType::Plus, 8, BinOpKind::Add},
-    BinOpInfo{TokenType::Hyphen, 8, BinOpKind::Subtract},
-    BinOpInfo{TokenType::LeftShift, 7, BinOpKind::LeftShift},
-    BinOpInfo{TokenType::RightShift, 7, BinOpKind::RightShift},
-    BinOpInfo{TokenType::LeftAngleBracket, 7, BinOpKind::LessThan},
-    BinOpInfo{TokenType::LessThanOrEqual, 7, BinOpKind::LessThanOrEqual},
-    BinOpInfo{TokenType::RightAngleBracket, 7, BinOpKind::GreaterThan},
-    BinOpInfo{TokenType::GreaterThanOrEqual, 7, BinOpKind::GreaterThanOrEqual},
-    BinOpInfo{TokenType::LogicalEqual, 6, BinOpKind::Equal},
-    BinOpInfo{TokenType::LogicalNotEqual, 6, BinOpKind::NotEqual},
-    BinOpInfo{TokenType::Ampersand, 5, BinOpKind::BitwiseAnd},
-    BinOpInfo{TokenType::Hat, 4, BinOpKind::BitwiseXor},
-    BinOpInfo{TokenType::Bar, 3, BinOpKind::BitwiseOr},
-    BinOpInfo{TokenType::LogicalAnd, 2, BinOpKind::LogicalAnd},
-    BinOpInfo{TokenType::LogicalOr, 1, BinOpKind::LogicalOr},
+    BinOpInfo{
+        .ttype       = TokenType::Dot,
+        .precedence  = 11,
+        .bin_op_kind = BinOpKind::MemberAccess,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::Asterisk,
+        .precedence  = 10,
+        .bin_op_kind = BinOpKind::Multiply,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::ForwardSlash,
+        .precedence  = 9,
+        .bin_op_kind = BinOpKind::Divide,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::Plus,
+        .precedence  = 8,
+        .bin_op_kind = BinOpKind::Add,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::Hyphen,
+        .precedence  = 8,
+        .bin_op_kind = BinOpKind::Subtract,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LeftShift,
+        .precedence  = 7,
+        .bin_op_kind = BinOpKind::LeftShift,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::RightShift,
+        .precedence  = 7,
+        .bin_op_kind = BinOpKind::RightShift,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LeftAngleBracket,
+        .precedence  = 7,
+        .bin_op_kind = BinOpKind::LessThan,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LessThanOrEqual,
+        .precedence  = 7,
+        .bin_op_kind = BinOpKind::LessThanOrEqual,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::RightAngleBracket,
+        .precedence  = 7,
+        .bin_op_kind = BinOpKind::GreaterThan,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::GreaterThanOrEqual,
+        .precedence  = 7,
+        .bin_op_kind = BinOpKind::GreaterThanOrEqual,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LogicalEqual,
+        .precedence  = 6,
+        .bin_op_kind = BinOpKind::Equal,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LogicalNotEqual,
+        .precedence  = 6,
+        .bin_op_kind = BinOpKind::NotEqual,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::Ampersand,
+        .precedence  = 5,
+        .bin_op_kind = BinOpKind::BitwiseAnd,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::Hat,
+        .precedence  = 4,
+        .bin_op_kind = BinOpKind::BitwiseXor,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::Bar,
+        .precedence  = 3,
+        .bin_op_kind = BinOpKind::BitwiseOr,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LogicalAnd,
+        .precedence  = 2,
+        .bin_op_kind = BinOpKind::LogicalAnd,
+    },
+    BinOpInfo{
+        .ttype       = TokenType::LogicalOr,
+        .precedence  = 1,
+        .bin_op_kind = BinOpKind::LogicalOr,
+    },
 };
 
-static std::optional<int> get_bin_op_precedence(TokenType type)
+static auto get_bin_op_precedence(TokenType type) -> std::optional<int>
 {
-    const auto it = std::ranges::find_if(bin_op_precedence_table,
-                                         [type](const BinOpInfo& tk) { return tk.ttype == type; });
+    const auto it = std::ranges::find_if(bin_op_precedence_table, [type](const auto& op) {
+        return op.ttype == type;
+    });
 
     return it != bin_op_precedence_table.end() ? std::make_optional(it->precedence) : std::nullopt;
 }
 
-static std::optional<BinOpKind> get_token_type_to_bin_op_kind(TokenType type)
+static auto get_token_type_to_bin_op_kind(TokenType type) -> std::optional<BinOpKind>
 {
-    const auto it = std::ranges::find_if(bin_op_precedence_table,
-                                         [type](const BinOpInfo& tk) { return tk.ttype == type; });
+    const auto it = std::ranges::find_if(bin_op_precedence_table, [type](const auto& op) {
+        return op.ttype == type;
+    });
 
     return it != bin_op_precedence_table.end() ? std::make_optional(it->bin_op_kind) : std::nullopt;
 }
@@ -72,7 +146,7 @@ Parser::Parser(TypeCache& type_cache)
 {
 }
 
-AST::DeclsType Parser::parse(std::span<const Token> tokens)
+auto Parser::parse(std::span<const Token> tokens) -> AST::DeclsType
 {
     if (tokens.empty())
     {
@@ -82,37 +156,36 @@ AST::DeclsType Parser::parse(std::span<const Token> tokens)
     m_tokens = tokens;
     m_tk     = m_tokens.begin();
 
-    AST::DeclsType decls;
+    auto decls = AST::DeclsType{};
 
     while (!is_at_end())
     {
         PUSH_TK;
 
-        std::unique_ptr<Decl> decl = parse_decl_at_global_scope();
+        auto decl = parse_decl_at_global_scope();
 
-        if (!decl)
+        if (decl == nullptr)
         {
             throw Error{m_tk_stack.back()->location, "invalid declaration at global scope"};
         }
 
-        const auto [is_decl_allowed_at_global_scope,
-                    is_mutable_variable] = [&decl]() -> std::pair<bool, bool> {
+        const auto [is_decl_allowed_at_global_scope, is_mutable_variable] = [&decl] {
             if (isa<ShaderParamDecl>(*decl) || isa<StructDecl>(*decl) || isa<FunctionDecl>(*decl))
             {
-                return {true, false};
+                return std::pair{true, false};
             }
 
-            if (const VarDecl* var = asa<VarDecl>(decl.get()))
+            if (const auto* var = asa<VarDecl>(decl.get()))
             {
                 if (var->is_const())
                 {
-                    return {true, false};
+                    return std::pair{true, false};
                 }
 
-                return {false, true};
+                return std::pair{false, true};
             }
 
-            return {false, false};
+            return std::pair{false, false};
         }();
 
         if (!is_decl_allowed_at_global_scope)
@@ -136,7 +209,7 @@ AST::DeclsType Parser::parse(std::span<const Token> tokens)
     return decls;
 }
 
-std::unique_ptr<Decl> Parser::parse_decl_at_global_scope()
+auto Parser::parse_decl_at_global_scope() -> std::unique_ptr<Decl>
 {
     // struct <StructDecl>
     // var|const <VarStmt>
@@ -149,14 +222,13 @@ std::unique_ptr<Decl> Parser::parse_decl_at_global_scope()
 
     if (is_keyword(keyword::var) || is_keyword(keyword::const_))
     {
-        const std::unique_ptr<VarStmt> stmt = parse_var_stmt();
-        return stmt->steal_variable();
+        return parse_var_stmt()->steal_variable();
     }
 
     // variable or constant
-    const Type&            type          = parse_type();
-    const SourceLocation   name_location = m_tk->location;
-    const std::string_view name          = consume_identifier();
+    const auto& type          = parse_type();
+    const auto& name_location = m_tk->location;
+    const auto  name          = consume_identifier();
 
     if (m_tk->is(TokenType::LeftParen))
     {
@@ -171,7 +243,7 @@ std::unique_ptr<Decl> Parser::parse_decl_at_global_scope()
     return nullptr;
 }
 
-std::unique_ptr<Stmt> Parser::parse_stmt()
+auto Parser::parse_stmt() -> std::unique_ptr<Stmt>
 {
     if (is_keyword(keyword::var) || is_keyword(keyword::const_))
     {
@@ -193,7 +265,7 @@ std::unique_ptr<Stmt> Parser::parse_stmt()
         return parse_for_stmt();
     }
 
-    std::unique_ptr<Expr> lhs;
+    auto                  lhs  = std::unique_ptr<Expr>{};
     std::unique_ptr<Stmt> stmt = parse_compound_stmt(&lhs);
 
     if (!stmt && !is_at_end() && m_tk->is(TokenType::Equal))
@@ -204,43 +276,42 @@ std::unique_ptr<Stmt> Parser::parse_stmt()
     return stmt;
 }
 
-std::unique_ptr<Expr> Parser::parse_expr(std::unique_ptr<Expr> lhs,
-                                         int                   min_precedence,
-                                         std::string_view      name)
+auto Parser::parse_expr(std::unique_ptr<Expr> lhs, int min_precedence, std::string_view name)
+    -> std::unique_ptr<Expr>
 {
     // Shunting-yard algorithm
 
-    const auto fail = [&]() -> std::unique_ptr<Expr> {
+    const auto fail = [this, &name] {
         if (!name.empty())
         {
             throw Error{m_tk->location, "expected a {}", name};
         }
 
-        return nullptr;
+        return std::unique_ptr<Expr>{};
     };
 
-    if (!lhs)
+    if (lhs == nullptr)
     {
         lhs = parse_primary_expr();
 
-        if (!lhs)
+        if (lhs == nullptr)
         {
             return fail();
         }
     }
 
-    TokenType          lookahead               = m_tk->type;
-    SourceLocation     lookahead_location      = m_tk->location;
-    std::optional<int> lookahead_op_precedence = get_bin_op_precedence(lookahead);
+    auto lookahead               = m_tk->type;
+    auto lookahead_location      = m_tk->location;
+    auto lookahead_op_precedence = get_bin_op_precedence(lookahead);
 
     while (lookahead_op_precedence && *lookahead_op_precedence >= min_precedence)
     {
-        const BinOpKind op            = *get_token_type_to_bin_op_kind(lookahead);
-        const int       op_precedence = *lookahead_op_precedence;
+        const auto op            = *get_token_type_to_bin_op_kind(lookahead);
+        const auto op_precedence = *lookahead_op_precedence;
 
         advance();
 
-        std::unique_ptr<Expr> rhs = parse_primary_expr();
+        auto rhs = parse_primary_expr();
 
         if (rhs == nullptr)
         {
@@ -276,37 +347,35 @@ std::unique_ptr<Expr> Parser::parse_expr(std::unique_ptr<Expr> lhs,
     return lhs;
 }
 
-std::unique_ptr<Expr> Parser::parse_primary_expr()
+auto Parser::parse_primary_expr() -> std::unique_ptr<Expr>
 {
-    std::unique_ptr<Expr> expr;
+    auto expr = std::unique_ptr<Expr>{};
 
-    if (std::unique_ptr<ParenExpr> paren_expr = parse_paren_expr())
+    if (auto paren_expr = parse_paren_expr())
     {
         expr = std::move(paren_expr);
     }
-    else if (std::unique_ptr<IntLiteralExpr> int_lit = parse_int_literal_expr())
+    else if (auto int_lit = parse_int_literal_expr())
     {
         expr = std::move(int_lit);
     }
-    else if (std::unique_ptr<ScientificIntLiteralExpr> scint_lit =
-                 parse_scientific_int_literal_expr())
+    else if (auto scint_lit = parse_scientific_int_literal_expr())
     {
         expr = std::move(scint_lit);
     }
-    else if (std::unique_ptr<HexadecimalIntLiteralExpr> hexint_lit =
-                 parse_hexadecimal_int_literal_expr())
+    else if (auto hexint_lit = parse_hexadecimal_int_literal_expr())
     {
         expr = std::move(hexint_lit);
     }
-    else if (std::unique_ptr<FloatLiteralExpr> float_lit = parse_float_literal_expr())
+    else if (auto float_lit = parse_float_literal_expr())
     {
         expr = std::move(float_lit);
     }
-    else if (std::unique_ptr<BoolLiteralExpr> bool_lit = parse_bool_literal_expr())
+    else if (auto bool_lit = parse_bool_literal_expr())
     {
         expr = std::move(bool_lit);
     }
-    else if (std::unique_ptr<SymAccessExpr> sym_access = parse_sym_access_expr())
+    else if (auto sym_access = parse_sym_access_expr())
     {
         expr = std::move(sym_access);
     }
@@ -333,9 +402,9 @@ std::unique_ptr<Expr> Parser::parse_primary_expr()
             // subscript expression
             advance();
 
-            std::unique_ptr<Expr> index_expr = parse_expr();
+            auto index_expr = parse_expr();
 
-            if (!index_expr)
+            if (index_expr == nullptr)
             {
                 return nullptr;
             }
@@ -351,11 +420,11 @@ std::unique_ptr<Expr> Parser::parse_primary_expr()
     return expr;
 }
 
-std::unique_ptr<ShaderParamDecl> Parser::parse_shader_param(const SourceLocation& location,
-                                                            const Type&           return_type,
-                                                            std::string_view      name)
+auto Parser::parse_shader_param(const SourceLocation& location,
+                                const Type&           return_type,
+                                std::string_view      name) -> std::unique_ptr<ShaderParamDecl>
 {
-    std::unique_ptr<Expr> default_value_expr;
+    auto default_value_expr = std::unique_ptr<Expr>{};
 
     if (m_tk->is(TokenType::Equal))
     {
@@ -371,15 +440,15 @@ std::unique_ptr<ShaderParamDecl> Parser::parse_shader_param(const SourceLocation
                                              std::move(default_value_expr));
 }
 
-std::unique_ptr<FunctionDecl> Parser::parse_function(std::string_view      name,
-                                                     const SourceLocation& name_location,
-                                                     const Type&           return_type)
+auto Parser::parse_function(std::string_view      name,
+                            const SourceLocation& name_location,
+                            const Type&           return_type) -> std::unique_ptr<FunctionDecl>
 {
     PUSH_TK;
 
     consume(TokenType::LeftParen, true);
 
-    SmallVector<std::unique_ptr<FunctionParamDecl>, 4> params;
+    auto params = inplace_vector<std::unique_ptr<FunctionParamDecl>, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {
@@ -395,7 +464,7 @@ std::unique_ptr<FunctionDecl> Parser::parse_function(std::string_view      name,
 
     consume(TokenType::RightParen, true);
 
-    std::unique_ptr<CodeBlock> body = parse_code_block();
+    auto body = parse_code_block();
 
     return std::make_unique<FunctionDecl>(name_location,
                                           name,
@@ -405,17 +474,17 @@ std::unique_ptr<FunctionDecl> Parser::parse_function(std::string_view      name,
                                           false);
 }
 
-std::unique_ptr<StructDecl> Parser::parse_struct()
+auto Parser::parse_struct() -> std::unique_ptr<StructDecl>
 {
     // Assume 'struct' is already consumed
 
     PUSH_TK;
 
-    const std::string_view name = consume_identifier();
+    const auto name = consume_identifier();
 
     consume(TokenType::LeftBrace, true);
 
-    SmallVector<std::unique_ptr<StructFieldDecl>, 8> fields;
+    auto fields = inplace_vector<std::unique_ptr<StructFieldDecl>, 8>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -430,35 +499,36 @@ std::unique_ptr<StructDecl> Parser::parse_struct()
                                         false);
 }
 
-std::unique_ptr<StructFieldDecl> Parser::parse_struct_field_decl()
+auto Parser::parse_struct_field_decl() -> std::unique_ptr<StructFieldDecl>
 {
-    const Type& type = parse_type();
+    const auto& type = parse_type();
 
     PUSH_TK;
 
-    const std::string_view name = consume_identifier();
+    const auto name = consume_identifier();
 
     consume(TokenType::Semicolon, true);
 
     return std::make_unique<StructFieldDecl>(tk_pusher_.initial_tk()->location, name, type);
 }
 
-std::unique_ptr<FunctionParamDecl> Parser::parse_function_param_decl()
+auto Parser::parse_function_param_decl() -> std::unique_ptr<FunctionParamDecl>
 {
-    const Type& type = parse_type();
+    const auto& type = parse_type();
 
     PUSH_TK;
 
-    const std::string_view name = consume_identifier();
+    const auto name = consume_identifier();
 
     return std::make_unique<FunctionParamDecl>(tk_pusher_.initial_tk()->location, name, type);
 }
 
-std::unique_ptr<CompoundStmt> Parser::parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs)
+auto Parser::parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs) -> std::unique_ptr<CompoundStmt>
 {
     PUSH_TK;
 
-    std::unique_ptr<Expr> lhs = parse_expr();
+    auto lhs = parse_expr();
+
     if (lhs == nullptr)
     {
         return nullptr;
@@ -466,8 +536,8 @@ std::unique_ptr<CompoundStmt> Parser::parse_compound_stmt(std::unique_ptr<Expr>*
 
     *parsed_lhs = std::move(lhs);
 
-    CompoundStmtKind kind = [&] {
-        const std::string_view mod = m_tk->value;
+    const auto kind = [&] {
+        const auto mod = m_tk->value;
 
         if (mod == "*=")
         {
@@ -486,17 +556,17 @@ std::unique_ptr<CompoundStmt> Parser::parse_compound_stmt(std::unique_ptr<Expr>*
             return CompoundStmtKind::Sub;
         }
 
-        return static_cast<CompoundStmtKind>(-1);
+        return CompoundStmtKind(-1);
     }();
 
-    if (kind == static_cast<CompoundStmtKind>(-1))
+    if (kind == CompoundStmtKind(-1))
     {
         return nullptr;
     }
 
     advance();
 
-    std::unique_ptr<Expr> rhs = parse_expr();
+    auto rhs = parse_expr();
 
     if (rhs == nullptr)
     {
@@ -514,7 +584,7 @@ std::unique_ptr<CompoundStmt> Parser::parse_compound_stmt(std::unique_ptr<Expr>*
                                           std::move(rhs));
 }
 
-std::unique_ptr<AssignmentStmt> Parser::parse_assignment_stmt(std::unique_ptr<Expr> lhs)
+auto Parser::parse_assignment_stmt(std::unique_ptr<Expr> lhs) -> std::unique_ptr<AssignmentStmt>
 {
     PUSH_TK;
 
@@ -535,7 +605,7 @@ std::unique_ptr<AssignmentStmt> Parser::parse_assignment_stmt(std::unique_ptr<Ex
         return nullptr;
     }
 
-    std::unique_ptr<Expr> rhs = parse_expr();
+    auto rhs = parse_expr();
 
     if (rhs != nullptr)
     {
@@ -550,13 +620,13 @@ std::unique_ptr<AssignmentStmt> Parser::parse_assignment_stmt(std::unique_ptr<Ex
                                             std::move(rhs));
 }
 
-std::unique_ptr<ReturnStmt> Parser::parse_return_stmt()
+auto Parser::parse_return_stmt() -> std::unique_ptr<ReturnStmt>
 {
     // Assume 'return' is already consumed.
 
     PUSH_TK;
 
-    std::unique_ptr<Expr> expr = parse_expr();
+    auto expr = parse_expr();
 
     if (expr == nullptr)
     {
@@ -568,7 +638,7 @@ std::unique_ptr<ReturnStmt> Parser::parse_return_stmt()
     return std::make_unique<ReturnStmt>(tk_pusher_.initial_tk()->location, std::move(expr));
 }
 
-std::unique_ptr<ForStmt> Parser::parse_for_stmt()
+auto Parser::parse_for_stmt() -> std::unique_ptr<ForStmt>
 {
     // Assume 'for' is consumed.
 
@@ -576,14 +646,14 @@ std::unique_ptr<ForStmt> Parser::parse_for_stmt()
 
     consume(TokenType::LeftParen, true);
 
-    const SourceLocation   loop_var_location = m_tk->location;
-    const std::string_view loop_var_name     = consume_identifier();
+    const auto loop_var_location = m_tk->location;
+    const auto loop_var_name     = consume_identifier();
 
     auto loop_var = std::make_unique<ForLoopVariableDecl>(loop_var_location, loop_var_name);
 
     consume_keyword(keyword::in, true);
 
-    std::unique_ptr<RangeExpr> range = parse_range_expr();
+    auto range = parse_range_expr();
 
     if (range == nullptr)
     {
@@ -592,7 +662,7 @@ std::unique_ptr<ForStmt> Parser::parse_for_stmt()
 
     consume(TokenType::RightParen, true);
 
-    std::unique_ptr<CodeBlock> body = parse_code_block();
+    auto body = parse_code_block();
 
     return std::make_unique<ForStmt>(tk_pusher_.initial_tk()->location,
                                      std::move(loop_var),
@@ -600,13 +670,13 @@ std::unique_ptr<ForStmt> Parser::parse_for_stmt()
                                      std::move(body));
 }
 
-std::unique_ptr<IfStmt> Parser::parse_if_stmt(bool is_if)
+auto Parser::parse_if_stmt(bool is_if) -> std::unique_ptr<IfStmt>
 {
     // Assume 'if' is consumed.
 
     PUSH_TK;
 
-    std::unique_ptr<Expr> condition;
+    auto condition = std::unique_ptr<Expr>{};
 
     if (is_if)
     {
@@ -622,8 +692,8 @@ std::unique_ptr<IfStmt> Parser::parse_if_stmt(bool is_if)
         consume(TokenType::RightParen, true);
     }
 
-    std::unique_ptr<CodeBlock> body = parse_code_block();
-    std::unique_ptr<IfStmt>    next;
+    auto body = parse_code_block();
+    auto next = std::unique_ptr<IfStmt>{};
 
     if (consume_keyword(keyword::else_, false))
     {
@@ -641,10 +711,10 @@ std::unique_ptr<IfStmt> Parser::parse_if_stmt(bool is_if)
                                     std::move(next));
 }
 
-std::unique_ptr<VarStmt> Parser::parse_var_stmt()
+auto Parser::parse_var_stmt() -> std::unique_ptr<VarStmt>
 {
-    const bool is_var   = is_keyword(keyword::var);
-    const bool is_const = is_keyword(keyword::const_);
+    const auto is_var   = is_keyword(keyword::var);
+    const auto is_const = is_keyword(keyword::const_);
 
     if (!is_var && !is_const)
     {
@@ -653,12 +723,12 @@ std::unique_ptr<VarStmt> Parser::parse_var_stmt()
 
     advance();
 
-    const SourceLocation   name_location = m_tk->location;
-    const std::string_view name          = consume_identifier();
+    const auto name_location = m_tk->location;
+    const auto name          = consume_identifier();
 
     consume(TokenType::Equal, true);
 
-    std::unique_ptr<Expr> expr = parse_expr();
+    auto expr = parse_expr();
 
     if (expr == nullptr)
     {
@@ -672,11 +742,11 @@ std::unique_ptr<VarStmt> Parser::parse_var_stmt()
         std::make_unique<VarDecl>(name_location, name, std::move(expr), is_const));
 }
 
-std::unique_ptr<RangeExpr> Parser::parse_range_expr()
+auto Parser::parse_range_expr() -> std::unique_ptr<RangeExpr>
 {
     PUSH_TK;
 
-    std::unique_ptr<Expr> start = parse_expr();
+    auto start = parse_expr();
 
     if (start == nullptr)
     {
@@ -685,7 +755,7 @@ std::unique_ptr<RangeExpr> Parser::parse_range_expr()
 
     consume(TokenType::DotDot, true);
 
-    std::unique_ptr<Expr> end = parse_expr();
+    auto end = parse_expr();
 
     if (end == nullptr)
     {
@@ -697,20 +767,20 @@ std::unique_ptr<RangeExpr> Parser::parse_range_expr()
                                        std::move(end));
 }
 
-std::unique_ptr<IntLiteralExpr> Parser::parse_int_literal_expr()
+auto Parser::parse_int_literal_expr() -> std::unique_ptr<IntLiteralExpr>
 {
     if (m_tk->is(TokenType::IntLiteral))
     {
-        const SourceLocation location = m_tk->location;
-        int32_t              value    = 0;
+        const auto location = m_tk->location;
+        auto       value    = 0;
 
         try
         {
             value = std::stoi(std::string{m_tk->value});
         }
-        catch (const std::exception&)
+        catch (const std::exception& ex)
         {
-            throw Error{location, "failed to parse integer literal"};
+            throw Error{location, "failed to parse integer literal (reason: {})", ex.what()};
         }
 
         advance();
@@ -721,12 +791,13 @@ std::unique_ptr<IntLiteralExpr> Parser::parse_int_literal_expr()
     return nullptr;
 }
 
-std::unique_ptr<BoolLiteralExpr> Parser::parse_bool_literal_expr()
+auto Parser::parse_bool_literal_expr() -> std::unique_ptr<BoolLiteralExpr>
 {
     if (is_keyword(keyword::true_) || is_keyword(keyword::false_))
     {
-        const bool           value    = m_tk->value == keyword::true_;
-        const SourceLocation location = m_tk->location;
+        const auto value    = m_tk->value == keyword::true_;
+        const auto location = m_tk->location;
+
         advance();
 
         return std::make_unique<BoolLiteralExpr>(location, value);
@@ -735,22 +806,22 @@ std::unique_ptr<BoolLiteralExpr> Parser::parse_bool_literal_expr()
     return nullptr;
 }
 
-std::unique_ptr<FloatLiteralExpr> Parser::parse_float_literal_expr()
+auto Parser::parse_float_literal_expr() -> std::unique_ptr<FloatLiteralExpr>
 {
     if (m_tk->is(TokenType::FloatLiteral))
     {
-        const SourceLocation location = m_tk->location;
-        std::string_view     string_value;
-        double               value = 0.0;
+        const auto location     = m_tk->location;
+        auto       string_value = std::string_view{};
+        auto       value        = 0.0;
 
         try
         {
             string_value = m_tk->value;
             value        = std::stod(std::string{string_value});
         }
-        catch (const std::exception&)
+        catch (const std::exception& ex)
         {
-            throw Error{location, "failed to parse float literal"};
+            throw Error{location, "failed to parse float literal (reason: {})", ex.what()};
         }
 
         advance();
@@ -761,11 +832,11 @@ std::unique_ptr<FloatLiteralExpr> Parser::parse_float_literal_expr()
     return nullptr;
 }
 
-std::unique_ptr<UnaryOpExpr> Parser::parse_unary_op_expr()
+auto Parser::parse_unary_op_expr() -> std::unique_ptr<UnaryOpExpr>
 {
     PUSH_TK;
 
-    std::optional<UnaryOpKind> op_kind;
+    auto op_kind = std::optional<UnaryOpKind>{};
 
     if (m_tk->is(TokenType::ExclamationMark))
     {
@@ -783,7 +854,7 @@ std::unique_ptr<UnaryOpExpr> Parser::parse_unary_op_expr()
 
     advance();
 
-    std::unique_ptr<Expr> expr = parse_primary_expr();
+    auto expr = parse_primary_expr();
 
     if (expr == nullptr)
     {
@@ -795,14 +866,14 @@ std::unique_ptr<UnaryOpExpr> Parser::parse_unary_op_expr()
                                          std::move(expr));
 }
 
-std::unique_ptr<StructCtorArg> Parser::parse_struct_ctor_arg()
+auto Parser::parse_struct_ctor_arg() -> std::unique_ptr<StructCtorArg>
 {
     PUSH_TK;
-    const std::string_view name = consume_identifier();
+    const auto name = consume_identifier();
 
     consume(TokenType::Equal, true);
 
-    std::unique_ptr<Expr> expr = parse_expr();
+    auto expr = parse_expr();
 
     if (expr == nullptr)
     {
@@ -814,12 +885,13 @@ std::unique_ptr<StructCtorArg> Parser::parse_struct_ctor_arg()
                                            std::move(expr));
 }
 
-std::unique_ptr<SymAccessExpr> Parser::parse_sym_access_expr()
+auto Parser::parse_sym_access_expr() -> std::unique_ptr<SymAccessExpr>
 {
     if (m_tk->is(TokenType::Identifier))
     {
-        const std::string_view name     = m_tk->value;
-        const SourceLocation   location = m_tk->location;
+        const auto name     = m_tk->value;
+        const auto location = m_tk->location;
+
         advance();
 
         return std::make_unique<SymAccessExpr>(location, name);
@@ -828,16 +900,16 @@ std::unique_ptr<SymAccessExpr> Parser::parse_sym_access_expr()
     return nullptr;
 }
 
-std::unique_ptr<StructCtorCall> Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee)
+auto Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<StructCtorCall>
 {
     PUSH_TK;
     consume(TokenType::LeftBrace, true);
 
-    SmallVector<std::unique_ptr<StructCtorArg>, 4> args;
+    auto args = inplace_vector<std::unique_ptr<StructCtorArg>, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
-        std::unique_ptr<StructCtorArg> arg = parse_struct_ctor_arg();
+        auto arg = parse_struct_ctor_arg();
 
         if (arg == nullptr)
         {
@@ -861,16 +933,16 @@ std::unique_ptr<StructCtorCall> Parser::parse_struct_ctor_call(std::unique_ptr<E
                                             std::move(args));
 }
 
-std::unique_ptr<FunctionCallExpr> Parser::parse_function_call(std::unique_ptr<Expr> callee)
+auto Parser::parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<FunctionCallExpr>
 {
     PUSH_TK;
     consume(TokenType::LeftParen, true);
 
-    SmallVector<std::unique_ptr<Expr>, 4> args;
+    auto args = inplace_vector<std::unique_ptr<Expr>, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {
-        std::unique_ptr<Expr> arg = parse_expr();
+        auto arg = parse_expr();
 
         if (arg == nullptr)
         {
@@ -894,12 +966,13 @@ std::unique_ptr<FunctionCallExpr> Parser::parse_function_call(std::unique_ptr<Ex
                                               std::move(args));
 }
 
-std::unique_ptr<ScientificIntLiteralExpr> Parser::parse_scientific_int_literal_expr()
+auto Parser::parse_scientific_int_literal_expr() -> std::unique_ptr<ScientificIntLiteralExpr>
 {
     if (m_tk->is(TokenType::ScientificNumber))
     {
-        const SourceLocation   location = m_tk->location;
-        const std::string_view value    = m_tk->value;
+        const auto location = m_tk->location;
+        const auto value    = m_tk->value;
+
         advance();
 
         return std::make_unique<ScientificIntLiteralExpr>(location, value);
@@ -908,12 +981,13 @@ std::unique_ptr<ScientificIntLiteralExpr> Parser::parse_scientific_int_literal_e
     return nullptr;
 }
 
-std::unique_ptr<HexadecimalIntLiteralExpr> Parser::parse_hexadecimal_int_literal_expr()
+auto Parser::parse_hexadecimal_int_literal_expr() -> std::unique_ptr<HexadecimalIntLiteralExpr>
 {
     if (m_tk->is(TokenType::HexNumber))
     {
-        const SourceLocation   location = m_tk->location;
-        const std::string_view value    = m_tk->value;
+        const auto location = m_tk->location;
+        const auto value    = m_tk->value;
+
         advance();
 
         return std::make_unique<HexadecimalIntLiteralExpr>(location, value);
@@ -922,7 +996,7 @@ std::unique_ptr<HexadecimalIntLiteralExpr> Parser::parse_hexadecimal_int_literal
     return nullptr;
 }
 
-std::unique_ptr<ParenExpr> Parser::parse_paren_expr()
+auto Parser::parse_paren_expr() -> std::unique_ptr<ParenExpr>
 {
     PUSH_TK;
 
@@ -931,7 +1005,7 @@ std::unique_ptr<ParenExpr> Parser::parse_paren_expr()
         return nullptr;
     }
 
-    std::unique_ptr<Expr> expr = parse_expr();
+    auto expr = parse_expr();
 
     if (expr == nullptr)
     {
@@ -943,7 +1017,8 @@ std::unique_ptr<ParenExpr> Parser::parse_paren_expr()
     return std::make_unique<ParenExpr>(tk_pusher_.initial_tk()->location, std::move(expr));
 }
 
-std::unique_ptr<TernaryExpr> Parser::parse_ternary_expr(std::unique_ptr<Expr> condition_expr)
+auto Parser::parse_ternary_expr(std::unique_ptr<Expr> condition_expr)
+    -> std::unique_ptr<TernaryExpr>
 {
     assert(condition_expr);
 
@@ -952,11 +1027,11 @@ std::unique_ptr<TernaryExpr> Parser::parse_ternary_expr(std::unique_ptr<Expr> co
         return nullptr;
     }
 
-    std::unique_ptr<Expr> true_expr = parse_expr({}, 0, "true-expression");
+    auto true_expr = parse_expr({}, 0, "true-expression");
 
     consume(TokenType::Colon, true);
 
-    std::unique_ptr<Expr> false_expr = parse_expr({}, 0, "false-expression");
+    auto false_expr = parse_expr({}, 0, "false-expression");
 
     return std::make_unique<TernaryExpr>(condition_expr->location(),
                                          std::move(condition_expr),
@@ -964,17 +1039,17 @@ std::unique_ptr<TernaryExpr> Parser::parse_ternary_expr(std::unique_ptr<Expr> co
                                          std::move(false_expr));
 }
 
-std::unique_ptr<CodeBlock> Parser::parse_code_block()
+auto Parser::parse_code_block() -> std::unique_ptr<CodeBlock>
 {
-    const SourceLocation location = m_tk->location;
+    const auto location = m_tk->location;
 
     consume(TokenType::LeftBrace, true, "expected a code block");
 
-    CodeBlock::StmtsType stmts;
+    auto stmts = CodeBlock::StmtsType{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
-        std::unique_ptr<Stmt> stmt = parse_stmt();
+        auto stmt = parse_stmt();
 
         if (stmt == nullptr)
         {
@@ -989,15 +1064,15 @@ std::unique_ptr<CodeBlock> Parser::parse_code_block()
     return std::make_unique<CodeBlock>(location, std::move(stmts));
 }
 
-const Type& Parser::parse_type()
+auto Parser::parse_type() -> const Type&
 {
-    const SourceLocation   location       = m_tk->location;
-    const std::string_view base_type_name = consume_identifier();
+    const auto location       = m_tk->location;
+    const auto base_type_name = consume_identifier();
 
     if (consume(TokenType::LeftBracket, false))
     {
         // Array type
-        std::unique_ptr<Expr> size_expr = parse_expr();
+        auto size_expr = parse_expr();
 
         if (size_expr == nullptr)
         {
@@ -1012,9 +1087,10 @@ const Type& Parser::parse_type()
     return *m_type_cache.create_unresolved_type(location, base_type_name);
 }
 
-const Token& Parser::next_tk() const
+auto Parser::next_tk() const -> const Token&
 {
     assert(m_tk + 1 < m_tokens.end());
+
     return *(m_tk + 1);
 }
 
@@ -1031,15 +1107,16 @@ void Parser::expect_identifier() const
     }
 }
 
-std::string_view Parser::consume_identifier()
+auto Parser::consume_identifier() -> std::string_view
 {
     expect_identifier();
     const auto tk = m_tk;
     advance();
+
     return tk->value;
 }
 
-bool Parser::consume_keyword(std::string_view str, bool must_exist)
+auto Parser::consume_keyword(std::string_view str, bool must_exist) -> bool
 {
     if (m_tk->is(TokenType::Keyword) && m_tk->value == str)
     {
@@ -1055,13 +1132,13 @@ bool Parser::consume_keyword(std::string_view str, bool must_exist)
     return false;
 }
 
-bool Parser::consume(TokenType type, bool must_exist, std::string_view msg)
+auto Parser::consume(TokenType type, bool must_exist, std::string_view msg) -> bool
 {
     if (!m_tk->is(type))
     {
         if (must_exist)
         {
-            const SourceLocation error_location =
+            const auto error_location =
                 m_tk->is(TokenType::EndOfFile) ? m_tk_stack.back()->location : m_tk->location;
 
             if (msg.empty())
@@ -1113,7 +1190,7 @@ Parser::TokenPusher::~TokenPusher() noexcept
     }
 }
 
-Parser::TokenPusher::TokenIterator Parser::TokenPusher::initial_tk() const
+auto Parser::TokenPusher::initial_tk() const -> TokenIterator
 {
     return m_initial_tk;
 }

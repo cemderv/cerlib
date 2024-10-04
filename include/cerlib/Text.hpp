@@ -5,7 +5,7 @@
 #pragma once
 
 #include <cerlib/Drawing.hpp>
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <string_view>
 
 namespace cer

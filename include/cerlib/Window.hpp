@@ -5,7 +5,7 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <functional>
 #include <optional>
 #include <string_view>
@@ -75,7 +75,7 @@ class Window final
      * Gets the optional user-defined ID of the window.
      * The default value is 0.
      */
-    uint32_t id() const;
+    auto id() const -> uint32_t;
 
     /**
      * Sets the optional user-defined ID of the window.
@@ -90,43 +90,43 @@ class Window final
      * Gets the width of the window, in logical units.
      * To obtain the window's client width in pixels, use width_px().
      */
-    float width() const;
+    auto width() const -> float;
 
     /**
      * Gets the height of the window, in logical units.
      * To obtain the window's client height in pixels, use height_px().
      */
-    float height() const;
+    auto height() const -> float;
 
     /**
      * Gets the size of the window, in logical units.
      */
-    Vector2 size() const;
+    auto size() const -> Vector2;
 
     /**
      * Gets the width of the window's client area, in pixels.
      */
-    float width_px() const;
+    auto width_px() const -> float;
 
     /**
      * Gets the height of the window's client area, in pixels.
      */
-    float height_px() const;
+    auto height_px() const -> float;
 
     /**
      * Gets the size of the window's client area, in pixels.
      */
-    Vector2 size_px() const;
+    auto size_px() const -> Vector2;
 
     /**
      * Gets the ratio between logical units and pixels.
      */
-    float pixel_ratio() const;
+    auto pixel_ratio() const -> float;
 
     /**
      * Gets the current title / caption of the window.
      */
-    std::string_view title() const;
+    auto title() const -> std::string_view;
 
     /**
      * Sets the current title / caption of the window.
@@ -230,15 +230,15 @@ class Window final
      * This index can be used in methods defined by the App class to obtain
      * further information about the display.
      */
-    uint32_t display_index() const;
+    auto display_index() const -> uint32_t;
 
-    uint32_t sync_interval() const;
+    auto sync_interval() const -> uint32_t;
 
     void set_sync_interval(uint32_t value);
 
     void set_clear_color(std::optional<Color> value);
 
-    std::optional<Color> clear_color() const;
+    auto clear_color() const -> std::optional<Color>;
 
     /**
      * Shows a native message box.

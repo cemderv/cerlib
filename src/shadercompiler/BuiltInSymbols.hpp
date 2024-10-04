@@ -6,7 +6,7 @@
 
 #include "shadercompiler/Decl.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 #include <gsl/pointers>
 #include <memory>
 #include <span>
@@ -70,37 +70,37 @@ class BuiltInSymbols final
 
     BuiltInSymbols(BuiltInSymbols&&) noexcept;
 
-    BuiltInSymbols& operator=(BuiltInSymbols&&) noexcept;
+    auto operator=(BuiltInSymbols&&) noexcept -> BuiltInSymbols&;
 
     ~BuiltInSymbols() noexcept;
 
-    bool contains(const Decl& symbol) const;
+    auto contains(const Decl& symbol) const -> bool;
 
-    bool is_general_image_sampling_function(const Decl& symbol) const;
+    auto is_general_image_sampling_function(const Decl& symbol) const -> bool;
 
-    bool is_non_mipmapped_image_sampling_function(const Decl& symbol) const;
+    auto is_non_mipmapped_image_sampling_function(const Decl& symbol) const -> bool;
 
-    bool is_mipmapped_image_sampling_function(const Decl& symbol) const;
+    auto is_mipmapped_image_sampling_function(const Decl& symbol) const -> bool;
 
-    bool accepts_implicitly_cast_arguments(const FunctionDecl& function) const;
+    auto accepts_implicitly_cast_arguments(const FunctionDecl& function) const -> bool;
 
-    bool is_float_ctor(const Decl& symbol) const;
+    auto is_float_ctor(const Decl& symbol) const -> bool;
 
-    bool is_int_ctor(const Decl& symbol) const;
+    auto is_int_ctor(const Decl& symbol) const -> bool;
 
-    bool is_uint_ctor(const Decl& symbol) const;
+    auto is_uint_ctor(const Decl& symbol) const -> bool;
 
-    bool is_some_vector_ctor(const Decl& symbol) const;
+    auto is_some_vector_ctor(const Decl& symbol) const -> bool;
 
-    bool is_vector2_ctor(const Decl& symbol) const;
+    auto is_vector2_ctor(const Decl& symbol) const -> bool;
 
-    bool is_vector3_ctor(const Decl& symbol) const;
+    auto is_vector3_ctor(const Decl& symbol) const -> bool;
 
-    bool is_vector4_ctor(const Decl& symbol) const;
+    auto is_vector4_ctor(const Decl& symbol) const -> bool;
 
-    bool is_some_intrinsic_function(const Decl& symbol) const;
+    auto is_some_intrinsic_function(const Decl& symbol) const -> bool;
 
-    bool is_vector_field_access(const Decl& symbol) const;
+    auto is_vector_field_access(const Decl& symbol) const -> bool;
 
     // clang-tidy is complaining about public member variables, which is fine.
     // In this case, we know what we're doing and are treating these variables as
@@ -187,7 +187,7 @@ class BuiltInSymbols final
 
     // NOLINTEND
 
-    std::span<const gsl::not_null<Decl*>> all_decls() const
+    auto all_decls() const -> std::span<const gsl::not_null<Decl*>>
     {
         return m_all;
     }
@@ -201,6 +201,6 @@ class BuiltInSymbols final
 
     void add_system_value(std::unique_ptr<Decl>& var, std::string_view name, const Type& type);
 
-    SmallVector<gsl::not_null<Decl*>, 132> m_all;
+    inplace_vector<gsl::not_null<Decl*>, 132> m_all;
 };
 } // namespace cer::shadercompiler

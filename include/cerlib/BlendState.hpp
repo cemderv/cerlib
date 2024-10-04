@@ -5,7 +5,7 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -27,14 +27,14 @@ enum class ColorWriteMask
     All   = Red | Green | Blue | Alpha, /**< Allow writes to all RGBA channels. */
 };
 
-static ColorWriteMask operator&(ColorWriteMask lhs, ColorWriteMask rhs)
+static auto operator&(ColorWriteMask lhs, ColorWriteMask rhs) -> ColorWriteMask
 {
-    return static_cast<ColorWriteMask>(static_cast<int>(lhs) & static_cast<int>(rhs));
+    return ColorWriteMask(int(lhs) & int(rhs));
 }
 
-static ColorWriteMask operator|(ColorWriteMask lhs, ColorWriteMask rhs)
+static auto operator|(ColorWriteMask lhs, ColorWriteMask rhs) -> ColorWriteMask
 {
-    return static_cast<ColorWriteMask>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return ColorWriteMask(int(lhs) | int(rhs));
 }
 
 /**
@@ -139,33 +139,33 @@ struct BlendState
      * Gets a blend state with alpha-blending disabled.
      * The source color overwrites the destination color.
      */
-    static constexpr BlendState opaque();
+    static constexpr auto opaque() -> BlendState;
 
     /**
      * Gets a blend state with alpha-blending enabled.
      * The state assumes that the RGB channels have been premultiplied with the alpha
      * channel.
      */
-    static constexpr BlendState alpha_blend();
+    static constexpr auto alpha_blend() -> BlendState;
 
     /**
      * A blend state with alpha-blending enabled.
      * The state assumes that the RGB channels haven't been premultiplied with the alpha
      * channel.
      */
-    static constexpr BlendState non_premultiplied();
+    static constexpr auto non_premultiplied() -> BlendState;
 
     /**
      * Gets a blend state with alpha-blending enabled.
      * The source color is added onto the destination color.
      */
-    static constexpr BlendState additive();
+    static constexpr auto additive() -> BlendState;
 
     /** Default comparison */
-    bool operator==(const BlendState&) const = default;
+    auto operator==(const BlendState&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const BlendState&) const = default;
+    auto operator!=(const BlendState&) const -> bool = default;
 
     /** If true, the state allows alpha blending. */
     bool blending_enabled = false;
@@ -195,7 +195,7 @@ struct BlendState
     ColorWriteMask color_write_mask = ColorWriteMask::All;
 };
 
-constexpr BlendState BlendState::opaque()
+constexpr auto BlendState::opaque() -> BlendState
 {
     return {
         .blending_enabled = false,
@@ -207,7 +207,7 @@ constexpr BlendState BlendState::opaque()
     };
 };
 
-constexpr BlendState BlendState::alpha_blend()
+constexpr auto BlendState::alpha_blend() -> BlendState
 {
     return {
         .blending_enabled = true,
@@ -219,7 +219,7 @@ constexpr BlendState BlendState::alpha_blend()
     };
 };
 
-constexpr BlendState BlendState::non_premultiplied()
+constexpr auto BlendState::non_premultiplied() -> BlendState
 {
     return {
         .blending_enabled = true,
@@ -231,7 +231,7 @@ constexpr BlendState BlendState::non_premultiplied()
     };
 };
 
-constexpr BlendState BlendState::additive()
+constexpr auto BlendState::additive() -> BlendState
 {
     return {
         .blending_enabled = true,

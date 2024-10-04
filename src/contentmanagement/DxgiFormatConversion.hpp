@@ -140,5 +140,5 @@ enum DXGI_FORMAT : uint32_t
 };
 #endif
 
-std::optional<ImageFormat> from_dxgi_format(DXGI_FORMAT dxgi_format);
+auto from_dxgi_format(DXGI_FORMAT dxgi_format) -> std::optional<ImageFormat>;
 } // namespace cer

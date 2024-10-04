@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/Vector2.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -20,7 +20,7 @@ enum class MouseButton;
  *
  * @ingroup Input
  */
-bool is_key_down(Key key);
+auto is_key_down(Key key) -> bool;
 
 /**
  * Gets a value indicating whether a specific key is currently released.
@@ -29,7 +29,7 @@ bool is_key_down(Key key);
  *
  * @ingroup Input
  */
-bool is_key_up(Key key);
+auto is_key_up(Key key) -> bool;
 
 /**
  * Gets a value indicating whether a specific key was released during the current
@@ -39,7 +39,7 @@ bool is_key_up(Key key);
  *
  * @ingroup Input
  */
-bool was_key_just_pressed(Key key);
+auto was_key_just_pressed(Key key) -> bool;
 
 /**
  * Gets a value indicating whether a specific key was pressed during the current
@@ -49,7 +49,7 @@ bool was_key_just_pressed(Key key);
  *
  * @ingroup Input
  */
-bool was_key_just_released(Key key);
+auto was_key_just_released(Key key) -> bool;
 
 /**
  * Gets a value indicating whether a specific mouse button is currently pressed.
@@ -58,7 +58,7 @@ bool was_key_just_released(Key key);
  *
  * @ingroup Input
  */
-bool is_mouse_button_down(MouseButton button);
+auto is_mouse_button_down(MouseButton button) -> bool;
 
 /**
  * Gets a value indicating whether a specific mouse button is currently released.
@@ -67,7 +67,7 @@ bool is_mouse_button_down(MouseButton button);
  *
  * @ingroup Input
  */
-bool is_mouse_button_up(MouseButton button);
+auto is_mouse_button_up(MouseButton button) -> bool;
 
 /**
  * Gets the current mouse position within the currently focused window.
@@ -75,7 +75,7 @@ bool is_mouse_button_up(MouseButton button);
  *
  * @ingroup Input
  */
-Vector2 current_mouse_position();
+auto current_mouse_position() -> Vector2;
 
 /**
  * Gets the amount of mouse movement within the currently focused window since
@@ -83,12 +83,12 @@ Vector2 current_mouse_position();
  *
  * @ingroup Input
  */
-Vector2 current_mouse_position_delta();
+auto current_mouse_position_delta() -> Vector2;
 
 /**
  * Gets the amount of mouse wheel movement since the last game tick.
  *
  * @ingroup Input
  */
-Vector2 current_mouse_wheel_delta();
+auto current_mouse_wheel_delta() -> Vector2;
 } // namespace cer

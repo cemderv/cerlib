@@ -48,20 +48,22 @@ class GraphicsDevice
 
     void end_imgui_frame(const Window& window);
 
-    gsl::not_null<ShaderImpl*> demand_create_shader(std::string_view                  name,
-                                                    std::string_view                  source_code,
-                                                    std::span<const std::string_view> defines);
+    auto demand_create_shader(std::string_view                  name,
+                              std::string_view                  source_code,
+                              std::span<const std::string_view> defines)
+        -> gsl::not_null<ShaderImpl*>;
 
-    virtual gsl::not_null<ImageImpl*> create_canvas(const Window& window,
-                                                    uint32_t      width,
-                                                    uint32_t      height,
-                                                    ImageFormat   format) = 0;
+    virtual auto create_canvas(const Window& window,
+                               uint32_t      width,
+                               uint32_t      height,
+                               ImageFormat   format) -> gsl::not_null<ImageImpl*> = 0;
 
-    virtual gsl::not_null<ImageImpl*> create_image(uint32_t                   width,
-                                                   uint32_t                   height,
-                                                   ImageFormat                format,
-                                                   uint32_t                   mipmap_count,
-                                                   const Image::DataCallback& data_callback) = 0;
+    virtual auto create_image(uint32_t                   width,
+                              uint32_t                   height,
+                              ImageFormat                format,
+                              uint32_t                   mipmap_count,
+                              const Image::DataCallback& data_callback)
+        -> gsl::not_null<ImageImpl*> = 0;
 
     void notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource);
 
@@ -69,9 +71,9 @@ class GraphicsDevice
 
     virtual void notify_user_shader_destroyed(gsl::not_null<ShaderImpl*> resource);
 
-    const std::vector<gsl::not_null<GraphicsResourceImpl*>>& all_resources() const;
+    auto all_resources() const -> const std::vector<gsl::not_null<GraphicsResourceImpl*>>&;
 
-    const Image& current_canvas() const;
+    auto current_canvas() const -> const Image&;
 
     void set_canvas(const Image& canvas, bool force);
 
@@ -79,7 +81,7 @@ class GraphicsDevice
 
     void set_transformation(const Matrix& transformation);
 
-    const Shader& current_sprite_shader() const;
+    auto current_sprite_shader() const -> const Shader&;
 
     void set_sprite_shader(const Shader& pixel_shader);
 
@@ -103,9 +105,9 @@ class GraphicsDevice
 
     void draw_text(const Text& text, Vector2 position, const Color& color);
 
-    FrameStats frame_stats() const;
+    auto frame_stats() const -> FrameStats;
 
-    Vector2 current_canvas_size() const;
+    auto current_canvas_size() const -> Vector2;
 
     virtual void read_canvas_data_into(const Image& canvas,
                                        uint32_t     x,
@@ -117,8 +119,9 @@ class GraphicsDevice
   protected:
     void post_init(std::unique_ptr<SpriteBatch> sprite_batch);
 
-    virtual std::unique_ptr<ShaderImpl> create_native_user_shader(
-        std::string_view native_code, ShaderImpl::ParameterList parameters) = 0;
+    virtual auto create_native_user_shader(std::string_view          native_code,
+                                           ShaderImpl::ParameterList parameters)
+        -> std::unique_ptr<ShaderImpl> = 0;
 
     virtual void on_start_frame(const Window& window) = 0;
 
@@ -132,9 +135,9 @@ class GraphicsDevice
 
     virtual void on_set_scissor_rects(std::span<const Rectangle> scissor_rects) = 0;
 
-    const Window& current_window() const;
+    auto current_window() const -> const Window&;
 
-    gsl::not_null<FrameStats*> frame_stats_ptr();
+    auto frame_stats_ptr() -> gsl::not_null<FrameStats*>;
 
   private:
     enum class Category
@@ -146,7 +149,7 @@ class GraphicsDevice
 
     void flush_draw_calls();
 
-    static Matrix compute_viewport_transformation(const Rectangle& viewport);
+    static auto compute_viewport_transformation(const Rectangle& viewport) -> Matrix;
 
     void compute_combined_transformation();
 

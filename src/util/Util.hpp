@@ -31,7 +31,7 @@
             m_impl->add_ref();                                                                     \
         }                                                                                          \
     }                                                                                              \
-    class_name& class_name::operator=(const class_name& copy_from)                                 \
+    auto class_name::operator=(const class_name& copy_from) -> class_name&                         \
     {                                                                                              \
         if (std::addressof(copy_from) != this)                                                     \
         {                                                                                          \
@@ -55,7 +55,7 @@
     {                                                                                              \
         move_from.m_impl = nullptr;                                                                \
     }                                                                                              \
-    class_name& class_name::operator=(class_name&& move_from) noexcept                             \
+    auto class_name::operator=(class_name&& move_from) noexcept -> class_name&                     \
     {                                                                                              \
         if (std::addressof(move_from) != this)                                                     \
         {                                                                                          \
@@ -167,5 +167,31 @@ static Iterator binary_find(Iterator begin, Iterator end, T value)
     }
 
     return end;
+}
+
+template <typename T>
+void remove_duplicates_but_keep_order(T& container)
+{
+    auto i = size_t(0);
+
+    while (i != container.size())
+    {
+        auto j = i;
+        ++j;
+
+        while (j != container.size())
+        {
+            if (container.at(j) == container.at(i))
+            {
+                container.erase(container.begin() + j);
+            }
+            else
+            {
+                ++j;
+            }
+        }
+
+        ++i;
+    }
 }
 } // namespace cer::details

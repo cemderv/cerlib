@@ -21,13 +21,13 @@ class ASTOptimizer
     void optimize(AST& ast);
 
   private:
-    bool remove_unused_functions(AST& ast) const;
+    auto remove_unused_functions(AST& ast) const -> bool;
 
-    bool remove_unused_structs(AST& ast) const;
+    auto remove_unused_structs(AST& ast) const -> bool;
 
-    bool optimize_block(CodeBlock* block);
+    auto optimize_block(CodeBlock* block) -> bool;
 
-    static bool remove_unused_variables(CodeBlock* block);
+    static auto remove_unused_variables(CodeBlock* block) -> bool;
 
     std::unordered_map<const CodeBlock*, TempVarNameGen> m_code_block_name_gens{};
 };

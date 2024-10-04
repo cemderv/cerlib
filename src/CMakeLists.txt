@@ -42,7 +42,6 @@ set(cerlib_public_files
   cerlib/ToString.hpp
   cerlib/Tween.hpp
   cerlib/Vector2.hpp
-  cerlib/Export.hpp
   cerlib/Vector3.hpp
   cerlib/Vector4.hpp
   cerlib/Version.hpp

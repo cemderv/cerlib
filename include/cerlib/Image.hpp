@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
-#include <cerlib/Export.hpp>
 #include <cerlib/GraphicsResource.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <functional>
 #include <optional>
 #include <span>
@@ -149,37 +149,37 @@ class Image : public GraphicsResource
     explicit Image(uint32_t width, uint32_t height, ImageFormat format, const Window& window);
 
     /** Gets a value indicating whether the image is a canvas. */
-    bool is_canvas() const;
+    auto is_canvas() const -> bool;
 
     /** Gets the width of the image, in pixels. */
-    uint32_t width() const;
+    auto width() const -> uint32_t;
 
     /** Gets the height of the image, in pixels. */
-    uint32_t height() const;
+    auto height() const -> uint32_t;
 
     /** Gets the width of the image, in pixels. */
-    float widthf() const;
+    auto widthf() const -> float;
 
     /** Gets the height of the image, in pixels. */
-    float heightf() const;
+    auto heightf() const -> float;
 
     /** Gets the size of the image as a 2D vector, in pixels. */
-    Vector2 size() const;
+    auto size() const -> Vector2;
 
     /** Gets the underlying pixel format of the image. */
-    ImageFormat format() const;
+    auto format() const -> ImageFormat;
 
     /** Gets the number of mipmaps in the image. */
-    uint32_t mipmap_count() const;
+    auto mipmap_count() const -> uint32_t;
 
     /** Gets the clear color of the image when it is set as a canvas. */
-    std::optional<Color> canvas_clear_color() const;
+    auto canvas_clear_color() const -> std::optional<Color>;
 
     /** Sets the clear color of the image when it is set as a canvas. */
     void set_canvas_clear_color(std::optional<Color> value);
 
     /** Gets the size of the image's pixel data, in bytes. */
-    uint32_t size_in_bytes() const;
+    auto size_in_bytes() const -> uint32_t;
 };
 
 /**
@@ -189,7 +189,7 @@ class Image : public GraphicsResource
  *
  * @ingroup Graphics
  */
-uint32_t image_format_bits_per_pixel(ImageFormat format);
+auto image_format_bits_per_pixel(ImageFormat format) -> uint32_t;
 
 /**
  * Gets the number of bytes in a row of a specific image format.
@@ -199,7 +199,7 @@ uint32_t image_format_bits_per_pixel(ImageFormat format);
  *
  * @ingroup Graphics
  */
-uint32_t image_row_pitch(uint32_t width, ImageFormat format);
+auto image_row_pitch(uint32_t width, ImageFormat format) -> uint32_t;
 
 /**
  * Gets the number of bytes in a slice of a specific image format.
@@ -210,7 +210,7 @@ uint32_t image_row_pitch(uint32_t width, ImageFormat format);
  *
  * @ingroup Graphics
  */
-uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format);
+auto image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format) -> uint32_t;
 
 /**
  * Gets the name of an image format.
@@ -219,5 +219,5 @@ uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format);
  *
  * @ingroup Graphics
  */
-std::string_view image_format_name(ImageFormat format);
+auto image_format_name(ImageFormat format) -> std::string_view;
 } // namespace cer

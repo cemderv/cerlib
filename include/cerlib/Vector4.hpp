@@ -66,10 +66,10 @@ struct Vector4
     constexpr Vector4(Vector3 xyz, float w);
 
     /** Default comparison */
-    bool operator==(const Vector4&) const = default;
+    auto operator==(const Vector4&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Vector4&) const = default;
+    auto operator!=(const Vector4&) const -> bool = default;
 
     /** The value of the X component */
     float x = 0.0f;
@@ -89,28 +89,28 @@ struct Vector4
  *
  * @ingroup Math
  */
-float length(const Vector4& vector);
+auto length(const Vector4& vector) -> float;
 
 /**
  * Calculates the squared length of a 4D vector.
  *
  * @ingroup Math
  */
-float length_squared(const Vector4& vector);
+auto length_squared(const Vector4& vector) -> float;
 
 /**
  * Calculates the normalized version of a 4D vector.
  *
  * @ingroup Math
  */
-Vector4 normalize(const Vector4& vector);
+auto normalize(const Vector4& vector) -> Vector4;
 
 /**
  * Calculates the rounded version of a 4D vector.
  *
  * @ingroup Math
  */
-Vector4 round(const Vector4& vector);
+auto round(const Vector4& vector) -> Vector4;
 
 /**
  * Calculates a version of a 4D vector with all of its components being their
@@ -118,35 +118,35 @@ Vector4 round(const Vector4& vector);
  *
  * @ingroup Math
  */
-Vector4 abs(const Vector4& vector);
+auto abs(const Vector4& vector) -> Vector4;
 
 /**
  * Calculates the sine of a 4D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector4 sin(const Vector4& vector);
+auto sin(const Vector4& vector) -> Vector4;
 
 /**
  * Calculates the cosine of a 4D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector4 cos(const Vector4& vector);
+auto cos(const Vector4& vector) -> Vector4;
 
 /**
  * Calculates the tangent of a 4D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector4 tan(const Vector4& vector);
+auto tan(const Vector4& vector) -> Vector4;
 
 /**
  * Calculates the value of `base` raised to the power `exp` (4D vector).
  *
  * @ingroup Math
  */
-Vector4 pow(const Vector4& x, const Vector4& y);
+auto pow(const Vector4& x, const Vector4& y) -> Vector4;
 
 /**
  * Rounds a 4D vector's elements down to their nearest integers.
@@ -155,7 +155,7 @@ Vector4 pow(const Vector4& x, const Vector4& y);
  *
  * @ingroup Math
  */
-Vector4 floor(const Vector4& value);
+auto floor(const Vector4& value) -> Vector4;
 
 /**
  * Rounds a 4D vector's elements up to their nearest integers.
@@ -164,21 +164,21 @@ Vector4 floor(const Vector4& value);
  *
  * @ingroup Math
  */
-Vector4 ceiling(const Vector4& value);
+auto ceiling(const Vector4& value) -> Vector4;
 
 /**
  * Calculates a random 4D vector.
  *
  * @ingroup Math
  */
-Vector4 random_vector4(float min = 0.0f, float max = 1.0f);
+auto random_vector4(float min = 0.0f, float max = 1.0f) -> Vector4;
 
 /**
  * Calculates the dot product of two 4D vectors.
  *
  * @ingroup Math
  */
-float dot(const Vector4& lhs, const Vector4& rhs);
+auto dot(const Vector4& lhs, const Vector4& rhs) -> float;
 
 /**
  * Calculates the distance between two 4D vectors.
@@ -188,7 +188,7 @@ float dot(const Vector4& lhs, const Vector4& rhs);
  *
  * @ingroup Math
  */
-float distance(const Vector4& lhs, const Vector4& rhs);
+auto distance(const Vector4& lhs, const Vector4& rhs) -> float;
 
 /**
  * Calculates the squared distance between two 4D vectors.
@@ -198,7 +198,7 @@ float distance(const Vector4& lhs, const Vector4& rhs);
  *
  * @ingroup Math
  */
-float distance_squared(const Vector4& lhs, const Vector4& rhs);
+auto distance_squared(const Vector4& lhs, const Vector4& rhs) -> float;
 
 /**
  * Performs a linear interpolation from one 4D vector to another.
@@ -209,7 +209,7 @@ float distance_squared(const Vector4& lhs, const Vector4& rhs);
  *
  * @ingroup Math
  */
-Vector4 lerp(const Vector4& start, const Vector4& end, float t);
+auto lerp(const Vector4& start, const Vector4& end, float t) -> Vector4;
 
 /**
  * Performs a smoothstep interpolation from one 4D vector to another.
@@ -220,7 +220,7 @@ Vector4 lerp(const Vector4& start, const Vector4& end, float t);
  *
  * @ingroup Math
  */
-Vector4 smoothstep(const Vector4& start, const Vector4& end, float t);
+auto smoothstep(const Vector4& start, const Vector4& end, float t) -> Vector4;
 
 /**
  * Clamps a 4D vector into a specific range.
@@ -231,7 +231,7 @@ Vector4 smoothstep(const Vector4& start, const Vector4& end, float t);
  *
  * @ingroup Math
  */
-Vector4 clamp(const Vector4& value, const Vector4& min, const Vector4& max);
+auto clamp(const Vector4& value, const Vector4& min, const Vector4& max) -> Vector4;
 
 /**
  * Gets a value indicating whether all components of a 4D vector are exactly
@@ -241,7 +241,7 @@ Vector4 clamp(const Vector4& value, const Vector4& min, const Vector4& max);
  *
  * @ingroup Math
  */
-bool is_zero(const Vector4& vector);
+auto is_zero(const Vector4& vector) -> bool;
 
 /**
  * Gets a value indicating whether two 4D vectors are equal within a specific
@@ -254,9 +254,9 @@ bool is_zero(const Vector4& vector);
  *
  * @ingroup Math
  */
-static bool are_equal_within(const Vector4& lhs,
+static auto are_equal_within(const Vector4& lhs,
                              const Vector4& rhs,
-                             float          threshold = std::numeric_limits<float>::epsilon());
+                             float threshold = std::numeric_limits<float>::epsilon()) -> bool;
 
 /**
  * Calculates the smaller of two 4D vectors.
@@ -272,7 +272,7 @@ static bool are_equal_within(const Vector4& lhs,
  *
  * @ingroup Math
  */
-Vector4 min(const Vector4& lhs, const Vector4& rhs);
+auto min(const Vector4& lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Calculates the larger of two 4D vectors.
@@ -288,137 +288,137 @@ Vector4 min(const Vector4& lhs, const Vector4& rhs);
  *
  * @ingroup Math
  */
-Vector4 max(const Vector4& lhs, const Vector4& rhs);
+auto max(const Vector4& lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Adds two 4D vectors.
  *
  * @ingroup Math
  */
-Vector4 operator+(const Vector4& lhs, const Vector4& rhs);
+auto operator+(const Vector4& lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Subtracts two 4D vectors.
  *
  * @ingroup Math
  */
-Vector4 operator-(const Vector4& lhs, const Vector4& rhs);
+auto operator-(const Vector4& lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Multiplies two 4D vectors.
  *
  * @ingroup Math
  */
-Vector4 operator*(const Vector4& lhs, const Vector4& rhs);
+auto operator*(const Vector4& lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Multiplies a 4D vector by a number.
  *
  * @ingroup Math
  */
-Vector4 operator*(const Vector4& lhs, float rhs);
+auto operator*(const Vector4& lhs, float rhs) -> Vector4;
 
 /**
  * Multiplies a 4D vector by a number.
  *
  * @ingroup Math
  */
-Vector4 operator*(float lhs, const Vector4& rhs);
+auto operator*(float lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Divides a 4D vector by another 4D vector.
  *
  * @ingroup Math
  */
-Vector4 operator/(const Vector4& lhs, const Vector4& rhs);
+auto operator/(const Vector4& lhs, const Vector4& rhs) -> Vector4;
 
 /**
  * Divides a 4D vector by a number.
  *
  * @ingroup Math
  */
-Vector4 operator/(const Vector4& lhs, float rhs);
+auto operator/(const Vector4& lhs, float rhs) -> Vector4;
 
 /**
  * Adds a 4D vector to another 4D vector.
  *
  * @ingroup Math
  */
-Vector4& operator+=(Vector4& vector, const Vector4& rhs);
+auto operator+=(Vector4& vector, const Vector4& rhs) -> Vector4&;
 
 /**
  * Subtracts a 4D vector from another 4D vector.
  *
  * @ingroup Math
  */
-Vector4& operator-=(Vector4& vector, const Vector4& rhs);
+auto operator-=(Vector4& vector, const Vector4& rhs) -> Vector4&;
 
 /**
  * Scales a 4D vector by another 4D vector.
  *
  * @ingroup Math
  */
-Vector4& operator*=(Vector4& vector, const Vector4& rhs);
+auto operator*=(Vector4& vector, const Vector4& rhs) -> Vector4&;
 
 /**
  * Scales a 4D vector by a number.
  *
  * @ingroup Math
  */
-Vector4& operator*=(Vector4& vector, float rhs);
+auto operator*=(Vector4& vector, float rhs) -> Vector4&;
 
 /**
  * Divides a 4D vector by another 4D vector.
  *
  * @ingroup Math
  */
-Vector4& operator/=(Vector4& vector, const Vector4& rhs);
+auto operator/=(Vector4& vector, const Vector4& rhs) -> Vector4&;
 
 /**
  * Divides a 4D vector by a number.
  *
  * @ingroup Math
  */
-Vector4& operator/=(Vector4& vector, float rhs);
+auto operator/=(Vector4& vector, float rhs) -> Vector4&;
 
 /**
  * Negates a 4D vector.
  *
  * @ingroup Math
  */
-Vector4 operator-(const Vector4& value);
+auto operator-(const Vector4& value) -> Vector4;
 } // namespace cer
 
 template <>
 class std::numeric_limits<cer::Vector4>
 {
   public:
-    static constexpr cer::Vector4 min() noexcept
+    static constexpr auto min() noexcept -> cer::Vector4
     {
         return cer::Vector4(std::numeric_limits<float>::min());
     }
 
-    static constexpr cer::Vector4 lowest() noexcept
+    static constexpr auto lowest() noexcept -> cer::Vector4
     {
         return cer::Vector4(std::numeric_limits<float>::lowest());
     }
 
-    static constexpr cer::Vector4 max() noexcept
+    static constexpr auto max() noexcept -> cer::Vector4
     {
         return cer::Vector4(std::numeric_limits<float>::max());
     }
 
-    static constexpr cer::Vector4 epsilon() noexcept
+    static constexpr auto epsilon() noexcept -> cer::Vector4
     {
         return cer::Vector4(std::numeric_limits<float>::epsilon());
     }
 
-    static constexpr cer::Vector4 round_error() noexcept
+    static constexpr auto round_error() noexcept -> cer::Vector4
     {
         return cer::Vector4(std::numeric_limits<float>::round_error());
     }
 
-    static constexpr cer::Vector4 infinity() noexcept
+    static constexpr auto infinity() noexcept -> cer::Vector4
     {
         return cer::Vector4(std::numeric_limits<float>::infinity());
     }
@@ -473,23 +473,23 @@ constexpr Vector4::Vector4(Vector3 xyz, float w)
 }
 } // namespace cer
 
-inline float cer::length(const Vector4& vector)
+inline auto cer::length(const Vector4& vector) -> float
 {
     return std::sqrt(length_squared(vector));
 }
 
-inline float cer::length_squared(const Vector4& vector)
+inline auto cer::length_squared(const Vector4& vector) -> float
 {
     return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z + vector.w * vector.w;
 }
 
-inline cer::Vector4 cer::normalize(const Vector4& vector)
+inline auto cer::normalize(const Vector4& vector) -> cer::Vector4
 {
     const float len = length(vector);
     return is_zero(len) ? Vector4() : vector / len;
 }
 
-inline cer::Vector4 cer::round(const Vector4& vector)
+inline auto cer::round(const Vector4& vector) -> cer::Vector4
 {
     return {
         round(vector.x),
@@ -499,7 +499,7 @@ inline cer::Vector4 cer::round(const Vector4& vector)
     };
 }
 
-inline cer::Vector4 cer::abs(const Vector4& vector)
+inline auto cer::abs(const Vector4& vector) -> cer::Vector4
 {
     return {
         abs(vector.x),
@@ -509,7 +509,7 @@ inline cer::Vector4 cer::abs(const Vector4& vector)
     };
 }
 
-inline cer::Vector4 cer::sin(const Vector4& vector)
+inline auto cer::sin(const Vector4& vector) -> cer::Vector4
 {
     return {
         sin(vector.x),
@@ -519,7 +519,7 @@ inline cer::Vector4 cer::sin(const Vector4& vector)
     };
 }
 
-inline cer::Vector4 cer::cos(const Vector4& vector)
+inline auto cer::cos(const Vector4& vector) -> cer::Vector4
 {
     return {
         cos(vector.x),
@@ -529,7 +529,7 @@ inline cer::Vector4 cer::cos(const Vector4& vector)
     };
 }
 
-inline cer::Vector4 cer::tan(const Vector4& vector)
+inline auto cer::tan(const Vector4& vector) -> cer::Vector4
 {
     return {
         tan(vector.x),
@@ -539,7 +539,7 @@ inline cer::Vector4 cer::tan(const Vector4& vector)
     };
 }
 
-inline cer::Vector4 cer::pow(const Vector4& x, const Vector4& y)
+inline auto cer::pow(const Vector4& x, const Vector4& y) -> cer::Vector4
 {
     return {
         pow(x.x, y.x),
@@ -549,7 +549,7 @@ inline cer::Vector4 cer::pow(const Vector4& x, const Vector4& y)
     };
 }
 
-inline cer::Vector4 cer::floor(const Vector4& value)
+inline auto cer::floor(const Vector4& value) -> cer::Vector4
 {
     return {
         floor(value.x),
@@ -559,7 +559,7 @@ inline cer::Vector4 cer::floor(const Vector4& value)
     };
 }
 
-inline cer::Vector4 cer::ceiling(const Vector4& value)
+inline auto cer::ceiling(const Vector4& value) -> cer::Vector4
 {
     return {
         ceiling(value.x),
@@ -569,7 +569,7 @@ inline cer::Vector4 cer::ceiling(const Vector4& value)
     };
 }
 
-inline cer::Vector4 cer::random_vector4(float min, float max)
+inline auto cer::random_vector4(float min, float max) -> cer::Vector4
 {
     return {
         random_float(min, max),
@@ -579,22 +579,22 @@ inline cer::Vector4 cer::random_vector4(float min, float max)
     };
 }
 
-inline float cer::dot(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::dot(const Vector4& lhs, const Vector4& rhs) -> float
 {
-    return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+    return (lhs.x * rhs.x) + (lhs.y * rhs.y) + (lhs.z * rhs.z) + (lhs.w * rhs.w);
 }
 
-inline float cer::distance(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::distance(const Vector4& lhs, const Vector4& rhs) -> float
 {
     return length(rhs - lhs);
 }
 
-inline float cer::distance_squared(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::distance_squared(const Vector4& lhs, const Vector4& rhs) -> float
 {
     return length_squared(rhs - lhs);
 }
 
-inline cer::Vector4 cer::lerp(const Vector4& start, const Vector4& end, float t)
+inline auto cer::lerp(const Vector4& start, const Vector4& end, float t) -> cer::Vector4
 {
     return {
         lerp(start.x, end.x, t),
@@ -604,7 +604,7 @@ inline cer::Vector4 cer::lerp(const Vector4& start, const Vector4& end, float t)
     };
 }
 
-inline cer::Vector4 cer::smoothstep(const Vector4& start, const Vector4& end, float t)
+inline auto cer::smoothstep(const Vector4& start, const Vector4& end, float t) -> cer::Vector4
 {
     return {
         smoothstep(start.x, end.x, t),
@@ -614,7 +614,7 @@ inline cer::Vector4 cer::smoothstep(const Vector4& start, const Vector4& end, fl
     };
 }
 
-inline cer::Vector4 cer::clamp(const Vector4& value, const Vector4& min, const Vector4& max)
+inline auto cer::clamp(const Vector4& value, const Vector4& min, const Vector4& max) -> cer::Vector4
 {
     return {
         clamp(value.x, min.x, max.x),
@@ -624,18 +624,18 @@ inline cer::Vector4 cer::clamp(const Vector4& value, const Vector4& min, const V
     };
 }
 
-inline bool cer::is_zero(const Vector4& vector)
+inline auto cer::is_zero(const Vector4& vector) -> bool
 {
     return is_zero(vector.x) && is_zero(vector.y) && is_zero(vector.z) && is_zero(vector.w);
 }
 
-inline bool cer::are_equal_within(const Vector4& lhs, const Vector4& rhs, float threshold)
+inline auto cer::are_equal_within(const Vector4& lhs, const Vector4& rhs, float threshold) -> bool
 {
     return equal_within(lhs.x, rhs.x, threshold) && equal_within(lhs.y, rhs.y, threshold) &&
            equal_within(lhs.z, rhs.z, threshold) && equal_within(lhs.w, rhs.w, threshold);
 }
 
-inline cer::Vector4 cer::min(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::min(const Vector4& lhs, const Vector4& rhs) -> cer::Vector4
 {
     return {
         min(lhs.x, rhs.x),
@@ -645,7 +645,7 @@ inline cer::Vector4 cer::min(const Vector4& lhs, const Vector4& rhs)
     };
 }
 
-inline cer::Vector4 cer::max(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::max(const Vector4& lhs, const Vector4& rhs) -> cer::Vector4
 {
     return {
         max(lhs.x, rhs.x),
@@ -655,7 +655,7 @@ inline cer::Vector4 cer::max(const Vector4& lhs, const Vector4& rhs)
     };
 }
 
-inline cer::Vector4& cer::operator+=(Vector4& vector, const Vector4& rhs)
+inline auto cer::operator+=(Vector4& vector, const Vector4& rhs) -> cer::Vector4&
 {
     vector.x += rhs.x;
     vector.y += rhs.y;
@@ -664,7 +664,7 @@ inline cer::Vector4& cer::operator+=(Vector4& vector, const Vector4& rhs)
     return vector;
 }
 
-inline cer::Vector4& cer::operator-=(Vector4& vector, const Vector4& rhs)
+inline auto cer::operator-=(Vector4& vector, const Vector4& rhs) -> cer::Vector4&
 {
     vector.x -= rhs.x;
     vector.y -= rhs.y;
@@ -673,7 +673,7 @@ inline cer::Vector4& cer::operator-=(Vector4& vector, const Vector4& rhs)
     return vector;
 }
 
-inline cer::Vector4& cer::operator*=(Vector4& vector, const Vector4& rhs)
+inline auto cer::operator*=(Vector4& vector, const Vector4& rhs) -> cer::Vector4&
 {
     vector.x *= rhs.x;
     vector.y *= rhs.y;
@@ -682,7 +682,7 @@ inline cer::Vector4& cer::operator*=(Vector4& vector, const Vector4& rhs)
     return vector;
 }
 
-inline cer::Vector4& cer::operator*=(Vector4& vector, float rhs)
+inline auto cer::operator*=(Vector4& vector, float rhs) -> cer::Vector4&
 {
     vector.x *= rhs;
     vector.y *= rhs;
@@ -691,7 +691,7 @@ inline cer::Vector4& cer::operator*=(Vector4& vector, float rhs)
     return vector;
 }
 
-inline cer::Vector4& cer::operator/=(Vector4& vector, const Vector4& rhs)
+inline auto cer::operator/=(Vector4& vector, const Vector4& rhs) -> cer::Vector4&
 {
     vector.x /= rhs.x;
     vector.y /= rhs.y;
@@ -700,7 +700,7 @@ inline cer::Vector4& cer::operator/=(Vector4& vector, const Vector4& rhs)
     return vector;
 }
 
-inline cer::Vector4& cer::operator/=(Vector4& vector, float rhs)
+inline auto cer::operator/=(Vector4& vector, float rhs) -> cer::Vector4&
 {
     vector.x /= rhs;
     vector.y /= rhs;
@@ -709,7 +709,7 @@ inline cer::Vector4& cer::operator/=(Vector4& vector, float rhs)
     return vector;
 }
 
-inline cer::Vector4 cer::operator-(const Vector4& value)
+inline auto cer::operator-(const Vector4& value) -> cer::Vector4
 {
     return {
         -value.x,
@@ -719,7 +719,7 @@ inline cer::Vector4 cer::operator-(const Vector4& value)
     };
 }
 
-inline cer::Vector4 cer::operator+(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::operator+(const Vector4& lhs, const Vector4& rhs) -> cer::Vector4
 {
     return {
         lhs.x + rhs.x,
@@ -729,7 +729,7 @@ inline cer::Vector4 cer::operator+(const Vector4& lhs, const Vector4& rhs)
     };
 }
 
-inline cer::Vector4 cer::operator-(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::operator-(const Vector4& lhs, const Vector4& rhs) -> cer::Vector4
 {
     return {
         lhs.x - rhs.x,
@@ -739,7 +739,7 @@ inline cer::Vector4 cer::operator-(const Vector4& lhs, const Vector4& rhs)
     };
 }
 
-inline cer::Vector4 cer::operator*(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::operator*(const Vector4& lhs, const Vector4& rhs) -> cer::Vector4
 {
     return {
         lhs.x * rhs.x,
@@ -749,7 +749,7 @@ inline cer::Vector4 cer::operator*(const Vector4& lhs, const Vector4& rhs)
     };
 }
 
-inline cer::Vector4 cer::operator*(const Vector4& lhs, float rhs)
+inline auto cer::operator*(const Vector4& lhs, float rhs) -> cer::Vector4
 {
     return {
         lhs.x * rhs,
@@ -759,12 +759,12 @@ inline cer::Vector4 cer::operator*(const Vector4& lhs, float rhs)
     };
 }
 
-inline cer::Vector4 cer::operator*(float lhs, const Vector4& rhs)
+inline auto cer::operator*(float lhs, const Vector4& rhs) -> cer::Vector4
 {
     return rhs * lhs;
 }
 
-inline cer::Vector4 cer::operator/(const Vector4& lhs, const Vector4& rhs)
+inline auto cer::operator/(const Vector4& lhs, const Vector4& rhs) -> cer::Vector4
 {
     return {
         lhs.x / rhs.x,
@@ -774,7 +774,7 @@ inline cer::Vector4 cer::operator/(const Vector4& lhs, const Vector4& rhs)
     };
 }
 
-inline cer::Vector4 cer::operator/(const Vector4& lhs, float rhs)
+inline auto cer::operator/(const Vector4& lhs, float rhs) -> cer::Vector4
 {
     return {
         lhs.x / rhs,

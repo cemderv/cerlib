@@ -6,7 +6,7 @@
 
 #include "util/Platform.hpp"
 
-cer::TargetPlatform cer::target_platform()
+auto cer::target_platform() -> TargetPlatform
 {
 #if CERLIB_PLATFORM_WINDOWS
     return TargetPlatform::Windows;
@@ -23,7 +23,8 @@ cer::TargetPlatform cer::target_platform()
 #endif
 }
 
-bool cer::is_desktop_platform()
+// NOLINTBEGIN
+auto cer::is_desktop_platform() -> bool
 {
     const TargetPlatform platform = target_platform();
 
@@ -31,9 +32,10 @@ bool cer::is_desktop_platform()
            platform == TargetPlatform::Linux;
 }
 
-bool cer::is_mobile_platform()
+auto cer::is_mobile_platform() -> bool
 {
     const TargetPlatform platform = target_platform();
 
     return platform == TargetPlatform::Android;
 }
+// NOLINTEND

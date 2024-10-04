@@ -9,26 +9,26 @@
 namespace cer::shadercompiler
 {
 template <typename To, typename From>
-static bool isa(const From* f)
+static auto isa(const From* f) -> bool
 {
     return dynamic_cast<const To*>(f) != nullptr;
 }
 
 template <typename To, typename From>
-static bool isa(const From& f)
+static auto isa(const From& f) -> bool
     requires(!std::is_pointer_v<From>)
 {
     return dynamic_cast<const To*>(&f) != nullptr;
 }
 
 template <typename U, typename T>
-static U* asa(T* obj)
+static auto asa(T* obj) -> U*
 {
     return isa<U>(obj) ? static_cast<U*>(obj) : nullptr;
 }
 
 template <typename U, typename T>
-static const U* asa(const T* obj)
+static auto asa(const T* obj) -> const U*
 {
     return isa<U>(obj) ? static_cast<const U*>(obj) : nullptr;
 }

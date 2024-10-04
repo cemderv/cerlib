@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <span>
 #include <string>
 
@@ -12,5 +12,5 @@ namespace cer::util
 {
 void trim_string(std::string& str, std::span<const char> chars = {{' '}});
 
-std::string string_trimmed(std::string_view str, std::span<const char> chars = {{' '}});
+auto string_trimmed(std::string_view str, std::span<const char> chars = {{' '}}) -> std::string;
 } // namespace cer::util

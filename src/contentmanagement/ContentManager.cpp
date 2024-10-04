@@ -22,7 +22,7 @@
 
 namespace cer::details
 {
-static std::string root_directory()
+static auto root_directory() -> std::string
 {
 #if defined(_WIN32)
     TCHAR szFileName[MAX_PATH];
@@ -66,7 +66,7 @@ ContentManager::~ContentManager() noexcept
 {
     log_verbose("Destroying ContentManager");
 
-    for (ReferenceToLoadedAsset& asset : m_loaded_assets | std::views::values)
+    for (auto& asset : m_loaded_assets | std::views::values)
     {
         // Prevent the asset from calling ContentManager::notify_asset_destroyed()
         // when its destroyed later. Because by then, the ContentManager is gone.
@@ -74,26 +74,25 @@ ContentManager::~ContentManager() noexcept
         // NOTE: This is ugly, but necessary until pattern matching is available.
         // std::visit is not noexcept and therefore not allowed in this destructor.
 
-        if (ImageImpl** image = std::get_if<ImageImpl*>(&asset))
+        if (auto** image = std::get_if<ImageImpl*>(&asset))
         {
             (*image)->m_content_manager = nullptr;
         }
-        else if (SoundImpl** sound = std::get_if<SoundImpl*>(&asset))
+        else if (auto** sound = std::get_if<SoundImpl*>(&asset))
         {
             (*sound)->m_content_manager = nullptr;
         }
-        else if (ShaderImpl** shader = std::get_if<ShaderImpl*>(&asset))
+        else if (auto** shader = std::get_if<ShaderImpl*>(&asset))
         {
             (*shader)->m_content_manager = nullptr;
         }
-        else if (FontImpl** font = std::get_if<FontImpl*>(&asset))
+        else if (auto** font = std::get_if<FontImpl*>(&asset))
         {
             (*font)->m_content_manager = nullptr;
         }
-        else if (const CustomAsset* custom_asset = std::get_if<CustomAsset>(&asset))
+        else if (const auto* custom_asset = std::get_if<CustomAsset>(&asset))
         {
-            if (const std::shared_ptr<Asset> asset_shared = custom_asset->lock();
-                asset_shared != nullptr)
+            if (const auto asset_shared = custom_asset->lock(); asset_shared != nullptr)
             {
                 asset_shared->m_content_manager = nullptr;
             }
@@ -120,14 +119,14 @@ void ContentManager::set_asset_loading_prefix(std::string_view prefix)
     }
 }
 
-std::string_view ContentManager::asset_loading_prefix() const
+auto ContentManager::asset_loading_prefix() const -> std::string_view
 {
     return m_asset_loading_prefix;
 }
 
-Image ContentManager::load_image(std::string_view name, bool generate_mipmaps)
+auto ContentManager::load_image(std::string_view name, bool generate_mipmaps) -> Image
 {
-    std::string key{name};
+    auto key = std::string{name};
 
     if (generate_mipmaps)
     {
@@ -135,19 +134,19 @@ Image ContentManager::load_image(std::string_view name, bool generate_mipmaps)
     }
 
     return lazy_load<Image, ImageImpl>(key, name, [generate_mipmaps](std::string_view name) {
-        const AssetData data{filesystem::load_asset_data(name)};
-        Image           image{data.as_span(), generate_mipmaps};
+        const auto data  = AssetData{filesystem::load_asset_data(name)};
+        auto       image = Image{data.as_span(), generate_mipmaps};
         image.set_name(name);
         return image;
     });
 }
 
-static std::string build_shader_key(std::string_view                  asset_name,
-                                    std::span<const std::string_view> defines)
+static auto build_shader_key(std::string_view asset_name, std::span<const std::string_view> defines)
+    -> std::string
 {
-    std::string key{asset_name};
+    auto key = std::string{asset_name};
 
-    for (const std::string_view& define : defines)
+    for (const auto& define : defines)
     {
         key += '|';
         key += define;
@@ -156,30 +155,30 @@ static std::string build_shader_key(std::string_view                  asset_name
     return key;
 }
 
-Shader ContentManager::load_shader(std::string_view name, std::span<const std::string_view> defines)
+auto ContentManager::load_shader(std::string_view name, std::span<const std::string_view> defines)
+    -> Shader
 {
-    const std::string key{build_shader_key(name, defines)};
+    const auto key = std::string{build_shader_key(name, defines)};
 
     return lazy_load<Shader, ShaderImpl>(key, name, [defines](std::string_view full_name) {
-        const AssetData data = filesystem::load_asset_data(full_name);
-        Shader          shader{full_name, data.as_string_view(), defines};
+        const auto data   = filesystem::load_asset_data(full_name);
+        auto       shader = Shader{full_name, data.as_string_view(), defines};
         shader.set_name(full_name);
         return shader;
     });
 }
 
-Font ContentManager::load_font(std::string_view name)
+auto ContentManager::load_font(std::string_view name) -> Font
 {
     return lazy_load<Font, FontImpl>(name, name, [](std::string_view full_name) {
-        AssetData data = filesystem::load_asset_data(full_name);
-
-        std::unique_ptr<FontImpl> font_impl = std::make_unique<FontImpl>(std::move(data.data));
+        auto data      = filesystem::load_asset_data(full_name);
+        auto font_impl = std::make_unique<FontImpl>(std::move(data.data));
 
         return Font{font_impl.release()};
     });
 }
 
-Sound ContentManager::load_sound(std::string_view name)
+auto ContentManager::load_sound(std::string_view name) -> Sound
 {
     return lazy_load<Sound, SoundImpl>(name, name, [](std::string_view full_name) {
         if (!is_audio_device_initialized())
@@ -187,19 +186,19 @@ Sound ContentManager::load_sound(std::string_view name)
             return Sound{};
         }
 
-        AudioDevice& audio_device = GameImpl::instance().audio_device();
-        AssetData    data         = filesystem::load_asset_data(full_name);
+        auto& audio_device = GameImpl::instance().audio_device();
+        auto  data         = filesystem::load_asset_data(full_name);
 
-        std::unique_ptr<SoundImpl> sound_impl =
+        auto sound_impl =
             std::make_unique<SoundImpl>(audio_device.soloud(), std::move(data.data), data.size);
 
         return Sound{sound_impl.release()};
     });
 }
 
-std::shared_ptr<Asset> ContentManager::load_custom_asset(std::string_view type_id,
-                                                         std::string_view name,
-                                                         const std::any&  extra_info)
+auto ContentManager::load_custom_asset(std::string_view type_id,
+                                       std::string_view name,
+                                       const std::any&  extra_info) -> std::shared_ptr<Asset>
 {
     if (type_id.empty())
     {
@@ -216,13 +215,13 @@ std::shared_ptr<Asset> ContentManager::load_custom_asset(std::string_view type_i
     // Loading a custom asset requires special handling, as the types are not Object
     // based. They are reference-counted using shared_ptr instead.
 
-    const std::string key_str{m_asset_loading_prefix + std::string{name}};
+    const auto key_str = std::string{m_asset_loading_prefix + std::string{name}};
 
     const auto it_asset = m_loaded_assets.find(key_str);
 
     if (it_asset != m_loaded_assets.cend())
     {
-        const CustomAsset* weak_ptr = std::get_if<CustomAsset>(&it_asset->second);
+        const auto* weak_ptr = std::get_if<CustomAsset>(&it_asset->second);
 
         if (weak_ptr == nullptr)
         {
@@ -243,8 +242,8 @@ std::shared_ptr<Asset> ContentManager::load_custom_asset(std::string_view type_i
     }
 
     // Load the asset as a shared_ptr.
-    AssetData              file_data = filesystem::load_asset_data(key_str);
-    std::shared_ptr<Asset> asset     = it_load_func->second(name, file_data, extra_info);
+    auto file_data = filesystem::load_asset_data(key_str);
+    auto asset     = it_load_func->second(name, file_data, extra_info);
 
     asset->m_content_manager = this;
     asset->m_asset_name      = key_str;
@@ -258,7 +257,7 @@ std::shared_ptr<Asset> ContentManager::load_custom_asset(std::string_view type_i
     return asset;
 }
 
-bool ContentManager::is_loaded(std::string_view name) const
+auto ContentManager::is_loaded(std::string_view name) const -> bool
 {
     return m_loaded_assets.contains(name);
 }
@@ -272,7 +271,7 @@ void ContentManager::register_custom_asset_loader(std::string_view    type_id,
                               type_id);
     }
 
-    m_custom_asset_loaders.emplace(std::string(type_id), std::move(load_func));
+    m_custom_asset_loaders.emplace(std::string{type_id}, std::move(load_func));
 
     log_verbose("[ContentManager] Registered custom asset loader for type ID '{}'", type_id);
 }

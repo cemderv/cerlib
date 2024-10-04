@@ -8,7 +8,7 @@
 
 namespace cer
 {
-std::optional<ImageFormat> from_dxgi_format(DXGI_FORMAT dxgi_format)
+auto from_dxgi_format(DXGI_FORMAT dxgi_format) -> std::optional<ImageFormat>
 {
     switch (dxgi_format)
     {

@@ -20,10 +20,10 @@ struct TessellatedVertex
     float   stroke_width{};
     Color   color;
 
-    static std::span<const VertexElement> elements();
+    static auto elements() -> std::span<const VertexElement>;
 };
 
-constexpr uint32_t draw_line_vertex_count()
+constexpr auto draw_line_vertex_count() -> uint32_t
 {
     return 6;
 }

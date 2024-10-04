@@ -38,14 +38,17 @@ void AST::verify(SemaContext& context, Scope& global_scope)
     m_is_verified = true;
 }
 
-bool AST::is_top_level_symbol(const SemaContext& context, const Decl& symbol) const
+auto AST::is_top_level_symbol(const SemaContext& context, const Decl& symbol) const -> bool
 {
     if (isa<StructFieldDecl>(&symbol))
     {
         return false;
     }
 
-    if (std::ranges::any_of(m_decls, [&symbol](const auto& e) { return e.get() == &symbol; }))
+
+    if (std::ranges::any_of(m_decls, [&symbol](const auto& e) {
+            return e.get() == &symbol;
+        }))
     {
         return true;
     }
@@ -53,41 +56,43 @@ bool AST::is_top_level_symbol(const SemaContext& context, const Decl& symbol) co
     return context.built_in_symbols().contains(symbol);
 }
 
-std::string_view AST::filename() const
+auto AST::filename() const -> std::string_view
 {
     return m_filename;
 }
 
-AST::DeclsType& AST::decls()
+auto AST::decls() -> AST::DeclsType&
 {
     return m_decls;
 }
 
-const AST::DeclsType& AST::decls() const
+auto AST::decls() const -> const AST::DeclsType&
 {
     return m_decls;
 }
 
-bool AST::has_parameters() const
+auto AST::has_parameters() const -> bool
 {
-    return std::ranges::any_of(m_decls,
-                               [](const auto& decl) { return isa<ShaderParamDecl>(decl.get()); });
+    return std::ranges::any_of(m_decls, [](const auto& decl) {
+        return isa<ShaderParamDecl>(decl.get());
+    });
 }
 
-bool AST::is_symbol_accessed_anywhere(const Decl& symbol) const
+auto AST::is_symbol_accessed_anywhere(const Decl& symbol) const -> bool
 {
     return std::ranges::any_of(m_decls, [&symbol](const std::unique_ptr<Decl>& decl) {
-        auto* function = asa<FunctionDecl>(decl.get());
+        const auto* function = asa<FunctionDecl>(decl.get());
+
         return function != nullptr ? function->accesses_symbol(symbol, true) : false;
     });
 }
 
-const StringViewUnorderedSet* AST::user_specified_defines() const
+auto AST::user_specified_defines() const -> const StringViewUnorderedSet*
 {
     return m_user_specified_defines;
 }
 
-bool AST::is_verified() const
+auto AST::is_verified() const -> bool
 {
     return m_is_verified;
 }

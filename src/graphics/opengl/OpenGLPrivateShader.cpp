@@ -19,8 +19,9 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
     if (type == GL_VERTEX_SHADER)
     {
-        constexpr auto str = std::string_view("vsin");
+        constexpr auto str = std::string_view{"vsin"};
         auto           idx = glsl_code.find("in ");
+
         while (idx != std::string::npos)
         {
             const auto semicolon_idx = glsl_code.find(';', idx + str.size());
@@ -41,6 +42,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
             }
 
             attributes.emplace_back(var_name);
+
             idx = glsl_code.find("in ", semicolon_idx);
         }
     }
@@ -54,7 +56,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
         CER_THROW_RUNTIME_ERROR_STR("Failed to create the OpenGL shader handle.");
     }
 
-    auto code_strings = SmallVector<std::string_view>();
+    auto code_strings = inplace_vector<std::string_view>{};
 
     // https://en.wikipedia.org/wiki/OpenGL_Shading_Language#Versions
 #ifdef CERLIB_GFX_IS_GLES
@@ -71,8 +73,8 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
     code_strings.push_back(glsl_code);
 
-    auto code_strings_gl        = SmallVector<const GLchar*>();
-    auto code_string_lengths_gl = SmallVector<GLint>();
+    auto code_strings_gl        = inplace_vector<const GLchar*>{};
+    auto code_string_lengths_gl = inplace_vector<GLint>{};
 
     code_strings_gl.reserve(code_strings.size());
     code_string_lengths_gl.reserve(code_strings.size());
@@ -80,7 +82,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
     for (const auto& str : code_strings)
     {
         code_strings_gl.push_back(str.data());
-        code_string_lengths_gl.emplace_back(static_cast<GLint>(str.size()));
+        code_string_lengths_gl.emplace_back(GLint(str.size()));
     }
 
 #ifdef CERLIB_ENABLE_VERBOSE_LOGGING
@@ -97,9 +99,10 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 #endif
 
     GL_CALL(glShaderSource(gl_handle,
-                           static_cast<GLsizei>(code_strings.size()),
+                           GLsizei(code_strings.size()),
                            code_strings_gl.data(),
                            code_string_lengths_gl.data()));
+
     GL_CALL(glCompileShader(gl_handle));
 
     GLint compile_status = 0;
@@ -108,12 +111,12 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
     if (compile_status != GL_TRUE)
     {
         const auto buffer = std::make_unique<GLchar[]>(shader_log_max_length);
-        GLsizei    length = shader_log_max_length;
+        auto       length = shader_log_max_length;
 
         GL_CALL(glGetShaderInfoLog(gl_handle, shader_log_max_length, &length, buffer.get()));
 
-        const auto msg = std::string_view(reinterpret_cast<const char*>(buffer.get()),
-                                          static_cast<size_t>(length));
+        const auto msg = std::string_view{reinterpret_cast<const char*>(buffer.get()),
+                                          size_t(length)};
 
         CER_THROW_RUNTIME_ERROR("Failed to compile the generated OpenGL shader: {}", msg);
     }
@@ -129,7 +132,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(OpenGLPrivateShader&& other) noexcept
     other.gl_handle = 0;
 }
 
-OpenGLPrivateShader& OpenGLPrivateShader::operator=(OpenGLPrivateShader&& other) noexcept
+auto OpenGLPrivateShader::operator=(OpenGLPrivateShader&& other) noexcept -> OpenGLPrivateShader&
 {
     if (&other != this)
     {

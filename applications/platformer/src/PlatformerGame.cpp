@@ -12,16 +12,16 @@ PlatformerGame::PlatformerGame()
                            0,
                            {},
                            {},
-                           static_cast<uint32_t>(resolution.x),
-                           static_cast<uint32_t>(resolution.y)};
+                           uint32_t(resolution.x),
+                           uint32_t(resolution.y)};
 
     m_window.set_resizable(false);
     m_window.set_clear_color(cer::green);
 
     if (m_window.pixel_ratio() != 1.0f)
     {
-        m_canvas = cer::Image{static_cast<uint32_t>(resolution.x),
-                              static_cast<uint32_t>(resolution.y),
+        m_canvas = cer::Image{uint32_t(resolution.x),
+                              uint32_t(resolution.y),
                               cer::ImageFormat::R8G8B8A8_UNorm,
                               m_window};
     }
@@ -143,8 +143,8 @@ void PlatformerGame::draw_hud()
     // player is running out of time.
     const double time_remaining = m_level->time_remaining();
 
-    const std::string minutes_string = std::to_string(static_cast<int>(time_remaining / 60.0));
-    std::string seconds_string = std::to_string(static_cast<int>(std::fmod(time_remaining, 60)));
+    const std::string minutes_string = std::to_string(int(time_remaining / 60.0));
+    std::string seconds_string = std::to_string(int(std::fmod(time_remaining, 60)));
 
     if (seconds_string.size() == 1)
     {
@@ -156,7 +156,7 @@ void PlatformerGame::draw_hud()
     cer::Color time_color;
 
     if (time_remaining > warning_time || m_level->is_exit_reached() ||
-        (static_cast<int>(time_remaining) % 2) == 0)
+        (int(time_remaining) % 2) == 0)
     {
         time_color = cer::yellow;
     }

@@ -6,7 +6,7 @@
 
 #include "shadercompiler/Type.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include "util/inplace_vector.hpp"
 
 namespace cer::shadercompiler
 {
@@ -21,11 +21,12 @@ class BinOpTable final
 
     BinOpTable(BinOpTable&&) noexcept = default;
 
-    BinOpTable& operator=(BinOpTable&&) noexcept = default;
+    auto operator=(BinOpTable&&) noexcept -> BinOpTable& = default;
 
     ~BinOpTable() noexcept = default;
 
-    const Type* bin_op_result_type(BinOpKind op_kind, const Type& lhs, const Type& rhs) const;
+    auto bin_op_result_type(BinOpKind op_kind, const Type& lhs, const Type& rhs) const
+        -> const Type*;
 
   private:
     struct Entry // NOLINT(*-pro-type-member-init)
@@ -41,6 +42,6 @@ class BinOpTable final
         gsl::not_null<const Type*> result;
     };
 
-    SmallVector<Entry, 128> m_entries;
+    inplace_vector<Entry, 128> m_entries;
 };
 } // namespace cer::shadercompiler

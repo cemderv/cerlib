@@ -37,7 +37,7 @@ void Decl::verify(SemaContext& context, Scope& scope)
     }
 }
 
-bool Decl::is_verified() const
+auto Decl::is_verified() const -> bool
 {
     return m_is_verified;
 }
@@ -51,17 +51,17 @@ Decl::Decl(const SourceLocation& location, std::string_view name)
     assert(!m_name.empty());
 }
 
-const SourceLocation& Decl::location() const
+auto Decl::location() const -> const SourceLocation&
 {
     return m_location;
 }
 
-std::string_view Decl::name() const
+auto Decl::name() const -> std::string_view
 {
     return m_name;
 }
 
-const Type& Decl::type() const
+auto Decl::type() const -> const Type&
 {
     return *m_type;
 }
@@ -83,7 +83,7 @@ void StructFieldDecl::on_verify(SemaContext& context, Scope& scope)
         context.verify_symbol_name(location(), name());
     }
 
-    const Type& type = this->type().resolve(context, scope);
+    const auto& type = this->type().resolve(context, scope);
 
     set_type(type);
 
@@ -115,15 +115,15 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
 
     if (scope.contains_type_only_here(name()))
     {
-        throw Error(Decl::location(), "type '{}' is already defined");
+        throw Error{Decl::location(), "type '{}' is already defined"};
     }
 
-    for (const std::unique_ptr<StructFieldDecl>& field : m_fields)
+    for (const auto& field : m_fields)
     {
-        if (const StructFieldDecl* other_field = find_field(field->name());
+        if (const auto* other_field = find_field(field->name());
             other_field != nullptr && other_field != field.get())
         {
-            throw Error(field->location(), "duplicate struct field '{}'", field->name());
+            throw Error{field->location(), "duplicate struct field '{}'", field->name()};
         }
 
         field->verify(context, scope);
@@ -133,7 +133,7 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
 
     m_ctor = std::make_unique<FunctionDecl>(Decl::location(),
                                             name(),
-                                            SmallVector<std::unique_ptr<FunctionParamDecl>, 4>(),
+                                            inplace_vector<std::unique_ptr<FunctionParamDecl>, 4>{},
                                             *this,
                                             nullptr,
                                             /*is_struct_ctor:*/ true);
@@ -143,26 +143,28 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
     set_type(*this);
 }
 
-StructFieldDecl* StructDecl::find_field(std::string_view name) const
+auto StructDecl::find_field(std::string_view name) const -> StructFieldDecl*
 {
-    const auto it =
-        std::ranges::find_if(m_fields, [name](const auto& field) { return field->name() == name; });
+    const auto it = std::ranges::find_if(m_fields, [name](const auto& field) {
+        return field->name() == name;
+    });
 
     return it != m_fields.cend() ? it->get() : nullptr;
 }
 
-bool StructDecl::has_field(std::string_view name) const
+auto StructDecl::has_field(std::string_view name) const -> bool
 {
-    return std::ranges::find_if(m_fields, [name](const auto& e) { return e->name() == name; }) !=
-           m_fields.cend();
+    return std::ranges::find_if(m_fields, [name](const auto& e) {
+               return e->name() == name;
+           }) != m_fields.cend();
 }
 
-std::string_view StructDecl::type_name() const
+auto StructDecl::type_name() const -> std::string_view
 {
     return name();
 }
 
-const Type& StructDecl::resolve(SemaContext& context, Scope& scope) const
+auto StructDecl::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
     CERLIB_UNUSED(context);
     CERLIB_UNUSED(scope);
@@ -170,34 +172,35 @@ const Type& StructDecl::resolve(SemaContext& context, Scope& scope) const
     return *this;
 }
 
-std::span<const std::unique_ptr<StructFieldDecl>> StructDecl::get_fields() const
+auto StructDecl::get_fields() const -> std::span<const std::unique_ptr<StructFieldDecl>>
 {
     return m_fields;
 }
 
-Decl* StructDecl::find_member_symbol(const SemaContext& context, std::string_view name) const
+auto StructDecl::find_member_symbol(const SemaContext& context, std::string_view name) const
+    -> Decl*
 {
     CERLIB_UNUSED(context);
 
     return find_field(name);
 }
 
-FunctionDecl* StructDecl::ctor() const
+auto StructDecl::ctor() const -> FunctionDecl*
 {
     return m_ctor.get();
 }
 
-bool StructDecl::is_built_in() const
+auto StructDecl::is_built_in() const -> bool
 {
     return m_is_built_in;
 }
 
-FunctionDecl::FunctionDecl(const SourceLocation&                              location,
-                           std::string_view                                   name,
-                           SmallVector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                           const Type&                                        return_type,
-                           std::unique_ptr<CodeBlock>                         body,
-                           bool                                               is_struct_ctor)
+FunctionDecl::FunctionDecl(const SourceLocation&                                 location,
+                           std::string_view                                      name,
+                           inplace_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
+                           const Type&                                           return_type,
+                           std::unique_ptr<CodeBlock>                            body,
+                           bool                                                  is_struct_ctor)
     : Decl(location, name)
     , m_kind(FunctionKind::Normal)
     , m_parameters(std::move(parameters))
@@ -227,7 +230,7 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
         throw Error{location(), "symbol '{}' is already defined", name()};
     }
 
-    for (const std::unique_ptr<FunctionParamDecl>& param : m_parameters)
+    for (const auto& param : m_parameters)
     {
         if (!is_built_in)
         {
@@ -237,7 +240,7 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
         param->verify(context, scope);
     }
 
-    const Type& return_type = type().resolve(context, scope);
+    const auto& return_type = type().resolve(context, scope);
 
     set_type(return_type);
 
@@ -250,12 +253,12 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
                     "struct type"};
     }
 
-    std::vector<gsl::not_null<const Decl*>> extra_symbols;
+    auto extra_symbols = std::vector<gsl::not_null<const Decl*>>{};
 
     if (is_shader())
     {
         // Add extra symbols here if the function is a shader.
-        const BuiltInSymbols& built_ins = context.built_in_symbols();
+        const auto& built_ins = context.built_in_symbols();
 
         extra_symbols.emplace_back(built_ins.sprite_image.get());
         extra_symbols.emplace_back(built_ins.sprite_color.get());
@@ -273,7 +276,7 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
             throw Error{location(), "function (= {}) must contain at least one statement", name()};
         }
 
-        for (const std::unique_ptr<FunctionParamDecl>& param : m_parameters)
+        for (const auto& param : m_parameters)
         {
             scope.remove_symbol(*param);
         }
@@ -309,7 +312,7 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
         // Verify shader stage input parameter (if any)
         if (!m_parameters.empty())
         {
-            const std::unique_ptr<FunctionParamDecl>& param = m_parameters.front();
+            const auto& param = m_parameters.front();
 
             if (m_parameters.size() > 1)
             {
@@ -346,21 +349,23 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
     if (m_body)
     {
         // Check actual returned type with the function's declared return type.
-        const ReturnStmt* return_stmt = asa<ReturnStmt>(m_body->stmts().back().get());
+        const auto* return_stmt = asa<ReturnStmt>(m_body->stmts().back().get());
 
         if (return_stmt == nullptr)
         {
-            throw Error(m_body->stmts().back()->location(), "expected a return statement");
+            throw Error{m_body->stmts().back()->location(), "expected a return statement"};
         }
 
         SemaContext::verify_type_assignment(type(), return_stmt->expr(), false);
     }
 }
 
-FunctionParamDecl* FunctionDecl::find_parameter(std::string_view name) const
+auto FunctionDecl::find_parameter(std::string_view name) const -> FunctionParamDecl*
 {
-    if (const auto it =
-            std::ranges::find_if(m_parameters, [name](const auto& e) { return e->name() == name; });
+    if (const auto it = std::ranges::find_if(m_parameters,
+                                             [name](const auto& e) {
+                                                 return e->name() == name;
+                                             });
         it != m_parameters.cend())
     {
         return it->get();
@@ -369,61 +374,62 @@ FunctionParamDecl* FunctionDecl::find_parameter(std::string_view name) const
     return nullptr;
 }
 
-std::span<const std::unique_ptr<FunctionParamDecl>> FunctionDecl::parameters() const
+auto FunctionDecl::parameters() const -> std::span<const std::unique_ptr<FunctionParamDecl>>
 {
     return m_parameters;
 }
 
-bool FunctionDecl::accesses_symbol(const Decl& symbol, bool transitive) const
+auto FunctionDecl::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
-    if (const StructDecl* strct = asa<StructDecl>(&symbol))
+    if (const auto* strct = asa<StructDecl>(&symbol))
     {
         if (&type() == strct)
         {
             return true;
         }
 
-        if (std::ranges::any_of(m_parameters,
-                                [strct](const auto& param) { return &param->type() == strct; }))
+        if (std::ranges::any_of(m_parameters, [strct](const auto& param) {
+                return &param->type() == strct;
+            }))
         {
             return true;
         }
     }
 
-    return m_body && m_body->accesses_symbol(symbol, transitive);
+    return m_body != nullptr && m_body->accesses_symbol(symbol, transitive);
 }
 
-CodeBlock* FunctionDecl::body()
+auto FunctionDecl::body() -> CodeBlock*
 {
     return m_body.get();
 }
 
-const CodeBlock* FunctionDecl::body() const
+auto FunctionDecl::body() const -> const CodeBlock*
 {
     return m_body.get();
 }
 
-FunctionKind FunctionDecl::kind() const
+auto FunctionDecl::kind() const -> FunctionKind
 {
     return m_kind;
 }
 
-bool FunctionDecl::is(FunctionKind kind) const
+auto FunctionDecl::is(FunctionKind kind) const -> bool
 {
     return this->kind() == kind;
 }
 
-bool FunctionDecl::is_normal_function() const
+auto FunctionDecl::is_normal_function() const -> bool
 {
     return is(FunctionKind::Normal);
 }
 
-bool FunctionDecl::is_shader() const
+auto FunctionDecl::is_shader() const -> bool
 {
     return is(FunctionKind::Shader);
 }
 
-bool FunctionDecl::is_struct_ctor() const
+auto FunctionDecl::is_struct_ctor() const -> bool
 {
     return m_is_struct_ctor;
 }
@@ -449,11 +455,11 @@ FunctionParamDecl::~FunctionParamDecl() noexcept = default;
 
 void FunctionParamDecl::on_verify(SemaContext& context, Scope& scope)
 {
-    const Type& type = this->type().resolve(context, scope);
+    const auto& type = this->type().resolve(context, scope);
 
     set_type(type);
 
-    if (const FunctionDecl* function = scope.current_function();
+    if (const auto* function = scope.current_function();
         function != nullptr && function->body() != nullptr)
     {
         if (type.is_array() || type.is_image_type())
@@ -465,7 +471,7 @@ void FunctionParamDecl::on_verify(SemaContext& context, Scope& scope)
     }
 }
 
-FunctionParamKind FunctionParamDecl::kind() const
+auto FunctionParamDecl::kind() const -> FunctionParamKind
 {
     return m_kind;
 }
@@ -496,7 +502,7 @@ ShaderParamDecl::~ShaderParamDecl() noexcept = default;
 
 void ShaderParamDecl::on_verify(SemaContext& context, Scope& scope)
 {
-    const Type& type = this->type().resolve(context, scope);
+    const auto& type = this->type().resolve(context, scope);
 
     set_type(type);
 
@@ -509,8 +515,7 @@ void ShaderParamDecl::on_verify(SemaContext& context, Scope& scope)
     {
         m_default_value_expr->verify(context, scope);
 
-        const std::any constant_value =
-            m_default_value_expr->evaluate_constant_value(context, scope);
+        const auto constant_value = m_default_value_expr->evaluate_constant_value(context, scope);
 
         if (!constant_value.has_value())
         {
@@ -536,27 +541,27 @@ void ShaderParamDecl::on_verify(SemaContext& context, Scope& scope)
     scope.add_symbol(*this);
 }
 
-bool ShaderParamDecl::is_array() const
+auto ShaderParamDecl::is_array() const -> bool
 {
     assert(is_verified());
     return isa<ArrayType>(type());
 }
 
-uint16_t ShaderParamDecl::array_size() const
+auto ShaderParamDecl::array_size() const -> uint16_t
 {
     assert(is_verified());
 
-    const gsl::not_null array_type{asa<ArrayType>(&type())};
+    const auto array_type = gsl::not_null{asa<ArrayType>(&type())};
 
     return gsl::narrow_cast<uint16_t>(array_type->size());
 }
 
-const Expr* ShaderParamDecl::default_value_expr() const
+auto ShaderParamDecl::default_value_expr() const -> const Expr*
 {
     return m_default_value_expr.get();
 }
 
-const std::any& ShaderParamDecl::default_value() const
+auto ShaderParamDecl::default_value() const -> const std::any&
 {
     return m_default_value;
 }
@@ -600,17 +605,17 @@ void VarDecl::on_verify(SemaContext& context, Scope& scope)
     scope.add_symbol(*this);
 }
 
-bool VarDecl::is_const() const
+auto VarDecl::is_const() const -> bool
 {
     return m_is_const;
 }
 
-bool VarDecl::is_system_value() const
+auto VarDecl::is_system_value() const -> bool
 {
     return m_is_system_value;
 }
 
-const Expr& VarDecl::expr() const
+auto VarDecl::expr() const -> const Expr&
 {
     return *m_expr;
 }

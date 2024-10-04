@@ -51,7 +51,8 @@ void RenderingTestHelper::generate_reference_image(std::string_view      test_na
     cer::save_canvas_to_file(m_canvas, get_reference_image_filename(test_name));
 }
 
-std::string RenderingTestHelper::get_reference_image_filename(std::string_view test_name) const
+auto RenderingTestHelper::get_reference_image_filename(std::string_view test_name) const
+    -> std::string
 {
     return cer_fmt::format("{}/{}.png", REFERENCE_IMAGES_DIR, test_name);
 }

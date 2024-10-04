@@ -5,25 +5,25 @@
 #include "StringUtil.hpp"
 #include <cctype>
 
-std::string cer::details::to_lower_case(std::string_view str)
+auto cer::details::to_lower_case(std::string_view str) -> std::string
 {
-    std::string result{str};
+    auto result = std::string{str};
 
-    for (char& ch : result)
+    for (auto& ch : result)
     {
-        ch = static_cast<char>(std::tolower(ch));
+        ch = char(std::tolower(ch));
     }
 
     return result;
 }
 
-std::string cer::details::to_upper_case(std::string_view str)
+auto cer::details::to_upper_case(std::string_view str) -> std::string
 {
-    std::string result{str};
+    auto result = std::string{str};
 
-    for (char& ch : result)
+    for (auto& ch : result)
     {
-        ch = static_cast<char>(std::toupper(ch));
+        ch = char(std::toupper(ch));
     }
 
     return result;

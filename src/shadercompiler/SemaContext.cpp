@@ -25,26 +25,26 @@ SemaContext::SemaContext(const AST&            ast,
 {
 }
 
-const AST& SemaContext::ast() const
+auto SemaContext::ast() const -> const AST&
 {
     return m_ast;
 }
 
-const BuiltInSymbols& SemaContext::built_in_symbols() const
+auto SemaContext::built_in_symbols() const -> const BuiltInSymbols&
 {
     return m_built_in_symbols;
 }
 
-const BinOpTable& SemaContext::bin_op_table() const
+auto SemaContext::bin_op_table() const -> const BinOpTable&
 {
     return m_bin_op_table;
 }
 
-bool SemaContext::can_assign(const Type& target_type,
+auto SemaContext::can_assign(const Type& target_type,
                              const Expr& rhs,
-                             bool        is_implicit_cast_allowed)
+                             bool        is_implicit_cast_allowed) -> bool
 {
-    const Type& rhs_type = rhs.type();
+    const auto& rhs_type = rhs.type();
 
     if (is_implicit_cast_allowed)
     {
@@ -56,7 +56,7 @@ bool SemaContext::can_assign(const Type& target_type,
                 return true;
             }
 
-            if (const UnaryOpExpr* const unary_op = asa<UnaryOpExpr>(&rhs))
+            if (const auto* unary_op = asa<UnaryOpExpr>(&rhs))
             {
                 if (isa<IntLiteralExpr>(&unary_op->expr()))
                 {
@@ -64,7 +64,7 @@ bool SemaContext::can_assign(const Type& target_type,
                 }
             }
 
-            if (const BinOpExpr* const bin_op = asa<BinOpExpr>(&rhs))
+            if (const auto* bin_op = asa<BinOpExpr>(&rhs))
             {
                 if (isa<IntLiteralExpr>(bin_op->lhs()) && isa<IntLiteralExpr>(bin_op->rhs()))
                 {
@@ -97,24 +97,24 @@ void SemaContext::verify_type_assignment(const Type& target_type,
 
 void SemaContext::verify_symbol_assignment(const Expr& lhs)
 {
-    const Decl* symbol = lhs.symbol();
+    const auto* symbol = lhs.symbol();
 
     if (symbol == nullptr)
     {
         throw Error{lhs.location(), "cannot assign a value to an unnamed value"};
     }
 
-    if (const BinOpExpr* const bin_op = asa<BinOpExpr>(&lhs))
+    if (const auto* bin_op = asa<BinOpExpr>(&lhs))
     {
         symbol = bin_op->lhs().symbol();
     }
-    else if (const SubscriptExpr* const subscript = asa<SubscriptExpr>(&lhs))
+    else if (const auto* subscript = asa<SubscriptExpr>(&lhs))
     {
         throw Error{subscript->location(),
                     "assignment to subscript expressions is not supported yet"};
     }
 
-    if (const VarDecl* const var = asa<VarDecl>(symbol))
+    if (const auto* var = asa<VarDecl>(symbol))
     {
         if (var->is_const())
         {

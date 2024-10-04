@@ -5,9 +5,9 @@
 #pragma once
 
 #include <cerlib/Event.hpp>
-#include <cerlib/Export.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Logging.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -34,10 +34,10 @@ auto run_game_internal() -> void;
 struct DisplayMode
 {
     /** Default comparison */
-    bool operator==(const DisplayMode&) const = default;
+    auto operator==(const DisplayMode&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const DisplayMode&) const = default;
+    auto operator!=(const DisplayMode&) const -> bool = default;
 
     /** If known, the format of the mode */
     std::optional<ImageFormat> format;
@@ -77,10 +77,10 @@ enum class DisplayOrientation
 struct GameTime
 {
     /** Default comparison */
-    bool operator==(const GameTime&) const = default;
+    auto operator==(const GameTime&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const GameTime&) const = default;
+    auto operator!=(const GameTime&) const -> bool = default;
 
     /** The time that has elapsed since the last frame, in fractional seconds */
     double elapsed_time{};
@@ -128,7 +128,7 @@ class Game
     /**
      * Gets the number of displays connected to the game's system.
      */
-    uint32_t display_count();
+    auto display_count() -> uint32_t;
 
     /**
      * Gets the display mode of a specific display.
@@ -137,7 +137,7 @@ class Game
      * @param display_index The index of the display for which to obtain the current
      * display mode.
      */
-    std::optional<DisplayMode> current_display_mode(uint32_t display_index);
+    auto current_display_mode(uint32_t display_index) -> std::optional<DisplayMode>;
 
     /**
      * Gets a list of all supported display modes of a specific display.
@@ -146,18 +146,18 @@ class Game
      * @param display_index The index of the display for which to obtain the display
      * modes.
      */
-    std::vector<DisplayMode> display_modes(uint32_t display_index);
+    auto display_modes(uint32_t display_index) -> std::vector<DisplayMode>;
 
-    float display_content_scale(uint32_t display_index);
+    auto display_content_scale(uint32_t display_index) -> float;
 
-    DisplayOrientation display_orientation(uint32_t display_index);
+    auto display_orientation(uint32_t display_index) -> DisplayOrientation;
 
-    std::vector<Gamepad> gamepads();
+    auto gamepads() -> std::vector<Gamepad>;
 
   protected:
     virtual void load_content();
 
-    virtual bool update(const GameTime& time);
+    virtual auto update(const GameTime& time) -> bool;
 
     virtual void draw(const Window& window);
 
@@ -234,7 +234,7 @@ class Game
  */
 template <typename T, typename... Args>
     requires(std::is_base_of_v<Game, T> && !std::is_same_v<T, Game>)
-[[nodiscard]] int run_game(Args&&... args)
+[[nodiscard]] auto run_game(Args&&... args) -> int
 {
     try
     {

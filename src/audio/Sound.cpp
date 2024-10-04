@@ -18,8 +18,7 @@ Sound::Sound(std::span<const std::byte> data)
 {
     details::AudioDevice& audio_device = details::GameImpl::instance().audio_device();
 
-    std::unique_ptr<details::SoundImpl> impl =
-        std::make_unique<details::SoundImpl>(audio_device.soloud(), data);
+    auto impl = std::make_unique<details::SoundImpl>(audio_device.soloud(), data);
 
     set_impl(*this, impl.release());
 }

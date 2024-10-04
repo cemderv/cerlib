@@ -70,7 +70,7 @@ void GraphicsDevice::start_frame(const Window& window)
     set_canvas({}, true);
     m_current_category = {};
 
-    if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+    if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
     {
         impl->m_is_in_use = true;
     }
@@ -93,7 +93,7 @@ void GraphicsDevice::end_frame(const Window&                window,
     m_current_window = {};
     m_canvas         = {};
 
-    if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+    if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
     {
         impl->m_is_in_use = false;
     }
@@ -109,7 +109,7 @@ void GraphicsDevice::end_imgui_frame(const Window& window)
     on_end_imgui_frame(window);
 }
 
-static ShaderParameterType to_parameter_type(const shadercompiler::Type& type)
+static auto to_parameter_type(const shadercompiler::Type& type) -> ShaderParameterType
 {
     if (&type == &shadercompiler::FloatType::instance())
     {
@@ -195,40 +195,42 @@ static ShaderParameterType to_parameter_type(const shadercompiler::Type& type)
     CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
 }
 
-gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
-    std::string_view name, std::string_view source_code, std::span<const std::string_view> defines)
+auto GraphicsDevice::demand_create_shader(std::string_view                  name,
+                                          std::string_view                  source_code,
+                                          std::span<const std::string_view> defines)
+    -> gsl::not_null<ShaderImpl*>
 {
-    std::vector<shadercompiler::Token> tokens;
+    auto tokens = std::vector<shadercompiler::Token>{};
     do_lexing(source_code, name, true, tokens);
 
-    shadercompiler::TypeCache      type_cache;
-    shadercompiler::BuiltInSymbols built_in_symbols;
-    shadercompiler::BinOpTable     bin_op_table;
-    shadercompiler::Parser         parser{type_cache};
-    shadercompiler::AST::DeclsType decls = parser.parse(tokens);
+    auto type_cache       = shadercompiler::TypeCache{};
+    auto built_in_symbols = shadercompiler::BuiltInSymbols{};
+    auto bin_op_table     = shadercompiler::BinOpTable{};
+    auto parser           = shadercompiler::Parser{type_cache};
+    auto decls            = parser.parse(tokens);
 
-    StringViewUnorderedSet defines_set;
+    auto defines_set = StringViewUnorderedSet{};
 
-    for (const std::string_view& define : defines)
+    for (const auto& define : defines)
     {
         defines_set.insert(define);
     }
 
-    shadercompiler::AST ast{name, std::move(decls), &defines_set};
+    auto ast = shadercompiler::AST{name, std::move(decls), &defines_set};
 
-    shadercompiler::SemaContext context{ast, built_in_symbols, bin_op_table};
-    shadercompiler::Scope       global_scope;
+    auto context      = shadercompiler::SemaContext{ast, built_in_symbols, bin_op_table};
+    auto global_scope = shadercompiler::Scope{};
 
     context.set_allow_forbidden_identifier_prefix(true);
 
-    for (const gsl::not_null<shadercompiler::Decl*>& symbol : built_in_symbols.all_decls())
+    for (const auto& symbol : built_in_symbols.all_decls())
     {
         symbol->verify(context, global_scope);
     }
 
-    for (const gsl::not_null<shadercompiler::Decl*>& symbol : built_in_symbols.all_decls())
+    for (const auto& symbol : built_in_symbols.all_decls())
     {
-        if (shadercompiler::VarDecl* var = asa<shadercompiler::VarDecl>(symbol.get());
+        if (auto* var = asa<shadercompiler::VarDecl>(symbol.get());
             var != nullptr && var->is_system_value())
         {
             global_scope.remove_symbol(*var);
@@ -245,9 +247,9 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
     constexpr bool is_gles = false;
 #endif
 
-    shadercompiler::GLSLShaderGenerator glsl_code_generator{is_gles};
+    auto glsl_code_generator = shadercompiler::GLSLShaderGenerator{is_gles};
 
-    shadercompiler::ShaderGenerationResult code_gen_results =
+    const auto code_gen_results =
         glsl_code_generator.generate(context,
                                      ast,
                                      shadercompiler::naming::shader_entry_point,
@@ -255,13 +257,13 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
 
     log_verbose("Generated OpenGL shader code: {}", code_gen_results.glsl_code);
 
-    ShaderImpl::ParameterList parameters;
+    auto parameters = ShaderImpl::ParameterList{};
     parameters.reserve(code_gen_results.parameters.size());
 
-    for (const shadercompiler::ShaderParamDecl* param : code_gen_results.parameters)
+    for (const auto* param : code_gen_results.parameters)
     {
-        const ShaderParameterType type       = to_parameter_type(param->type());
-        const uint16_t            array_size = param->is_array() ? param->array_size() : 0;
+        const auto type       = to_parameter_type(param->type());
+        const auto array_size = param->is_array() ? param->array_size() : 0u;
 
         const auto calculate_size_in_bytes = [type, array_size] {
             switch (type)
@@ -286,8 +288,8 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
             CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
         };
 
-        const uint16_t size_in_bytes = gsl::narrow_cast<uint16_t>(calculate_size_in_bytes());
-        const bool     is_image      = type == ShaderParameterType::Image;
+        const auto size_in_bytes = gsl::narrow_cast<uint16_t>(calculate_size_in_bytes());
+        const auto is_image      = type == ShaderParameterType::Image;
 
         if (!is_image)
         {
@@ -299,14 +301,14 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
             .type          = type,
             .offset        = /*offset will be determined later:*/ 0,
             .size_in_bytes = size_in_bytes,
-            .array_size    = param->is_array() ? param->array_size() : static_cast<uint16_t>(0),
+            .array_size    = param->is_array() ? param->array_size() : uint16_t(0),
             .is_image      = is_image,
-            .image         = Image(),
+            .image         = {},
             .default_value = param->default_value(),
         });
     }
 
-    gsl::not_null<ShaderImpl*> shader =
+    gsl::not_null shader =
         create_native_user_shader(code_gen_results.glsl_code, std::move(parameters)).release();
 
     shader->set_name(name);
@@ -314,12 +316,13 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
     return shader;
 }
 
-const std::vector<gsl::not_null<GraphicsResourceImpl*>>& GraphicsDevice::all_resources() const
+auto GraphicsDevice::all_resources() const
+    -> const std::vector<gsl::not_null<GraphicsResourceImpl*>>&
 {
     return m_resources;
 }
 
-const Image& GraphicsDevice::current_canvas() const
+auto GraphicsDevice::current_canvas() const -> const Image&
 {
     return m_canvas;
 }
@@ -328,7 +331,7 @@ void GraphicsDevice::set_canvas(const Image& canvas, bool force)
 {
     if (canvas)
     {
-        if (const ImageImpl* image_impl = dynamic_cast<const ImageImpl*>(canvas.impl());
+        if (const auto* image_impl = dynamic_cast<const ImageImpl*>(canvas.impl());
             image_impl->window_for_canvas() != m_current_window.impl())
         {
             CER_THROW_INVALID_ARG_STR("The specified canvas image is not compatible with the "
@@ -342,7 +345,7 @@ void GraphicsDevice::set_canvas(const Image& canvas, bool force)
         m_canvas = canvas;
         flush_draw_calls();
 
-        Rectangle new_viewport;
+        auto new_viewport = Rectangle{};
         if (canvas)
         {
             const auto [width, height] = canvas.size();
@@ -380,7 +383,7 @@ void GraphicsDevice::set_transformation(const Matrix& transformation)
     m_must_flush_draw_calls = true;
 }
 
-const Shader& GraphicsDevice::current_sprite_shader() const
+auto GraphicsDevice::current_sprite_shader() const -> const Shader&
 {
     return m_sprite_shader;
 }
@@ -389,7 +392,7 @@ void GraphicsDevice::set_sprite_shader(const Shader& pixel_shader)
 {
     if (m_sprite_shader != pixel_shader)
     {
-        if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+        if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
         {
             impl->m_is_in_use = false;
         }
@@ -397,7 +400,7 @@ void GraphicsDevice::set_sprite_shader(const Shader& pixel_shader)
         m_sprite_shader         = pixel_shader;
         m_must_flush_draw_calls = true;
 
-        if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+        if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
         {
             impl->m_is_in_use = true;
         }
@@ -454,12 +457,12 @@ void GraphicsDevice::fill_rectangle(const Rectangle& rectangle,
     m_sprite_batch->fill_rectangle(rectangle, color, rotation, origin);
 }
 
-const Window& GraphicsDevice::current_window() const
+auto GraphicsDevice::current_window() const -> const Window&
 {
     return m_current_window;
 }
 
-gsl::not_null<FrameStats*> GraphicsDevice::frame_stats_ptr()
+auto GraphicsDevice::frame_stats_ptr() -> gsl::not_null<FrameStats*>
 {
     return &m_draw_stats;
 }
@@ -499,10 +502,10 @@ void GraphicsDevice::flush_draw_calls()
     m_must_flush_draw_calls = false;
 }
 
-Matrix GraphicsDevice::compute_viewport_transformation(const Rectangle& viewport)
+auto GraphicsDevice::compute_viewport_transformation(const Rectangle& viewport) -> Matrix
 {
-    const float x_scale = viewport.width > 0 ? 2.0f / viewport.width : 0.0f;
-    const float y_scale = viewport.height > 0 ? 2.0f / viewport.height : 0.0f;
+    const auto x_scale = viewport.width > 0 ? 2.0f / viewport.width : 0.0f;
+    const auto y_scale = viewport.height > 0 ? 2.0f / viewport.height : 0.0f;
 
     return {x_scale, 0, 0, 0, 0, -y_scale, 0, 0, 0, 0, 1, 0, -1, 1, 0, 1};
 }
@@ -512,12 +515,12 @@ void GraphicsDevice::compute_combined_transformation()
     m_combined_transformation = m_transformation * m_viewport_transformation;
 }
 
-FrameStats GraphicsDevice::frame_stats() const
+auto GraphicsDevice::frame_stats() const -> FrameStats
 {
     return m_draw_stats;
 }
 
-Vector2 GraphicsDevice::current_canvas_size() const
+auto GraphicsDevice::current_canvas_size() const -> Vector2
 {
     return m_viewport.size();
 }

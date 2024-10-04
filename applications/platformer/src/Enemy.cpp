@@ -17,26 +17,23 @@ Enemy::Enemy(Level* level, cer::Vector2 position, std::string sprite_set)
     m_sprite.play_animation(m_idle_animation);
 
     // Calculate bounds within texture size.
-    const auto width  = static_cast<int>(m_idle_animation.frame_width() * 0.35);
+    const auto width  = int(m_idle_animation.frame_width() * 0.35);
     const auto left   = (m_idle_animation.frame_width() - width) / 2;
-    const auto height = static_cast<int>(m_idle_animation.frame_width() * 0.7);
+    const auto height = int(m_idle_animation.frame_width() * 0.7);
     const auto top    = m_idle_animation.frame_height() - height;
 
-    m_local_bounds = {static_cast<float>(left),
-                      static_cast<float>(top),
-                      static_cast<float>(width),
-                      static_cast<float>(height)};
+    m_local_bounds = {float(left), float(top), float(width), float(height)};
 }
 
 void Enemy::update(cer::GameTime time)
 {
-    const auto elapsed = static_cast<float>(time.elapsed_time);
-    const auto dir     = static_cast<int>(m_direction);
+    const auto elapsed = float(time.elapsed_time);
+    const auto dir     = int(m_direction);
 
     // Calculate tile position based on the side we are walking towards.
-    const float pos_x  = m_position.x + (m_local_bounds.width / 2.0f * static_cast<float>(dir));
-    const auto  tile_x = static_cast<int>(floor(pos_x / Tile::width)) - dir;
-    const auto  tile_y = static_cast<int>(floor(m_position.y / Tile::height));
+    const float pos_x  = m_position.x + (m_local_bounds.width / 2.0f * float(dir));
+    const auto  tile_x = int(floor(pos_x / Tile::width)) - dir;
+    const auto  tile_y = int(floor(m_position.y / Tile::height));
 
     if (m_wait_time > 0)
     {
@@ -46,7 +43,7 @@ void Enemy::update(cer::GameTime time)
         if (m_wait_time <= 0.0f)
         {
             // Then turn around.
-            m_direction = static_cast<FaceDirection>(-dir);
+            m_direction = FaceDirection(-dir);
         }
     }
     else
@@ -60,7 +57,7 @@ void Enemy::update(cer::GameTime time)
         else
         {
             // Move in the current direction.
-            m_position += cer::Vector2{static_cast<float>(dir) * move_speed * elapsed, 0.0f};
+            m_position += cer::Vector2{float(dir) * move_speed * elapsed, 0.0f};
         }
     }
 
@@ -82,7 +79,7 @@ void Enemy::draw() const
 {
     // Draw facing the way the enemy is moving.
     const cer::SpriteFlip flip =
-        static_cast<int>(m_direction) > 0 ? cer::SpriteFlip::Horizontally : cer::SpriteFlip::None;
+        int(m_direction) > 0 ? cer::SpriteFlip::Horizontally : cer::SpriteFlip::None;
 
     m_sprite.draw(m_position, flip);
 }

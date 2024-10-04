@@ -46,7 +46,7 @@ namespace std
 template <>
 struct hash<cer::Vector2>
 {
-    size_t operator()(const cer::Vector2& value) const noexcept
+    auto operator()(const cer::Vector2& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.x, value.y);
@@ -57,7 +57,7 @@ struct hash<cer::Vector2>
 template <>
 struct hash<cer::Vector3>
 {
-    size_t operator()(const cer::Vector3& value) const noexcept
+    auto operator()(const cer::Vector3& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.x, value.y, value.z);
@@ -68,7 +68,7 @@ struct hash<cer::Vector3>
 template <>
 struct hash<cer::Vector4>
 {
-    size_t operator()(const cer::Vector4& value) const noexcept
+    auto operator()(const cer::Vector4& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.x, value.y, value.z);
@@ -79,7 +79,7 @@ struct hash<cer::Vector4>
 template <>
 struct hash<cer::Matrix>
 {
-    size_t operator()(const cer::Matrix& value) const noexcept
+    auto operator()(const cer::Matrix& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed,
@@ -106,7 +106,7 @@ struct hash<cer::Matrix>
 template <>
 struct hash<cer::Circle>
 {
-    size_t operator()(const cer::Circle& value) const noexcept
+    auto operator()(const cer::Circle& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.center, value.radius);
@@ -117,7 +117,7 @@ struct hash<cer::Circle>
 template <>
 struct hash<cer::Color>
 {
-    size_t operator()(const cer::Color& value) const noexcept
+    auto operator()(const cer::Color& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.r, value.g, value.b, value.a);
@@ -128,7 +128,7 @@ struct hash<cer::Color>
 template <>
 struct hash<cer::Font>
 {
-    size_t operator()(const cer::Font& value) const noexcept
+    auto operator()(const cer::Font& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -139,7 +139,7 @@ struct hash<cer::Font>
 template <>
 struct hash<cer::GraphicsResource>
 {
-    size_t operator()(const cer::GraphicsResource& value) const noexcept
+    auto operator()(const cer::GraphicsResource& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -150,7 +150,7 @@ struct hash<cer::GraphicsResource>
 template <>
 struct hash<cer::Image>
 {
-    size_t operator()(const cer::Image& value) const noexcept
+    auto operator()(const cer::Image& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -161,7 +161,7 @@ struct hash<cer::Image>
 template <>
 struct hash<cer::Rectangle>
 {
-    size_t operator()(const cer::Rectangle& value) const noexcept
+    auto operator()(const cer::Rectangle& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.x, value.y, value.width, value.height);
@@ -172,15 +172,15 @@ struct hash<cer::Rectangle>
 template <>
 struct hash<cer::Sampler>
 {
-    size_t operator()(const cer::Sampler& value) const noexcept
+    auto operator()(const cer::Sampler& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed,
-                                   static_cast<int>(value.filter),
-                                   static_cast<int>(value.address_u),
-                                   static_cast<int>(value.address_v),
-                                   static_cast<int>(value.texture_comparison),
-                                   static_cast<int>(value.border_color));
+                                   int(value.filter),
+                                   int(value.address_u),
+                                   int(value.address_v),
+                                   int(value.texture_comparison),
+                                   int(value.border_color));
         return seed;
     }
 };
@@ -188,7 +188,7 @@ struct hash<cer::Sampler>
 template <>
 struct hash<cer::Shader>
 {
-    size_t operator()(const cer::Shader& value) const noexcept
+    auto operator()(const cer::Shader& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -199,7 +199,7 @@ struct hash<cer::Shader>
 template <>
 struct hash<cer::Sound>
 {
-    size_t operator()(const cer::Sound& value) const noexcept
+    auto operator()(const cer::Sound& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -210,7 +210,7 @@ struct hash<cer::Sound>
 template <>
 struct hash<cer::SoundChannel>
 {
-    size_t operator()(const cer::SoundChannel& value) const noexcept
+    auto operator()(const cer::SoundChannel& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -221,7 +221,7 @@ struct hash<cer::SoundChannel>
 template <>
 struct hash<cer::SoundTime>
 {
-    size_t operator()(const cer::SoundTime& value) const noexcept
+    auto operator()(const cer::SoundTime& value) const noexcept -> size_t
     {
         size_t seed{};
         cer::details::hash_combine(seed, value.count());
@@ -232,7 +232,7 @@ struct hash<cer::SoundTime>
 template <>
 struct hash<cer::Window>
 {
-    size_t operator()(const cer::Window& value) const noexcept
+    auto operator()(const cer::Window& value) const noexcept -> size_t
     {
         size_t seed{};
         hash_combine(seed, value.impl());
@@ -243,20 +243,20 @@ struct hash<cer::Window>
 template <>
 struct hash<cer::BlendState>
 {
-    size_t operator()(const cer::BlendState& value) const noexcept
+    auto operator()(const cer::BlendState& value) const noexcept -> size_t
     {
         size_t seed{};
 
         cer::details::hash_combine(seed,
                                    value.blending_enabled,
                                    value.blend_factor,
-                                   static_cast<int>(value.color_blend_function),
-                                   static_cast<int>(value.color_src_blend),
-                                   static_cast<int>(value.color_dst_blend),
-                                   static_cast<int>(value.alpha_blend_function),
-                                   static_cast<int>(value.alpha_src_blend),
-                                   static_cast<int>(value.alpha_dst_blend),
-                                   static_cast<int>(value.color_write_mask));
+                                   int(value.color_blend_function),
+                                   int(value.color_src_blend),
+                                   int(value.color_dst_blend),
+                                   int(value.alpha_blend_function),
+                                   int(value.alpha_src_blend),
+                                   int(value.alpha_dst_blend),
+                                   int(value.color_write_mask));
 
         return seed;
     }

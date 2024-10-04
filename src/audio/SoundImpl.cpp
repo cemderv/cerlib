@@ -7,6 +7,7 @@
 #include "util/InternalError.hpp"
 #include <cstdint>
 #include <cstring>
+#include <gsl/narrow>
 
 namespace cer::details
 {
@@ -39,16 +40,16 @@ void SoundImpl::stop()
     m_soloud->stopAudioSource(m_soloud_audio_source);
 }
 
-SoLoud::Wav& SoundImpl::soloud_audio_source()
+auto SoundImpl::soloud_audio_source() -> SoLoud::Wav&
 {
     return m_soloud_audio_source;
 }
 
 void SoundImpl::init_soloud_audio_source()
 {
-    const SoLoud::result result =
+    const auto result =
         m_soloud_audio_source.loadMem(reinterpret_cast<const unsigned char*>(m_data.get()),
-                                      static_cast<unsigned int>(m_data_size),
+                                      gsl::narrow<unsigned int>(m_data_size),
                                       /*aCopy:*/ false,
                                       /*aTakeOwnership:*/ false);
 

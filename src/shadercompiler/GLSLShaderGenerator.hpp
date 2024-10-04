@@ -17,9 +17,10 @@ class GLSLShaderGenerator final : public ShaderGenerator
 
     explicit GLSLShaderGenerator(bool is_gles);
 
-    std::string do_generation(const SemaContext&                 context,
-                              const FunctionDecl&                entry_point,
-                              const SmallVector<const Decl*, 8>& decls_to_generate) override;
+    auto do_generation(const SemaContext&                    context,
+                       const FunctionDecl&                   entry_point,
+                       const inplace_vector<const Decl*, 8>& decls_to_generate)
+        -> std::string override;
 
   private:
     void generate_var_stmt(Writer& w, const VarStmt& var_stmt, const SemaContext& context) override;

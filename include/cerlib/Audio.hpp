@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/SoundTypes.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <optional>
 
 namespace cer
@@ -23,7 +23,7 @@ class SoundChannel;
  *
  * @ingroup Audio
  */
-bool is_audio_device_initialized();
+auto is_audio_device_initialized() -> bool;
 
 /**
  * Plays a sound.
@@ -37,11 +37,11 @@ bool is_audio_device_initialized();
  *
  * @ingroup Audio
  */
-[[nodiscard]] SoundChannel play_sound(const Sound&             sound,
-                                      float                    volume       = 1.0f,
-                                      float                    pan          = 0.0f,
-                                      bool                     start_paused = false,
-                                      std::optional<SoundTime> delay        = std::nullopt);
+[[nodiscard]] auto play_sound(const Sound&             sound,
+                              float                    volume       = 1.0f,
+                              float                    pan          = 0.0f,
+                              bool                     start_paused = false,
+                              std::optional<SoundTime> delay        = std::nullopt) -> SoundChannel;
 
 /**
  * Plays a sound without returning its channel.
@@ -64,9 +64,8 @@ void play_sound_fire_and_forget(const Sound&             sound,
  *
  * @ingroup Audio
  */
-SoundChannel play_sound_in_background(const Sound& sound,
-                                      float        volume       = -1.0f,
-                                      bool         start_paused = false);
+auto play_sound_in_background(const Sound& sound, float volume = -1.0f, bool start_paused = false)
+    -> SoundChannel;
 
 /**
  * Stops the playback of all currently playing sounds.
@@ -94,7 +93,7 @@ void resume_all_sounds();
  *
  * @ingroup Audio
  */
-float global_volume();
+auto global_volume() -> float;
 
 /**
  * Sets the global audio volume.

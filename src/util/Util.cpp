@@ -23,9 +23,10 @@ void cer::util::trim_string(std::string& str, std::span<const char> chars)
     }
 }
 
-std::string cer::util::string_trimmed(std::string_view str, std::span<const char> chars)
+auto cer::util::string_trimmed(std::string_view str, std::span<const char> chars) -> std::string
 {
-    std::string result{str};
+    auto result = std::string{str};
     trim_string(result, chars);
+
     return result;
 }

@@ -27,7 +27,7 @@ class SoundImpl final : public Object, public Asset
 
     void stop();
 
-    SoLoud::Wav& soloud_audio_source();
+    auto soloud_audio_source() -> SoLoud::Wav&;
 
   private:
     void init_soloud_audio_source();

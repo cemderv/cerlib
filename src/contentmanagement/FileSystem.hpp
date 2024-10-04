@@ -5,8 +5,6 @@
 #pragma once
 
 #include "cerlib/Content.hpp"
-#include "util/InternalExport.hpp"
-
 #include <string>
 #include <string_view>
 #include <vector>
@@ -28,26 +26,26 @@ namespace cer::filesystem
  */
 void set_file_loading_root_directory(std::string_view prefix);
 
-AssetData load_asset_data(std::string_view filename);
+auto load_asset_data(std::string_view filename) -> AssetData;
 
-std::string filename_extension(std::string_view filename);
+auto filename_extension(std::string_view filename) -> std::string;
 
-std::string filename_without_extension(std::string_view filename);
+auto filename_without_extension(std::string_view filename) -> std::string;
 
-std::string parent_directory(std::string_view filename);
+auto parent_directory(std::string_view filename) -> std::string;
 
-std::string combine_paths(std::string_view path1, std::string_view path2);
+auto combine_paths(std::string_view path1, std::string_view path2) -> std::string;
 
 /**
  * Loads a binary file from disk, meaning the disk on desktop platforms.
  * On non-desktop platforms, calling this will throw an exception.
  */
-std::vector<std::byte> load_file_data_from_disk(std::string_view filename);
+auto load_file_data_from_disk(std::string_view filename) -> std::vector<std::byte>;
 
 void write_text_to_file_on_disk(std::string_view filename, std::string_view contents);
 
 #ifdef CERLIB_ENABLE_TESTS
-std::vector<std::byte> decode_image_data_from_file_on_disk(std::string_view filename);
+auto decode_image_data_from_file_on_disk(std::string_view filename) -> std::vector<std::byte>;
 
 void encode_image_data_to_file_on_disk(std::string_view           filename,
                                        std::span<const std::byte> raw_image_data,
