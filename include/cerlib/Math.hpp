@@ -355,6 +355,9 @@ constexpr auto inverse_lerp(T start, T end, T value) -> T;
 template <std::floating_point T>
 constexpr auto smoothstep(T start, T end, T t) -> T;
 
+template <Number T>
+constexpr auto squared(const T& value) -> T;
+
 /**
  * Proportionally maps a value from one range to another.
  * @tparam T The type of value to remap.
@@ -568,6 +571,12 @@ constexpr auto cer::smoothstep(T start, T end, T t) -> T
     t = t > 1 ? 1 : t < 0 ? 0 : t;
     t = t * t * (3.0f - 3.0f * t);
     return lerp(start, end, t);
+}
+
+template <cer::Number T>
+constexpr auto cer::squared(const T& value) -> T
+{
+    return value * value;
 }
 
 template <std::floating_point T>
