@@ -32,6 +32,11 @@ set(cerlib_public_files
   cerlib/Matrix.hpp
   cerlib/Hashing.hpp
   cerlib/MouseButton.hpp
+  cerlib/Particle.hpp
+  cerlib/ParticleEmitter.hpp
+  cerlib/ParticleModifier.hpp
+  cerlib/ParticleSystem.hpp
+  cerlib/ParticleEmitterShape.hpp
   cerlib/Rectangle.hpp
   cerlib/Sampler.hpp
   cerlib/Shader.hpp

@@ -27,6 +27,10 @@
 #include <cerlib/Matrix.hpp>
 #include <cerlib/MouseButton.hpp>
 #include <cerlib/OStreamCompat.hpp>
+#include <cerlib/Particle.hpp>
+#include <cerlib/ParticleEmitter.hpp>
+#include <cerlib/ParticleModifier.hpp>
+#include <cerlib/ParticleSystem.hpp>
 #include <cerlib/Rectangle.hpp>
 #include <cerlib/Sampler.hpp>
 #include <cerlib/Shader.hpp>
