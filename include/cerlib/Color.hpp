@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cerlib/Interval.hpp>
+#include <compare>
 #include <optional>
 
 namespace cer
@@ -44,6 +46,8 @@ struct Color
     /** Default comparison */
     auto operator!=(const Color&) const -> bool = default;
 
+    auto operator<=>(const Color&) const = default;
+
     /** The value of the color's red channel */
     float r{};
 
@@ -56,6 +60,8 @@ struct Color
     /** The value of the color's alpha channel */
     float a{};
 };
+
+using ColorInterval = details::IntervalType<Color>;
 
 /**
  * Calculates a random color.
@@ -87,6 +93,11 @@ auto fastrand_color(std::optional<float> alpha = std::nullopt) -> Color;
  * @ingroup Math
  */
 auto fastrand_color(const ColorInterval& interval) -> Color;
+
+auto operator+(const Color& lhs, const Color& rhs) -> Color;
+
+auto operator-(const Color& lhs, const Color& rhs) -> Color;
+
 auto operator*(const Color& lhs, float rhs) -> Color;
 
 auto operator*(float lhs, const Color& rhs) -> Color;
@@ -202,6 +213,27 @@ inline auto cer::fastrand_color(const ColorInterval& interval) -> Color
         fastrand_float(interval.min.g, interval.max.g),
         fastrand_float(interval.min.b, interval.max.b),
         fastrand_float(interval.min.a, interval.max.a),
+    };
+}
+
+
+inline auto cer::operator+(const Color& lhs, const Color& rhs) -> cer::Color
+{
+    return {
+        lhs.r + rhs.r,
+        lhs.g + rhs.g,
+        lhs.b + rhs.b,
+        lhs.a + rhs.a,
+    };
+}
+
+inline auto cer::operator-(const Color& lhs, const Color& rhs) -> cer::Color
+{
+    return {
+        lhs.r - rhs.r,
+        lhs.g - rhs.g,
+        lhs.b - rhs.b,
+        lhs.a - rhs.a,
     };
 }
 
