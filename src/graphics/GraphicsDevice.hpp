@@ -87,6 +87,8 @@ class GraphicsDevice
 
     void set_sampler(const Sampler& sampler);
 
+    auto current_blend_state() const -> const BlendState&;
+
     void set_blend_state(const BlendState& blend_state);
 
     void draw_sprite(const Sprite& sprite);

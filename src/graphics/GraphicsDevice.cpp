@@ -416,6 +416,11 @@ void GraphicsDevice::set_sampler(const Sampler& sampler)
     }
 }
 
+auto GraphicsDevice::current_blend_state() const -> const BlendState&
+{
+    return m_blend_state;
+}
+
 void GraphicsDevice::set_blend_state(const BlendState& blend_state)
 {
     if (m_blend_state != blend_state)
