@@ -659,7 +659,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
         accessed_symbols.erase(it, accessed_symbols.end());
     }
 
-    details::remove_duplicates_but_keep_order(accessed_symbols);
+    remove_duplicates_but_keep_order(accessed_symbols);
 
     auto decls_to_generate = inplace_vector<const Decl*, 8>{};
     decls_to_generate.reserve(accessed_symbols.size() + 1);
