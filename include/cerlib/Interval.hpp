@@ -7,6 +7,14 @@
 #include <cstddef>
 #include <cstdint>
 
+#ifdef min
+#undef min
+#endif
+
+#ifdef max
+#undef max
+#endif
+
 namespace cer::details
 {
 template <typename T>

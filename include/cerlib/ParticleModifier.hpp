@@ -81,9 +81,4 @@ using ParticleModifier = std::variant<ParticleColorLerpMod,
                                       ParticleScaleLerpMod,
                                       ParticleVelocityColorMod,
                                       ParticleVortexMod>;
-
-//     details::ParticleModifierData m_data;
-//     float                         m_frequency                    = 60.0f;
-//     float                         m_cycle_time                   = 0.0f;
-//     int                           m_particles_updated_this_cycle = 0;
 } // namespace cer

@@ -434,7 +434,7 @@ auto ParticleSystem::active_particle_count() const -> size_t
 {
     return std::accumulate(m_emitters.cbegin(),
                            m_emitters.cend(),
-                           0,
+                           size_t(0),
                            [](size_t count, const auto& emitter) {
                                return count + emitter.particles().size();
                            });
