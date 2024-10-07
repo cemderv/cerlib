@@ -8,6 +8,7 @@
 #include "cerlib/Font.hpp"
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
+#include "cerlib/ParticleSystem.hpp"
 #include "game/GameImpl.hpp"
 #include "util/InternalError.hpp"
 #include <cassert>
@@ -119,6 +120,41 @@ void cer::fill_rectangle(Rectangle rectangle, Color color, float rotation, Vecto
 {
     LOAD_DEVICE_IMPL;
     device_impl.fill_rectangle(rectangle, color, rotation, origin);
+}
+
+void cer::draw_particles(const ParticleSystem& particle_system)
+{
+    LOAD_DEVICE_IMPL;
+
+    const auto previous_blend_state = device_impl.current_blend_state();
+
+    for (const auto& emitter : particle_system.emitters())
+    {
+        const auto& image = emitter.image;
+
+        if (!image)
+        {
+            continue;
+        }
+
+        device_impl.set_blend_state(emitter.blend_state);
+
+        const auto image_size = image.size();
+        const auto origin     = image_size * 0.5f;
+
+        for (const auto& particle : emitter.particles())
+        {
+            device_impl.draw_sprite(Sprite{
+                .image    = image,
+                .dst_rect = {particle.position, image_size * particle.scale},
+                .color    = particle.color,
+                .rotation = particle.rotation,
+                .origin   = origin,
+            });
+        }
+    }
+
+    device_impl.set_blend_state(previous_blend_state);
 }
 
 auto cer::frame_stats() -> cer::FrameStats
