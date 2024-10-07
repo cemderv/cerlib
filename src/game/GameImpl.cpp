@@ -477,7 +477,7 @@ void GameImpl::initialize_imgui()
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-    ImGui::StyleColorsLight();
+    ImGui::StyleColorsDark();
 #endif
 }
 
