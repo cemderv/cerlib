@@ -19,6 +19,7 @@
 #include <cerlib/Hashing.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Input.hpp>
+#include <cerlib/Interval.hpp>
 #include <cerlib/Key.hpp>
 #include <cerlib/KeyModifier.hpp>
 #include <cerlib/Logging.hpp>

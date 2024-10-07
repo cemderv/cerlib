@@ -24,6 +24,7 @@ set(cerlib_public_files
   cerlib/GraphicsResource.hpp
   cerlib/Image.hpp
   cerlib/Input.hpp
+  cerlib/Interval.hpp
   cerlib/Key.hpp
   cerlib/KeyModifier.hpp
   cerlib/Math.hpp
