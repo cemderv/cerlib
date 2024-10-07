@@ -67,6 +67,26 @@ struct Color
  */
 auto random_color(std::optional<float> alpha = std::nullopt) -> Color;
 
+/**
+ * Calculates a random color.
+ * The components are determined using the FastRand algorithm.
+ *
+ * @param alpha If specified, the resulting color will have this alpha value.
+ *              If empty, the alpha value is determined randomly.
+ *
+ * @ingroup Math
+ */
+auto fastrand_color(std::optional<float> alpha = std::nullopt) -> Color;
+
+/**
+ * Calculates a random color with its components being in a specific interval.
+ * The components are determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_color(const ColorInterval& interval) -> Color;
 auto operator*(const Color& lhs, float rhs) -> Color;
 
 auto operator*(float lhs, const Color& rhs) -> Color;
@@ -157,6 +177,31 @@ inline auto cer::random_color(std::optional<float> alpha) -> cer::Color
         random_float(0.0f, 1.0f),
         random_float(0.0f, 1.0f),
         *alpha,
+    };
+}
+
+inline auto cer::fastrand_color(std::optional<float> alpha) -> Color
+{
+    if (!alpha.has_value())
+    {
+        alpha = fastrand_float_zero_to_one();
+    }
+
+    return {
+        fastrand_float_zero_to_one(),
+        fastrand_float_zero_to_one(),
+        fastrand_float_zero_to_one(),
+        *alpha,
+    };
+}
+
+inline auto cer::fastrand_color(const ColorInterval& interval) -> Color
+{
+    return {
+        fastrand_float(interval.min.r, interval.max.r),
+        fastrand_float(interval.min.g, interval.max.g),
+        fastrand_float(interval.min.b, interval.max.b),
+        fastrand_float(interval.min.a, interval.max.a),
     };
 }
 

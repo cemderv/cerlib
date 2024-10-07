@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/details/ObjectMacros.hpp>
+#include <cerlib/Interval.hpp>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -92,6 +92,7 @@ auto ceiling(T value) -> T;
 
 /**
  * Calculates a random integer in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -102,6 +103,7 @@ auto random_int(int32_t min, int32_t max) -> int32_t;
 
 /**
  * Calculates a random unsigned integer in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -112,6 +114,7 @@ auto random_uint(uint32_t min, uint32_t max) -> uint32_t;
 
 /**
  * Calculates a random single-precision floating-point value in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -122,6 +125,7 @@ auto random_float(float min = 0.0f, float max = 1.0f) -> float;
 
 /**
  * Calculates a random double-precision floating-point value in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -129,6 +133,108 @@ auto random_float(float min = 0.0f, float max = 1.0f) -> float;
  * @ingroup Math
  */
 auto random_double(double min = 0.0, double max = 1.0) -> double;
+
+/**
+ * Seeds the randomizer that is used in fastrand_* functions.
+ *
+ * @param value The new seed
+ */
+void seed_fastrand(int32_t value);
+
+/**
+ * Calculates a random integer.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_int() -> int32_t;
+
+/**
+ * Calculates a random integer in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ *
+ * @ingroup Math
+ */
+auto fastrand_int(int32_t min, int32_t max) -> int32_t;
+
+/**
+ * Calculates a random integer in a specific interval.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_int(const IntInterval& interval) -> int32_t;
+
+/**
+ * Calculates a random unsigned integer.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_uint() -> uint32_t;
+
+/**
+ * Calculates a random unsigned integer in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ *
+ * @ingroup Math
+ */
+auto fastrand_uint(uint32_t min, uint32_t max) -> uint32_t;
+
+/**
+ * Calculates a random unsigned integer in a specific interval.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_uint(const UIntInterval& interval) -> uint32_t;
+
+/**
+ * Calculates a random single-precision floating-point value in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_float_zero_to_one() -> float;
+
+/**
+ * Calculates a random single-precision floating-point value in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ *
+ * @ingroup Math
+ */
+auto fastrand_float(float min, float max) -> float;
+
+/**
+ * Calculates a random single-precision floating-point value in a specific interval.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_float(const FloatInterval& interval) -> float;
+
+/**
+ * Calculates a random angle value, in radians.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_angle() -> float;
 
 /**
  * Returns the smaller of two values.

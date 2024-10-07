@@ -144,6 +144,14 @@ auto ceiling(const Vector2& value) -> Vector2;
 auto random_vector2(float min = 0.0f, float max = 1.0f) -> Vector2;
 
 /**
+ * Calculates a random 2D angle vector.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_angle_vector2() -> Vector2;
+
+/**
  * Calculates the dot product of two 2D vectors.
  *
  * @ingroup Math
@@ -503,6 +511,13 @@ inline auto cer::random_vector2(float min, float max) -> Vector2
         random_float(min, max),
         random_float(min, max),
     };
+}
+
+inline auto cer::fastrand_angle_vector2() -> Vector2
+{
+    const auto angle = fastrand_angle();
+
+    return {cos(angle), sin(angle)};
 }
 
 inline auto cer::dot(const Vector2& lhs, const Vector2& rhs) -> float
