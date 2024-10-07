@@ -49,7 +49,6 @@ struct ParticleEmitter
         float                 timer = 0.0f;
         std::vector<Particle> particles;
         uint32_t              active_particle_count   = 0;
-        float                 reclaim_frequency       = 60.0f;
         float                 time_since_last_reclaim = 0.0f;
     } s_;
 };

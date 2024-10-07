@@ -10,7 +10,8 @@
 
 namespace cer
 {
-static constexpr auto default_particles_buffer_capacity = 300u;
+static constexpr auto default_particles_buffer_capacity  = 300u;
+static constexpr auto default_particle_reclaim_frequency = 1.0f / 60.0f;
 
 struct ParticleModifierVisitor
 {
@@ -226,11 +227,10 @@ static void update_emitter(ParticleEmitter& emitter, float elapsed_time)
         return;
     }
 
-    if (const auto reclaim_time_reciprocal = 1.0f / state.reclaim_frequency;
-        state.time_since_last_reclaim > reclaim_time_reciprocal)
+    if (state.time_since_last_reclaim > default_particle_reclaim_frequency)
     {
         reclaim_expired_particles(emitter);
-        state.time_since_last_reclaim -= reclaim_time_reciprocal;
+        state.time_since_last_reclaim -= default_particle_reclaim_frequency;
     }
 
     const auto duration_f = float(std::chrono::duration<double>{emitter.duration}.count());
