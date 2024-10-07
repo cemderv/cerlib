@@ -10,6 +10,8 @@
 
 namespace cer
 {
+static constexpr auto default_particles_buffer_capacity = 300u;
+
 struct ParticleModifierVisitor
 {
     std::span<Particle> particles;
@@ -328,37 +330,28 @@ static void emit(ParticleEmitter& emitter, Vector2 position, uint32_t count)
 {
     auto& state = emitter.s_;
 
+    const auto previous_active_particle_count = state.active_particle_count;
+    const auto new_active_particle_count      = previous_active_particle_count + count;
+
     // Ensure that the particle buffer is large enough.
+    const auto particles_cap = state.particles.capacity();
+    if (new_active_particle_count > particles_cap)
     {
-        const auto current_capacity = state.particles.capacity();
-        assert(current_capacity >= state.active_particle_count);
-
-        const auto available_count = current_capacity - state.active_particle_count;
-
-        if (available_count == 0)
+        if (particles_cap == 0)
         {
-            if (current_capacity == 0)
-            {
-                cer::log_info("Resizing initially");
-                state.particles.resize(100);
-            }
-            else
-            {
-                state.particles.resize(size_t(double(current_capacity) * 1.5));
-                cer::log_info("Resized from {} to {}",
-                              current_capacity,
-                              state.particles.capacity());
-            }
+            state.particles.resize(default_particles_buffer_capacity);
+        }
+        else
+        {
+            const auto new_capacity = uint32_t(double(particles_cap) * 1.5);
+
+            state.particles.resize(size_t(max(new_capacity, new_active_particle_count)));
         }
     }
 
-    const auto previous_tail = state.active_particle_count;
-
-    state.active_particle_count += count;
-
     for (uint32_t i = 0; i < count; ++i)
     {
-        auto& particle = state.particles[previous_tail + i];
+        auto& particle = state.particles[previous_active_particle_count + i];
 
         particle.inception = state.timer;
         particle.age       = 0.0f;
@@ -376,6 +369,8 @@ static void emit(ParticleEmitter& emitter, Vector2 position, uint32_t count)
         particle.rotation = fastrand_float(emitter.emission.rotation);
         particle.mass     = fastrand_float(emitter.emission.mass);
     }
+
+    state.active_particle_count = new_active_particle_count;
 }
 
 static void trigger_emitter_at(ParticleEmitter& emitter, Vector2 position)
