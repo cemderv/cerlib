@@ -174,6 +174,11 @@ static constexpr Color cornflowerblue{100.0f / 255.0f, 149.0f / 255.0f, 237.0f /
  * @ingroup Math
  */
 static constexpr Color yellow{1.0f, 1.0f, 0.0f, 1.0f};
+
+/**
+ * A fully transparent black.
+ */
+static constexpr Color transparent{0.0f, 0.0f, 0.0f, 0.0f};
 } // namespace cer
 
 inline auto cer::random_color(std::optional<float> alpha) -> cer::Color
