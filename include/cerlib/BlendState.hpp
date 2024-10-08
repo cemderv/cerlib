@@ -170,7 +170,7 @@ struct BlendState
 };
 
 /**
- * Gets a blend state with alpha-blending disabled.
+ * A blend state with alpha-blending disabled.
  * The source color overwrites the destination color.
  */
 static constexpr auto opaque = BlendState{
@@ -183,7 +183,7 @@ static constexpr auto opaque = BlendState{
 };
 
 /**
- * Gets a blend state with alpha-blending enabled.
+ * A blend state with alpha-blending enabled.
  * The state assumes that the RGB channels have been premultiplied with the alpha
  * channel.
  */
@@ -211,7 +211,7 @@ static constexpr auto non_premultiplied = BlendState{
 };
 
 /**
- * Gets a blend state with alpha-blending enabled.
+ * A blend state with alpha-blending enabled.
  * The source color is added onto the destination color.
  */
 static constexpr auto additive = BlendState{
