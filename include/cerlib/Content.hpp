@@ -131,14 +131,13 @@ auto asset_loading_prefix() -> std::string;
  * Lazily loads an Image object from the storage.
  *
  * @param name The name of the asset in the storage.
- * @param generate_mipmaps If true, loads a version of the image with mipmaps generated.
  *
  * @throw std::runtime_error If the asset does not exist or could not be read or
  * loaded.
  *
  * @ingroup Content
  */
-auto load_image(std::string_view name, bool generate_mipmaps = false) -> Image;
+auto load_image(std::string_view name) -> Image;
 
 /**
  * Lazily loads a Shader object from the storage.

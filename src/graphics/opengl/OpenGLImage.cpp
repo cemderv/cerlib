@@ -12,9 +12,8 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
                          uint32_t                       width,
                          uint32_t                       height,
                          ImageFormat                    format,
-                         uint32_t                       mipmap_count,
-                         const Image::DataCallback&     data_callback)
-    : ImageImpl(parent_device, false, nullptr, width, height, format, mipmap_count)
+                         const void*                    data)
+    : ImageImpl(parent_device, false, nullptr, width, height, format)
 {
     const auto format_gl = convert_to_opengl_pixel_format(format);
 
@@ -42,27 +41,20 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
 
 #ifndef CERLIB_GFX_IS_GLES
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0));
-    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, GLint(mipmap_count - 1)));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0));
 #endif
 
     last_applied_sampler = Sampler::linear_clamp();
 
-    for (uint32_t m = 0; m < mipmap_count; ++m)
-    {
-        const auto mip_width  = mipmap_extent(width, m);
-        const auto mip_height = mipmap_extent(height, m);
-        const auto mip_data   = data_callback(m);
-
-        GL_CALL(glTexImage2D(GL_TEXTURE_2D,
-                             GLint(m),
-                             format_gl.internal_format,
-                             GLsizei(mip_width),
-                             GLsizei(mip_height),
-                             /*border: */ 0,
-                             format_gl.base_format,
-                             format_gl.type,
-                             mip_data));
-    }
+    GL_CALL(glTexImage2D(GL_TEXTURE_2D,
+                         /*level: */ 0,
+                         format_gl.internal_format,
+                         GLsizei(width),
+                         GLsizei(height),
+                         /*border: */ 0,
+                         format_gl.base_format,
+                         format_gl.type,
+                         data));
 
     GL_CALL(glBindTexture(GL_TEXTURE_2D, previous_texture));
     verify_opengl_state();
@@ -73,7 +65,7 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
                          uint32_t                       width,
                          uint32_t                       height,
                          ImageFormat                    format)
-    : ImageImpl(parent_device, true, window_for_canvas, width, height, format, 1)
+    : ImageImpl(parent_device, true, window_for_canvas, width, height, format)
 {
     gl_format_triplet = convert_to_opengl_pixel_format(format);
 

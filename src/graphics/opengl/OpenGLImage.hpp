@@ -18,8 +18,7 @@ class OpenGLImage final : public ImageImpl
                          uint32_t                       width,
                          uint32_t                       height,
                          ImageFormat                    format,
-                         uint32_t                       mipmap_count,
-                         const Image::DataCallback&     data_callback);
+                         const void*                    data);
 
     // Canvas overload
     explicit OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,

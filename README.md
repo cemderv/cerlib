@@ -19,7 +19,6 @@
   - Based on SDL
 - Content management system
     - Images: .png, .jpg, .bmp, .dds, .hdr, .tga, .psd, .gif
-    - Generation of mipmaps
     - Fonts: .ttf, .otf
     - Sounds: .wav, .mp3, .ogg, .flac
 - Efficient, GPU-based sprite and UTF8 text rendering

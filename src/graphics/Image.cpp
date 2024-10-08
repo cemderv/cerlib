@@ -22,60 +22,31 @@ namespace cer
 {
 CERLIB_IMPLEMENT_DERIVED_OBJECT(GraphicsResource, Image);
 
-Image::Image(
-    uint32_t width, uint32_t height, ImageFormat format, uint32_t mipmap_count, const void* data)
+Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
 {
     if (data == nullptr)
     {
-        CER_THROW_INVALID_ARG(
-            "No image data specified (width={}; height={}; format={}, mipmapCount={}).",
-            width,
-            height,
-            image_format_name(format),
-            mipmap_count);
+        CER_THROW_INVALID_ARG("No image data specified (width={}; height={}; format={}).",
+                              width,
+                              height,
+                              image_format_name(format));
     }
 
     LOAD_DEVICE_IMPL;
 
-    set_impl(*this,
-             device_impl
-                 .create_image(width,
-                               height,
-                               format,
-                               mipmap_count,
-                               [data](uint32_t) {
-                                   return data;
-                               })
-                 .get());
+    set_impl(*this, device_impl.create_image(width, height, format, data).get());
 }
 
-Image::Image(uint32_t            width,
-             uint32_t            height,
-             ImageFormat         format,
-             uint32_t            mipmap_count,
-             const DataCallback& data_callback)
+Image::Image(std::span<const std::byte> memory)
 {
-    if (!data_callback)
-    {
-        CER_THROW_INVALID_ARG_STR("No image data callback specified.");
-    }
-
     LOAD_DEVICE_IMPL;
-
-    set_impl(*this,
-             device_impl.create_image(width, height, format, mipmap_count, data_callback).get());
+    set_impl(*this, details::load_image(device_impl, memory).get());
 }
 
-Image::Image(std::span<const std::byte> memory, bool generate_mipmaps)
+Image::Image(std::string_view filename)
 {
     LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, memory, generate_mipmaps).get());
-}
-
-Image::Image(std::string_view filename, bool generate_mipmaps)
-{
-    LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, filename, generate_mipmaps).get());
+    set_impl(*this, details::load_image(device_impl, filename).get());
 }
 
 Image::Image(uint32_t width, uint32_t height, ImageFormat format, const Window& window)
@@ -127,12 +98,6 @@ auto Image::format() const -> ImageFormat
 {
     DECLARE_IMAGE_IMPL;
     return impl->format();
-}
-
-auto Image::mipmap_count() const -> uint32_t
-{
-    DECLARE_IMAGE_IMPL;
-    return impl->mipmap_count();
 }
 
 auto Image::canvas_clear_color() const -> std::optional<Color>

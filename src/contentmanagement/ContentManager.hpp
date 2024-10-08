@@ -37,7 +37,7 @@ class ContentManager final
 
     auto asset_loading_prefix() const -> std::string_view;
 
-    auto load_image(std::string_view name, bool generate_mipmaps) -> Image;
+    auto load_image(std::string_view name) -> Image;
 
     auto load_shader(std::string_view name, std::span<const std::string_view> defines = {})
         -> Shader;

@@ -269,8 +269,7 @@ void FontImpl::update_page_atlas_image(FontPage& page)
     if (!page.atlas)
     {
         log_verbose("  Reallocating page image");
-        page.atlas =
-            Image(page.width, page.height, ImageFormat::R8_UNorm, 1, page.atlas_data.get());
+        page.atlas = Image(page.width, page.height, ImageFormat::R8_UNorm, page.atlas_data.get());
     }
     else
     {

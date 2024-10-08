@@ -13,15 +13,13 @@ ImageImpl::ImageImpl(gsl::not_null<GraphicsDevice*> parent_device,
                      WindowImpl*                    window_for_canvas,
                      uint32_t                       width,
                      uint32_t                       height,
-                     ImageFormat                    format,
-                     uint32_t                       mipmap_count)
+                     ImageFormat                    format)
     : GraphicsResourceImpl(parent_device, GraphicsResourceType::Image)
     , m_is_canvas(is_canvas)
     , m_window_for_canvas(window_for_canvas)
     , m_width(width)
     , m_height(height)
     , m_format(format)
-    , m_mipmap_count(mipmap_count)
 {
 }
 
@@ -48,11 +46,6 @@ auto ImageImpl::height() const -> uint32_t
 auto ImageImpl::format() const -> ImageFormat
 {
     return m_format;
-}
-
-auto ImageImpl::mipmap_count() const -> uint32_t
-{
-    return m_mipmap_count;
 }
 
 auto ImageImpl::canvas_clear_color() const -> std::optional<Color>

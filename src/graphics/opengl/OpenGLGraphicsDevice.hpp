@@ -35,11 +35,7 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
     auto create_canvas(const Window& window, uint32_t width, uint32_t height, ImageFormat format)
         -> gsl::not_null<ImageImpl*> override;
 
-    auto create_image(uint32_t                   width,
-                      uint32_t                   height,
-                      ImageFormat                format,
-                      uint32_t                   mipmap_count,
-                      const Image::DataCallback& data_callback)
+    auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
         -> gsl::not_null<ImageImpl*> override;
 
     auto opengl_features() const -> const OpenGLFeatures&;

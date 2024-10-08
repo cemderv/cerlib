@@ -36,15 +36,9 @@ SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
         auto data = std::array<uint8_t, 4 * size * size>{};
         std::ranges::fill(data, 255);
 
-        m_white_image = Image{m_parent_device
-                                  ->create_image(size,
-                                                 size,
-                                                 ImageFormat::R8G8B8A8_UNorm,
-                                                 1,
-                                                 [&](uint32_t) {
-                                                     return data.data();
-                                                 })
-                                  .get()};
+        m_white_image = Image{
+            m_parent_device->create_image(size, size, ImageFormat::R8G8B8A8_UNorm, data.data())
+                .get()};
     }
 
     log_verbose("Created SpriteBatch");

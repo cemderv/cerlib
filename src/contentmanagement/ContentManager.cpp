@@ -124,18 +124,13 @@ auto ContentManager::asset_loading_prefix() const -> std::string_view
     return m_asset_loading_prefix;
 }
 
-auto ContentManager::load_image(std::string_view name, bool generate_mipmaps) -> Image
+auto ContentManager::load_image(std::string_view name) -> Image
 {
     auto key = std::string{name};
 
-    if (generate_mipmaps)
-    {
-        key += "_mipmapped";
-    }
-
-    return lazy_load<Image, ImageImpl>(key, name, [generate_mipmaps](std::string_view name) {
+    return lazy_load<Image, ImageImpl>(key, name, [](std::string_view name) {
         const auto data  = AssetData{filesystem::load_asset_data(name)};
-        auto       image = Image{data.as_span(), generate_mipmaps};
+        auto       image = Image{data.as_span()};
         image.set_name(name);
         return image;
     });

@@ -58,11 +58,7 @@ class GraphicsDevice
                                uint32_t      height,
                                ImageFormat   format) -> gsl::not_null<ImageImpl*> = 0;
 
-    virtual auto create_image(uint32_t                   width,
-                              uint32_t                   height,
-                              ImageFormat                format,
-                              uint32_t                   mipmap_count,
-                              const Image::DataCallback& data_callback)
+    virtual auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
         -> gsl::not_null<ImageImpl*> = 0;
 
     void notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource);
