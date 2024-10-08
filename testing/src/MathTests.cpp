@@ -97,25 +97,4 @@ TEST_CASE("Math", "[math]")
     {
         REQUIRE(cer::inverse_lerp(100.0f, 300.0f, 200.0f) == 0.5f);
     }
-
-    SECTION("mipmap_extent")
-    {
-        REQUIRE(cer::mipmap_extent(0, 0) == 0u);
-        REQUIRE(cer::mipmap_extent(128, 0) == 128u);
-        REQUIRE(cer::mipmap_extent(128, 1) == 64u);
-        REQUIRE(cer::mipmap_extent(128, 2) == 32u);
-        REQUIRE(cer::mipmap_extent(128, 3) == 16u);
-        REQUIRE(cer::mipmap_extent(128, 4) == 8u);
-        REQUIRE(cer::mipmap_extent(128, 5) == 4u);
-        REQUIRE(cer::mipmap_extent(128, 6) == 2u);
-        REQUIRE(cer::mipmap_extent(128, 7) == 1u);
-        REQUIRE(cer::mipmap_extent(128, 8) == 1u);
-    }
-
-    SECTION("max_mipmap_count_for_extent")
-    {
-        REQUIRE(cer::max_mipmap_count_for_extent(0) == 0u);
-        REQUIRE(cer::max_mipmap_count_for_extent(1) == 1u);
-        REQUIRE(cer::max_mipmap_count_for_extent(64) == 7u);
-    }
 }

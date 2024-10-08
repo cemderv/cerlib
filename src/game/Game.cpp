@@ -14,15 +14,6 @@
 
 namespace cer
 {
-template <typename... T>
-struct EventSwitch : T...
-{
-    using T::operator()...;
-};
-
-template <typename... T>
-EventSwitch(T...) -> EventSwitch<T...>;
-
 Game::Game()
     : Game(true)
 {
@@ -53,7 +44,7 @@ Game::Game(bool enable_audio)
 #endif
 
     game_impl.set_event_func([this](const details::Event& event) {
-        std::visit(EventSwitch{
+        std::visit(VariantSwitch{
                        [this](const WindowShownEvent& e) {
                            on_window_shown(e);
                        },

@@ -102,11 +102,15 @@
     {                                                                                              \
     }
 
+#ifndef NDEBUG
 #define VERIFY_IMPL_ACCESS                                                                         \
     if (!impl)                                                                                     \
     {                                                                                              \
         CER_THROW_LOGIC_ERROR_STR("Attempting to access an empty object");                         \
     }
+#else
+#define VERIFY_IMPL_ACCESS
+#endif
 
 // clang-format off
 #define DECLARE_THIS_IMPL                                                                \
@@ -125,37 +129,8 @@
 
 // clang-format on
 
-namespace cer::details
+namespace cer
 {
-template <typename T>
-struct ObjectLayout
-{
-    VERIFY_CERLIB_OBJECT(T);
-
-    typename T::impl_t* impl{};
-};
-
-template <typename T, typename TImpl = typename T::Impl>
-static void set_impl(T& obj, TImpl* impl)
-{
-    static_assert(sizeof(T) == sizeof(uintptr_t),
-                  "Invalid type of object specified; must consist of a single impl pointer.");
-
-    ObjectLayout<T>& s = reinterpret_cast<ObjectLayout<T>&>(obj);
-
-    if (s.impl != nullptr)
-    {
-        s.impl->release();
-    }
-
-    s.impl = impl;
-
-    if (s.impl)
-    {
-        s.impl->add_ref();
-    }
-}
-
 template <typename Iterator, typename T>
 static Iterator binary_find(Iterator begin, Iterator end, T value)
 {
@@ -194,4 +169,45 @@ void remove_duplicates_but_keep_order(T& container)
         ++i;
     }
 }
-} // namespace cer::details
+
+template <typename... T>
+struct VariantSwitch : T...
+{
+    using T::operator()...;
+};
+
+template <typename... T>
+VariantSwitch(T...) -> VariantSwitch<T...>;
+
+namespace details
+{
+template <typename T>
+struct ObjectLayout
+{
+    VERIFY_CERLIB_OBJECT(T);
+
+    typename T::impl_t* impl{};
+};
+
+template <typename T, typename TImpl = typename T::Impl>
+static void set_impl(T& obj, TImpl* impl)
+{
+    static_assert(sizeof(T) == sizeof(uintptr_t),
+                  "Invalid type of object specified; must consist of a single impl pointer.");
+
+    ObjectLayout<T>& s = reinterpret_cast<ObjectLayout<T>&>(obj);
+
+    if (s.impl != nullptr)
+    {
+        s.impl->release();
+    }
+
+    s.impl = impl;
+
+    if (s.impl)
+    {
+        s.impl->add_ref();
+    }
+}
+} // namespace details
+} // namespace cer

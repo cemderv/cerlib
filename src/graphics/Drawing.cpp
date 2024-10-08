@@ -121,6 +121,12 @@ void cer::fill_rectangle(Rectangle rectangle, Color color, float rotation, Vecto
     device_impl.fill_rectangle(rectangle, color, rotation, origin);
 }
 
+void cer::draw_particles(const ParticleSystem& particle_system)
+{
+    LOAD_DEVICE_IMPL;
+    device_impl.draw_particles(particle_system);
+}
+
 auto cer::frame_stats() -> cer::FrameStats
 {
     LOAD_DEVICE_IMPL;

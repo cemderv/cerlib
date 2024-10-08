@@ -69,48 +69,14 @@ class Image : public GraphicsResource
 
   public:
     /**
-     * Represents a callback function that is used when constructing a image.
-     * Images can be constructed by passing initial data to them directly or by passing a
-     * function of this type. In that case, the image calls this function to retrieve data
-     * for a specific array and mipmap index.
-     *
-     * @param mipmap The mipmap for which data is requested.
-     *
-     * @return The data for the specific array and mipmap index. The data must remain
-     * valid throughout the image's construction. Afterwards, it may be freed; the image
-     * does not own the data.
-     */
-    using DataCallback = std::function<const void*(uint32_t mipmap)>;
-
-    /**
      * Creates a 2D image from raw data.
      *
      * @param width The width of the image, in pixels.
      * @param height The height of the image, in pixels.
      * @param format The pixel format of the image.
-     * @param mipmap_count The number of mipmaps in the image.
      * @param data The initial data of the image.
      */
-    explicit Image(uint32_t    width,
-                   uint32_t    height,
-                   ImageFormat format,
-                   uint32_t    mipmap_count,
-                   const void* data);
-
-    /**
-     * Creates a 2D image from raw data.
-     *
-     * @param width The width of the image, in pixels.
-     * @param height The height of the image, in pixels.
-     * @param format The pixel format of the image.
-     * @param mipmap_count The number of mipmaps in the image.
-     * @param data_callback The data function for the image.
-     */
-    explicit Image(uint32_t            width,
-                   uint32_t            height,
-                   ImageFormat         format,
-                   uint32_t            mipmap_count,
-                   const DataCallback& data_callback);
+    explicit Image(uint32_t width, uint32_t height, ImageFormat format, const void* data);
 
     /**
      * Loads a 2D image from memory.
@@ -118,10 +84,8 @@ class Image : public GraphicsResource
      *  - jpg, bmp, png, tga, gif, hdr, dds
      *
      * @param memory The data to load.
-     * @param generate_mipmaps If true, mipmaps are automatically generated for the image.
-     * If the image already had mipmaps, none are generated instead.
      */
-    explicit Image(std::span<const std::byte> memory, bool generate_mipmaps);
+    explicit Image(std::span<const std::byte> memory);
 
     /**
      * Loads a 2D image from a file.
@@ -129,14 +93,12 @@ class Image : public GraphicsResource
      *  - jpg, bmp, png, tga, gif, hdr, dds
      *
      * @param filename The data to load.
-     * @param generate_mipmaps If true, mipmaps are automatically generated for the image.
-     * If the image already had mipmaps, none are generated instead.
      *
      * @attention This constructor is only available on desktop platforms.
-     * On non-desktop platforms, the cer::LoadImage() function must be used to load
+     * On non-desktop platforms, the cer::load_image() function must be used to load
      * images. Calling this on non-desktop platforms will raise an error.
      */
-    explicit Image(std::string_view filename, bool generate_mipmaps = false);
+    explicit Image(std::string_view filename);
 
     /**
      * Creates a 2D image to be used as a canvas.
@@ -168,9 +130,6 @@ class Image : public GraphicsResource
 
     /** Gets the underlying pixel format of the image. */
     auto format() const -> ImageFormat;
-
-    /** Gets the number of mipmaps in the image. */
-    auto mipmap_count() const -> uint32_t;
 
     /** Gets the clear color of the image when it is set as a canvas. */
     auto canvas_clear_color() const -> std::optional<Color>;

@@ -58,11 +58,7 @@ class GraphicsDevice
                                uint32_t      height,
                                ImageFormat   format) -> gsl::not_null<ImageImpl*> = 0;
 
-    virtual auto create_image(uint32_t                   width,
-                              uint32_t                   height,
-                              ImageFormat                format,
-                              uint32_t                   mipmap_count,
-                              const Image::DataCallback& data_callback)
+    virtual auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
         -> gsl::not_null<ImageImpl*> = 0;
 
     void notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource);
@@ -87,6 +83,8 @@ class GraphicsDevice
 
     void set_sampler(const Sampler& sampler);
 
+    auto current_blend_state() const -> const BlendState&;
+
     void set_blend_state(const BlendState& blend_state);
 
     void draw_sprite(const Sprite& sprite);
@@ -104,6 +102,8 @@ class GraphicsDevice
                      const std::optional<TextDecoration>& decoration);
 
     void draw_text(const Text& text, Vector2 position, const Color& color);
+
+    void draw_particles(const ParticleSystem& particle_system);
 
     auto frame_stats() const -> FrameStats;
 

@@ -19,6 +19,7 @@
 #include <cerlib/Hashing.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Input.hpp>
+#include <cerlib/Interval.hpp>
 #include <cerlib/Key.hpp>
 #include <cerlib/KeyModifier.hpp>
 #include <cerlib/Logging.hpp>
@@ -26,6 +27,10 @@
 #include <cerlib/Matrix.hpp>
 #include <cerlib/MouseButton.hpp>
 #include <cerlib/OStreamCompat.hpp>
+#include <cerlib/Particle.hpp>
+#include <cerlib/ParticleEmitter.hpp>
+#include <cerlib/ParticleModifier.hpp>
+#include <cerlib/ParticleSystem.hpp>
 #include <cerlib/Rectangle.hpp>
 #include <cerlib/Sampler.hpp>
 #include <cerlib/Shader.hpp>

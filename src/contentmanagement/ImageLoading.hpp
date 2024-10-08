@@ -12,10 +12,9 @@ namespace cer::details
 class GraphicsDevice;
 class ImageImpl;
 
-auto load_image(GraphicsDevice&            device_impl,
-                std::span<const std::byte> memory,
-                bool                       generate_mipmaps) -> gsl::not_null<ImageImpl*>;
+auto load_image(GraphicsDevice& device_impl, std::span<const std::byte> memory)
+    -> gsl::not_null<ImageImpl*>;
 
-auto load_image(GraphicsDevice& device_impl, std::string_view filename, bool generate_mipmaps)
+auto load_image(GraphicsDevice& device_impl, std::string_view filename)
     -> gsl::not_null<ImageImpl*>;
 } // namespace cer::details

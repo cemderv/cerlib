@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/details/ObjectMacros.hpp>
+#include <cerlib/Interval.hpp>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -92,6 +92,7 @@ auto ceiling(T value) -> T;
 
 /**
  * Calculates a random integer in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -102,6 +103,7 @@ auto random_int(int32_t min, int32_t max) -> int32_t;
 
 /**
  * Calculates a random unsigned integer in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -112,6 +114,7 @@ auto random_uint(uint32_t min, uint32_t max) -> uint32_t;
 
 /**
  * Calculates a random single-precision floating-point value in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -122,6 +125,7 @@ auto random_float(float min = 0.0f, float max = 1.0f) -> float;
 
 /**
  * Calculates a random double-precision floating-point value in the interval `[min, max)`.
+ * The number is determined using a Mersenne Twister.
  *
  * @param min The minimum allowed value
  * @param max The upper bound
@@ -129,6 +133,108 @@ auto random_float(float min = 0.0f, float max = 1.0f) -> float;
  * @ingroup Math
  */
 auto random_double(double min = 0.0, double max = 1.0) -> double;
+
+/**
+ * Seeds the randomizer that is used in fastrand_* functions.
+ *
+ * @param value The new seed
+ */
+void seed_fastrand(int32_t value);
+
+/**
+ * Calculates a random integer.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_int() -> int32_t;
+
+/**
+ * Calculates a random integer in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ *
+ * @ingroup Math
+ */
+auto fastrand_int(int32_t min, int32_t max) -> int32_t;
+
+/**
+ * Calculates a random integer in a specific interval.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_int(const IntInterval& interval) -> int32_t;
+
+/**
+ * Calculates a random unsigned integer.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_uint() -> uint32_t;
+
+/**
+ * Calculates a random unsigned integer in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ *
+ * @ingroup Math
+ */
+auto fastrand_uint(uint32_t min, uint32_t max) -> uint32_t;
+
+/**
+ * Calculates a random unsigned integer in a specific interval.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_uint(const UIntInterval& interval) -> uint32_t;
+
+/**
+ * Calculates a random single-precision floating-point value in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_float_zero_to_one() -> float;
+
+/**
+ * Calculates a random single-precision floating-point value in the interval `[min, max]`.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ *
+ * @ingroup Math
+ */
+auto fastrand_float(float min, float max) -> float;
+
+/**
+ * Calculates a random single-precision floating-point value in a specific interval.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_float(const FloatInterval& interval) -> float;
+
+/**
+ * Calculates a random angle value, in radians.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_angle() -> float;
 
 /**
  * Returns the smaller of two values.
@@ -249,6 +355,9 @@ constexpr auto inverse_lerp(T start, T end, T value) -> T;
 template <std::floating_point T>
 constexpr auto smoothstep(T start, T end, T t) -> T;
 
+template <Number T>
+constexpr auto squared(const T& value) -> T;
+
 /**
  * Proportionally maps a value from one range to another.
  * @tparam T The type of value to remap.
@@ -301,30 +410,6 @@ auto equal_within_epsilon(T lhs, T rhs) -> bool;
  */
 template <std::floating_point T>
 auto equal_within(T lhs, T rhs, T threshold) -> bool;
-
-/**
- * Gets the extent of a mipmap at a specific level.
- *
- * @param base_extent The base extent. Typically the extent of the largest mipmap (the
- * image size).
- * @param mipmap The mipmap level to calculate the extent of.
- * @return The mipmap's extent.
- *
- * @ingroup Math
- */
-auto mipmap_extent(uint32_t base_extent, uint32_t mipmap) -> uint32_t;
-
-/**
- * Gets the numbers of mipmaps that can be generated for a specific base
- * extent.
- *
- * @param base_extent The base extent. Typically the extent of the largest mipmap (the
- * image size).
- * @return The number of mipmaps that can be generated, including the base mipmap.
- *
- * @ingroup Math
- */
-auto max_mipmap_count_for_extent(uint32_t base_extent) -> uint32_t;
 
 /**
  * Calculates a number that is aligned to a specific alignment.
@@ -462,6 +547,12 @@ constexpr auto cer::smoothstep(T start, T end, T t) -> T
     t = t > 1 ? 1 : t < 0 ? 0 : t;
     t = t * t * (3.0f - 3.0f * t);
     return lerp(start, end, t);
+}
+
+template <cer::Number T>
+constexpr auto cer::squared(const T& value) -> T
+{
+    return value * value;
 }
 
 template <std::floating_point T>
