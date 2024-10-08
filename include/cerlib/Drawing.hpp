@@ -21,7 +21,7 @@ struct BlendState;
 struct Sampler;
 
 /**
- * Defines various flip factors for 2D sprites that are drawn using DrawSprite().
+ * Defines various flip factors for 2D sprites that are drawn using draw_sprite().
  *
  * @ingroup Graphics
  */
