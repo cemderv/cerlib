@@ -399,7 +399,8 @@ ParticleSystem::ParticleSystem(std::vector<ParticleEmitter> emitters)
     for (auto&& emitter : emitters)
     {
         m_emitters.push_back(EmitterData{
-            .emitter = std::move(emitter),
+            .emitter         = std::move(emitter),
+            .particle_buffer = {},
         });
     }
 }
