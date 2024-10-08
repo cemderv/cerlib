@@ -32,7 +32,7 @@ namespace cer::details
 {
 GraphicsDevice::GraphicsDevice()
     : m_must_flush_draw_calls(false)
-    , m_blend_state(BlendState::non_premultiplied())
+    , m_blend_state(non_premultiplied)
     , m_sampler(linear_clamp)
 {
     FontImpl::create_built_in_fonts();

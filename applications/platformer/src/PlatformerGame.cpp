@@ -8,12 +8,8 @@ PlatformerGame::PlatformerGame()
     // The original game is written for a fixed resolution of 800x480 pixels.
     constexpr cer::Vector2 resolution{800, 480};
 
-    m_window = cer::Window{"Platformer Game",
-                           0,
-                           {},
-                           {},
-                           uint32_t(resolution.x),
-                           uint32_t(resolution.y)};
+    m_window =
+        cer::Window{"Platformer Game", 0, {}, {}, uint32_t(resolution.x), uint32_t(resolution.y)};
 
     m_window.set_resizable(false);
     m_window.set_clear_color(cer::green);
@@ -106,7 +102,7 @@ void PlatformerGame::draw(const cer::Window& window)
 {
     if (m_canvas)
     {
-        set_blend_state(cer::BlendState::non_premultiplied());
+        set_blend_state(cer::non_premultiplied);
         m_canvas.set_canvas_clear_color(cer::red);
         set_canvas(m_canvas);
     }
@@ -116,7 +112,7 @@ void PlatformerGame::draw(const cer::Window& window)
 
     if (m_canvas)
     {
-        cer::set_blend_state(cer::BlendState::opaque());
+        cer::set_blend_state(cer::opaque);
         cer::set_canvas({});
 
         cer::draw_sprite({
@@ -144,7 +140,7 @@ void PlatformerGame::draw_hud()
     const double time_remaining = m_level->time_remaining();
 
     const std::string minutes_string = std::to_string(int(time_remaining / 60.0));
-    std::string seconds_string = std::to_string(int(std::fmod(time_remaining, 60)));
+    std::string       seconds_string = std::to_string(int(std::fmod(time_remaining, 60)));
 
     if (seconds_string.size() == 1)
     {
