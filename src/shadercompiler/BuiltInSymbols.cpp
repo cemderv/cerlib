@@ -249,11 +249,6 @@ BuiltInSymbols::BuiltInSymbols()
 
     add_func(sample_image, "sample", {{"image", image_t}, {"coords", vector2_t}}, *vector4_t);
 
-    add_func(sample_level_image,
-             "sample_level",
-             {{"image", image_t}, {"coords", vector2_t}, {"level", float_t}},
-             *vector4_t);
-
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(saturate);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(sign);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(sin);
@@ -348,20 +343,9 @@ auto BuiltInSymbols::contains(const Decl& symbol) const -> bool
     return std::ranges::find(m_all, &symbol) != m_all.cend();
 }
 
-auto BuiltInSymbols::is_general_image_sampling_function(const Decl& symbol) const -> bool
-{
-    return is_non_mipmapped_image_sampling_function(symbol) ||
-           is_mipmapped_image_sampling_function(symbol);
-}
-
-auto BuiltInSymbols::is_non_mipmapped_image_sampling_function(const Decl& symbol) const -> bool
+auto BuiltInSymbols::is_image_sampling_function(const Decl& symbol) const -> bool
 {
     return &symbol == sample_image.get();
-}
-
-auto BuiltInSymbols::is_mipmapped_image_sampling_function(const Decl& symbol) const -> bool
-{
-    return &symbol == sample_level_image.get();
 }
 
 auto BuiltInSymbols::accepts_implicitly_cast_arguments(const FunctionDecl& function) const -> bool

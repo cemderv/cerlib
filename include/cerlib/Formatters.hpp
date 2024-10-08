@@ -152,17 +152,14 @@ struct cer_fmt::formatter<cer::Image>
     {
         if (value)
         {
-            const auto name    = value.name();
-            const auto mipmaps = value.mipmap_count();
+            const auto name = value.name();
 
             return cer_fmt::format_to(ctx.out(),
-                                      "['{}'; {}x{}; {}; {} {}]",
+                                      "['{}'; {}x{}; {}]",
                                       name.empty() ? "<unnamed>" : name,
                                       value.width(),
                                       value.height(),
-                                      value.format(),
-                                      mipmaps,
-                                      mipmaps > 1 ? "mipmaps" : "mipmap");
+                                      value.format());
         }
 
         return cer_fmt::format_to(ctx.out(), "<none>");

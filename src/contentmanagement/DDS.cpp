@@ -31,9 +31,7 @@ static constexpr uint32_t D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION = 2048; // NOLI
 
 static constexpr auto make_fourcc(char ch0, char ch1, char ch2, char ch3) -> uint32_t
 {
-    return uint32_t(uint8_t(ch0)) |
-           uint32_t(uint8_t(ch1)) << 8 |
-           uint32_t(uint8_t(ch2)) << 16 |
+    return uint32_t(uint8_t(ch0)) | uint32_t(uint8_t(ch1)) << 8 | uint32_t(uint8_t(ch2)) << 16 |
            uint32_t(uint8_t(ch3)) << 24;
 }
 
@@ -503,9 +501,9 @@ static void fill_init_data(size_t                     width,
         {
             get_surface_info(w, h, format, &num_bytes, &row_bytes, &num_rows);
 
-            auto& face = init_data.faces.at(face_index);
-            auto& mip  = face.mipmaps.at(mip_index);
-            mip.data   = src_bits.subspan(0, num_bytes);
+            auto& face    = init_data.faces.at(face_index);
+            auto& mip     = face.mipmaps.at(mip_index);
+            mip.data_span = src_bits.subspan(0, num_bytes);
 
             src_bits = src_bits.subspan(num_bytes * d);
 
@@ -681,12 +679,6 @@ static auto create_image_from_dds(const DdsHeader& header, std::span<const std::
     image.format = *format;
 
     return image;
-}
-
-auto dds_image_data_upload(const DDSImage& dds_image, uint32_t array_index, uint32_t mipmap)
-    -> const void*
-{
-    return dds_image.faces.at(array_index).mipmaps.at(mipmap).data.data();
 }
 
 auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>

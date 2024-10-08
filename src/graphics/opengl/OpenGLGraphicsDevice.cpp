@@ -229,15 +229,12 @@ auto OpenGLGraphicsDevice::create_canvas(const Window& window,
     return std::make_unique<OpenGLImage>(this, window.impl(), width, height, format).release();
 }
 
-auto OpenGLGraphicsDevice::create_image(uint32_t                   width,
-                                        uint32_t                   height,
-                                        ImageFormat                format,
-                                        uint32_t                   mipmap_count,
-                                        const Image::DataCallback& data_callback)
-    -> gsl::not_null<ImageImpl*>
+auto OpenGLGraphicsDevice::create_image(uint32_t    width,
+                                        uint32_t    height,
+                                        ImageFormat format,
+                                        const void* data) -> gsl::not_null<ImageImpl*>
 {
-    return std::make_unique<OpenGLImage>(this, width, height, format, mipmap_count, data_callback)
-        .release();
+    return std::make_unique<OpenGLImage>(this, width, height, format, data).release();
 }
 
 auto OpenGLGraphicsDevice::opengl_features() const -> const OpenGLFeatures&

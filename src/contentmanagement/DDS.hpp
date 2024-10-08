@@ -19,7 +19,7 @@ namespace cer::dds
 {
 struct DDSMipmap
 {
-    std::span<const std::byte> data;
+    std::span<const std::byte> data_span;
 };
 
 struct DDSFace
@@ -35,9 +35,6 @@ struct DDSImage
     ImageFormat                format{};
     inplace_vector<DDSFace, 2> faces{};
 };
-
-auto dds_image_data_upload(const DDSImage& dds_image, uint32_t array_index, uint32_t mipmap)
-    -> const void*;
 
 auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>;
 } // namespace cer::dds

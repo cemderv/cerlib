@@ -46,10 +46,10 @@ auto cer::asset_loading_prefix() -> std::string
     return std::string{content.asset_loading_prefix()};
 }
 
-auto cer::load_image(std::string_view name, bool generate_mipmaps) -> cer::Image
+auto cer::load_image(std::string_view name) -> cer::Image
 {
     LOAD_CONTENT_MANAGER;
-    return content.load_image(name, generate_mipmaps);
+    return content.load_image(name);
 }
 
 auto cer::load_shader(std::string_view name, std::span<const std::string_view> defines)

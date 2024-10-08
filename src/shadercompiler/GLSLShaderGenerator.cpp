@@ -303,13 +303,9 @@ void GLSLShaderGenerator::generate_sym_access_expr(Writer&              w,
     {
         w << "mix";
     }
-    else if (built_ins.is_non_mipmapped_image_sampling_function(symbol))
+    else if (built_ins.is_image_sampling_function(symbol))
     {
         w << "texture";
-    }
-    else if (built_ins.is_mipmapped_image_sampling_function(symbol))
-    {
-        w << "textureLod";
     }
     else if (built_ins.is_atan2_function(symbol))
     {

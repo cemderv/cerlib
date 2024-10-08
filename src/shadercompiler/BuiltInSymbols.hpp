@@ -76,11 +76,7 @@ class BuiltInSymbols final
 
     auto contains(const Decl& symbol) const -> bool;
 
-    auto is_general_image_sampling_function(const Decl& symbol) const -> bool;
-
-    auto is_non_mipmapped_image_sampling_function(const Decl& symbol) const -> bool;
-
-    auto is_mipmapped_image_sampling_function(const Decl& symbol) const -> bool;
+    auto is_image_sampling_function(const Decl& symbol) const -> bool;
 
     auto accepts_implicitly_cast_arguments(const FunctionDecl& function) const -> bool;
 
@@ -164,7 +160,6 @@ class BuiltInSymbols final
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(round);
 
     std::unique_ptr<FunctionDecl> sample_image;
-    std::unique_ptr<FunctionDecl> sample_level_image;
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(saturate);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(sign);

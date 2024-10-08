@@ -412,30 +412,6 @@ template <std::floating_point T>
 auto equal_within(T lhs, T rhs, T threshold) -> bool;
 
 /**
- * Gets the extent of a mipmap at a specific level.
- *
- * @param base_extent The base extent. Typically the extent of the largest mipmap (the
- * image size).
- * @param mipmap The mipmap level to calculate the extent of.
- * @return The mipmap's extent.
- *
- * @ingroup Math
- */
-auto mipmap_extent(uint32_t base_extent, uint32_t mipmap) -> uint32_t;
-
-/**
- * Gets the numbers of mipmaps that can be generated for a specific base
- * extent.
- *
- * @param base_extent The base extent. Typically the extent of the largest mipmap (the
- * image size).
- * @return The number of mipmaps that can be generated, including the base mipmap.
- *
- * @ingroup Math
- */
-auto max_mipmap_count_for_extent(uint32_t base_extent) -> uint32_t;
-
-/**
  * Calculates a number that is aligned to a specific alignment.
  * @param number The number to align.
  * @param alignment The alignment.

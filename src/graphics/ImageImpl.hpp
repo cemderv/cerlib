@@ -27,8 +27,7 @@ class ImageImpl : public GraphicsResourceImpl
                        WindowImpl*                    window_for_canvas,
                        uint32_t                       width,
                        uint32_t                       height,
-                       ImageFormat                    format,
-                       uint32_t                       mipmap_count);
+                       ImageFormat                    format);
 
     auto is_canvas() const -> bool;
 
@@ -40,8 +39,6 @@ class ImageImpl : public GraphicsResourceImpl
 
     auto format() const -> ImageFormat;
 
-    auto mipmap_count() const -> uint32_t;
-
     auto canvas_clear_color() const -> std::optional<Color>;
 
     void set_canvas_clear_color(const std::optional<Color>& value);
@@ -52,7 +49,6 @@ class ImageImpl : public GraphicsResourceImpl
     uint32_t             m_width{};
     uint32_t             m_height{};
     ImageFormat          m_format{};
-    uint32_t             m_mipmap_count{};
     std::optional<Color> m_canvas_clear_color{};
 };
 } // namespace cer::details
