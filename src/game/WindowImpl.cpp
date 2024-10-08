@@ -89,7 +89,7 @@ WindowImpl::WindowImpl(std::string_view        title,
     , m_sdl_window(nullptr)
     , m_id(id)
     , m_sync_interval(1)
-    , m_clear_color(cornflowerblue)
+    , m_clear_color(cornflowerblue * 0.25f)
 {
     log_verbose("Creating window with title '{}'", title);
 
