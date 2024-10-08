@@ -13,6 +13,7 @@ set(graphics_files
   Image.cpp
   ImageImpl.cpp
   ImageImpl.hpp
+  ParticleSystem.cpp
   Shader.cpp
   ShaderImpl.cpp
   ShaderImpl.hpp

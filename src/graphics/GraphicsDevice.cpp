@@ -8,6 +8,7 @@
 #include "ShaderImpl.hpp"
 #include "SpriteBatch.hpp"
 #include "cerlib/Logging.hpp"
+#include "cerlib/ParticleSystem.hpp"
 #include "shadercompiler/BinOpTable.hpp"
 #include "shadercompiler/BuiltInSymbols.hpp"
 #include "shadercompiler/Casting.hpp"
@@ -416,6 +417,11 @@ void GraphicsDevice::set_sampler(const Sampler& sampler)
     }
 }
 
+auto GraphicsDevice::current_blend_state() const -> const BlendState&
+{
+    return m_blend_state;
+}
+
 void GraphicsDevice::set_blend_state(const BlendState& blend_state)
 {
     if (m_blend_state != blend_state)
@@ -446,6 +452,48 @@ void GraphicsDevice::draw_text(const Text& text, Vector2 position, const Color& 
 {
     ensure_category(Category::SpriteBatch);
     m_sprite_batch->draw_text(text, position, color);
+}
+
+void GraphicsDevice::draw_particles(const ParticleSystem& particle_system)
+{
+    const auto previous_blend_state = m_blend_state;
+
+
+    for (const auto& emitter_data : particle_system.m_emitters)
+    {
+        const auto& emitter = emitter_data.emitter;
+        const auto& image   = emitter.image;
+
+        if (!image)
+        {
+            continue;
+        }
+
+        set_blend_state(emitter.blend_state);
+        ensure_category(Category::SpriteBatch);
+
+        const auto image_size = image.size();
+        const auto origin     = image_size * 0.5f;
+
+        const auto particles_span =
+            std::span{emitter_data.particle_buffer.data(), emitter_data.active_particle_count};
+
+        auto sprite = Sprite{
+            .image  = image,
+            .origin = origin,
+        };
+
+        for (const auto& particle : particles_span)
+        {
+            sprite.dst_rect = {particle.position, image_size * particle.scale};
+            sprite.color    = particle.color;
+            sprite.rotation = particle.rotation;
+
+            m_sprite_batch->draw_sprite(sprite, SpriteBatch::SpriteShaderKind::Default);
+        }
+    }
+
+    set_blend_state(previous_blend_state);
 }
 
 void GraphicsDevice::fill_rectangle(const Rectangle& rectangle,

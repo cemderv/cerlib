@@ -17,6 +17,7 @@ namespace cer
 class Font;
 class Shader;
 class Text;
+class ParticleSystem;
 struct BlendState;
 struct Sampler;
 
@@ -278,6 +279,13 @@ void fill_rectangle(Rectangle rectangle,
                     Color     color    = white,
                     float     rotation = 0.0f,
                     Vector2   origin   = Vector2());
+
+/**
+ * Draws a 2D particle system.
+ *
+ * @param particle_system The particle system to draw
+ */
+void draw_particles(const ParticleSystem& particle_system);
 
 /**
  * Gets statistics about the previous frame.

@@ -87,6 +87,8 @@ class GraphicsDevice
 
     void set_sampler(const Sampler& sampler);
 
+    auto current_blend_state() const -> const BlendState&;
+
     void set_blend_state(const BlendState& blend_state);
 
     void draw_sprite(const Sprite& sprite);
@@ -104,6 +106,8 @@ class GraphicsDevice
                      const std::optional<TextDecoration>& decoration);
 
     void draw_text(const Text& text, Vector2 position, const Color& color);
+
+    void draw_particles(const ParticleSystem& particle_system);
 
     auto frame_stats() const -> FrameStats;
 
