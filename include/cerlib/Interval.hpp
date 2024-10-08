@@ -22,8 +22,6 @@ struct IntervalType
 {
     constexpr IntervalType() = default;
 
-    constexpr IntervalType(const T& value);
-
     constexpr IntervalType(const T& min, const T& max);
 
     constexpr auto contains(const T& value) const -> bool;
@@ -40,18 +38,10 @@ struct IntervalType
 #include <cassert>
 
 template <typename T>
-constexpr cer::details::IntervalType<T>::IntervalType(const T& value)
-    : min(value)
-    , max(value)
-{
-}
-
-template <typename T>
 constexpr cer::details::IntervalType<T>::IntervalType(const T& min, const T& max)
     : min(min)
     , max(max)
 {
-    // assert(min <= max);
 }
 
 template <typename T>
@@ -62,9 +52,18 @@ constexpr auto cer::details::IntervalType<T>::contains(const T& value) const -> 
 
 namespace cer
 {
+/**
+ * Represents a closed interval of floating-point values.
+ */
 using FloatInterval = details::IntervalType<float>;
 
+/**
+ * Represents a closed interval of integer values.
+ */
 using IntInterval = details::IntervalType<int32_t>;
 
+/**
+ * Represents a closed interval of unsigned integer values.
+ */
 using UIntInterval = details::IntervalType<uint32_t>;
 } // namespace cer

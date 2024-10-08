@@ -61,6 +61,9 @@ struct Color
     float a{};
 };
 
+/**
+ * Represents a closed interval of color values.
+ */
 using ColorInterval = details::IntervalType<Color>;
 
 /**
