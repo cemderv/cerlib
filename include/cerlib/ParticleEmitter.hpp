@@ -38,18 +38,5 @@ struct ParticleEmitter
     ParticleEmissionParams        emission;
     BlendState                    blend_state = BlendState::additive();
     Image                         image;
-
-    auto particles() const -> std::span<const Particle>
-    {
-        return {s_.particles.begin(), size_t(s_.active_particle_count)};
-    }
-
-    struct State
-    {
-        float                 timer = 0.0f;
-        std::vector<Particle> particles;
-        uint32_t              active_particle_count   = 0;
-        float                 time_since_last_reclaim = 0.0f;
-    } s_;
 };
 } // namespace cer

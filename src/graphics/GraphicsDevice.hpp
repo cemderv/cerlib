@@ -107,6 +107,8 @@ class GraphicsDevice
 
     void draw_text(const Text& text, Vector2 position, const Color& color);
 
+    void draw_particles(const ParticleSystem& particle_system);
+
     auto frame_stats() const -> FrameStats;
 
     auto current_canvas_size() const -> Vector2;

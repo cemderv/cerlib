@@ -10,8 +10,15 @@
 
 namespace cer
 {
+namespace details
+{
+class GraphicsDevice;
+}
+
 class ParticleSystem
 {
+    friend details::GraphicsDevice;
+
   public:
     ParticleSystem();
 
@@ -31,13 +38,36 @@ class ParticleSystem
 
     void trigger_from_to(Vector2 from, Vector2 to);
 
+    auto emitter_count() const -> size_t;
+
+    auto emitter_at(size_t index) -> ParticleEmitter&;
+
+    auto emitter_at(size_t index) const -> const ParticleEmitter&;
+
     auto active_particle_count() const -> size_t;
 
-    auto emitters() -> std::span<ParticleEmitter>;
-
-    auto emitters() const -> std::span<const ParticleEmitter>;
+    auto active_particle_count(size_t index) const -> size_t;
 
   private:
-    std::vector<ParticleEmitter> m_emitters;
+    struct EmitterData
+    {
+        ParticleEmitter       emitter;
+        float                 timer = 0.0f;
+        std::vector<Particle> particle_buffer;
+        size_t                active_particle_count   = 0;
+        float                 time_since_last_reclaim = 0.0f;
+    } s_;
+
+    void reclaim_expired_particles(EmitterData& emitter);
+
+    void update_emitter(EmitterData& data, float elapsed_time);
+
+    void emit(EmitterData& data, Vector2 position, uint32_t count);
+
+    void trigger_emitter_at(EmitterData& emitter, Vector2 position);
+
+    void trigger_emitter_from_to(EmitterData& emitter, Vector2 from, Vector2 to);
+
+    std::vector<EmitterData> m_emitters;
 };
 } // namespace cer

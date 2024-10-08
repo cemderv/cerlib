@@ -185,18 +185,19 @@ static void execute_modifier(const ParticleModifier& modifier,
         modifier);
 }
 
-static void reclaim_expired_particles(ParticleEmitter& emitter)
+void ParticleSystem::reclaim_expired_particles(EmitterData& data)
 {
     auto expired_particle_count = uint32_t(0);
 
-    auto&      state      = emitter.s_;
-    const auto time       = state.timer;
-    const auto count      = state.active_particle_count;
+    auto& emitter = data.emitter;
+
+    const auto time       = data.timer;
+    const auto count      = data.active_particle_count;
     const auto duration_f = float(std::chrono::duration<double>{emitter.duration}.count());
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        const auto& particle = state.particles[i];
+        const auto& particle = data.particle_buffer[i];
 
         if ((time - particle.inception) < duration_f)
         {
@@ -206,49 +207,48 @@ static void reclaim_expired_particles(ParticleEmitter& emitter)
         ++expired_particle_count;
     }
 
-    state.active_particle_count -= expired_particle_count;
+    data.active_particle_count -= expired_particle_count;
 
-    assert(expired_particle_count < state.particles.size());
+    assert(expired_particle_count < data.particle_buffer.size());
 
-    std::copy_n(state.particles.cbegin() + expired_particle_count,
-                state.active_particle_count,
-                state.particles.begin());
+    std::copy_n(data.particle_buffer.cbegin() + expired_particle_count,
+                data.active_particle_count,
+                data.particle_buffer.begin());
 }
 
-static void update_emitter(ParticleEmitter& emitter, float elapsed_time)
+void ParticleSystem::update_emitter(EmitterData& data, float elapsed_time)
 {
-    auto& state = emitter.s_;
+    auto& emitter = data.emitter;
 
-    state.timer += elapsed_time;
-    state.time_since_last_reclaim += elapsed_time;
+    data.timer += elapsed_time;
+    data.time_since_last_reclaim += elapsed_time;
 
-    if (state.active_particle_count == 0)
+    if (data.active_particle_count == 0)
     {
         return;
     }
 
-    if (state.time_since_last_reclaim > default_particle_reclaim_frequency)
+    if (data.time_since_last_reclaim > default_particle_reclaim_frequency)
     {
-        reclaim_expired_particles(emitter);
-        state.time_since_last_reclaim -= default_particle_reclaim_frequency;
+        reclaim_expired_particles(data);
+        data.time_since_last_reclaim -= default_particle_reclaim_frequency;
     }
 
     const auto duration_f = float(std::chrono::duration<double>{emitter.duration}.count());
 
-    if (state.active_particle_count > 0)
+    if (data.active_particle_count > 0)
     {
-        for (auto& particle : state.particles)
+        for (auto& particle : data.particle_buffer)
         {
-            particle.age = (state.timer - particle.inception) / duration_f;
+            particle.age = (data.timer - particle.inception) / duration_f;
             particle.position += particle.velocity * elapsed_time;
         }
 
-        // Execute modifiers
         for (const auto& modifier : emitter.modifiers)
         {
             execute_modifier(modifier,
                              elapsed_time,
-                             std::span{state.particles.data(), state.active_particle_count});
+                             std::span{data.particle_buffer.data(), data.active_particle_count});
         }
     }
 }
@@ -326,34 +326,34 @@ static auto calculate_random_offset_and_heading(const ParticleEmitterShape& shap
     return std::visit(ParticleEmitterShapeVisitor{}, shape);
 }
 
-static void emit(ParticleEmitter& emitter, Vector2 position, uint32_t count)
+void ParticleSystem::emit(EmitterData& data, Vector2 position, uint32_t count)
 {
-    auto& state = emitter.s_;
+    auto& emitter = data.emitter;
 
-    const auto previous_active_particle_count = state.active_particle_count;
+    const auto previous_active_particle_count = data.active_particle_count;
     const auto new_active_particle_count      = previous_active_particle_count + count;
 
     // Ensure that the particle buffer is large enough.
-    const auto particles_cap = state.particles.capacity();
+    const auto particles_cap = data.particle_buffer.capacity();
     if (new_active_particle_count > particles_cap)
     {
         if (particles_cap == 0)
         {
-            state.particles.resize(default_particles_buffer_capacity);
+            data.particle_buffer.resize(default_particles_buffer_capacity);
         }
         else
         {
-            const auto new_capacity = uint32_t(double(particles_cap) * 1.5);
+            const auto new_capacity = size_t(double(particles_cap) * 1.5);
 
-            state.particles.resize(size_t(max(new_capacity, new_active_particle_count)));
+            data.particle_buffer.resize(size_t(max(new_capacity, new_active_particle_count)));
         }
     }
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        auto& particle = state.particles[previous_active_particle_count + i];
+        auto& particle = data.particle_buffer[previous_active_particle_count + i];
 
-        particle.inception = state.timer;
+        particle.inception = data.timer;
         particle.age       = 0.0f;
 
         const auto [offset, heading] = calculate_random_offset_and_heading(emitter.shape);
@@ -370,31 +370,38 @@ static void emit(ParticleEmitter& emitter, Vector2 position, uint32_t count)
         particle.mass     = fastrand_float(emitter.emission.mass);
     }
 
-    state.active_particle_count = new_active_particle_count;
+    data.active_particle_count = new_active_particle_count;
 }
 
-static void trigger_emitter_at(ParticleEmitter& emitter, Vector2 position)
+void ParticleSystem::trigger_emitter_at(EmitterData& data, Vector2 position)
 {
-    emit(emitter, position, fastrand_uint(emitter.emission.quantity));
+    emit(data, position, fastrand_uint(data.emitter.emission.quantity));
 }
 
-static void trigger_emitter_from_to(ParticleEmitter& emitter, Vector2 from, Vector2 to)
+void ParticleSystem::trigger_emitter_from_to(EmitterData& data, Vector2 from, Vector2 to)
 {
-    const auto count     = fastrand_uint(emitter.emission.quantity);
+    const auto count     = fastrand_uint(data.emitter.emission.quantity);
     const auto direction = to - from;
 
     for (uint32_t i = 0; i < count; ++i)
     {
         const auto offset = direction * fastrand_float_zero_to_one();
-        emit(emitter, from + offset, 1);
+        emit(data, from + offset, 1);
     }
 }
 
 ParticleSystem::ParticleSystem() = default;
 
 ParticleSystem::ParticleSystem(std::vector<ParticleEmitter> emitters)
-    : m_emitters(std::move(emitters))
 {
+    m_emitters.reserve(emitters.size());
+
+    for (auto&& emitter : emitters)
+    {
+        m_emitters.push_back(EmitterData{
+            .emitter = std::move(emitter),
+        });
+    }
 }
 
 ParticleSystem::ParticleSystem(ParticleSystem&&) noexcept = default;
@@ -430,19 +437,28 @@ auto ParticleSystem::active_particle_count() const -> size_t
     return std::accumulate(m_emitters.cbegin(),
                            m_emitters.cend(),
                            size_t(0),
-                           [](size_t count, const auto& emitter) {
-                               return count + emitter.particles().size();
+                           [](size_t count, const EmitterData& data) {
+                               return count + data.active_particle_count;
                            });
 }
 
-auto ParticleSystem::emitters() -> std::span<ParticleEmitter>
+auto ParticleSystem::active_particle_count(size_t index) const -> size_t
 {
-    return m_emitters;
+    return m_emitters.at(index).active_particle_count;
 }
 
-auto ParticleSystem::emitters() const -> std::span<const ParticleEmitter>
+auto ParticleSystem::emitter_count() const -> size_t
 {
-    return m_emitters;
+    return m_emitters.size();
 }
 
+auto ParticleSystem::emitter_at(size_t index) -> ParticleEmitter&
+{
+    return m_emitters.at(index).emitter;
+}
+
+auto ParticleSystem::emitter_at(size_t index) const -> const ParticleEmitter&
+{
+    return m_emitters.at(index).emitter;
+}
 } // namespace cer
