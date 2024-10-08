@@ -45,7 +45,7 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, GLint(mipmap_count - 1)));
 #endif
 
-    last_applied_sampler = Sampler::linear_clamp();
+    last_applied_sampler = linear_clamp;
 
     for (uint32_t m = 0; m < mipmap_count; ++m)
     {

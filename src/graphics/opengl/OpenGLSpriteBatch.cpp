@@ -272,7 +272,7 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
             if (opengl_image != nullptr)
             {
                 // TODO: make the sampler a parameter-based setting
-                constexpr auto sampler = Sampler::linear_repeat();
+                constexpr auto sampler = linear_repeat;
                 apply_sampler_to_gl_context(sampler);
                 opengl_image->last_applied_sampler = sampler;
             }
@@ -294,7 +294,7 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
     if (*shader_program == m_monochromatic_shader_program)
     {
         // We're drawing text. Use nearest neighbor interpolation.
-        apply_sampler_to_gl_context(Sampler::point_clamp());
+        apply_sampler_to_gl_context(point_clamp);
     }
     else if (opengl_image->last_applied_sampler != sampler)
     {
