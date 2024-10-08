@@ -104,7 +104,7 @@ static void shape_text(std::string_view                     text,
 
                         dst_decoration_rects.push_back({
                             .rect  = deco_rect,
-                            .color = underline->color,
+                            .color = strikethrough->color,
                         });
                     }
                 }
