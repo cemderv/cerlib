@@ -80,16 +80,16 @@ if (CERLIB_ENABLE_IMGUI)
   CPMAddPackage(
     NAME ImGui
     GITHUB_REPOSITORY ocornut/imgui
-    VERSION 1.91.2
+    VERSION 1.91.3
     GIT_SHALLOW
   )
-endif()
+endif ()
 
 if (NOT EMSCRIPTEN)
   CPMAddPackage(
     NAME SDL
     GITHUB_REPOSITORY libsdl-org/SDL
-    GIT_TAG 40d85109acb676686de0db0ced7209e24bc9fc7f
+    GIT_TAG preview-3.1.3
     OPTIONS
     "SDL_MISC OFF"
     "SDL_OFFSCREEN OFF"
