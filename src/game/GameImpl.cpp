@@ -8,6 +8,7 @@
 #include "cerlib/Input.hpp"
 #include "cerlib/Logging.hpp"
 #include "cerlib/RunGame.hpp"
+#include "cerlib/Version.hpp"
 #include "contentmanagement/ContentManager.hpp"
 #include "contentmanagement/FileSystem.hpp"
 #include "graphics/FontImpl.hpp"
@@ -110,11 +111,19 @@ using namespace std::chrono_literals;
 
 static std::unique_ptr<GameImpl> s_game_instance;
 
-static constexpr bool force_audio_disabled = false;
-
 GameImpl::GameImpl(bool enable_audio)
 {
     log_verbose("Creating game");
+
+    if (is_desktop_platform() && enable_audio)
+    {
+        if (const auto* env = SDL_getenv("CERLIB_DISABLE_AUDIO");
+            env != nullptr && std::strncmp(env, "1", 1) == 0)
+        {
+            log_verbose("Implicitly disabling audio due to environment variable");
+            enable_audio = false;
+        }
+    }
 
     auto init_flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
 
@@ -136,7 +145,7 @@ GameImpl::GameImpl(bool enable_audio)
 
     log_verbose("SDL is initialized");
 
-    if (enable_audio && !force_audio_disabled)
+    if (enable_audio)
     {
         log_verbose("Audio is enabled, attempting to initialize it");
 

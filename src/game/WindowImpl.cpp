@@ -69,7 +69,7 @@ static auto sdl_window_event_watcher(void* userdata, SDL_Event* event)
 #ifdef __EMSCRIPTEN__
     return 0;
 #else
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
@@ -272,12 +272,20 @@ void WindowImpl::set_visible(bool value)
 
 void WindowImpl::set_always_on_top(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowAlwaysOnTop(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowAlwaysOnTop(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::set_bordered(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowBordered(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowBordered(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::set_full_screen(bool value)
@@ -291,7 +299,11 @@ void WindowImpl::set_full_screen(bool value)
 
 void WindowImpl::set_resizable(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowResizable(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowResizable(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::minimize()
@@ -326,7 +338,11 @@ void WindowImpl::set_maximum_size(uint32_t width, uint32_t height)
 
 void WindowImpl::set_mouse_grab(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowMouseGrab(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowMouseGrab(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::set_position(int32_t x, int32_t y)
