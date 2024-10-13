@@ -80,7 +80,10 @@ ContentManager::~ContentManager() noexcept
         }
         else if (auto** sound = std::get_if<SoundImpl*>(&asset))
         {
-            (*sound)->m_content_manager = nullptr;
+            if (*sound != nullptr)
+            {
+                (*sound)->m_content_manager = nullptr;
+            }
         }
         else if (auto** shader = std::get_if<ShaderImpl*>(&asset))
         {
