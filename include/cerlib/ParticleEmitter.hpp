@@ -77,7 +77,7 @@ struct ParticleEmitter
     ParticleEmissionParams emission;
 
     /** The blend state that is used for this emitter's particles. */
-    BlendState blend_state = cer::additive;
+    BlendState blend_state = additive;
 
     /** The image that is used for this emitter's particles. */
     Image image;

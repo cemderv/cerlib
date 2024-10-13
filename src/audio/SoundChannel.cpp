@@ -96,7 +96,7 @@ void SoundChannel::set_looping(bool value)
     impl->set_is_looping(value);
 }
 
-std::chrono::duration<double> SoundChannel::loop_point() const
+auto SoundChannel::loop_point() const -> std::chrono::duration<double>
 {
     DECLARE_THIS_IMPL;
     return impl->loop_point();
