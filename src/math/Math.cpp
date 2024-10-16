@@ -2,8 +2,7 @@
 // This file is part of cerlib.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include <cerlib/Math.hpp>
-
+#include "cerlib/Math.hpp"
 #include <random>
 
 namespace cer::details

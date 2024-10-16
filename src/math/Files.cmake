@@ -1,4 +1,10 @@
 set(math_files
   Math.cpp
   Tween.cpp
+  Vector2.cpp
+  Vector3.cpp
+  Vector4.cpp
+  Matrix.cpp
+  Rectangle.cpp
+  Color.cpp
 )
