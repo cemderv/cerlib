@@ -65,8 +65,51 @@ list(TRANSFORM cerlib_public_files PREPEND ${cerlib_include_dir}/)
 # Add public files to target
 target_sources(cerlib PRIVATE ${cerlib_public_files})
 target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
-
 source_group("Public" FILES ${cerlib_public_files})
+
+# Precompiled headers
+target_precompile_headers(cerlib PRIVATE
+  <algorithm>
+  <any>
+  <cassert>
+  <chrono>
+  <cstddef>
+  <cstdint>
+  <exception>
+  <fmt/format.h>
+  <functional>
+  <gsl/narrow>
+  <gsl/pointers>
+  <gsl/util>
+  <map>
+  <memory>
+  <optional>
+  <ostream>
+  <ranges>
+  <set>
+  <span>
+  <string>
+  <string_view>
+  <thread>
+  <tuple>
+  <unordered_map>
+  <unordered_set>
+  <utility>
+  <variant>
+  <vector>
+  <soloud.h>
+  <soloud_wav.h>
+  util/InternalError.hpp
+  util/Object.hpp
+  util/Util.hpp
+  util/Platform.hpp
+)
+
+if (EMSCRIPTEN)
+  target_precompile_headers(cerlib PRIVATE <SDL2/SDL.h>)
+else ()
+  target_precompile_headers(cerlib PRIVATE <SDL3/SDL.h>)
+endif ()
 
 set(src_sub_dirs
   audio
