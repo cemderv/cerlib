@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-linux:
+    name: Linux build
     runs-on: ubuntu-22.04
     container: gcc:13
     steps:
@@ -31,9 +32,6 @@ jobs:
           -DCERLIB_ENABLE_TESTS=ON \
           -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
-      - name: Run Cppcheck (GCC)
-        run: python3 cppcheck.py ${{github.workspace}}/build-gcc
-
       - name: Build (GCC)
         run: cmake --build ${{github.workspace}}/build-gcc --config Release --parallel
 
@@ -50,7 +48,7 @@ jobs:
           -DCERLIB_ENABLE_TESTS=ON \
           -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
-      - name: Run Cppcheck (Clang)
+      - name: Run Cppcheck
         run: python3 cppcheck.py ${{github.workspace}}/build-clang
 
       - name: Build (Clang)
@@ -60,6 +58,7 @@ jobs:
         run: ${{github.workspace}}/build-clang/bin/Release/cerlibTests
 
   build-windows:
+    name: Windows build
     strategy:
       matrix:
         os: [ 2022 ]
@@ -72,15 +71,16 @@ jobs:
           cmake -B ${{github.workspace}}/build -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel
+        run: cmake --build ${{github.workspace}}/build --config Release --parallel
 
       - name: Run Tests
         run: ${{github.workspace}}\build\bin\Release\cerlibTests.exe
 
   build-macos:
+    name: macOS build
     strategy:
       matrix:
-        os: [ 13 ]
+        os: [ 13, 14 ]
     runs-on: macos-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
