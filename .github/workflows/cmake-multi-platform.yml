@@ -52,6 +52,7 @@ jobs:
       - name: Run Tests (Clang)
         run: ${{github.workspace}}/build-clang/bin/Release/cerlibTests
 
+
   build-windows:
     name: Windows build
     strategy:
@@ -71,6 +72,7 @@ jobs:
       - name: Run Tests
         run: ${{github.workspace}}\build\bin\Release\cerlibTests.exe
 
+
   build-macos:
     name: macOS build
     strategy:
@@ -89,5 +91,4 @@ jobs:
 
       - name: Run Tests
         run: ${{github.workspace}}/build/bin/Release/cerlibTests
-
-
+        
