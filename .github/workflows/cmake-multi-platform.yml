@@ -56,7 +56,7 @@ jobs:
     name: Windows build
     strategy:
       matrix:
-        os: [ 2019, 2022 ]
+        os: [ 2022 ]
     runs-on: windows-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
