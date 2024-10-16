@@ -160,7 +160,7 @@ jobs:
 
       - name: Install prerequisites
         run: |
-          brew install cmake ninja
+          brew install ninja
       
       - name: CPM source code cache
         uses: actions/cache@v4
