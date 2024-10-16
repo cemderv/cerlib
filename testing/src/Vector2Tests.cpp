@@ -2,6 +2,7 @@
 // This file is part of cerlib.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
+#include <cerlib/Math.hpp>
 #include <cerlib/OStreamCompat.hpp>
 #include <cerlib/Vector2.hpp>
 #include <snitch/snitch.hpp>

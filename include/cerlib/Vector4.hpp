@@ -254,9 +254,9 @@ auto is_zero(const Vector4& vector) -> bool;
  *
  * @ingroup Math
  */
-static auto are_equal_within(const Vector4& lhs,
-                             const Vector4& rhs,
-                             float threshold = std::numeric_limits<float>::epsilon()) -> bool;
+auto are_equal_within(const Vector4& lhs,
+                      const Vector4& rhs,
+                      float          threshold = std::numeric_limits<float>::epsilon()) -> bool;
 
 /**
  * Calculates the smaller of two 4D vectors.
