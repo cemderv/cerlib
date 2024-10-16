@@ -10,8 +10,10 @@ env:
   cpm_src_cache_name: cpm-src-cache
 
 jobs:
-  build-linux:
-    name: Linux build
+  build-linux-gcc:
+    name: Linux build (GCC)
+    strategy:
+      fail-fast: true
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +21,44 @@ jobs:
       - name: CPM source code cache
         uses: actions/cache@v4
         with:
-          path: ${{github.workspace}}/build-*/_deps/*-src
+          path: ${{github.workspace}}/build/_deps/*-src
+          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{env.cpm_src_cache_name}}-
+
+      - name: Set up APT packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
+          version: 1.0
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{github.workspace}}/build \
+          -G "Ninja Multi-Config" \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DCERLIB_ENABLE_TESTS=ON \
+          -DCERLIB_ENABLE_RENDERING_TESTS=OFF
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config Release --parallel
+
+      - name: Run Tests
+        run: ${{github.workspace}}/build/bin/Release/cerlibTests
+
+        
+  build-linux-clang:
+    name: Linux build (Clang)
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: CPM source code cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/build/_deps/*-src
           key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
             ${{env.cpm_src_cache_name}}-
@@ -30,23 +69,9 @@ jobs:
           packages: cmake clang-16 build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
           version: 1.0
 
-      - name: Configure CMake (GCC)
+      - name: Configure CMake
         run: |
-          cmake -B ${{github.workspace}}/build-gcc \
-          -G "Ninja Multi-Config" \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-          -DCERLIB_ENABLE_TESTS=ON \
-          -DCERLIB_ENABLE_RENDERING_TESTS=OFF
-
-      - name: Build (GCC)
-        run: cmake --build ${{github.workspace}}/build-gcc --config Release --parallel
-
-      - name: Run Tests (GCC)
-        run: ${{github.workspace}}/build-gcc/bin/Release/cerlibTests
-
-      - name: Configure CMake (Clang)
-        run: |
-          cmake -B ${{github.workspace}}/build-clang \
+          cmake -B ${{github.workspace}}/build \
           -G "Ninja Multi-Config" \
           -DCMAKE_C_COMPILER=clang-16 \
           -DCMAKE_CXX_COMPILER=clang++-16 \
@@ -55,30 +80,24 @@ jobs:
           -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Run Cppcheck
-        run: python3 cppcheck.py ${{github.workspace}}/build-clang
+        run: python3 cppcheck.py ${{github.workspace}}/build
 
-      - name: Build (Clang)
-        run: cmake --build ${{github.workspace}}/build-clang --config Release --parallel
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config Release --parallel
 
-      - name: Run Tests (Clang)
-        run: ${{github.workspace}}/build-clang/bin/Release/cerlibTests
+      - name: Run Tests
+        run: ${{github.workspace}}/build/bin/Release/cerlibTests
 
 
   build-windows:
     name: Windows build
     strategy:
+      fail-fast: true
       matrix:
         os: [ 2022 ]
     runs-on: windows-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
-
-      - name: CPM source code cache
-        uses: actions/cache@v4
-        with:
-          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          restore-keys: |
-            ${{env.cpm_src_cache_name}}-
 
       - name: Configure CMake
         run: |
@@ -94,6 +113,7 @@ jobs:
   build-macos:
     name: macOS build
     strategy:
+      fail-fast: true
       matrix:
         os: [ 13, 14 ]
     runs-on: macos-${{matrix.os}}
