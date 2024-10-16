@@ -176,11 +176,11 @@ jobs:
           restore-keys: |
             ${{env.cpm_cache_name}}-gcc
 
-      - name: Configure CMake (Xcode)
+      - name: Configure CMake
         run: |
-          cmake -B ${{github.workspace}}/build -G Xcode -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
+          cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
-      - name: Build (Xcode)
+      - name: Build
         run: cmake --build ${{github.workspace}}/build --config Release --parallel
 
       - name: Run Tests
