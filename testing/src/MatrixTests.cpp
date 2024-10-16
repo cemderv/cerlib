@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include <algorithm>
+#include <cerlib/Math.hpp>
 #include <cerlib/Matrix.hpp>
 #include <cerlib/OStreamCompat.hpp>
 #include <cerlib/Vector4.hpp>

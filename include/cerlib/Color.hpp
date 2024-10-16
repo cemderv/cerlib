@@ -106,9 +106,6 @@ auto operator*(const Color& lhs, float rhs) -> Color;
 auto operator*(float lhs, const Color& rhs) -> Color;
 } // namespace cer
 
-#include <cerlib/Vector3.hpp>
-#include <cerlib/Vector4.hpp>
-
 namespace cer
 {
 constexpr Color::Color(float r, float g, float b, float a)
@@ -118,17 +115,6 @@ constexpr Color::Color(float r, float g, float b, float a)
     , a(a)
 {
 }
-
-inline auto Color::to_vector3() const -> Vector3
-{
-    return {r, g, b};
-}
-
-inline auto Color::to_vector4() const -> Vector4
-{
-    return {r, g, b, a};
-}
-
 /**
  * A constant white color.
  *
@@ -183,84 +169,3 @@ static constexpr Color yellow{1.0f, 1.0f, 0.0f, 1.0f};
  */
 static constexpr Color transparent{0.0f, 0.0f, 0.0f, 0.0f};
 } // namespace cer
-
-inline auto cer::random_color(std::optional<float> alpha) -> cer::Color
-{
-    if (!alpha.has_value())
-    {
-        alpha = random_float(0.0f, 1.0f);
-    }
-
-    return {
-        random_float(0.0f, 1.0f),
-        random_float(0.0f, 1.0f),
-        random_float(0.0f, 1.0f),
-        *alpha,
-    };
-}
-
-inline auto cer::fastrand_color(std::optional<float> alpha) -> Color
-{
-    if (!alpha.has_value())
-    {
-        alpha = fastrand_float_zero_to_one();
-    }
-
-    return {
-        fastrand_float_zero_to_one(),
-        fastrand_float_zero_to_one(),
-        fastrand_float_zero_to_one(),
-        *alpha,
-    };
-}
-
-inline auto cer::fastrand_color(const ColorInterval& interval) -> Color
-{
-    return {
-        fastrand_float(interval.min.r, interval.max.r),
-        fastrand_float(interval.min.g, interval.max.g),
-        fastrand_float(interval.min.b, interval.max.b),
-        fastrand_float(interval.min.a, interval.max.a),
-    };
-}
-
-
-inline auto cer::operator+(const Color& lhs, const Color& rhs) -> cer::Color
-{
-    return {
-        lhs.r + rhs.r,
-        lhs.g + rhs.g,
-        lhs.b + rhs.b,
-        lhs.a + rhs.a,
-    };
-}
-
-inline auto cer::operator-(const Color& lhs, const Color& rhs) -> cer::Color
-{
-    return {
-        lhs.r - rhs.r,
-        lhs.g - rhs.g,
-        lhs.b - rhs.b,
-        lhs.a - rhs.a,
-    };
-}
-
-inline auto cer::operator*(const Color& lhs, float rhs) -> cer::Color
-{
-    return {
-        lhs.r * rhs,
-        lhs.g * rhs,
-        lhs.b * rhs,
-        lhs.a * rhs,
-    };
-}
-
-inline auto cer::operator*(float lhs, const Color& rhs) -> cer::Color
-{
-    return {
-        lhs * rhs.r,
-        lhs * rhs.g,
-        lhs * rhs.b,
-        lhs * rhs.a,
-    };
-}
