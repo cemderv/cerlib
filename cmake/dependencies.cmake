@@ -86,45 +86,60 @@ if (CERLIB_ENABLE_IMGUI)
 endif ()
 
 if (NOT EMSCRIPTEN)
-  CPMAddPackage(
-    NAME SDL
-    GITHUB_REPOSITORY libsdl-org/SDL
-    GIT_TAG preview-3.1.3
-    OPTIONS
-    "SDL_MISC OFF"
-    "SDL_OFFSCREEN OFF"
-    "SDL_POWER OFF"
-    "SDL_TEST OFF"
-    "SDL_TESTS OFF"
-    "SDL_TEST_LIBRARY OFF"
-    "SDL_TEST_ENABLED_BY_DEFAULT OFF"
-    "SDL_VULKAN OFF"
-    "SDL_OPENGL ON"
-    "SDL_OPENGLES ON"
-    "SDL_RENDER_D3D OFF"
-    "SDL_RENDER_METAL OFF"
-    "SDL_DIRECTX OFF"
-    "SDL_DISABLE_UNINSTALL ON"
-    "SDL_VENDOR_INFO OFF"
-    "SDL_3DNOW OFF"
-    "SDL_ALTIVEC OFF"
-    "SDL_CCACHE ON"
-    "SDL_DUMMYVIDEO OFF"
-    "SDL_WASAPI OFF"
-    "SDL_ATOMIC OFF"
-    "SDL_DIALOG OFF"
-    "SDL_LIBUDEV OFF"
-    "SDL_STATIC_VCRT OFF"
-    "SDL_STATIC ON"
-    "SDL_SHARED ON"
-    GIT_SHALLOW
-    SYSTEM
-  )
+  set(sdl_version "3.1.3")
 
-  set_target_properties(SDL3-shared PROPERTIES FOLDER "Dependencies")
-  set_target_properties(SDL3-static PROPERTIES FOLDER "Dependencies")
+  include(cmake/sdl_prebuilt.cmake)
+  cerlib_check_can_use_sdl_prebuilt()
 
-  if (TARGET SDL_uclibc)
-    set_target_properties(SDL_uclibc PROPERTIES FOLDER "Dependencies")
+  if (cerlib_can_use_prebuilt_sdl)
+    cerlib_log("Using prebuilt SDL")
+    cerlib_fetch_and_add_prebuilt_sdl(
+      "${cerlib_sdl_prebuilt_url}/v${sdl_version}/${cerlib_prebuilt_sdl_package}.zip"
+    )
+  else ()
+    cerlib_log("Building SDL along with cerlib")
+
+    CPMAddPackage(
+      NAME SDL
+      GITHUB_REPOSITORY libsdl-org/SDL
+      GIT_TAG preview-${sdl_version}
+      OPTIONS
+      "SDL_MISC OFF"
+      "SDL_OFFSCREEN OFF"
+      "SDL_POWER OFF"
+      "SDL_TEST OFF"
+      "SDL_TESTS OFF"
+      "SDL_TEST_LIBRARY OFF"
+      "SDL_TEST_ENABLED_BY_DEFAULT OFF"
+      "SDL_VULKAN OFF"
+      "SDL_OPENGL ON"
+      "SDL_OPENGLES ON"
+      "SDL_RENDER_D3D OFF"
+      "SDL_RENDER_METAL OFF"
+      "SDL_DIRECTX OFF"
+      "SDL_DISABLE_UNINSTALL ON"
+      "SDL_VENDOR_INFO OFF"
+      "SDL_3DNOW OFF"
+      "SDL_ALTIVEC OFF"
+      "SDL_CCACHE ON"
+      "SDL_DUMMYVIDEO OFF"
+      "SDL_WASAPI OFF"
+      "SDL_ATOMIC OFF"
+      "SDL_DIALOG OFF"
+      "SDL_LIBUDEV OFF"
+      "SDL_STATIC_VCRT OFF"
+      "SDL_STATIC ON"
+      "SDL_SHARED ON"
+      "SDL_GPU OFF"
+      GIT_SHALLOW
+      SYSTEM
+    )
+
+    set_target_properties(SDL3-shared PROPERTIES FOLDER "Dependencies")
+    set_target_properties(SDL3-static PROPERTIES FOLDER "Dependencies")
+
+    if (TARGET SDL_uclibc)
+      set_target_properties(SDL_uclibc PROPERTIES FOLDER "Dependencies")
+    endif ()
   endif ()
 endif ()
