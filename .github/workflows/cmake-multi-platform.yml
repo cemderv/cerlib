@@ -14,10 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: APT update
+        run: |
+          apt update -y
+          apt upgrade -y
+
       - name: Cache APT packages
         uses: awalsh128/cache-apt-pkgs-action@v1.4.2
         with:
-          packages: sudo cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppceck lsb-release wget software-properties-common gnupg ninja-build
+          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppceck lsb-release wget software-properties-common gnupg ninja-build
           version: 1.0
 
       - name: Install Clang
