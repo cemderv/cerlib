@@ -73,6 +73,16 @@ jobs:
           restore-keys: |
             ${{env.cpm_cache_name}}-
 
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-clang-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-clang
+
       - name: Set up APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
@@ -117,6 +127,16 @@ jobs:
           restore-keys: |
             ${{env.cpm_cache_name}}-
 
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-windows-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-windows
+
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
@@ -145,6 +165,16 @@ jobs:
           key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
             ${{env.cpm_cache_name}}-
+
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-macos-${{matrix.os}}-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-gcc
 
       - name: Configure CMake (Xcode)
         run: |
