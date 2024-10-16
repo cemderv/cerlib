@@ -25,12 +25,12 @@ macro(cerlib_check_can_use_sdl_prebuilt)
   elseif (APPLE AND NOT IOS)
     set(darwin_version ${CMAKE_HOST_SYSTEM_VERSION})
 
-    if (darwin_version VERSION_EQUAL 22) # macOS 13
-      cerlib_allow_sdl_prebuilt("macos-13")
-    elseif (darwin_version VERSION_EQUAL 23) # macOS 14
-      cerlib_allow_sdl_prebuilt("macos-14")
-    elseif (darwin_version VERSION_EQUAL 24) # macOS 15
+    if (darwin_version VERSION_GREATER_EQUAL 24.0) # macOS 15
       cerlib_allow_sdl_prebuilt("macos-15")
+    elseif (darwin_version VERSION_GREATER_EQUAL 23.0) # macOS 14
+      cerlib_allow_sdl_prebuilt("macos-14")
+    elseif (darwin_version VERSION_GREATER_EQUAL 22.0) # macOS 13
+      cerlib_allow_sdl_prebuilt("macos-13")
     endif ()
   elseif (LINUX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
