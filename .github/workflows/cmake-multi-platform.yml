@@ -14,10 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: APT update
-        run: |
-          apt install -y sudo
-
       - name: Cache APT packages
         uses: awalsh128/cache-apt-pkgs-action@v1.4.2
         with:
