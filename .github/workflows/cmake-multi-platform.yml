@@ -10,7 +10,6 @@ jobs:
   build-linux:
     name: Linux build
     runs-on: ubuntu-latest
-    container: gcc:13
     steps:
       - uses: actions/checkout@v4
 
