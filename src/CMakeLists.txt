@@ -75,6 +75,7 @@ target_precompile_headers(cerlib PRIVATE
   <chrono>
   <cstddef>
   <cstdint>
+  <compare>
   <exception>
   <fmt/format.h>
   <functional>
@@ -97,6 +98,8 @@ target_precompile_headers(cerlib PRIVATE
   <utility>
   <variant>
   <vector>
+  <limits>
+  <cmath>
   <soloud.h>
   <soloud_wav.h>
   util/InternalError.hpp
