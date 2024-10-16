@@ -9,14 +9,14 @@ on:
 jobs:
   build-linux:
     name: Linux build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Cache APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppceck lsb-release wget software-properties-common gnupg ninja-build
+          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
           version: 1.0
 
       - name: Install Clang
@@ -62,7 +62,7 @@ jobs:
     name: Windows build
     strategy:
       matrix:
-        os: [ 2022 ]
+        os: [ 2019, 2022 ]
     runs-on: windows-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
