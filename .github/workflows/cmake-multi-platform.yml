@@ -25,8 +25,7 @@ jobs:
           -G "Ninja Multi-Config" \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
           -DCERLIB_ENABLE_TESTS=ON \
-          -DCERLIB_ENABLE_RENDERING_TESTS=OFF \
-          -DCERLIB_FORCE_SDL_BUILD=ON
+          -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build (GCC)
         run: cmake --build ${{github.workspace}}/build-gcc --config Release --parallel
