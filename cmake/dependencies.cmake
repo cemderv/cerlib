@@ -27,7 +27,7 @@ CPMAddPackage(
 CPMAddPackage(
   NAME SoLoud
   GITHUB_REPOSITORY cemderv/soloud
-  GIT_TAG v0.0.1
+  GIT_TAG v0.0.2
   GIT_SHALLOW
   SYSTEM
 )
