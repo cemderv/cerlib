@@ -9,21 +9,15 @@ on:
 jobs:
   build-linux:
     name: Linux build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Cache APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
+          packages: cmake clang-16 build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
           version: 1.0
-
-      - name: Install Clang
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          sudo ./llvm.sh 16
 
       - name: Configure CMake (GCC)
         run: |
