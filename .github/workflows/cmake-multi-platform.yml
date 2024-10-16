@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache APT packages
+      - name: Set up APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: cmake clang-16 build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
