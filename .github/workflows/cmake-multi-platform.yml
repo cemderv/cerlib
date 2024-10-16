@@ -7,7 +7,7 @@ on:
     branches: [ "main", "develop" ]
 
 env:
-  cpm_src_cache_name: cpm-src-cache
+  cpm_cache_name: cpm-src-cache
 
 jobs:
   build-linux-gcc:
@@ -22,9 +22,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/build/_deps/*-src
-          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
-            ${{env.cpm_src_cache_name}}-
+            ${{env.cpm_cache_name}}-
+
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-gcc-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-gcc
 
       - name: Set up APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -59,9 +69,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/build/_deps/*-src
-          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
-            ${{env.cpm_src_cache_name}}-
+            ${{env.cpm_cache_name}}-
 
       - name: Set up APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
@@ -103,9 +113,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/build/_deps/*-src
-          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
-            ${{env.cpm_src_cache_name}}-
+            ${{env.cpm_cache_name}}-
 
       - name: Configure CMake
         run: |
@@ -132,9 +142,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{github.workspace}}/build/_deps/*-src
-          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
           restore-keys: |
-            ${{env.cpm_src_cache_name}}-
+            ${{env.cpm_cache_name}}-
 
       - name: Configure CMake (Xcode)
         run: |
