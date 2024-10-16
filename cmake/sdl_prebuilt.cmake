@@ -20,7 +20,7 @@ macro(cerlib_check_can_use_sdl_prebuilt)
 
   if (WIN32 AND MSVC)
     if (${MSVC_VERSION} GREATER_EQUAL 1930 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
-      cerlib_allow_sdl_prebuilt("windows-2022")
+      cerlib_allow_sdl_prebuilt("windows-2022-x64")
     endif ()
   elseif (APPLE AND NOT IOS)
     set(darwin_version ${CMAKE_HOST_SYSTEM_VERSION})
