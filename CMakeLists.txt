@@ -32,9 +32,6 @@ endif ()
 include(cmake/CPM.cmake)
 include(CheckIPOSupported)
 
-# General C++ settings
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 set(cerlib_binary_dir ${CMAKE_CURRENT_BINARY_DIR})
 set(cerlib_cmake_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
