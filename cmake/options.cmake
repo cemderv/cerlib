@@ -82,3 +82,8 @@ option(
   ON
 )
 
+option(
+  CERLIB_FORCE_SDL_BUILD
+  "Build SDL along with cerlib, even if prebuilt SDL libraries are available"
+  OFF
+)
