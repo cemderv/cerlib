@@ -157,6 +157,10 @@ jobs:
     runs-on: macos-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install prerequisites
+        run: |
+          brew install cmake ninja
       
       - name: CPM source code cache
         uses: actions/cache@v4
