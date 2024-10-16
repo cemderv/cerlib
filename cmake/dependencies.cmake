@@ -91,7 +91,7 @@ if (NOT EMSCRIPTEN)
   include(cmake/sdl_prebuilt.cmake)
   cerlib_check_can_use_sdl_prebuilt()
 
-  if (cerlib_can_use_prebuilt_sdl)
+  if (NOT CERLIB_FORCE_SDL_BUILD AND cerlib_can_use_prebuilt_sdl)
     cerlib_log("Using prebuilt SDL")
     cerlib_fetch_and_add_prebuilt_sdl(
       "${cerlib_sdl_prebuilt_url}/v${sdl_version}/${cerlib_prebuilt_sdl_package}.zip"
