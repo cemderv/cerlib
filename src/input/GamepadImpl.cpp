@@ -35,7 +35,11 @@ static auto to_sdl_gamepad_axis(GamepadAxis axis) -> SDL_GamepadAxis
 {
     switch (axis)
     {
+#ifdef __EMSCRIPTEN__
         case GamepadAxis::Unknown: return SDL_GAMEPAD_AXIS_MAX;
+#else
+        case GamepadAxis::Unknown: return SDL_GAMEPAD_AXIS_INVALID;
+#endif
         case GamepadAxis::LeftX: return SDL_GAMEPAD_AXIS_LEFTX;
         case GamepadAxis::LeftY: return SDL_GAMEPAD_AXIS_LEFTY;
         case GamepadAxis::RightX: return SDL_GAMEPAD_AXIS_RIGHTX;
@@ -49,7 +53,11 @@ static auto to_sdl_gamepad_axis(GamepadAxis axis) -> SDL_GamepadAxis
 #endif
     }
 
+#ifdef __EMSCRIPTEN__
     return SDL_GAMEPAD_AXIS_MAX;
+#else
+    return SDL_GAMEPAD_AXIS_INVALID;
+#endif
 }
 
 #ifdef __EMSCRIPTEN__
@@ -82,7 +90,11 @@ static auto to_sdl_gamepad_button(GamepadButton button) -> SDL_GamepadButton
 {
     switch (button)
     {
+#ifdef __EMSCRIPTEN__
         case GamepadButton::Unknown: return SDL_GAMEPAD_BUTTON_MAX;
+#else
+        case GamepadButton::Unknown: return SDL_GAMEPAD_BUTTON_INVALID;
+#endif
         case GamepadButton::ActionSouth: return SDL_GAMEPAD_BUTTON_SOUTH;
         case GamepadButton::ActionEast: return SDL_GAMEPAD_BUTTON_EAST;
         case GamepadButton::Back: return SDL_GAMEPAD_BUTTON_BACK;
@@ -106,7 +118,11 @@ static auto to_sdl_gamepad_button(GamepadButton button) -> SDL_GamepadButton
         case GamepadButton::ActionNorth: return SDL_GAMEPAD_BUTTON_NORTH;
     }
 
+#ifdef __EMSCRIPTEN__
     return SDL_GAMEPAD_BUTTON_MAX;
+#else
+    return SDL_GAMEPAD_BUTTON_INVALID;
+#endif
 }
 
 #ifdef __EMSCRIPTEN__
@@ -278,10 +294,14 @@ auto GamepadImpl::touchpad_finger_data(uint32_t touchpad_index) const
 
     for (int i = 0; i < count; ++i)
     {
-        Uint8 state    = 0;
-        auto  x        = 0.0f;
-        auto  y        = 0.0f;
-        auto  pressure = 0.0f;
+#ifdef __EMSCRIPTEN__
+        Uint8 state = 0;
+#else
+        auto state = false;
+#endif
+        auto x        = 0.0f;
+        auto y        = 0.0f;
+        auto pressure = 0.0f;
 
 #ifdef __EMSCRIPTEN__
         if (SDL_GameControllerGetTouchpadFinger(m_sdl_gamepad,
@@ -382,8 +402,7 @@ auto GamepadImpl::start_rumble(float             left_motor_intensity,
             m_sdl_gamepad,
             normalized_left_motor_intensity,
             normalized_right_motor_intensity,
-            Uint32(
-                std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
+            Uint32(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
 #else
         const auto success = SDL_RumbleGamepad(
             m_sdl_gamepad,

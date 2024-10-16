@@ -489,7 +489,11 @@ auto InputImpl::is_mouse_button_down(MouseButton button) const -> bool
 {
     const auto bits = SDL_GetMouseState(nullptr, nullptr);
 
+#ifdef __EMSCRIPTEN__
     return (bits & SDL_BUTTON(to_sdl_mouse_button(button))) != 0u;
+#else
+    return (bits & SDL_BUTTON_MASK(to_sdl_mouse_button(button))) != 0u;
+#endif
 }
 
 void InputImpl::update_key_states()

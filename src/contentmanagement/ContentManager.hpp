@@ -114,12 +114,39 @@ auto ContentManager::lazy_load(std::string_view key,
     // Load fresh object, store its impl pointer in the map, but return the object.
     const auto name_str = m_asset_loading_prefix + std::string(name);
     auto       asset    = load_func(name_str);
-    auto       impl     = asset.impl();
 
+    constexpr auto allowed_to_be_null = std::is_same_v<TImpl, SoundImpl>;
+
+    if (!asset)
+    {
+        if constexpr (allowed_to_be_null)
+        {
+            m_loaded_assets.emplace(key_str, static_cast<TImpl*>(nullptr));
+
+            return asset;
+        }
+
+        CER_THROW_RUNTIME_ERROR("Loaded asset '{}', but its creation failed", name);
+    }
+
+    struct Msg
+    {
+        explicit Msg(std::string_view asset_name)
+            : asset_name(asset_name)
+        {
+        }
+
+        ~Msg() noexcept
+        {
+            log_verbose("Loaded asset '{}'", asset_name);
+        }
+
+        std::string_view asset_name;
+    } msg{key_str};
+
+    auto impl               = asset.impl();
     impl->m_content_manager = this;
     impl->m_asset_name      = key_str;
-
-    log_verbose("Loaded asset '{}'", key_str);
 
     m_loaded_assets.emplace(key_str, static_cast<TImpl*>(impl));
 
