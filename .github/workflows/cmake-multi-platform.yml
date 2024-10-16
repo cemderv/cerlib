@@ -13,13 +13,14 @@ jobs:
     container: gcc:13
     steps:
       - uses: actions/checkout@v4
-      - name: Install prerequisites
+
+      - uses: awalsh128/cache-apt-pks-action@latest
+        with:
+          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppceck lsb-release wget software-properties-common gnupg ninja-build
+          version: 1.0
+
+      - name: Install Clang
         run: |
-          apt update -y
-          apt upgrade -y
-          apt install -y cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols \
-                         extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release \
-                         wget software-properties-common gnupg ninja-build
           wget https://apt.llvm.org/llvm.sh
           chmod +x ./llvm.sh
           ./llvm.sh 16 all
