@@ -6,12 +6,23 @@ on:
   pull_request:
     branches: [ "main", "develop" ]
 
+env:
+  cpm_src_cache_name: cpm-src-cache
+
 jobs:
   build-linux:
     name: Linux build
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: CPM source code cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/build-*/_deps/*-src
+          key: ${{env.cpm_src_cache_name}}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            $${{env.cpm_src_cache_name}}-
 
       - name: Set up APT packages
         uses: awalsh128/cache-apt-pkgs-action@latest
