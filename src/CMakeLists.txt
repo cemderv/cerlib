@@ -103,12 +103,33 @@ target_precompile_headers(cerlib PRIVATE
   util/Object.hpp
   util/Util.hpp
   util/Platform.hpp
+  util/NonCopyable.hpp
+  util/MultiStringHash.hpp
+  util/StringUtil.hpp
+  util/StringViewUnorderedSet.hpp
+  shadercompiler/Decl.hpp
+  shadercompiler/Expr.hpp
+  shadercompiler/Lexer.hpp
+  shadercompiler/Token.hpp
+  shadercompiler/Stmt.hpp
+  shadercompiler/Writer.hpp
+  shadercompiler/TempVarNameGen.hpp
+  shadercompiler/Type.hpp
+  shadercompiler/BuiltInSymbols.hpp
+  graphics/GraphicsDevice.hpp
 )
 
 if (EMSCRIPTEN)
   target_precompile_headers(cerlib PRIVATE <SDL2/SDL.h>)
 else ()
   target_precompile_headers(cerlib PRIVATE <SDL3/SDL.h>)
+endif ()
+
+if (cerlib_gfx_backend STREQUAL "OpenGL")
+  target_precompile_headers(cerlib PRIVATE
+    <glad.h>
+    graphics/opengl/OpenGLPrerequisites.hpp
+  )
 endif ()
 
 set(src_sub_dirs

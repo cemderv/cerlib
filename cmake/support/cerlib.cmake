@@ -46,7 +46,7 @@ function(cerlib_add_executable)
   target_compile_features(${target_name} PRIVATE cxx_std_20)
 
   set_target_properties(${target_name} PROPERTIES
-    USE_FOLDERS              TRUE
+    USE_FOLDERS TRUE
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -92,22 +92,22 @@ function(cerlib_add_executable)
   set(script_dir ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
 
   if (APPLE)
-    set(bundle_identifier   "com.${company}.${target_name}")
-    set(bundle_version      ${version})
-    set(bundle_name         ${target_name})
+    set(bundle_identifier "com.${company}.${target_name}")
+    set(bundle_version ${version})
+    set(bundle_name ${target_name})
     set(bundle_display_name ${target_name})
-    set(executable_name     ${target_name})
+    set(executable_name ${target_name})
 
     set(info_plist_dst_filename "${binary_dir}/${target_name}_Info.plist")
     configure_file("${script_dir}/Info.plist.in" ${info_plist_dst_filename})
 
     set_target_properties(${target_name} PROPERTIES
-      MACOSX_BUNDLE                 TRUE
-      MACOSX_BUNDLE_GUI_IDENTIFIER  ${bundle_display_name}
-      MACOSX_BUNDLE_INFO_PLIST      ${info_plist_dst_filename}
-      XCODE_LINK_BUILD_PHASE_MODE   BUILT_ONLY
-      BUILD_WITH_INSTALL_RPATH      TRUE
-      INSTALL_RPATH                 "@executable_path/"
+      MACOSX_BUNDLE TRUE
+      MACOSX_BUNDLE_GUI_IDENTIFIER ${bundle_display_name}
+      MACOSX_BUNDLE_INFO_PLIST ${info_plist_dst_filename}
+      XCODE_LINK_BUILD_PHASE_MODE BUILT_ONLY
+      BUILD_WITH_INSTALL_RPATH TRUE
+      INSTALL_RPATH "@executable_path/"
     )
 
     file(GLOB_RECURSE
@@ -139,8 +139,8 @@ function(cerlib_add_executable)
       ${target_name}
       ${target_name}_CopyAssets
       PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${target_name}>
-        FOLDER ${target_name}
+      VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${target_name}>
+      FOLDER ${target_name}
     )
   endif ()
 
@@ -154,7 +154,7 @@ function(cerlib_add_executable)
       TARGET ${target_name}
       POST_BUILD
       COMMAND
-        ${CMAKE_COMMAND} -E copy_directory ${assets_dir} ${CMAKE_ANDROID_ASSETS_DIRECTORIES}/
+      ${CMAKE_COMMAND} -E copy_directory ${assets_dir} ${CMAKE_ANDROID_ASSETS_DIRECTORIES}/
       OUTPUT ${asset_short_files}
     )
   endif ()
@@ -164,7 +164,11 @@ function(cerlib_add_executable)
       TARGET ${target_name}
       POST_BUILD
       COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${cerlib_LIBRARY_LOCATION} $<TARGET_FILE_DIR:${target_name}>
+      ${CMAKE_COMMAND} -E copy_if_different ${cerlib_LIBRARY_LOCATION} $<TARGET_FILE_DIR:${target_name}>
     )
   endif ()
+
+  target_precompile_headers(${target_name} PRIVATE
+    <cerlib.hpp>
+  )
 endfunction()
