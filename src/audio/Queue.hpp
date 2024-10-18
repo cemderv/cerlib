@@ -39,15 +39,15 @@ class QueueInstance final : public AudioSourceInstance
   public:
     explicit QueueInstance(Queue* aParent);
 
-    size_t getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
+    size_t audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
 
-    bool hasEnded() override;
+    bool has_ended() override;
 };
 
 class Queue final : public AudioSource
 {
   public:
-    std::shared_ptr<AudioSourceInstance> createInstance() override;
+    std::shared_ptr<AudioSourceInstance> create_instance() override;
 
     // Play sound through the queue
     void play(AudioSource& aSound);
@@ -71,6 +71,6 @@ class Queue final : public AudioSource
     size_t                                                             mCount      = 0;
     std::array<std::shared_ptr<AudioSourceInstance>, SOLOUD_QUEUE_MAX> mSource{};
     std::shared_ptr<QueueInstance>                                     mInstance;
-    handle                                                             mQueueHandle = 0;
+    SoundHandle                                                        mQueueHandle = 0;
 };
 }; // namespace cer

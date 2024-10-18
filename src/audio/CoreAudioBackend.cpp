@@ -26,100 +26,107 @@ freely, subject to the following restrictions:
 */
 
 #include "audio/AudioDevice.hpp"
+#include "soloud_internal.hpp"
 #include <stdexcept>
 
 #include <AudioToolbox/AudioToolbox.h>
 
-#define NUM_BUFFERS 2
+static constexpr size_t s_buffer_count = 2;
 
-static AudioQueueRef audioQueue = 0;
+static AudioQueueRef s_audio_queue = nullptr;
 
-namespace cer
+static void soloud_coreaudio_deinit(cer::AudioDevice* /*engine*/)
 {
-void soloud_coreaudio_deinit(AudioDevice* engine)
-{
-    AudioQueueStop(audioQueue, true);
-    AudioQueueDispose(audioQueue, false);
+    AudioQueueStop(s_audio_queue, 1u);
+    AudioQueueDispose(s_audio_queue, 0u);
 }
 
-bool soloud_coreaudio_pause(AudioDevice* engine)
+static auto soloud_coreaudio_pause(cer::AudioDevice* /*engine*/) -> bool
 {
-    if (!audioQueue)
+    if (s_audio_queue == nullptr)
+    {
         return false;
+    }
 
-    AudioQueuePause(audioQueue); // TODO: Error code
+    AudioQueuePause(s_audio_queue); // TODO: Error code
 
     return true;
 }
 
-bool soloud_coreaudio_resume(AudioDevice* engine)
+static auto soloud_coreaudio_resume(cer::AudioDevice* /*engine*/) -> bool
 {
-    if (!audioQueue)
+    if (s_audio_queue == nullptr)
+    {
         return false;
+    }
 
-    AudioQueueStart(audioQueue, nil); // TODO: Error code
+    AudioQueueStart(s_audio_queue, nil); // TODO: Error code
 
     return true;
 }
 
 static void coreaudio_fill_buffer(void* context, AudioQueueRef queue, AudioQueueBufferRef buffer)
 {
-    auto engine = static_cast<AudioDevice*>(context);
+    const auto engine = static_cast<cer::AudioDevice*>(context);
     engine->mixSigned16(static_cast<short*>(buffer->mAudioData), buffer->mAudioDataByteSize / 4);
+
     AudioQueueEnqueueBuffer(queue, buffer, 0, nullptr);
 }
 
-void coreaudio_init(
-    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+void cer::coreaudio_init(const AudioBackendArgs& args)
 {
-    engine->postinit_internal(aSamplerate, aBuffer, aFlags, 2);
+    auto* engine = args.engine;
+
+    engine->postinit_internal(args.sample_rate, args.buffer, args.flags, 2);
     engine->m_backend_cleanup_func = soloud_coreaudio_deinit;
     engine->m_backend_pause_func   = soloud_coreaudio_pause;
     engine->m_backend_resume_func  = soloud_coreaudio_resume;
 
-    AudioStreamBasicDescription audioFormat;
-    audioFormat.mSampleRate       = aSamplerate;
-    audioFormat.mFormatID         = kAudioFormatLinearPCM;
-    audioFormat.mFormatFlags      = kLinearPCMFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
-    audioFormat.mBytesPerPacket   = 4;
-    audioFormat.mFramesPerPacket  = 1;
-    audioFormat.mBytesPerFrame    = 4;
-    audioFormat.mChannelsPerFrame = 2;
-    audioFormat.mBitsPerChannel   = 16;
-    audioFormat.mReserved         = 0;
+    AudioStreamBasicDescription audio_format;
+    audio_format.mSampleRate       = Float64(args.sample_rate);
+    audio_format.mFormatID         = kAudioFormatLinearPCM;
+    audio_format.mFormatFlags      = kLinearPCMFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+    audio_format.mBytesPerPacket   = 4;
+    audio_format.mFramesPerPacket  = 1;
+    audio_format.mBytesPerFrame    = 4;
+    audio_format.mChannelsPerFrame = 2;
+    audio_format.mBitsPerChannel   = 16;
+    audio_format.mReserved         = 0;
 
     // create the audio queue
-    OSStatus result = AudioQueueNewOutput(&audioFormat,
-                                          coreaudio_fill_buffer,
-                                          engine,
-                                          nullptr,
-                                          nullptr,
-                                          0,
-                                          &audioQueue);
-    if (result)
     {
-        throw std::runtime_error{"AudioQueueNewOutput failed"};
+        const auto result = AudioQueueNewOutput(&audio_format,
+                                                coreaudio_fill_buffer,
+                                                engine,
+                                                nullptr,
+                                                nullptr,
+                                                0,
+                                                &s_audio_queue);
+        if (result != 0)
+        {
+            throw std::runtime_error{"AudioQueueNewOutput failed"};
+        }
     }
 
     // allocate and prime audio buffers
-    for (int i = 0; i < NUM_BUFFERS; ++i)
+    for (size_t i = 0; i < s_buffer_count; ++i)
     {
-        AudioQueueBufferRef buffer;
-        result = AudioQueueAllocateBuffer(audioQueue, aBuffer * 4, &buffer);
-        if (result)
+        AudioQueueBufferRef buffer = nullptr;
+
+        if (const auto result = AudioQueueAllocateBuffer(s_audio_queue, args.buffer * 4, &buffer);
+            result != 0)
         {
             throw std::runtime_error{"AudioQueueAllocateBuffer failed"};
         }
-        buffer->mAudioDataByteSize = aBuffer * 4;
+
+        buffer->mAudioDataByteSize = args.buffer * 4;
         memset(buffer->mAudioData, 0, buffer->mAudioDataByteSize);
-        AudioQueueEnqueueBuffer(audioQueue, buffer, 0, nullptr);
+        AudioQueueEnqueueBuffer(s_audio_queue, buffer, 0, nullptr);
     }
 
     // start playback
-    result = AudioQueueStart(audioQueue, nullptr);
-    if (result)
+    if (const auto result = AudioQueueStart(s_audio_queue, nullptr); result != 0)
     {
         throw std::runtime_error{"AudioQueueStart failed"};
     }
 }
-}; // namespace cer

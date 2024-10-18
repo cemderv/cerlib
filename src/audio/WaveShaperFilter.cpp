@@ -27,43 +27,38 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-WaveShaperFilterInstance::WaveShaperFilterInstance(WaveShaperFilter* aParent)
-    : mParent(aParent)
+WaveShaperFilterInstance::WaveShaperFilterInstance(WaveShaperFilter* parent)
+    : mParent(parent)
 {
-    FilterInstance::initParams(2);
-    mParam[WaveShaperFilter::AMOUNT] = mParent->mAmount;
+    FilterInstance::init_params(2);
+    m_params[WaveShaperFilter::AMOUNT] = mParent->mAmount;
 }
 
-void WaveShaperFilterInstance::filterChannel(float* aBuffer,
-                                             size_t aSamples,
-                                             float /*aSamplerate*/,
-                                             double aTime,
-                                             size_t /*aChannel*/,
-                                             size_t /*aChannels*/)
+void WaveShaperFilterInstance::filter_channel(const FilterChannelArgs& args)
 {
-    updateParams(aTime);
+    update_params(args.time);
 
     auto k = 0.0f;
 
-    if (mParam[1] == 1)
+    if (m_params[1] == 1)
     {
-        k = 2 * mParam[WaveShaperFilter::AMOUNT] / 0.01f;
+        k = 2 * m_params[WaveShaperFilter::AMOUNT] / 0.01f;
     }
     else
     {
-        k = 2 * mParam[WaveShaperFilter::AMOUNT] / (1 - mParam[1]);
+        k = 2 * m_params[WaveShaperFilter::AMOUNT] / (1 - m_params[1]);
     }
 
-    for (size_t i = 0; i < aSamples; ++i)
+    for (size_t i = 0; i < args.samples; ++i)
     {
-        const auto dry = aBuffer[i];
-        const auto wet = (1 + k) * aBuffer[i] / (1 + k * fabs(aBuffer[i]));
+        const auto dry = args.buffer[i];
+        const auto wet = (1 + k) * args.buffer[i] / (1 + k * std::abs(args.buffer[i]));
 
-        aBuffer[i] += (wet - dry) * mParam[WaveShaperFilter::WET];
+        args.buffer[i] += (wet - dry) * m_params[WaveShaperFilter::WET];
     }
 }
 
-std::shared_ptr<FilterInstance> WaveShaperFilter::createInstance()
+std::shared_ptr<FilterInstance> WaveShaperFilter::create_instance()
 {
     return std::make_shared<WaveShaperFilterInstance>(this);
 }

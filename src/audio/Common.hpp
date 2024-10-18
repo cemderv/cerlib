@@ -55,8 +55,7 @@ static constexpr size_t max_channels = 8;
 using mutexCallFunction    = void (*)(void*);
 using soloudCallFunction   = void (*)(AudioDevice*);
 using soloudResultFunction = bool (*)(AudioDevice*);
-using handle               = size_t;
-using time_t               = double;
+using SoundHandle          = size_t;
 
 enum class Waveform
 {
@@ -92,9 +91,9 @@ enum class AttenuationModel
 
 struct EngineFlags
 {
-    bool ClipRoundoff : 1        = true;
-    bool EnableVisualization : 1 = false;
-    bool NoFpuRegisterChange : 1 = false;
+    bool clip_roundoff : 1          = true;
+    bool enable_visualization : 1   = false;
+    bool no_fpu_register_change : 1 = false;
 };
 
 // Default resampler for both main and bus mixers

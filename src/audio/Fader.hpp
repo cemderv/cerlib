@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 
 #pragma once
 
-#include "audio/Common.hpp"
+#include "cerlib/Audio.hpp"
 
 namespace cer
 {
@@ -33,13 +33,13 @@ class Fader
 {
   public:
     // Set up LFO
-    void setLFO(float aFrom, float aTo, time_t aTime, time_t aStartTime);
+    void setLFO(float aFrom, float aTo, SoundTime aTime, SoundTime aStartTime);
 
     // Set up fader
-    void set(float aFrom, float aTo, time_t aTime, time_t aStartTime);
+    void set(float aFrom, float aTo, SoundTime aTime, SoundTime aStartTime);
 
     // Get the current fading value
-    float get(time_t aCurrentTime);
+    float get(SoundTime aCurrentTime);
 
     // Value to fade from
     float mFrom = 0.0f;
@@ -51,13 +51,13 @@ class Fader
     float mDelta = 0.0f;
 
     // Total time to fade
-    time_t mTime = 0;
+    SoundTime mTime = 0;
 
     // Time fading started
-    time_t mStartTime = 0;
+    SoundTime mStartTime = 0;
 
     // Time fading will end
-    time_t mEndTime = 0;
+    SoundTime mEndTime = 0;
 
     // Current value. Used in case time rolls over.
     float mCurrent = 0.0f;

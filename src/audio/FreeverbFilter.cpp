@@ -26,7 +26,7 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-namespace FreeverbImpl
+namespace freeverb_impl
 {
 // Based on code written by Jezar at Dreampoint, June 2000 http://www.dreampoint.co.uk,
 // which was placed in public domain. The code was massaged quite a bit by
@@ -53,7 +53,7 @@ class Comb
 class Allpass
 {
   public:
-    Allpass();
+           Allpass();
     void   setbuffer(float* aBuf, int aSize);
     float  process(float aInp);
     void   mute();
@@ -445,47 +445,42 @@ void Revmodel::setmode(float aValue)
     mMode  = aValue;
     mDirty = 1;
 }
-} // namespace FreeverbImpl
+} // namespace freeverb_impl
 
 FreeverbFilterInstance::FreeverbFilterInstance(FreeverbFilter* aParent)
 {
-    FilterInstance::initParams(5);
+    FilterInstance::init_params(5);
 
-    mParent = aParent;
+    m_parent = aParent;
 
-    mModel = std::make_unique<FreeverbImpl::Revmodel>();
+    m_model = std::make_unique<freeverb_impl::Revmodel>();
 
-    mParam[FREEZE]   = aParent->mMode;
-    mParam[ROOMSIZE] = aParent->mRoomSize;
-    mParam[DAMP]     = aParent->mDamp;
-    mParam[WIDTH]    = aParent->mWidth;
-    mParam[WET]      = 1;
+    m_params[FREEZE]   = aParent->mode;
+    m_params[ROOMSIZE] = aParent->room_size;
+    m_params[DAMP]     = aParent->damp;
+    m_params[WIDTH]    = aParent->width;
+    m_params[WET]      = 1;
 }
 
-void FreeverbFilterInstance::filter(float* aBuffer,
-                                    size_t aSamples,
-                                    size_t aBufferSize,
-                                    size_t aChannels,
-                                    float  aSamplerate,
-                                    time_t aTime)
+void FreeverbFilterInstance::filter(const FilterArgs& args)
 {
-    assert(aChannels == 2); // Only stereo supported at this time
+    assert(args.channels == 2); // Only stereo supported at this time
 
-    if (mParamChanged)
+    if (m_params_changed)
     {
-        mModel->setdamp(mParam[DAMP]);
-        mModel->setmode(mParam[FREEZE]);
-        mModel->setroomsize(mParam[ROOMSIZE]);
-        mModel->setwidth(mParam[WIDTH]);
-        mModel->setwet(mParam[WET]);
-        mModel->setdry(1 - mParam[WET]);
-        mParamChanged = 0;
+        m_model->setdamp(m_params[DAMP]);
+        m_model->setmode(m_params[FREEZE]);
+        m_model->setroomsize(m_params[ROOMSIZE]);
+        m_model->setwidth(m_params[WIDTH]);
+        m_model->setwet(m_params[WET]);
+        m_model->setdry(1 - m_params[WET]);
+        m_params_changed = 0;
     }
 
-    mModel->process(aBuffer, aSamples, aBufferSize);
+    m_model->process(args.buffer, args.samples, args.buffer_size);
 }
 
-std::shared_ptr<FilterInstance> FreeverbFilter::createInstance()
+std::shared_ptr<FilterInstance> FreeverbFilter::create_instance()
 {
     return std::make_shared<FreeverbFilterInstance>(this);
 }

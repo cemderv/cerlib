@@ -8,8 +8,9 @@
 
 namespace cer::details
 {
-SoundChannelImpl::SoundChannelImpl(gsl::not_null<AudioDevice*> soloud, cer::handle handle)
-    : m_soloud(soloud)
+SoundChannelImpl::SoundChannelImpl(gsl::not_null<AudioDevice*> audio_device,
+                                   cer::SoundHandle            handle)
+    : m_soloud(audio_device)
     , m_soloud_handle(handle)
 {
 }
@@ -41,7 +42,7 @@ void SoundChannelImpl::set_relative_play_speed(float value)
 
 void SoundChannelImpl::seek(SoundTime seconds)
 {
-    m_soloud->seek(m_soloud_handle, to_soloud_time(seconds));
+    m_soloud->seek(m_soloud_handle, seconds);
 }
 
 void SoundChannelImpl::stop()
@@ -91,7 +92,7 @@ auto SoundChannelImpl::loop_point() const -> SoundTime
 
 void SoundChannelImpl::set_loop_point(SoundTime value)
 {
-    m_soloud->setLoopPoint(m_soloud_handle, to_soloud_time(value));
+    m_soloud->setLoopPoint(m_soloud_handle, value);
 }
 
 void SoundChannelImpl::set_inaudible_behavior(SoundInaudibleBehavior value)
@@ -111,27 +112,27 @@ void SoundChannelImpl::set_inaudible_behavior(SoundInaudibleBehavior value)
 
 void SoundChannelImpl::fade_volume(float to_volume, SoundTime fade_duration)
 {
-    m_soloud->fadeVolume(m_soloud_handle, to_volume, to_soloud_time(fade_duration));
+    m_soloud->fadeVolume(m_soloud_handle, to_volume, fade_duration);
 }
 
 void SoundChannelImpl::fade_pan(float to_pan, SoundTime fade_duration)
 {
-    m_soloud->fadePan(m_soloud_handle, to_pan, to_soloud_time(fade_duration));
+    m_soloud->fadePan(m_soloud_handle, to_pan, fade_duration);
 }
 
 void SoundChannelImpl::fade_relative_play_speed(float to_speed, SoundTime fade_duration)
 {
-    m_soloud->fadeRelativePlaySpeed(m_soloud_handle, to_speed, to_soloud_time(fade_duration));
+    m_soloud->fadeRelativePlaySpeed(m_soloud_handle, to_speed, fade_duration);
 }
 
 void SoundChannelImpl::stop_after(SoundTime after)
 {
-    m_soloud->scheduleStop(m_soloud_handle, to_soloud_time(after));
+    m_soloud->scheduleStop(m_soloud_handle, after);
 }
 
 void SoundChannelImpl::pause_after(SoundTime after)
 {
-    m_soloud->schedulePause(m_soloud_handle, to_soloud_time(after));
+    m_soloud->schedulePause(m_soloud_handle, after);
 }
 
 auto SoundChannelImpl::stream_position() const -> SoundTime

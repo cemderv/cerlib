@@ -24,12 +24,33 @@ freely, subject to the following restrictions:
 
 #pragma once
 
+#include "audio/Common.hpp"
 #include "audio/Fader.hpp"
 #include <array>
 #include <memory>
 
 namespace cer
 {
+struct FilterArgs
+{
+    float*    buffer      = nullptr;
+    size_t    samples     = 0;
+    size_t    buffer_size = 0;
+    size_t    channels    = 0;
+    float     sample_rate = 0.0f;
+    SoundTime time        = {};
+};
+
+struct FilterChannelArgs
+{
+    float*    buffer        = nullptr;
+    size_t    samples       = 0;
+    float     sample_rate   = 0.0f;
+    SoundTime time          = {};
+    size_t    channel       = 0;
+    size_t    channel_count = 0;
+};
+
 class FilterInstance
 {
   public:
@@ -37,41 +58,31 @@ class FilterInstance
 
     virtual ~FilterInstance() noexcept = default;
 
-    virtual void initParams(int aNumParams);
+    virtual void init_params(int param_count);
 
-    virtual void updateParams(time_t aTime);
+    virtual void update_params(SoundTime time);
 
-    virtual void filter(float* aBuffer,
-                        size_t aSamples,
-                        size_t aBufferSize,
-                        size_t aChannels,
-                        float  aSamplerate,
-                        time_t aTime);
+    virtual void filter(const FilterArgs& args);
 
-    virtual void filterChannel(float* aBuffer,
-                               size_t aSamples,
-                               float  aSamplerate,
-                               time_t aTime,
-                               size_t aChannel,
-                               size_t aChannels);
+    virtual void filter_channel(const FilterChannelArgs& args);
 
-    virtual float getFilterParameter(size_t aAttributeId);
+    virtual auto filter_parameter(size_t attribute_id) -> float;
 
-    virtual void setFilterParameter(size_t aAttributeId, float aValue);
+    virtual void set_filter_parameter(size_t attribute_id, float value);
 
-    virtual void fadeFilterParameter(size_t aAttributeId,
-                                     float  aTo,
-                                     time_t aTime,
-                                     time_t aStartTime);
+    virtual void fade_filter_parameter(size_t    attribute_id,
+                                       float     to,
+                                       SoundTime time,
+                                       SoundTime start_time);
 
-    virtual void oscillateFilterParameter(
-        size_t aAttributeId, float aFrom, float aTo, time_t aTime, time_t aStartTime);
+    virtual void oscillate_filter_parameter(
+        size_t attribute_id, float from, float to, SoundTime time, SoundTime start_time);
 
   protected:
-    size_t                   mNumParams    = 0;
-    size_t                   mParamChanged = 0;
-    std::unique_ptr<float[]> mParam;
-    std::unique_ptr<Fader[]> mParamFader;
+    size_t                   m_param_count    = 0;
+    size_t                   m_params_changed = 0;
+    std::unique_ptr<float[]> m_params{};
+    std::unique_ptr<Fader[]> m_param_faders{};
 };
 
 class Filter
@@ -81,7 +92,7 @@ class Filter
 
     virtual ~Filter() noexcept = default;
 
-    virtual std::shared_ptr<FilterInstance> createInstance() = 0;
+    virtual auto create_instance() -> std::shared_ptr<FilterInstance> = 0;
 };
 
 class FlangerFilter;
@@ -89,21 +100,16 @@ class FlangerFilter;
 class FlangerFilterInstance final : public FilterInstance
 {
   public:
-    void filter(float* aBuffer,
-                size_t aSamples,
-                size_t aBufferSize,
-                size_t aChannels,
-                float  aSamplerate,
-                time_t aTime) override;
+    void filter(const FilterArgs& args) override;
 
-    explicit FlangerFilterInstance(FlangerFilter* aParent);
+    explicit FlangerFilterInstance(FlangerFilter* parent);
 
   private:
-    std::unique_ptr<float[]> mBuffer;
-    size_t                   mBufferLength;
-    FlangerFilter*           mParent;
-    size_t                   mOffset;
-    double                   mIndex;
+    std::unique_ptr<float[]> m_buffer;
+    size_t                   m_buffer_size = 0;
+    FlangerFilter*           m_parent      = nullptr;
+    size_t                   m_offset      = 0;
+    double                   m_index       = 0.0;
 };
 
 class FlangerFilter final : public Filter
@@ -118,20 +124,27 @@ class FlangerFilter final : public Filter
 
     FlangerFilter();
 
-    float                           mDelay;
-    float                           mFreq;
-    std::shared_ptr<FilterInstance> createInstance() override;
+    auto create_instance() -> std::shared_ptr<FilterInstance> override;
+
+    float m_delay = 0.0f;
+    float m_freq  = 0.0f;
 };
 
 class FreeverbFilter;
 
-namespace FreeverbImpl
+namespace freeverb_impl
 {
 class Revmodel;
 }
 
 class FreeverbFilterInstance final : public FilterInstance
 {
+  public:
+    void filter(const FilterArgs& args) override;
+
+    explicit FreeverbFilterInstance(FreeverbFilter* parent);
+
+  private:
     enum FILTERPARAM
     {
         WET = 0,
@@ -141,18 +154,8 @@ class FreeverbFilterInstance final : public FilterInstance
         WIDTH
     };
 
-    FreeverbFilter*                         mParent = nullptr;
-    std::unique_ptr<FreeverbImpl::Revmodel> mModel;
-
-  public:
-    void filter(float* aBuffer,
-                size_t aSamples,
-                size_t aBufferSize,
-                size_t aChannels,
-                float  aSamplerate,
-                time_t aTime) override;
-
-    explicit FreeverbFilterInstance(FreeverbFilter* aParent);
+    FreeverbFilter*                          m_parent = nullptr;
+    std::unique_ptr<freeverb_impl::Revmodel> m_model;
 };
 
 class FreeverbFilter final : public Filter
@@ -167,12 +170,12 @@ class FreeverbFilter final : public Filter
         WIDTH
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    auto create_instance() -> std::shared_ptr<FilterInstance> override;
 
-    float mMode     = 0.0f;
-    float mRoomSize = 0.5f;
-    float mDamp     = 0.5f;
-    float mWidth    = 1.0f;
+    float mode      = 0.0f;
+    float room_size = 0.5f;
+    float damp      = 0.5f;
+    float width     = 1.0f;
 };
 
 class DuckFilter;
@@ -180,19 +183,14 @@ class DuckFilter;
 class DuckFilterInstance final : public FilterInstance
 {
   public:
-    void filter(float* aBuffer,
-                size_t aSamples,
-                size_t aBufferSize,
-                size_t aChannels,
-                float  aSamplerate,
-                time_t aTime) override;
+    explicit DuckFilterInstance(const DuckFilter* parent);
 
-    explicit DuckFilterInstance(DuckFilter* aParent);
+    void filter(const FilterArgs& args) override;
 
   private:
-    handle       mListenTo;
-    AudioDevice* mEngine;
-    float        mCurrentLevel;
+    SoundHandle  m_listen_to;
+    AudioDevice* m_engine;
+    float        m_current_level;
 };
 
 class DuckFilter final : public Filter
@@ -206,33 +204,29 @@ class DuckFilter final : public Filter
         LEVEL
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    std::shared_ptr<FilterInstance> create_instance() override;
 
     AudioDevice* mEngine   = nullptr;
     float        mOnRamp   = 0.1f;
     float        mOffRamp  = 0.5f;
     float        mLevel    = 0.5f;
-    handle       mListenTo = 0;
+    SoundHandle  mListenTo = 0;
 };
 
 class EchoFilter;
 
 class EchoFilterInstance final : public FilterInstance
 {
-    std::unique_ptr<float[]> mBuffer;
-    int                      mBufferLength;
-    int                      mBufferMaxLength;
-    int                      mOffset;
-
   public:
-    void filter(float* aBuffer,
-                size_t aSamples,
-                size_t aBufferSize,
-                size_t aChannels,
-                float  aSamplerate,
-                time_t aTime) override;
+    void filter(const FilterArgs& args) override;
 
-    explicit EchoFilterInstance(EchoFilter* aParent);
+    explicit EchoFilterInstance(const EchoFilter* parent);
+
+  private:
+    std::unique_ptr<float[]> m_buffer;
+    size_t                   m_buffer_size     = 0;
+    size_t                   m_buffer_max_size = 0;
+    size_t                   m_offset          = 0;
 };
 
 class EchoFilter final : public Filter
@@ -246,11 +240,11 @@ class EchoFilter final : public Filter
         FILTER
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    std::shared_ptr<FilterInstance> create_instance() override;
 
-    float mDelay  = 0.3f;
-    float mDecay  = 0.7f;
-    float mFilter = 0.0f;
+    float delay  = 0.3f;
+    float decay  = 0.7f;
+    float filter = 0.0f;
 };
 
 class LofiFilter;
@@ -263,6 +257,12 @@ struct LofiChannelData
 
 class LofiFilterInstance final : public FilterInstance
 {
+  public:
+    void filter_channel(const FilterChannelArgs& args) override;
+
+    explicit LofiFilterInstance(LofiFilter* aParent);
+
+  private:
     enum FILTERPARAMS
     {
         WET,
@@ -270,19 +270,8 @@ class LofiFilterInstance final : public FilterInstance
         BITDEPTH
     };
 
+    LofiFilter*                    mParent;
     std::array<LofiChannelData, 2> mChannelData{};
-
-    LofiFilter* mParent;
-
-  public:
-    void filterChannel(float* aBuffer,
-                       size_t aSamples,
-                       float  aSamplerate,
-                       time_t aTime,
-                       size_t aChannel,
-                       size_t aChannels) override;
-
-    explicit LofiFilterInstance(LofiFilter* aParent);
 };
 
 class LofiFilter final : public Filter
@@ -295,7 +284,7 @@ class LofiFilter final : public Filter
         BITDEPTH
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    std::shared_ptr<FilterInstance> create_instance() override;
 
     float mSampleRate = 4000.0f;
     float mBitdepth   = 3.0f;
@@ -308,14 +297,9 @@ class WaveShaperFilterInstance final : public FilterInstance
     WaveShaperFilter* mParent;
 
   public:
-    void filterChannel(float* aBuffer,
-                       size_t aSamples,
-                       float  aSamplerate,
-                       time_t aTime,
-                       size_t aChannel,
-                       size_t aChannels) override;
+    void filter_channel(const FilterChannelArgs& args) override;
 
-    explicit WaveShaperFilterInstance(WaveShaperFilter* aParent);
+    explicit WaveShaperFilterInstance(WaveShaperFilter* parent);
 };
 
 class WaveShaperFilter final : public Filter
@@ -327,7 +311,7 @@ class WaveShaperFilter final : public Filter
         AMOUNT
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    std::shared_ptr<FilterInstance> create_instance() override;
 
     float mAmount = 0.0f;
 };
@@ -346,13 +330,9 @@ class RobotizeFilterInstance final : public FilterInstance
     RobotizeFilter* mParent;
 
   public:
-    void filterChannel(float* aBuffer,
-                       size_t aSamples,
-                       float  aSamplerate,
-                       time_t aTime,
-                       size_t aChannel,
-                       size_t aChannels) override;
-    explicit RobotizeFilterInstance(RobotizeFilter* aParent);
+    void filter_channel(const FilterChannelArgs& args) override;
+
+    explicit RobotizeFilterInstance(RobotizeFilter* parent);
 };
 
 class RobotizeFilter final : public Filter
@@ -365,7 +345,7 @@ class RobotizeFilter final : public Filter
         WAVE
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    std::shared_ptr<FilterInstance> create_instance() override;
 
     float mFreq = 30.0f;
     int   mWave = 0;
@@ -376,43 +356,38 @@ class FFTFilter;
 class FFTFilterInstance : public FilterInstance
 {
   public:
-    virtual void fftFilterChannel(float* aFFTBuffer,
-                                  size_t aSamples,
-                                  float  aSamplerate,
-                                  time_t aTime,
-                                  size_t aChannel,
-                                  size_t aChannels);
-    void         filterChannel(float* aBuffer,
-                               size_t aSamples,
-                               float  aSamplerate,
-                               time_t aTime,
-                               size_t aChannel,
-                               size_t aChannels) override;
-
-    explicit FFTFilterInstance(FFTFilter* aParent);
     FFTFilterInstance();
 
-    void comp2MagPhase(float* aFFTBuffer, size_t aSamples);
-    void magPhase2MagFreq(float* aFFTBuffer, size_t aSamples, float aSamplerate, size_t aChannel);
-    void magFreq2MagPhase(float* aFFTBuffer, size_t aSamples, float aSamplerate, size_t aChannel);
-    void magPhase2Comp(float* aFFTBuffer, size_t aSamples);
+    explicit FFTFilterInstance(FFTFilter* parent);
+
+    virtual void fft_filter_channel(const FilterChannelArgs& args);
+
+    void filter_channel(const FilterChannelArgs& args) override;
+
+    static void comp2MagPhase(float* fft_buffer, size_t samples);
+
+    void magPhase2MagFreq(float* fft_buffer, size_t samples, float sample_rate, size_t channel);
+
+    void magFreq2MagPhase(float* fft_buffer, size_t samples, float sample_rate, size_t channel);
+
+    void magPhase2Comp(float* fft_buffer, size_t samples);
 
   private:
-    std::unique_ptr<float[]> mTemp;
-    std::unique_ptr<float[]> mInputBuffer;
-    std::unique_ptr<float[]> mMixBuffer;
-    std::unique_ptr<float[]> mLastPhase;
-    std::unique_ptr<float[]> mSumPhase;
-    size_t                   mInputOffset[max_channels];
-    size_t                   mMixOffset[max_channels];
-    size_t                   mReadOffset[max_channels];
-    FFTFilter*               mParent;
+    std::unique_ptr<float[]>         m_temp;
+    std::unique_ptr<float[]>         m_input_buffer;
+    std::unique_ptr<float[]>         m_mix_buffer;
+    std::unique_ptr<float[]>         m_last_phase;
+    std::unique_ptr<float[]>         m_sum_phase;
+    std::array<size_t, max_channels> m_input_offset{};
+    std::array<size_t, max_channels> m_mix_offset{};
+    std::array<size_t, max_channels> m_read_offset{};
+    FFTFilter*                       m_parent = nullptr;
 };
 
 class FFTFilter : public Filter
 {
   public:
-    std::shared_ptr<FilterInstance> createInstance() override;
+    auto create_instance() -> std::shared_ptr<FilterInstance> override;
 };
 
 class EqFilter;
@@ -435,12 +410,8 @@ class EqFilterInstance final : public FFTFilterInstance
     EqFilter* mParent;
 
   public:
-    void fftFilterChannel(float* aFFTBuffer,
-                          size_t aSamples,
-                          float  aSamplerate,
-                          time_t aTime,
-                          size_t aChannel,
-                          size_t aChannels) override;
+    void fft_filter_channel(const FilterChannelArgs& args) override;
+
     explicit EqFilterInstance(EqFilter* aParent);
 };
 
@@ -462,7 +433,7 @@ class EqFilter final : public FFTFilter
 
     EqFilter();
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    auto create_instance() -> std::shared_ptr<FilterInstance> override;
 
     std::array<float, 8> mVolume{};
 };
@@ -479,12 +450,7 @@ class BiquadResonantFilterInstance final : public FilterInstance
   public:
     explicit BiquadResonantFilterInstance(BiquadResonantFilter* aParent);
 
-    void filterChannel(float* aBuffer,
-                       size_t aSamples,
-                       float  aSamplerate,
-                       time_t aTime,
-                       size_t aChannel,
-                       size_t aChannels) override;
+    void filter_channel(const FilterChannelArgs& args) override;
 
   protected:
     enum FilterAttribute
@@ -502,7 +468,7 @@ class BiquadResonantFilterInstance final : public FilterInstance
     float                       mB1 = 0.0f;
     float                       mB2 = 0.0f;
     int                         mDirty{};
-    float                       mSamplerate;
+    float                       mSamplerate = 44'100.0f;
 
     BiquadResonantFilter* mParent;
     void                  calcBQRParams();
@@ -526,7 +492,7 @@ class BiquadResonantFilter final : public Filter
         RESONANCE
     };
 
-    std::shared_ptr<FilterInstance> createInstance() override;
+    auto create_instance() -> std::shared_ptr<FilterInstance> override;
 
     int   mFilterType = LOWPASS;
     float mFrequency  = 1000.0f;

@@ -39,15 +39,15 @@ class WavInstance final : public AudioSourceInstance
   public:
     explicit WavInstance(Wav* aParent);
 
-    size_t getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
+    auto audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t override;
 
-    bool rewind() override;
+    auto rewind() -> bool override;
 
-    bool hasEnded() override;
+    auto has_ended() -> bool override;
 
   private:
-    Wav*   mParent = nullptr;
-    size_t mOffset = 0;
+    Wav*   m_parent = nullptr;
+    size_t m_offset = 0;
 };
 
 class Wav final : public AudioSource
@@ -59,9 +59,9 @@ class Wav final : public AudioSource
 
     ~Wav() override;
 
-    std::shared_ptr<AudioSourceInstance> createInstance() override;
+    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
 
-    time_t getLength() const;
+    auto length_time() const -> SoundTime;
 
   private:
     void loadwav(const MemoryFile& aReader);

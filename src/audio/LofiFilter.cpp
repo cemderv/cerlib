@@ -30,40 +30,36 @@ namespace cer
 LofiFilterInstance::LofiFilterInstance(LofiFilter* aParent)
 {
     mParent = aParent;
-    FilterInstance::initParams(3);
-    mParam[SAMPLERATE] = aParent->mSampleRate;
-    mParam[BITDEPTH]   = aParent->mBitdepth;
+    FilterInstance::init_params(3);
+    m_params[SAMPLERATE] = aParent->mSampleRate;
+    m_params[BITDEPTH]   = aParent->mBitdepth;
 }
 
-void LofiFilterInstance::filterChannel(float* aBuffer,
-                                       size_t aSamples,
-                                       float  aSamplerate,
-                                       double aTime,
-                                       size_t aChannel,
-                                       size_t /*aChannels*/)
+void LofiFilterInstance::filter_channel(const FilterChannelArgs& args)
 {
-    updateParams(aTime);
+    update_params(args.time);
 
-    size_t i;
-    for (i = 0; i < aSamples; ++i)
+    for (size_t i = 0; i < args.samples; ++i)
     {
-        if (mChannelData[aChannel].mSamplesToSkip <= 0)
+        if (mChannelData[args.channel].mSamplesToSkip <= 0)
         {
-            mChannelData[aChannel].mSamplesToSkip += (aSamplerate / mParam[SAMPLERATE]) - 1;
+            mChannelData[args.channel].mSamplesToSkip +=
+                (args.sample_rate / m_params[SAMPLERATE]) - 1;
 
-            const auto q = pow(2.0f, mParam[BITDEPTH]);
+            const auto q = pow(2.0f, m_params[BITDEPTH]);
 
-            mChannelData[aChannel].mSample = floor(q * aBuffer[i]) / q;
+            mChannelData[args.channel].mSample = floor(q * args.buffer[i]) / q;
         }
         else
         {
-            mChannelData[aChannel].mSamplesToSkip--;
+            mChannelData[args.channel].mSamplesToSkip--;
         }
-        aBuffer[i] += (mChannelData[aChannel].mSample - aBuffer[i]) * mParam[WET];
+
+        args.buffer[i] += (mChannelData[args.channel].mSample - args.buffer[i]) * m_params[WET];
     }
 }
 
-std::shared_ptr<FilterInstance> LofiFilter::createInstance()
+std::shared_ptr<FilterInstance> LofiFilter::create_instance()
 {
     return std::make_shared<LofiFilterInstance>(this);
 }

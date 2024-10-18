@@ -16,9 +16,9 @@ class SoundImpl final : public Object, public Asset
 {
   public:
     // Creates copy of data.
-    explicit SoundImpl(gsl::not_null<AudioDevice*> soloud, std::span<const std::byte> data);
+    explicit SoundImpl(gsl::not_null<AudioDevice*> audio_device, std::span<const std::byte> data);
 
-    explicit SoundImpl(gsl::not_null<AudioDevice*>  soloud,
+    explicit SoundImpl(gsl::not_null<AudioDevice*>  audio_device,
                        std::unique_ptr<std::byte[]> data,
                        size_t                       data_size);
 
@@ -26,12 +26,12 @@ class SoundImpl final : public Object, public Asset
 
     void stop();
 
-    auto soloud_audio_source() -> AudioSource&;
+    auto audio_source() -> AudioSource&;
 
   private:
     void init_soloud_audio_source();
 
-    gsl::not_null<AudioDevice*>  m_soloud;
+    gsl::not_null<AudioDevice*>  m_audio_device;
     std::unique_ptr<std::byte[]> m_data;
     size_t                       m_data_size{};
     std::unique_ptr<AudioSource> m_soloud_audio_source;

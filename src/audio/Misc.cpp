@@ -33,7 +33,6 @@ Prg::Prg()
 
 void Prg::srand(int aSeed)
 {
-    mIndex = 0;
     for (int i = 0; i < 16; ++i)
     {
         mState[i] = aSeed + i * aSeed + i;
@@ -41,7 +40,7 @@ void Prg::srand(int aSeed)
 }
 
 // WELL512 implementation, public domain by Chris Lomont
-size_t Prg::rand()
+auto Prg::rand() -> size_t
 {
     size_t       a = mState[mIndex];
     size_t       c = mState[(mIndex + 13) & 15];
@@ -56,7 +55,7 @@ size_t Prg::rand()
     return mState[mIndex];
 }
 
-float Prg::rand_float()
+auto Prg::rand_float() -> float
 {
     return float(rand()) * 2.3283064365386963e-10f;
 }

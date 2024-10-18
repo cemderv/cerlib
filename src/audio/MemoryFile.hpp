@@ -35,28 +35,15 @@ class MemoryFile final
 
     explicit MemoryFile(std::span<const std::byte> data);
 
-    uint8_t  read8();
-    uint16_t read16();
-    uint32_t read32();
-    bool     eof() const;
-    size_t   read(unsigned char* aDst, size_t aBytes);
-    void     seek(int aOffset);
-    size_t   pos() const;
-
-    const std::byte* data() const
-    {
-        return mData.data();
-    }
-
-    const unsigned char* data_uc() const
-    {
-        return reinterpret_cast<const unsigned char*>(data());
-    }
-
-    size_t size() const
-    {
-        return mData.size();
-    }
+    auto read8() -> uint8_t;
+    auto read16() -> uint16_t;
+    auto read32() -> uint32_t;
+    auto read(unsigned char* aDst, size_t aBytes) -> size_t;
+    void seek(int aOffset);
+    auto pos() const -> size_t;
+    auto data() const -> const std::byte*;
+    auto data_uc() const -> const unsigned char*;
+    auto size() const -> size_t;
 
   private:
     std::span<const std::byte> mData;

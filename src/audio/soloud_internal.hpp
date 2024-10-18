@@ -30,61 +30,28 @@ namespace cer
 {
 class AudioDevice;
 
-// SDL2 "non-dynamic" back-end initialization call
-void sdl2static_init(AudioDevice* engine,
-                     EngineFlags  aFlags,
-                     size_t       aSamplerate = 44100,
-                     size_t       aBuffer     = 2048,
-                     size_t       aChannels   = 2);
+struct AudioBackendArgs
+{
+    AudioDevice* engine;
+    EngineFlags  flags;
+    size_t       sample_rate   = 44100;
+    size_t       buffer        = 2048;
+    size_t       channel_count = 2;
+};
 
-// Core Audio driver back-end initialization call
-void coreaudio_init(AudioDevice* engine,
-                    EngineFlags  aFlags,
-                    size_t       aSamplerate = 44100,
-                    size_t       aBuffer     = 2048,
-                    size_t       aChannels   = 2);
+void sdl2static_init(const AudioBackendArgs& args);
 
-// OpenSL ES back-end initialization call
-void opensles_init(AudioDevice* engine,
-                   EngineFlags  aFlags,
-                   size_t       aSamplerate = 44100,
-                   size_t       aBuffer     = 2048,
-                   size_t       aChannels   = 2);
+void coreaudio_init(const AudioBackendArgs& args);
 
-// WinMM back-end initialization call
-void winmm_init(AudioDevice* engine,
-                EngineFlags  aFlags,
-                size_t       aSamplerate = 44100,
-                size_t       aBuffer     = 4096,
-                size_t       aChannels   = 2);
+void opensles_init(const AudioBackendArgs& args);
 
-// XAudio2 back-end initialization call
-void xaudio2_init(AudioDevice* engine,
-                  EngineFlags  aFlags,
-                  size_t       aSamplerate = 44100,
-                  size_t       aBuffer     = 2048,
-                  size_t       aChannels   = 2);
+void winmm_init(const AudioBackendArgs& args);
 
-// WASAPI back-end initialization call
-void wasapi_init(AudioDevice* engine,
-                 EngineFlags  aFlags,
-                 size_t       aSamplerate = 44100,
-                 size_t       aBuffer     = 4096,
-                 size_t       aChannels   = 2);
+void xaudio2_init(const AudioBackendArgs& args);
 
-// PS Vita homebrew back-end initialization call
-void vita_homebrew_init(AudioDevice* engine,
-                        EngineFlags  aFlags,
-                        size_t       aSamplerate = 44100,
-                        size_t       aBuffer     = 2048,
-                        size_t       aChannels   = 2);
+void wasapi_init(const AudioBackendArgs& args);
 
-// ALSA back-end initialization call
-void alsa_init(AudioDevice* engine,
-               EngineFlags  aFlags,
-               size_t       aSamplerate = 44100,
-               size_t       aBuffer     = 2048,
-               size_t       aChannels   = 2);
+void alsa_init(const AudioBackendArgs& args);
 
 // Interlace samples in a buffer. From 11112222 to 12121212
 void interlace_samples_float(const float* aSourceBuffer,
@@ -102,8 +69,8 @@ void interlace_samples_s16(const float* aSourceBuffer,
 }; // namespace cer
 
 #define FOR_ALL_VOICES_PRE                                                                         \
-    handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {voice_handle, 0};                                                            \
+    SoundHandle* h_     = nullptr;                                                                 \
+    SoundHandle  th_[2] = {voice_handle, 0};                                                       \
     lockAudioMutex_internal();                                                                     \
     h_ = voiceGroupHandleToArray_internal(voice_handle);                                           \
     if (h_ == nullptr)                                                                             \
@@ -121,15 +88,15 @@ void interlace_samples_s16(const float* aSourceBuffer,
     unlockAudioMutex_internal();
 
 #define FOR_ALL_VOICES_PRE_3D                                                                      \
-    handle*               h_  = nullptr;                                                           \
-    std::array<handle, 2> th_ = {voice_handle, 0};                                                 \
-    h_                        = voiceGroupHandleToArray_internal(voice_handle);                    \
+    SoundHandle*               h_  = nullptr;                                                      \
+    std::array<SoundHandle, 2> th_ = {voice_handle, 0};                                            \
+    h_                             = voiceGroupHandleToArray_internal(voice_handle);               \
     if (h_ == nullptr)                                                                             \
         h_ = th_.data();                                                                           \
     while (*h_)                                                                                    \
     {                                                                                              \
         int ch = (*h_ & 0xfff) - 1;                                                                \
-        if (ch != -1 && m_3d_data[ch].mHandle == *h_)                                              \
+        if (ch != -1 && m_3d_data[ch].handle == *h_)                                               \
         {
 
 #define FOR_ALL_VOICES_POST_3D                                                                     \
@@ -138,8 +105,8 @@ void interlace_samples_s16(const float* aSourceBuffer,
     }
 
 #define FOR_ALL_VOICES_PRE_EXT                                                                     \
-    handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {voice_handle, 0};                                                            \
+    SoundHandle* h_     = nullptr;                                                                 \
+    SoundHandle  th_[2] = {voice_handle, 0};                                                       \
     engine->lockAudioMutex_internal();                                                             \
     h_ = engine->voiceGroupHandleToArray_internal(voice_handle);                                   \
     if (h_ == nullptr)                                                                             \
@@ -157,15 +124,15 @@ void interlace_samples_s16(const float* aSourceBuffer,
     engine->unlockAudioMutex_internal();
 
 #define FOR_ALL_VOICES_PRE_3D_EXT                                                                  \
-    handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {voice_handle, 0};                                                            \
-    h_             = engine->voiceGroupHandleToArray(voice_handle);                                \
+    SoundHandle* h_     = nullptr;                                                                 \
+    SoundHandle  th_[2] = {voice_handle, 0};                                                       \
+    h_                  = engine->voiceGroupHandleToArray(voice_handle);                           \
     if (h_ == nullptr)                                                                             \
         h_ = th_;                                                                                  \
     while (*h_)                                                                                    \
     {                                                                                              \
         int ch = (*h_ & 0xfff) - 1;                                                                \
-        if (ch != -1 && engine->m_3d_data[ch].mHandle == *h_)                                      \
+        if (ch != -1 && engine->m_3d_data[ch].handle == *h_)                                       \
         {
 
 #define FOR_ALL_VOICES_POST_3D_EXT                                                                 \

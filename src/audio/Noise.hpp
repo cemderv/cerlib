@@ -26,6 +26,7 @@ freely, subject to the following restrictions:
 
 #include "audio/AudioSource.hpp"
 #include "audio/Misc.hpp"
+#include <array>
 
 namespace cer
 {
@@ -34,24 +35,26 @@ class Noise;
 class NoiseInstance final : public AudioSourceInstance
 {
   public:
-    explicit NoiseInstance(const Noise* aParent);
+    explicit NoiseInstance(const Noise* parent);
 
-    size_t getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
-    bool   hasEnded() override;
+    auto audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) -> size_t override;
 
-    float mOctaveScale[10];
-    Prg   mPrg;
+    auto has_ended() -> bool override;
+
+  private:
+    std::array<float, 10> m_octave_scale{};
+    Prg                   m_prg;
 };
 
 class Noise final : public AudioSource
 {
   public:
-    enum NOISETYPES
+    enum NoiseTypes
     {
-        WHITE = 0,
-        PINK,
-        BROWNISH,
-        BLUEISH
+        White = 0,
+        Pink,
+        Brownish,
+        Blueish
     };
 
     Noise();
@@ -70,8 +73,8 @@ class Noise final : public AudioSource
 
     ~Noise() override;
 
-  public:
-    std::shared_ptr<AudioSourceInstance> createInstance() override;
-    float                                mOctaveScale[10];
+    std::shared_ptr<AudioSourceInstance> create_instance() override;
+
+    std::array<float, 10> octave_scale{};
 };
 }; // namespace cer

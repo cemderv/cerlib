@@ -31,57 +31,57 @@ namespace cer
 {
 AudioSourceInstance3dData::AudioSourceInstance3dData(const AudioSource& source)
 {
-    m3dAttenuationModel   = source.attenuation_model_3d;
-    m3dAttenuationRolloff = source.attenuation_rolloff_3d;
-    m3dDopplerFactor      = source.doppler_factor_3d;
-    m3dMaxDistance        = source.max_distance_3d;
-    m3dMinDistance        = source.min_distance_3d;
-    mCollider             = source.collider;
-    mColliderData         = source.collider_data;
-    mAttenuator           = source.attenuator;
-    m3dVolume             = 1.0f;
-    mDopplerValue         = 1.0f;
+    attenuation_model_3d   = source.attenuation_model_3d;
+    attenuation_rolloff_3d = source.attenuation_rolloff_3d;
+    doppler_factor_3d      = source.doppler_factor_3d;
+    max_distance_3d        = source.max_distance_3d;
+    min_distance_3d        = source.min_distance_3d;
+    collider               = source.collider;
+    collider_data          = source.collider_data;
+    attenuator             = source.attenuator;
+    volume_3d              = 1.0f;
+    doppler_value          = 1.0f;
 }
 
 AudioSourceInstance::AudioSourceInstance()
 {
     // Default all volumes to 1.0 so sound behind N mix busses isn't super quiet.
-    std::ranges::fill(mChannelVolume, 1.0f);
+    std::ranges::fill(channel_volume, 1.0f);
 }
 
-void AudioSourceInstance::init(const AudioSource& source, int aPlayIndex)
+void AudioSourceInstance::init(const AudioSource& source, int play_index)
 {
-    mPlayIndex      = aPlayIndex;
-    mBaseSamplerate = source.base_sample_rate;
-    mSamplerate     = mBaseSamplerate;
-    mChannels       = source.channel_count;
-    mStreamTime     = 0.0f;
-    mStreamPosition = 0.0f;
-    mLoopPoint      = source.loop_point;
+    this->play_index = play_index;
+    base_sample_rate = source.base_sample_rate;
+    sample_rate      = base_sample_rate;
+    channel_count    = source.channel_count;
+    stream_time      = 0.0f;
+    stream_position  = 0.0f;
+    loop_point       = source.loop_point;
 
     if (source.should_loop)
     {
-        mFlags.Looping = true;
+        flags.Looping = true;
     }
     if (source.process_3d)
     {
-        mFlags.Process3D = true;
+        flags.Process3D = true;
     }
     if (source.listener_relative)
     {
-        mFlags.ListenerRelative = true;
+        flags.ListenerRelative = true;
     }
     if (source.inaudible_kill)
     {
-        mFlags.InaudibleKill = true;
+        flags.InaudibleKill = true;
     }
     if (source.inaudible_tick)
     {
-        mFlags.InaudibleTick = true;
+        flags.InaudibleTick = true;
     }
     if (source.disable_autostop)
     {
-        mFlags.DisableAutostop = true;
+        flags.DisableAutostop = true;
     }
 }
 
@@ -90,9 +90,9 @@ auto AudioSourceInstance::rewind() -> bool
     return false;
 }
 
-auto AudioSourceInstance::seek(double aSeconds, float* mScratch, size_t mScratchSize) -> bool
+auto AudioSourceInstance::seek(double seconds, float* scratch, size_t scratch_size) -> bool
 {
-    double offset = aSeconds - mStreamPosition;
+    double offset = seconds - stream_position;
     if (offset <= 0)
     {
         if (!rewind())
@@ -100,21 +100,21 @@ auto AudioSourceInstance::seek(double aSeconds, float* mScratch, size_t mScratch
             // can't do generic seek backwards unless we can rewind.
             return false;
         }
-        offset = aSeconds;
+        offset = seconds;
     }
 
-    auto samples_to_discard = int(floor(mSamplerate * offset));
+    auto samples_to_discard = int(floor(sample_rate * offset));
 
     while (samples_to_discard != 0)
     {
-        int samples = mScratchSize / mChannels;
+        int samples = scratch_size / channel_count;
         if (samples > samples_to_discard)
             samples = samples_to_discard;
-        getAudio(mScratch, samples, samples);
+        audio(scratch, samples, samples);
         samples_to_discard -= samples;
     }
 
-    mStreamPosition = aSeconds;
+    stream_position = seconds;
 
     return true;
 }
@@ -124,12 +124,12 @@ AudioSource::~AudioSource() noexcept
     stop();
 }
 
-void AudioSource::setFilter(size_t aFilterId, Filter* aFilter)
+void AudioSource::set_filter(size_t filter_id, Filter* filter)
 {
-    if (aFilterId >= filters_per_stream)
+    if (filter_id >= filters_per_stream)
         return;
 
-    filter[aFilterId] = aFilter;
+    this->filter[filter_id] = filter;
 }
 
 void AudioSource::stop()

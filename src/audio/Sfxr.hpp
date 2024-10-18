@@ -123,9 +123,9 @@ class SfxrInstance final : public AudioSourceInstance
   public:
     explicit SfxrInstance(Sfxr* aParent);
 
-    size_t getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
+    size_t audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
 
-    bool hasEnded() override;
+    bool has_ended() override;
 };
 
 enum class SFXR_PRESETS
@@ -150,7 +150,7 @@ class Sfxr final : public AudioSource
 
     ~Sfxr() override;
 
-    std::shared_ptr<AudioSourceInstance> createInstance() override;
+    std::shared_ptr<AudioSourceInstance> create_instance() override;
 
   private:
     SfxrParams mParams;

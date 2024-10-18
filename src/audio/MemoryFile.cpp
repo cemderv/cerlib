@@ -23,33 +23,34 @@ distribution.
 */
 
 #include "audio/MemoryFile.hpp"
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 
 namespace cer
 {
-uint8_t MemoryFile::read8()
+auto MemoryFile::read8() -> uint8_t
 {
     uint8_t d = 0;
     read(&d, sizeof(d));
     return d;
 }
 
-uint16_t MemoryFile::read16()
+auto MemoryFile::read16() -> uint16_t
 {
     uint16_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-uint32_t MemoryFile::read32()
+auto MemoryFile::read32() -> uint32_t
 {
     uint32_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-size_t MemoryFile::read(unsigned char* aDst, size_t aBytes)
+auto MemoryFile::read(unsigned char* aDst, size_t aBytes) -> size_t
 {
     if (mOffset + aBytes >= mData.size())
     {
@@ -65,25 +66,31 @@ size_t MemoryFile::read(unsigned char* aDst, size_t aBytes)
 void MemoryFile::seek(int aOffset)
 {
     mOffset = aOffset >= 0 ? aOffset : mData.size() + aOffset;
-
-    if (mOffset > mData.size() - 1)
-    {
-        mOffset = mData.size() - 1;
-    }
+    mOffset = std::min(mOffset, mData.size() - 1);
 }
 
-size_t MemoryFile::pos() const
+auto MemoryFile::pos() const -> size_t
 {
     return mOffset;
+}
+
+auto MemoryFile::data() const -> const std::byte*
+{
+    return mData.data();
+}
+
+auto MemoryFile::data_uc() const -> const unsigned char*
+{
+    return reinterpret_cast<const unsigned char*>(data());
+}
+
+auto MemoryFile::size() const -> size_t
+{
+    return mData.size();
 }
 
 MemoryFile::MemoryFile(std::span<const std::byte> data)
     : mData(data)
 {
-}
-
-bool MemoryFile::eof() const
-{
-    return mOffset >= mData.size();
 }
 } // namespace cer

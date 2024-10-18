@@ -28,82 +28,78 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-DuckFilterInstance::DuckFilterInstance(DuckFilter* aParent)
+DuckFilterInstance::DuckFilterInstance(const DuckFilter* parent)
 {
-    initParams(4);
-    mParam[DuckFilter::ONRAMP]  = aParent->mOnRamp;
-    mParam[DuckFilter::OFFRAMP] = aParent->mOffRamp;
-    mParam[DuckFilter::LEVEL]   = aParent->mLevel;
-    mListenTo                   = aParent->mListenTo;
-    mEngine                     = aParent->mEngine;
-    mCurrentLevel               = 1;
+    FilterInstance::init_params(4);
+    m_params[DuckFilter::ONRAMP]  = parent->mOnRamp;
+    m_params[DuckFilter::OFFRAMP] = parent->mOffRamp;
+    m_params[DuckFilter::LEVEL]   = parent->mLevel;
+    m_listen_to                   = parent->mListenTo;
+    m_engine                      = parent->mEngine;
+    m_current_level               = 1;
 }
 
-void DuckFilterInstance::filter(float* aBuffer,
-                                size_t aSamples,
-                                size_t aBufferSize,
-                                size_t aChannels,
-                                float  aSamplerate,
-                                double aTime)
+void DuckFilterInstance::filter(const FilterArgs& args)
 {
-    updateParams(aTime);
+    update_params(args.time);
 
     auto onramp_step = 1.0f;
-    if (mParam[DuckFilter::ONRAMP] > 0.01f)
+    if (m_params[DuckFilter::ONRAMP] > 0.01f)
     {
-        onramp_step =
-            (1.0f - mParam[DuckFilter::LEVEL]) / (mParam[DuckFilter::ONRAMP] * aSamplerate);
+        onramp_step = (1.0f - m_params[DuckFilter::LEVEL]) /
+                      (m_params[DuckFilter::ONRAMP] * args.sample_rate);
     }
 
     auto offramp_step = 1.0f;
-    if (mParam[DuckFilter::OFFRAMP] > 0.01f)
+    if (m_params[DuckFilter::OFFRAMP] > 0.01f)
     {
-        offramp_step =
-            (1.0f - mParam[DuckFilter::LEVEL]) / (mParam[DuckFilter::OFFRAMP] * aSamplerate);
+        offramp_step = (1.0f - m_params[DuckFilter::LEVEL]) /
+                       (m_params[DuckFilter::OFFRAMP] * args.sample_rate);
     }
 
-    auto soundOn = false;
-    if (mEngine)
+    auto sound_on = false;
+
+    if (m_engine != nullptr)
     {
-        const auto voice_num = mEngine->getVoiceFromHandle_internal(mListenTo);
+        const auto voice_num = m_engine->getVoiceFromHandle_internal(m_listen_to);
         if (voice_num != -1)
         {
-            const auto bi = std::static_pointer_cast<BusInstance>(mEngine->m_voice[voice_num]);
+            const auto bi = std::static_pointer_cast<BusInstance>(m_engine->m_voice[voice_num]);
 
             auto v = 0.0f;
-            for (size_t i = 0; i < bi->mChannels; ++i)
+            for (size_t i = 0; i < bi->channel_count; ++i)
             {
-                v += bi->mVisualizationChannelVolume[i];
+                v += bi->m_visualization_channel_volume[i];
             }
 
             if (v > 0.01f)
             {
-                soundOn = true;
+                sound_on = true;
             }
         }
     }
 
-    auto level = mCurrentLevel;
-    for (size_t j = 0; j < aChannels; ++j)
+    auto level = m_current_level;
+    for (size_t j = 0; j < args.channels; ++j)
     {
-        level             = mCurrentLevel;
-        const auto bchofs = j * aBufferSize;
+        level             = m_current_level;
+        const auto bchofs = j * args.buffer_size;
 
-        for (size_t i = 0; i < aSamples; ++i)
+        for (size_t i = 0; i < args.samples; ++i)
         {
-            if (soundOn && level > mParam[DuckFilter::LEVEL])
+            if (sound_on && level > m_params[DuckFilter::LEVEL])
             {
                 level -= onramp_step;
             }
 
-            if (!soundOn && level < 1)
+            if (!sound_on && level < 1)
             {
                 level += offramp_step;
             }
 
-            if (level < mParam[DuckFilter::LEVEL])
+            if (level < m_params[DuckFilter::LEVEL])
             {
-                level = mParam[DuckFilter::LEVEL];
+                level = m_params[DuckFilter::LEVEL];
             }
 
             if (level > 1)
@@ -111,15 +107,16 @@ void DuckFilterInstance::filter(float* aBuffer,
                 level = 1;
             }
 
-            aBuffer[i + bchofs] +=
-                (-aBuffer[i + bchofs] + aBuffer[i + bchofs] * level) * mParam[DuckFilter::WET];
+            args.buffer[i + bchofs] +=
+                (-args.buffer[i + bchofs] + args.buffer[i + bchofs] * level) *
+                m_params[DuckFilter::WET];
         }
     }
 
-    mCurrentLevel = level;
+    m_current_level = level;
 }
 
-std::shared_ptr<FilterInstance> DuckFilter::createInstance()
+auto DuckFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<DuckFilterInstance>(this);
 }

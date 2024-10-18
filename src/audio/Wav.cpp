@@ -37,42 +37,42 @@ namespace cer
 {
 WavInstance::WavInstance(Wav* aParent)
 {
-    mParent = aParent;
-    mOffset = 0;
+    m_parent = aParent;
+    m_offset = 0;
 }
 
-size_t WavInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
+size_t WavInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
 {
-    if (mParent->mData == nullptr)
+    if (m_parent->mData == nullptr)
         return 0;
 
-    size_t dataleft = mParent->mSampleCount - mOffset;
+    size_t dataleft = m_parent->mSampleCount - m_offset;
     size_t copylen  = dataleft;
 
     if (copylen > aSamplesToRead)
         copylen = aSamplesToRead;
 
-    for (size_t i = 0; i < mChannels; ++i)
+    for (size_t i = 0; i < channel_count; ++i)
     {
         memcpy(aBuffer + i * aBufferSize,
-               mParent->mData.get() + mOffset + i * mParent->mSampleCount,
+               m_parent->mData.get() + m_offset + i * m_parent->mSampleCount,
                sizeof(float) * copylen);
     }
 
-    mOffset += copylen;
+    m_offset += copylen;
     return copylen;
 }
 
 bool WavInstance::rewind()
 {
-    mOffset         = 0;
-    mStreamPosition = 0.0f;
+    m_offset        = 0;
+    stream_position = 0.0f;
     return true;
 }
 
-bool WavInstance::hasEnded()
+bool WavInstance::has_ended()
 {
-    return !mFlags.Looping && mOffset >= mParent->mSampleCount;
+    return !flags.Looping && m_offset >= m_parent->mSampleCount;
 }
 
 Wav::Wav(std::span<const std::byte> data)
@@ -267,12 +267,12 @@ void Wav::loadflac(const MemoryFile& aReader)
     drflac_close(decoder);
 }
 
-std::shared_ptr<AudioSourceInstance> Wav::createInstance()
+std::shared_ptr<AudioSourceInstance> Wav::create_instance()
 {
     return std::make_shared<WavInstance>(this);
 }
 
-double Wav::getLength() const
+double Wav::length_time() const
 {
     return base_sample_rate == 0 ? 0 : mSampleCount / base_sample_rate;
 }

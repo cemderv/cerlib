@@ -35,13 +35,15 @@ class AlignedFloatBuffer
     AlignedFloatBuffer() = default;
 
     // Allocate and align buffer
-    explicit AlignedFloatBuffer(size_t aFloats);
+    explicit AlignedFloatBuffer(size_t floats);
 
-    AlignedFloatBuffer(const AlignedFloatBuffer& aBuffer)            = delete;
-    AlignedFloatBuffer& operator=(const AlignedFloatBuffer& aBuffer) = delete;
+    AlignedFloatBuffer(const AlignedFloatBuffer&) = delete;
 
-    AlignedFloatBuffer(AlignedFloatBuffer&& aBuffer) noexcept            = default;
-    AlignedFloatBuffer& operator=(AlignedFloatBuffer&& aBuffer) noexcept = default;
+    AlignedFloatBuffer& operator=(const AlignedFloatBuffer&) = delete;
+
+    AlignedFloatBuffer(AlignedFloatBuffer&&) noexcept = default;
+
+    AlignedFloatBuffer& operator=(AlignedFloatBuffer&&) noexcept = default;
 
     // Clear data to zero.
     void clear();
@@ -55,26 +57,29 @@ class AlignedFloatBuffer
 class TinyAlignedFloatBuffer
 {
   public:
-    float*        mData; // aligned pointer
-    unsigned char mActualData[sizeof(float) * 16 + 16];
-
-    // ctor
     TinyAlignedFloatBuffer();
+
+    float*                                               mData = nullptr; // aligned pointer
+    std::array<unsigned char, (sizeof(float) * 16) + 16> mActualData{};
 };
 
 // Generate a waveform.
-float generateWaveform(Waveform aWaveform, float p);
+auto generate_waveform(Waveform waveform, float p) -> float;
 
 // WELL512 random
 class Prg
 {
   public:
-    // random generator
     Prg();
-    size_t mState[16];
-    size_t mIndex;
-    size_t rand();
-    float  rand_float();
-    void   srand(int aSeed);
+
+    auto rand() -> size_t;
+
+    auto rand_float() -> float;
+
+    void srand(int aSeed);
+
+  private:
+    std::array<size_t, 16> mState{};
+    size_t                 mIndex = 0;
 };
 }; // namespace cer

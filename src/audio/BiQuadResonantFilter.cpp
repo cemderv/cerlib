@@ -36,13 +36,13 @@ void BiquadResonantFilterInstance::calcBQRParams()
 {
     mDirty = 0;
 
-    const auto omega     = float(2.0f * M_PI * mParam[Frequency] / mSamplerate);
+    const auto omega     = float(2.0f * M_PI * m_params[Frequency] / mSamplerate);
     const auto sin_omega = sin(omega);
     const auto cos_omega = cos(omega);
-    const auto alpha     = sin_omega / (2.0f * mParam[Resonance]);
+    const auto alpha     = sin_omega / (2.0f * m_params[Resonance]);
     const auto scalar    = 1.0f / (1.0f + alpha);
 
-    switch (int(mParam[Type]))
+    switch (int(m_params[Type]))
     {
         case BiquadResonantFilter::LOWPASS: {
             mA0 = 0.5f * (1.0f - cos_omega) * scalar;
@@ -76,60 +76,54 @@ void BiquadResonantFilterInstance::calcBQRParams()
 BiquadResonantFilterInstance::BiquadResonantFilterInstance(BiquadResonantFilter* aParent)
     : mParent(aParent)
 {
-    FilterInstance::initParams(4);
+    FilterInstance::init_params(4);
 
-    mParam[Resonance] = aParent->mResonance;
-    mParam[Frequency] = aParent->mFrequency;
-    mParam[Type]      = float(aParent->mFilterType);
-
-    mSamplerate = 44'100.0f;
+    m_params[Resonance] = aParent->mResonance;
+    m_params[Frequency] = aParent->mFrequency;
+    m_params[Type]      = float(aParent->mFilterType);
 
     calcBQRParams();
 }
 
-void BiquadResonantFilterInstance::filterChannel(float* aBuffer,
-                                                 size_t aSamples,
-                                                 float  aSamplerate,
-                                                 double aTime,
-                                                 size_t aChannel,
-                                                 size_t /*aChannels*/)
+void BiquadResonantFilterInstance::filter_channel(const FilterChannelArgs& args)
 {
-    const auto osamples = aSamples;
+    const auto osamples = args.samples;
 
-    if (aChannel == 0)
+    if (args.channel == 0)
     {
-        updateParams(aTime);
+        update_params(args.time);
 
-        if (mParamChanged & ((1 << Frequency) | (1 << Resonance) | (1 << Type)) ||
-            aSamplerate != mSamplerate)
+        if (((m_params_changed & ((1 << Frequency) | (1 << Resonance) | (1 << Type))) != 0u) ||
+            args.sample_rate != mSamplerate)
         {
-            mSamplerate = aSamplerate;
+            mSamplerate = args.sample_rate;
             calcBQRParams();
         }
-        mParamChanged = 0;
+
+        m_params_changed = 0;
     }
 
-    auto& s = mState[aChannel];
+    auto& s = mState[args.channel];
 
     // make sure we access pairs of samples (one sample may be skipped)
-    aSamples = aSamples & ~1;
+    const auto new_sample_count = size_t(int64_t(args.samples) & ~1);
 
     int c = 0;
 
-    for (size_t i = 0; i < aSamples; i += 2, ++c)
+    for (size_t i = 0; i < new_sample_count; i += 2, ++c)
     {
         // Generate outputs by filtering inputs.
-        const float x = aBuffer[c];
+        const float x = args.buffer[c];
         s.mY2         = (mA0 * x) + (mA1 * s.mX1) + (mA2 * s.mX2) - (mB1 * s.mY1) - (mB2 * s.mY2);
-        aBuffer[c] += (s.mY2 - aBuffer[c]) * mParam[Wet];
+        args.buffer[c] += (s.mY2 - args.buffer[c]) * m_params[Wet];
 
         ++c;
 
         // Permute filter operations to reduce data movement.
         // Just substitute variables instead of doing mX1=x, etc.
-        s.mX2 = aBuffer[c];
+        s.mX2 = args.buffer[c];
         s.mY1 = (mA0 * s.mX2) + (mA1 * x) + (mA2 * s.mX1) - (mB1 * s.mY2) - (mB2 * s.mY1);
-        aBuffer[c] += (s.mY1 - aBuffer[c]) * mParam[Wet];
+        args.buffer[c] += (s.mY1 - args.buffer[c]) * m_params[Wet];
 
         // Only move a little data.
         s.mX1 = s.mX2;
@@ -137,13 +131,13 @@ void BiquadResonantFilterInstance::filterChannel(float* aBuffer,
     }
 
     // If we skipped a sample earlier, patch it by just copying the previous.
-    if (osamples != aSamples)
+    if (osamples != args.samples)
     {
-        aBuffer[c] = aBuffer[c - 1];
+        args.buffer[c] = args.buffer[c - 1];
     }
 }
 
-std::shared_ptr<FilterInstance> BiquadResonantFilter::createInstance()
+auto BiquadResonantFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<BiquadResonantFilterInstance>(this);
 }

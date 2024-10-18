@@ -19,7 +19,7 @@ namespace cer::details
 class SoundChannelImpl final : public Object
 {
   public:
-    explicit SoundChannelImpl(gsl::not_null<AudioDevice*> soloud, cer::handle handle);
+    explicit SoundChannelImpl(gsl::not_null<AudioDevice*> audio_device, SoundHandle handle);
 
     auto id() const -> uint32_t;
 
@@ -69,6 +69,6 @@ class SoundChannelImpl final : public Object
 
   private:
     gsl::not_null<AudioDevice*> m_soloud;
-    cer::handle                 m_soloud_handle;
+    cer::SoundHandle            m_soloud_handle;
 };
 } // namespace cer::details

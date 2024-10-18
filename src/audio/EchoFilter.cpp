@@ -22,66 +22,61 @@ freely, subject to the following restrictions:
    distribution.
 */
 
+#include <algorithm>
+
 #include "audio/Filter.hpp"
 
 namespace cer
 {
-EchoFilterInstance::EchoFilterInstance(EchoFilter* aParent)
+EchoFilterInstance::EchoFilterInstance(const EchoFilter* parent)
 {
-    mBufferLength    = 0;
-    mBufferMaxLength = 0;
-    mOffset          = 0;
-    FilterInstance::initParams(4);
-    mParam[EchoFilter::DELAY]  = aParent->mDelay;
-    mParam[EchoFilter::DECAY]  = aParent->mDecay;
-    mParam[EchoFilter::FILTER] = aParent->mFilter;
+    FilterInstance::init_params(4);
+
+    m_params[EchoFilter::DELAY]  = parent->delay;
+    m_params[EchoFilter::DECAY]  = parent->decay;
+    m_params[EchoFilter::FILTER] = parent->filter;
 }
 
-void EchoFilterInstance::filter(float* aBuffer,
-                                size_t aSamples,
-                                size_t aBufferSize,
-                                size_t aChannels,
-                                float  aSamplerate,
-                                double aTime)
+void EchoFilterInstance::filter(const FilterArgs& args)
 {
-    updateParams(aTime);
-    if (mBuffer == nullptr)
+    update_params(args.time);
+    if (m_buffer == nullptr)
     {
         // We only know channels and sample rate at this point.. not really optimal
-        mBufferMaxLength = int(ceil(mParam[EchoFilter::DELAY] * aSamplerate));
-        mBuffer          = std::make_unique<float[]>(mBufferMaxLength * aChannels);
+        m_buffer_max_size = int(ceil(m_params[EchoFilter::DELAY] * args.sample_rate));
+        m_buffer          = std::make_unique<float[]>(m_buffer_max_size * args.channels);
     }
 
-    mBufferLength = int(ceil(mParam[EchoFilter::DELAY] * aSamplerate));
-    if (mBufferLength > mBufferMaxLength)
-    {
-        mBufferLength = mBufferMaxLength;
-    }
+    m_buffer_size = int(ceil(m_params[EchoFilter::DELAY] * args.sample_rate));
+    m_buffer_size = std::min(m_buffer_size, m_buffer_max_size);
 
-    int prevofs = (mOffset + mBufferLength - 1) % mBufferLength;
+    auto prevofs = (m_offset + m_buffer_size - 1) % m_buffer_size;
 
-    for (size_t i = 0; i < aSamples; ++i)
+    for (size_t i = 0; i < args.samples; ++i)
     {
-        for (size_t j = 0; j < aChannels; ++j)
+        for (size_t j = 0; j < args.channels; ++j)
         {
-            const auto chofs  = j * mBufferLength;
-            const auto bchofs = j * aBufferSize;
+            const auto chofs  = j * m_buffer_size;
+            const auto bchofs = j * args.buffer_size;
 
-            mBuffer[mOffset + chofs] = mParam[EchoFilter::FILTER] * mBuffer[prevofs + chofs] +
-                                       (1 - mParam[EchoFilter::FILTER]) * mBuffer[mOffset + chofs];
+            m_buffer[m_offset + chofs] =
+                m_params[EchoFilter::FILTER] * m_buffer[prevofs + chofs] +
+                (1 - m_params[EchoFilter::FILTER]) * m_buffer[m_offset + chofs];
 
             const auto n =
-                aBuffer[i + bchofs] + mBuffer[mOffset + chofs] * mParam[EchoFilter::DECAY];
-            mBuffer[mOffset + chofs] = n;
+                args.buffer[i + bchofs] + m_buffer[m_offset + chofs] * m_params[EchoFilter::DECAY];
 
-            aBuffer[i + bchofs] += (n - aBuffer[i + bchofs]) * mParam[EchoFilter::WET];
+            m_buffer[m_offset + chofs] = n;
+
+            args.buffer[i + bchofs] += (n - args.buffer[i + bchofs]) * m_params[EchoFilter::WET];
         }
-        prevofs = mOffset;
-        mOffset = (mOffset + 1) % mBufferLength;
+
+        prevofs = m_offset;
+        m_offset = (m_offset + 1) % m_buffer_size;
     }
 }
 
-std::shared_ptr<FilterInstance> EchoFilter::createInstance()
+auto EchoFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<EchoFilterInstance>(this);
 }

@@ -28,62 +28,57 @@ namespace cer
 {
 FlangerFilterInstance::FlangerFilterInstance(FlangerFilter* aParent)
 {
-    mParent       = aParent;
-    mBuffer       = 0;
-    mBufferLength = 0;
-    mOffset       = 0;
-    mIndex        = 0;
-    FilterInstance::initParams(3);
-    mParam[FlangerFilter::WET]   = 1;
-    mParam[FlangerFilter::FREQ]  = mParent->mFreq;
-    mParam[FlangerFilter::DELAY] = mParent->mDelay;
+    m_parent      = aParent;
+    m_buffer      = 0;
+    m_buffer_size = 0;
+    m_offset      = 0;
+    m_index       = 0;
+    FilterInstance::init_params(3);
+    m_params[FlangerFilter::WET]   = 1;
+    m_params[FlangerFilter::FREQ]  = m_parent->m_freq;
+    m_params[FlangerFilter::DELAY] = m_parent->m_delay;
 }
 
-void FlangerFilterInstance::filter(float* aBuffer,
-                                   size_t aSamples,
-                                   size_t aBufferSize,
-                                   size_t aChannels,
-                                   float  aSamplerate,
-                                   double aTime)
+void FlangerFilterInstance::filter(const FilterArgs& args)
 {
-    updateParams(aTime);
+    update_params(args.time);
 
-    if (mBufferLength < mParam[FlangerFilter::DELAY] * aSamplerate)
+    if (m_buffer_size < m_params[FlangerFilter::DELAY] * args.sample_rate)
     {
-        mBufferLength = int(ceil(mParam[FlangerFilter::DELAY] * aSamplerate));
-        mBuffer       = std::make_unique<float[]>(mBufferLength * aChannels);
+        m_buffer_size = int(ceil(m_params[FlangerFilter::DELAY] * args.sample_rate));
+        m_buffer      = std::make_unique<float[]>(m_buffer_size * args.channels);
     }
 
-    const int    maxsamples = int(ceil(mParam[FlangerFilter::DELAY] * aSamplerate));
-    const double inc        = mParam[FlangerFilter::FREQ] * M_PI * 2 / aSamplerate;
-    for (size_t i = 0; i < aChannels; ++i)
+    const int    maxsamples = int(ceil(m_params[FlangerFilter::DELAY] * args.sample_rate));
+    const double inc        = m_params[FlangerFilter::FREQ] * M_PI * 2 / args.sample_rate;
+    for (size_t i = 0; i < args.channels; ++i)
     {
-        const auto mbofs = i * mBufferLength;
-        auto       abofs = i * aBufferSize;
-        for (size_t j = 0; j < aSamples; ++j, ++abofs)
+        const auto mbofs = i * m_buffer_size;
+        auto       abofs = i * args.buffer_size;
+        for (size_t j = 0; j < args.samples; ++j, ++abofs)
         {
-            const auto delay = int(floor(maxsamples * (1 + cos(mIndex)))) / 2;
-            mIndex += inc;
-            mBuffer[mbofs + mOffset % mBufferLength] = aBuffer[abofs];
+            const auto delay = int(floor(maxsamples * (1 + cos(m_index)))) / 2;
+            m_index += inc;
+            m_buffer[mbofs + m_offset % m_buffer_size] = args.buffer[abofs];
             const auto n =
-                0.5f * (aBuffer[abofs] +
-                        mBuffer[mbofs + (mBufferLength - delay + mOffset) % mBufferLength]);
-            mOffset++;
-            aBuffer[abofs] += (n - aBuffer[abofs]) * mParam[FlangerFilter::WET];
+                0.5f * (args.buffer[abofs] +
+                        m_buffer[mbofs + (m_buffer_size - delay + m_offset) % m_buffer_size]);
+            m_offset++;
+            args.buffer[abofs] += (n - args.buffer[abofs]) * m_params[FlangerFilter::WET];
         }
-        mOffset -= aSamples;
+        m_offset -= args.samples;
     }
-    mOffset += aSamples;
-    mOffset %= mBufferLength;
+    m_offset += args.samples;
+    m_offset %= m_buffer_size;
 }
 
 FlangerFilter::FlangerFilter()
 {
-    mDelay = 0.005f;
-    mFreq  = 10;
+    m_delay = 0.005f;
+    m_freq  = 10;
 }
 
-std::shared_ptr<FilterInstance> FlangerFilter::createInstance()
+std::shared_ptr<FilterInstance> FlangerFilter::create_instance()
 {
     return std::make_shared<FlangerFilterInstance>(this);
 }

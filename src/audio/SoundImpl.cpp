@@ -5,15 +5,13 @@
 #include "SoundImpl.hpp"
 
 #include "audio/AudioDevice.hpp"
-#include "util/InternalError.hpp"
-#include <cstdint>
 #include <cstring>
 #include <gsl/narrow>
 
 namespace cer::details
 {
-SoundImpl::SoundImpl(gsl::not_null<AudioDevice*> soloud, std::span<const std::byte> data)
-    : m_soloud(soloud)
+SoundImpl::SoundImpl(gsl::not_null<AudioDevice*> audio_device, std::span<const std::byte> data)
+    : m_audio_device(audio_device)
     , m_data(std::make_unique<std::byte[]>(data.size()))
     , m_data_size(data.size())
 {
@@ -21,10 +19,10 @@ SoundImpl::SoundImpl(gsl::not_null<AudioDevice*> soloud, std::span<const std::by
     init_soloud_audio_source();
 }
 
-SoundImpl::SoundImpl(gsl::not_null<AudioDevice*>  soloud,
+SoundImpl::SoundImpl(gsl::not_null<AudioDevice*>  audio_device,
                      std::unique_ptr<std::byte[]> data,
                      size_t                       data_size)
-    : m_soloud(soloud)
+    : m_audio_device(audio_device)
     , m_data(std::move(data))
     , m_data_size(data_size)
 {
@@ -38,10 +36,10 @@ SoundImpl::~SoundImpl() noexcept
 
 void SoundImpl::stop()
 {
-    m_soloud->stop_audio_source(*m_soloud_audio_source);
+    m_audio_device->stop_audio_source(*m_soloud_audio_source);
 }
 
-auto SoundImpl::soloud_audio_source() -> AudioSource&
+auto SoundImpl::audio_source() -> AudioSource&
 {
     return *m_soloud_audio_source;
 }

@@ -29,11 +29,11 @@ namespace cer
 {
 QueueInstance::QueueInstance(Queue* aParent)
 {
-    mParent          = aParent;
-    mFlags.Protected = true;
+    mParent         = aParent;
+    flags.Protected = true;
 }
 
-size_t QueueInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
+size_t QueueInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
 {
     if (mParent->mCount == 0)
     {
@@ -43,28 +43,27 @@ size_t QueueInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBu
     size_t copyofs   = 0;
     while (copycount && mParent->mCount)
     {
-        int readcount = mParent->mSource[mParent->mReadIndex]->getAudio(aBuffer + copyofs,
-                                                                        copycount,
-                                                                        aBufferSize);
+        int readcount =
+            mParent->mSource[mParent->mReadIndex]->audio(aBuffer + copyofs, copycount, aBufferSize);
         copyofs += readcount;
         copycount -= readcount;
-        if (mParent->mSource[mParent->mReadIndex]->hasEnded())
+        if (mParent->mSource[mParent->mReadIndex]->has_ended())
         {
             mParent->mSource[mParent->mReadIndex].reset();
             mParent->mReadIndex = (mParent->mReadIndex + 1) % SOLOUD_QUEUE_MAX;
             mParent->mCount--;
-            mLoopCount++;
+            loop_count++;
         }
     }
     return copyofs;
 }
 
-bool QueueInstance::hasEnded()
+bool QueueInstance::has_ended()
 {
-    return mLoopCount != 0 && mParent->mCount == 0;
+    return loop_count != 0 && mParent->mCount == 0;
 }
 
-std::shared_ptr<AudioSourceInstance> Queue::createInstance()
+std::shared_ptr<AudioSourceInstance> Queue::create_instance()
 {
     if (mInstance)
     {
@@ -102,10 +101,10 @@ void Queue::play(AudioSource& aSound)
         engine->m_audio_source_id++;
     }
 
-    auto instance = aSound.createInstance();
+    auto instance = aSound.create_instance();
 
     instance->init(aSound, 0);
-    instance->mAudioSourceID = aSound.audio_source_id;
+    instance->audio_source_id = aSound.audio_source_id;
 
     engine->lockAudioMutex_internal();
     mSource[mWriteIndex] = std::move(instance);
@@ -136,7 +135,7 @@ bool Queue::isCurrentlyPlaying(const AudioSource& aSound) const
     }
 
     engine->lockAudioMutex_internal();
-    const bool res = mSource[mReadIndex]->mAudioSourceID == aSound.audio_source_id;
+    const bool res = mSource[mReadIndex]->audio_source_id == aSound.audio_source_id;
     engine->unlockAudioMutex_internal();
     return res;
 }

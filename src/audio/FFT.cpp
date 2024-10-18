@@ -806,183 +806,173 @@ void bitrv2conj(int n, float* a)
 
 void bitrv216(float* a)
 {
-    float x1r, x1i, x2r, x2i, x3r, x3i, x4r, x4i, x5r, x5i, x7r, x7i, x8r, x8i, x10r, x10i, x11r,
-        x11i, x12r, x12i, x13r, x13i, x14r, x14i;
-
-    x1r   = a[2];
-    x1i   = a[3];
-    x2r   = a[4];
-    x2i   = a[5];
-    x3r   = a[6];
-    x3i   = a[7];
-    x4r   = a[8];
-    x4i   = a[9];
-    x5r   = a[10];
-    x5i   = a[11];
-    x7r   = a[14];
-    x7i   = a[15];
-    x8r   = a[16];
-    x8i   = a[17];
-    x10r  = a[20];
-    x10i  = a[21];
-    x11r  = a[22];
-    x11i  = a[23];
-    x12r  = a[24];
-    x12i  = a[25];
-    x13r  = a[26];
-    x13i  = a[27];
-    x14r  = a[28];
-    x14i  = a[29];
-    a[2]  = x8r;
-    a[3]  = x8i;
-    a[4]  = x4r;
-    a[5]  = x4i;
-    a[6]  = x12r;
-    a[7]  = x12i;
-    a[8]  = x2r;
-    a[9]  = x2i;
-    a[10] = x10r;
-    a[11] = x10i;
-    a[14] = x14r;
-    a[15] = x14i;
-    a[16] = x1r;
-    a[17] = x1i;
-    a[20] = x5r;
-    a[21] = x5i;
-    a[22] = x13r;
-    a[23] = x13i;
-    a[24] = x3r;
-    a[25] = x3i;
-    a[26] = x11r;
-    a[27] = x11i;
-    a[28] = x7r;
-    a[29] = x7i;
+    const float x1r  = a[2];
+    const float x1i  = a[3];
+    const float x2r  = a[4];
+    const float x2i  = a[5];
+    const float x3r  = a[6];
+    const float x3i  = a[7];
+    const float x4r  = a[8];
+    const float x4i  = a[9];
+    const float x5r  = a[10];
+    const float x5i  = a[11];
+    const float x7r  = a[14];
+    const float x7i  = a[15];
+    const float x8r  = a[16];
+    const float x8i  = a[17];
+    const float x10r = a[20];
+    const float x10i = a[21];
+    const float x11r = a[22];
+    const float x11i = a[23];
+    const float x12r = a[24];
+    const float x12i = a[25];
+    const float x13r = a[26];
+    const float x13i = a[27];
+    const float x14r = a[28];
+    const float x14i = a[29];
+    a[2]             = x8r;
+    a[3]             = x8i;
+    a[4]             = x4r;
+    a[5]             = x4i;
+    a[6]             = x12r;
+    a[7]             = x12i;
+    a[8]             = x2r;
+    a[9]             = x2i;
+    a[10]            = x10r;
+    a[11]            = x10i;
+    a[14]            = x14r;
+    a[15]            = x14i;
+    a[16]            = x1r;
+    a[17]            = x1i;
+    a[20]            = x5r;
+    a[21]            = x5i;
+    a[22]            = x13r;
+    a[23]            = x13i;
+    a[24]            = x3r;
+    a[25]            = x3i;
+    a[26]            = x11r;
+    a[27]            = x11i;
+    a[28]            = x7r;
+    a[29]            = x7i;
 }
 
 
 void bitrv216neg(float* a)
 {
-    float x1r, x1i, x2r, x2i, x3r, x3i, x4r, x4i, x5r, x5i, x6r, x6i, x7r, x7i, x8r, x8i, x9r, x9i,
-        x10r, x10i, x11r, x11i, x12r, x12i, x13r, x13i, x14r, x14i, x15r, x15i;
-
-    x1r   = a[2];
-    x1i   = a[3];
-    x2r   = a[4];
-    x2i   = a[5];
-    x3r   = a[6];
-    x3i   = a[7];
-    x4r   = a[8];
-    x4i   = a[9];
-    x5r   = a[10];
-    x5i   = a[11];
-    x6r   = a[12];
-    x6i   = a[13];
-    x7r   = a[14];
-    x7i   = a[15];
-    x8r   = a[16];
-    x8i   = a[17];
-    x9r   = a[18];
-    x9i   = a[19];
-    x10r  = a[20];
-    x10i  = a[21];
-    x11r  = a[22];
-    x11i  = a[23];
-    x12r  = a[24];
-    x12i  = a[25];
-    x13r  = a[26];
-    x13i  = a[27];
-    x14r  = a[28];
-    x14i  = a[29];
-    x15r  = a[30];
-    x15i  = a[31];
-    a[2]  = x15r;
-    a[3]  = x15i;
-    a[4]  = x7r;
-    a[5]  = x7i;
-    a[6]  = x11r;
-    a[7]  = x11i;
-    a[8]  = x3r;
-    a[9]  = x3i;
-    a[10] = x13r;
-    a[11] = x13i;
-    a[12] = x5r;
-    a[13] = x5i;
-    a[14] = x9r;
-    a[15] = x9i;
-    a[16] = x1r;
-    a[17] = x1i;
-    a[18] = x14r;
-    a[19] = x14i;
-    a[20] = x6r;
-    a[21] = x6i;
-    a[22] = x10r;
-    a[23] = x10i;
-    a[24] = x2r;
-    a[25] = x2i;
-    a[26] = x12r;
-    a[27] = x12i;
-    a[28] = x4r;
-    a[29] = x4i;
-    a[30] = x8r;
-    a[31] = x8i;
+    const float x1r  = a[2];
+    const float x1i  = a[3];
+    const float x2r  = a[4];
+    const float x2i  = a[5];
+    const float x3r  = a[6];
+    const float x3i  = a[7];
+    const float x4r  = a[8];
+    const float x4i  = a[9];
+    const float x5r  = a[10];
+    const float x5i  = a[11];
+    const float x6r  = a[12];
+    const float x6i  = a[13];
+    const float x7r  = a[14];
+    const float x7i  = a[15];
+    const float x8r  = a[16];
+    const float x8i  = a[17];
+    const float x9r  = a[18];
+    const float x9i  = a[19];
+    const float x10r = a[20];
+    const float x10i = a[21];
+    const float x11r = a[22];
+    const float x11i = a[23];
+    const float x12r = a[24];
+    const float x12i = a[25];
+    const float x13r = a[26];
+    const float x13i = a[27];
+    const float x14r = a[28];
+    const float x14i = a[29];
+    const float x15r = a[30];
+    const float x15i = a[31];
+    a[2]             = x15r;
+    a[3]             = x15i;
+    a[4]             = x7r;
+    a[5]             = x7i;
+    a[6]             = x11r;
+    a[7]             = x11i;
+    a[8]             = x3r;
+    a[9]             = x3i;
+    a[10]            = x13r;
+    a[11]            = x13i;
+    a[12]            = x5r;
+    a[13]            = x5i;
+    a[14]            = x9r;
+    a[15]            = x9i;
+    a[16]            = x1r;
+    a[17]            = x1i;
+    a[18]            = x14r;
+    a[19]            = x14i;
+    a[20]            = x6r;
+    a[21]            = x6i;
+    a[22]            = x10r;
+    a[23]            = x10i;
+    a[24]            = x2r;
+    a[25]            = x2i;
+    a[26]            = x12r;
+    a[27]            = x12i;
+    a[28]            = x4r;
+    a[29]            = x4i;
+    a[30]            = x8r;
+    a[31]            = x8i;
 }
 
 
 void bitrv208(float* a)
 {
-    float x1r, x1i, x3r, x3i, x4r, x4i, x6r, x6i;
-
-    x1r   = a[2];
-    x1i   = a[3];
-    x3r   = a[6];
-    x3i   = a[7];
-    x4r   = a[8];
-    x4i   = a[9];
-    x6r   = a[12];
-    x6i   = a[13];
-    a[2]  = x4r;
-    a[3]  = x4i;
-    a[6]  = x6r;
-    a[7]  = x6i;
-    a[8]  = x1r;
-    a[9]  = x1i;
-    a[12] = x3r;
-    a[13] = x3i;
+    const float x1r = a[2];
+    const float x1i = a[3];
+    const float x3r = a[6];
+    const float x3i = a[7];
+    const float x4r = a[8];
+    const float x4i = a[9];
+    const float x6r = a[12];
+    const float x6i = a[13];
+    a[2]            = x4r;
+    a[3]            = x4i;
+    a[6]            = x6r;
+    a[7]            = x6i;
+    a[8]            = x1r;
+    a[9]            = x1i;
+    a[12]           = x3r;
+    a[13]           = x3i;
 }
 
 
 void bitrv208neg(float* a)
 {
-    float x1r, x1i, x2r, x2i, x3r, x3i, x4r, x4i, x5r, x5i, x6r, x6i, x7r, x7i;
-
-    x1r   = a[2];
-    x1i   = a[3];
-    x2r   = a[4];
-    x2i   = a[5];
-    x3r   = a[6];
-    x3i   = a[7];
-    x4r   = a[8];
-    x4i   = a[9];
-    x5r   = a[10];
-    x5i   = a[11];
-    x6r   = a[12];
-    x6i   = a[13];
-    x7r   = a[14];
-    x7i   = a[15];
-    a[2]  = x7r;
-    a[3]  = x7i;
-    a[4]  = x3r;
-    a[5]  = x3i;
-    a[6]  = x5r;
-    a[7]  = x5i;
-    a[8]  = x1r;
-    a[9]  = x1i;
-    a[10] = x6r;
-    a[11] = x6i;
-    a[12] = x2r;
-    a[13] = x2i;
-    a[14] = x4r;
-    a[15] = x4i;
+    const float x1r = a[2];
+    const float x1i = a[3];
+    const float x2r = a[4];
+    const float x2i = a[5];
+    const float x3r = a[6];
+    const float x3i = a[7];
+    const float x4r = a[8];
+    const float x4i = a[9];
+    const float x5r = a[10];
+    const float x5i = a[11];
+    const float x6r = a[12];
+    const float x6i = a[13];
+    const float x7r = a[14];
+    const float x7i = a[15];
+    a[2]            = x7r;
+    a[3]            = x7i;
+    a[4]            = x3r;
+    a[5]            = x3i;
+    a[6]            = x5r;
+    a[7]            = x5i;
+    a[8]            = x1r;
+    a[9]            = x1i;
+    a[10]           = x6r;
+    a[11]           = x6i;
+    a[12]           = x2r;
+    a[13]           = x2i;
+    a[14]           = x4r;
+    a[15]           = x4i;
 }
 
 void cftb1st(int n, float* a)
@@ -2278,7 +2268,7 @@ void cftfx41(int n, float* a)
 
 int cfttree(int n, int j, int k, float* a)
 {
-    int i, isplt, m;
+    int isplt;
 
     if ((k & 3) != 0)
     {
@@ -2294,7 +2284,8 @@ int cfttree(int n, int j, int k, float* a)
     }
     else
     {
-        m = n;
+        int i;
+        int m = n;
         for (i = k; (i & 3) == 0; i >>= 2)
         {
             m <<= 2;
@@ -2388,20 +2379,18 @@ void cftleaf(int n, int isplt, float* a)
 
 void cftrec4(int n, float* a)
 {
-    int isplt, j, k, m;
-
-    m = n;
+    int m = n;
     while (m > 512)
     {
         m >>= 2;
         cftmdl1(m, &a[n - m]);
     }
     cftleaf(m, 1, &a[n - m]);
-    k = 0;
-    for (j = n - m; j > 0; j -= m)
+    int k = 0;
+    for (int j = n - m; j > 0; j -= m)
     {
         k++;
-        isplt = cfttree(m, j, k, a);
+        int isplt = cfttree(m, j, k, a);
         cftleaf(m, isplt, &a[j - m]);
     }
 }
@@ -2497,33 +2486,33 @@ namespace cer
 {
 namespace FFT
 {
-void fft1024(float* aBuffer)
+void fft1024(float* buffer)
 {
-    fft(aBuffer, 1024);
+    fft(buffer, 1024);
 }
 
-void fft256(float* aBuffer)
+void fft256(float* buffer)
 {
-    fft(aBuffer, 256);
+    fft(buffer, 256);
 }
 
-void ifft256(float* aBuffer)
+void ifft256(float* buffer)
 {
-    ifft(aBuffer, 256);
+    ifft(buffer, 256);
 }
 
-void fft(float* aBuffer, size_t aBufferLength)
+void fft(float* buffer, size_t buffer_size)
 {
-    fftimpl::cftbsub(aBufferLength, aBuffer);
+    fftimpl::cftbsub(buffer_size, buffer);
 }
 
-void ifft(float* aBuffer, size_t aBufferLength)
+void ifft(float* buffer, size_t buffer_size)
 {
-    fftimpl::cftfsub(aBufferLength, aBuffer);
+    fftimpl::cftfsub(buffer_size, buffer);
 
-    for (size_t i = 0; i < aBufferLength; ++i)
+    for (size_t i = 0; i < buffer_size; ++i)
     {
-        aBuffer[i] *= 1.0f / float(aBufferLength / 2);
+        buffer[i] *= 1.0f / float(buffer_size / 2);
     }
 }
 }; // namespace FFT

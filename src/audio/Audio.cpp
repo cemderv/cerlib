@@ -31,7 +31,7 @@ auto cer::play_sound(const Sound&             sound,
                      float                    volume,
                      float                    pan,
                      bool                     start_paused,
-                     std::optional<SoundTime> delay) -> cer::SoundChannel
+                     std::optional<SoundTime> delay) -> SoundChannel
 {
     LOAD_AUDIO_ENGINE_IMPL_OR_RETURN_VALUE(SoundChannel{});
     return impl.play_sound(sound, volume, pan, start_paused, delay);

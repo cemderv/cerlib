@@ -28,34 +28,30 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-RobotizeFilterInstance::RobotizeFilterInstance(RobotizeFilter* aParent)
+RobotizeFilterInstance::RobotizeFilterInstance(RobotizeFilter* parent)
+    : mParent(parent)
 {
-    mParent = aParent;
-    FilterInstance::initParams(3);
-    mParam[FREQ] = aParent->mFreq;
-    mParam[WAVE] = float(aParent->mWave);
+    FilterInstance::init_params(3);
+    m_params[FREQ] = parent->mFreq;
+    m_params[WAVE] = float(parent->mWave);
 }
 
-void RobotizeFilterInstance::filterChannel(float* aBuffer,
-                                           size_t aSamples,
-                                           float  aSamplerate,
-                                           time_t aTime,
-                                           size_t aChannel,
-                                           size_t aChannels)
+void RobotizeFilterInstance::filter_channel(const FilterChannelArgs& args)
 {
-    const auto period = int(aSamplerate / mParam[FREQ]);
-    const auto start  = int(aTime * aSamplerate) % period;
+    const auto period = int(args.sample_rate / m_params[FREQ]);
+    const auto start  = int(args.time * args.sample_rate) % period;
 
-    for (size_t i = 0; i < aSamples; ++i)
+    for (size_t i = 0; i < args.samples; ++i)
     {
-        float s    = aBuffer[i];
-        float wpos = ((start + i) % period) / (float)period;
-        s *= generateWaveform(Waveform(int(mParam[WAVE])), wpos) + 0.5f;
-        aBuffer[i] += (s - aBuffer[i]) * mParam[WET];
+        float       s    = args.buffer[i];
+        const float wpos = ((start + i) % period) / float(period);
+
+        s *= generate_waveform(Waveform(int(m_params[WAVE])), wpos) + 0.5f;
+        args.buffer[i] += (s - args.buffer[i]) * m_params[WET];
     }
 }
 
-std::shared_ptr<FilterInstance> RobotizeFilter::createInstance()
+std::shared_ptr<FilterInstance> RobotizeFilter::create_instance()
 {
     return std::make_shared<RobotizeFilterInstance>(this);
 }

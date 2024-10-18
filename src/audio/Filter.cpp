@@ -27,85 +27,89 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-void FilterInstance::initParams(int aNumParams)
+void FilterInstance::init_params(int param_count)
 {
-    mNumParams  = aNumParams;
-    mParam      = std::make_unique<float[]>(mNumParams);
-    mParamFader = std::make_unique<Fader[]>(mNumParams);
+    m_param_count  = param_count;
+    m_params       = std::make_unique<float[]>(m_param_count);
+    m_param_faders = std::make_unique<Fader[]>(m_param_count);
 
-    mParam[0] = 1; // set 'wet' to 1
+    m_params[0] = 1; // set 'wet' to 1
 }
 
-void FilterInstance::updateParams(double aTime)
+void FilterInstance::update_params(double time)
 {
-    for (size_t i = 0; i < mNumParams; ++i)
+    for (size_t i = 0; i < m_param_count; ++i)
     {
-        if (mParamFader[i].mActive > 0)
+        if (m_param_faders[i].mActive > 0)
         {
-            mParamChanged |= 1 << i;
-            mParam[i] = mParamFader[i].get(aTime);
+            m_params_changed |= 1 << i;
+            m_params[i] = m_param_faders[i].get(time);
         }
     }
 }
 
-void FilterInstance::setFilterParameter(size_t aAttributeId, float aValue)
+void FilterInstance::set_filter_parameter(size_t attribute_id, float value)
 {
-    if (aAttributeId >= mNumParams)
-        return;
-
-    mParamFader[aAttributeId].mActive = 0;
-    mParam[aAttributeId]              = aValue;
-    mParamChanged |= 1 << aAttributeId;
-}
-
-void FilterInstance::fadeFilterParameter(size_t aAttributeId,
-                                         float  aTo,
-                                         double aTime,
-                                         double aStartTime)
-{
-    if (aAttributeId >= mNumParams || aTime <= 0 || aTo == mParam[aAttributeId])
-        return;
-
-    mParamFader[aAttributeId].set(mParam[aAttributeId], aTo, aTime, aStartTime);
-}
-
-void FilterInstance::oscillateFilterParameter(
-    size_t aAttributeId, float aFrom, float aTo, double aTime, double aStartTime)
-{
-    if (aAttributeId >= mNumParams || aTime <= 0 || aFrom == aTo)
-        return;
-
-    mParamFader[aAttributeId].setLFO(aFrom, aTo, aTime, aStartTime);
-}
-
-float FilterInstance::getFilterParameter(size_t aAttributeId)
-{
-    if (aAttributeId >= mNumParams)
-        return 0;
-
-    return mParam[aAttributeId];
-}
-
-void FilterInstance::filter(float* aBuffer,
-                            size_t aSamples,
-                            size_t aBufferSize,
-                            size_t aChannels,
-                            float  aSamplerate,
-                            double aTime)
-{
-    for (size_t i = 0; i < aChannels; ++i)
+    if (attribute_id >= m_param_count)
     {
-        filterChannel(aBuffer + i * aBufferSize, aSamples, aSamplerate, aTime, i, aChannels);
+        return;
+    }
+
+    m_param_faders[attribute_id].mActive = 0;
+    m_params[attribute_id]               = value;
+    m_params_changed |= 1 << attribute_id;
+}
+
+void FilterInstance::fade_filter_parameter(size_t attribute_id,
+                                           float  to,
+                                           double time,
+                                           double start_time)
+{
+    if (attribute_id >= m_param_count || time <= 0 || to == m_params[attribute_id])
+    {
+        return;
+    }
+
+    m_param_faders[attribute_id].set(m_params[attribute_id], to, time, start_time);
+}
+
+void FilterInstance::oscillate_filter_parameter(
+    size_t attribute_id, float from, float to, double time, double start_time)
+{
+    if (attribute_id >= m_param_count || time <= 0 || from == to)
+    {
+        return;
+    }
+
+    m_param_faders[attribute_id].setLFO(from, to, time, start_time);
+}
+
+auto FilterInstance::filter_parameter(size_t attribute_id) -> float
+{
+    if (attribute_id >= m_param_count)
+    {
+        return 0;
+    }
+
+    return m_params[attribute_id];
+}
+
+void FilterInstance::filter(const FilterArgs& args)
+{
+    for (size_t i = 0; i < args.channels; ++i)
+    {
+        filter_channel(FilterChannelArgs{
+            .buffer        = args.buffer + (i * args.buffer_size),
+            .samples       = args.samples,
+            .sample_rate   = args.sample_rate,
+            .time          = args.time,
+            .channel       = i,
+            .channel_count = args.channels,
+        });
     }
 }
 
-void FilterInstance::filterChannel(float* /*aBuffer*/,
-                                   size_t /*aSamples*/,
-                                   float /*aSamplerate*/,
-                                   double /*aTime*/,
-                                   size_t /*aChannel*/,
-                                   size_t /*aChannels*/)
+void FilterInstance::filter_channel([[maybe_unused]] const FilterChannelArgs& args)
 {
 }
-
 }; // namespace cer

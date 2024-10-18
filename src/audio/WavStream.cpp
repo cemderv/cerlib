@@ -218,7 +218,7 @@ static int getOggData(float** aOggOutputs,
 }
 
 
-size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
+size_t WavStreamInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
 {
     size_t                                offset = 0;
     std::array<float, 512 * max_channels> tmp{};
@@ -240,7 +240,7 @@ size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t
 
                 for (size_t j = 0; j < blockSize; ++j)
                 {
-                    for (size_t k = 0; k < mChannels; k++)
+                    for (size_t k = 0; k < channel_count; k++)
                     {
                         aBuffer[k * aSamplesToRead + i + j] = tmp[j * flac->channels + k];
                     }
@@ -261,7 +261,7 @@ size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t
 
                 for (size_t j = 0; j < blockSize; ++j)
                 {
-                    for (size_t k = 0; k < mChannels; k++)
+                    for (size_t k = 0; k < channel_count; k++)
                     {
                         aBuffer[k * aSamplesToRead + i + j] = tmp[j * mp3->channels + k];
                     }
@@ -279,7 +279,7 @@ size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t
                                          aBufferSize,
                                          mOggFrameSize,
                                          mOggFrameOffset,
-                                         mChannels);
+                                         channel_count);
                 mOffset += b;
                 offset += b;
                 mOggFrameOffset += b;
@@ -298,7 +298,7 @@ size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t
                                          aBufferSize,
                                          mOggFrameSize,
                                          mOggFrameOffset,
-                                         mChannels);
+                                         channel_count);
 
                 mOffset += b;
                 offset += b;
@@ -322,7 +322,7 @@ size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t
 
                 for (size_t j = 0; j < blockSize; ++j)
                 {
-                    for (size_t k = 0; k < mChannels; k++)
+                    for (size_t k = 0; k < channel_count; k++)
                     {
                         aBuffer[k * aSamplesToRead + i + j] = tmp[j * wav->channels + k];
                     }
@@ -339,14 +339,14 @@ bool WavStreamInstance::seek(double aSeconds, float* mScratch, size_t mScratchSi
 {
     if (auto** ogg = std::get_if<stb_vorbis*>(&mCodec))
     {
-        const auto pos = int(floor(mBaseSamplerate * aSeconds));
+        const auto pos = int(floor(base_sample_rate * aSeconds));
         stb_vorbis_seek(*ogg, pos);
         // Since the position that we just sought to might not be *exactly*
         // the position we asked for, we're re-calculating the position just
         // for the sake of correctness.
         mOffset            = stb_vorbis_get_sample_offset(*ogg);
-        double newPosition = float(mOffset / mBaseSamplerate);
-        mStreamPosition    = newPosition;
+        double newPosition = float(mOffset / base_sample_rate);
+        stream_position    = newPosition;
 
         return false;
     }
@@ -386,12 +386,12 @@ bool WavStreamInstance::rewind()
     }
 
     mOffset         = 0;
-    mStreamPosition = 0.0f;
+    stream_position = 0.0f;
 
     return false;
 }
 
-bool WavStreamInstance::hasEnded()
+bool WavStreamInstance::has_ended()
 {
     assert(mParent != nullptr);
 
@@ -509,7 +509,7 @@ void WavStream::loadmp3(MemoryFile& fp)
     drmp3_uninit(&decoder);
 }
 
-std::shared_ptr<AudioSourceInstance> WavStream::createInstance()
+std::shared_ptr<AudioSourceInstance> WavStream::create_instance()
 {
     return std::make_shared<WavStreamInstance>(this);
 }

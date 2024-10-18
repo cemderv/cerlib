@@ -41,7 +41,7 @@ SfxrInstance::SfxrInstance(Sfxr* aParent)
 
 #define frnd(x) ((float)(mRand.rand() % 10001) / 10000 * (x))
 
-size_t SfxrInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t /*aBufferSize*/)
+size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBufferSize*/)
 {
     float* buffer = aBuffer;
     size_t i;
@@ -68,7 +68,7 @@ size_t SfxrInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t /*aB
             fperiod = fmaxperiod;
             if (mParams.p_freq_limit > 0.0f)
             {
-                if (mFlags.Looping)
+                if (flags.Looping)
                 {
                     resetSample(false);
                 }
@@ -101,7 +101,7 @@ size_t SfxrInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t /*aB
             env_stage++;
             if (env_stage == 3)
             {
-                if (mFlags.Looping)
+                if (flags.Looping)
                 {
                     resetSample(false);
                 }
@@ -249,7 +249,7 @@ size_t SfxrInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t /*aB
     return aSamplesToRead;
 }
 
-bool SfxrInstance::hasEnded()
+bool SfxrInstance::has_ended()
 {
     return !playing_sample;
 }
@@ -546,7 +546,7 @@ Sfxr::~Sfxr()
     stop();
 }
 
-std::shared_ptr<AudioSourceInstance> Sfxr::createInstance()
+std::shared_ptr<AudioSourceInstance> Sfxr::create_instance()
 {
     return std::make_shared<SfxrInstance>(this);
 }
