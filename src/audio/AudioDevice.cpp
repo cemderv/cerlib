@@ -38,8 +38,8 @@ AudioDevice::AudioDevice(EngineFlags           flags,
 
     m_audio_thread_mutex = thread::create_mutex();
 
-    auto samplerate = sample_rate.value_or(44100);
-    auto buffersize = buffer_size.value_or(2048);
+    sample_rate = sample_rate.value_or(44100);
+    buffer_size = buffer_size.value_or(2048);
 
 #if defined(WITH_SDL2_STATIC)
     {
@@ -85,7 +85,13 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!buffer_size.has_value())
             buffer_size = 2048;
 
-        alsa_init(this, flags, sample_rate, buffer_size, channels);
+        alsa_init(AudioBackendArgs{
+            .engine        = this,
+            .flags         = flags,
+            .sample_rate   = *sample_rate,
+            .buffer        = *buffer_size,
+            .channel_count = channels,
+        });
     }
 #endif
 
@@ -93,14 +99,14 @@ AudioDevice::AudioDevice(EngineFlags           flags,
     {
         if (!buffer_size.has_value())
         {
-            buffersize = 2048;
+            *buffer_size = 2048;
         }
 
         coreaudio_init(AudioBackendArgs{
             .engine        = this,
             .flags         = flags,
-            .sample_rate   = samplerate,
-            .buffer        = buffersize,
+            .sample_rate   = *sample_rate,
+            .buffer        = *buffer_size,
             .channel_count = channels,
         });
     }
@@ -560,8 +566,8 @@ AlignedFloatBuffer::AlignedFloatBuffer(size_t floats)
     m_data        = std::make_unique<unsigned char[]>(m_count * sizeof(float));
     m_aligned_ptr = reinterpret_cast<float*>(m_data.get());
 #else
-    mBasePtr = std::make_unique<unsigned char[]>(mFloats * sizeof(float) + 16);
-    mData    = (float*)(((size_t)mBasePtr.get() + 15) & ~15);
+    m_data        = std::make_unique<unsigned char[]>(m_count * sizeof(float) + 16);
+    m_aligned_ptr = (float*)(((size_t)m_data.get() + 15) & ~15);
 #endif
 }
 
@@ -806,12 +812,12 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         d             = 0;
         for (size_t j = 0; j < m_channels; ++j)
         {
-            __m128 vol = _mm_load_ps(volumes.mData);
+            __m128 vol = _mm_load_ps(volumes.data());
 
             for (i = 0; i < samplequads; ++i)
             {
                 // float f1 = origdata[c] * v;	++c; v += vd;
-                __m128 f = _mm_load_ps(&aBuffer.mData[c]);
+                __m128 f = _mm_load_ps(&aBuffer[c]);
                 c += 4;
                 f   = _mm_mul_ps(f, vol);
                 vol = _mm_add_ps(vol, vdelta);
@@ -864,11 +870,11 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         d             = 0;
         for (size_t j = 0; j < m_channels; ++j)
         {
-            __m128 vol = _mm_load_ps(volumes.mData);
+            __m128 vol = _mm_load_ps(volumes.data());
             for (i = 0; i < samplequads; ++i)
             {
                 // float f1 = aBuffer.mData[c] * v; ++c; v += vd;
-                __m128 f = _mm_load_ps(&aBuffer.mData[c]);
+                __m128 f = _mm_load_ps(&aBuffer[c]);
                 c += 4;
                 f   = _mm_mul_ps(f, vol);
                 vol = _mm_add_ps(vol, vdelta);
@@ -879,7 +885,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
 
                 // aDestBuffer.mData[d] = f1 * mPostClipScaler; d++;
                 f = _mm_mul_ps(f, postscale);
-                _mm_store_ps(&aDestBuffer.mData[d], f);
+                _mm_store_ps(&aDestBuffer[d], f);
                 d += 4;
             }
         }
