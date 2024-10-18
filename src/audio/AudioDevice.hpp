@@ -415,7 +415,7 @@ class AudioDevice
                          Resampler aResampler);
 
     // Find a free voice, stopping the oldest if no free voice is found.
-    auto findFreeVoice_internal() -> int;
+    auto findFreeVoice_internal() -> size_t;
 
     // Converts handle to voice, if the handle is valid. Returns -1 if not.
     auto getVoiceFromHandle_internal(SoundHandle voice_handle) const -> int;

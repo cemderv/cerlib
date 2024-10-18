@@ -49,7 +49,7 @@ AudioSourceInstance::AudioSourceInstance()
     std::ranges::fill(channel_volume, 1.0f);
 }
 
-void AudioSourceInstance::init(const AudioSource& source, int play_index)
+void AudioSourceInstance::init(const AudioSource& source, size_t play_index)
 {
     this->play_index = play_index;
     base_sample_rate = source.base_sample_rate;
@@ -103,11 +103,11 @@ auto AudioSourceInstance::seek(double seconds, float* scratch, size_t scratch_si
         offset = seconds;
     }
 
-    auto samples_to_discard = int(floor(sample_rate * offset));
+    auto samples_to_discard = size_t(floor(sample_rate * offset));
 
     while (samples_to_discard != 0)
     {
-        int samples = scratch_size / channel_count;
+        auto samples = scratch_size / channel_count;
         if (samples > samples_to_discard)
             samples = samples_to_discard;
         audio(scratch, samples, samples);

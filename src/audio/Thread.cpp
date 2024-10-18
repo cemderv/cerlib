@@ -22,8 +22,10 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
+#include "util/Platform.hpp"
+
+#ifdef CERLIB_PLATFORM_WINDOWS
+#include <Windows.h>
 #else
 #include <ctime>
 #include <pthread.h>
@@ -32,29 +34,30 @@ freely, subject to the following restrictions:
 
 #include "audio/Thread.hpp"
 
+#ifdef CERLIB_PLATFORM_WINDOWS
 namespace cer::thread
 {
-#if defined(_WIN32) || defined(_WIN64)
 struct ThreadHandleData
 {
     HANDLE thread;
 };
+} // namespace cer::thread
 
-void* createMutex()
+void* cer::thread::create_mutex()
 {
     CRITICAL_SECTION* cs = new CRITICAL_SECTION;
     InitializeCriticalSectionAndSpinCount(cs, 100);
     return (void*)cs;
 }
 
-void destroyMutex(void* aHandle)
+void cer::thread::destroy_mutex(void* aHandle)
 {
     CRITICAL_SECTION* cs = (CRITICAL_SECTION*)aHandle;
     DeleteCriticalSection(cs);
     delete cs;
 }
 
-void lockMutex(void* aHandle)
+void cer::thread::lock_mutex(void* aHandle)
 {
     CRITICAL_SECTION* cs = (CRITICAL_SECTION*)aHandle;
     if (cs)
@@ -63,7 +66,7 @@ void lockMutex(void* aHandle)
     }
 }
 
-void unlockMutex(void* aHandle)
+void cer::thread::unlock_mutex(void* aHandle)
 {
     CRITICAL_SECTION* cs = (CRITICAL_SECTION*)aHandle;
     if (cs)
@@ -74,8 +77,8 @@ void unlockMutex(void* aHandle)
 
 struct soloud_thread_data
 {
-    threadFunction mFunc;
-    void*          mParam;
+    cer::thread::ThreadFunction mFunc;
+    void*                       mParam;
 };
 
 static DWORD WINAPI threadfunc(LPVOID d)
@@ -86,7 +89,7 @@ static DWORD WINAPI threadfunc(LPVOID d)
     return 0;
 }
 
-ThreadHandle createThread(threadFunction aThreadFunction, void* aParameter)
+auto cer::thread::create_thread(ThreadFunction aThreadFunction, void* aParameter) -> ThreadHandle
 {
     soloud_thread_data* d = new soloud_thread_data;
     d->mFunc              = aThreadFunction;
@@ -96,28 +99,28 @@ ThreadHandle createThread(threadFunction aThreadFunction, void* aParameter)
     {
         return 0;
     }
-    ThreadHandleData* threadHandle = new ThreadHandleData;
-    threadHandle->thread           = h;
-    return threadHandle;
+    ThreadHandleData* thread_handle = new ThreadHandleData;
+    thread_handle->thread           = h;
+    return thread_handle;
 }
 
-void sleep(int aMSec)
+void cer::thread::sleep(int aMSec)
 {
     Sleep(aMSec);
 }
 
-void wait(ThreadHandle aThreadHandle)
+void cer::thread::wait(ThreadHandle aThreadHandle)
 {
     WaitForSingleObject(aThreadHandle->thread, INFINITE);
 }
 
-void release(ThreadHandle aThreadHandle)
+void cer::thread::release(ThreadHandle aThreadHandle)
 {
     CloseHandle(aThreadHandle->thread);
     delete aThreadHandle;
 }
 
-int getTimeMillis()
+int cer::thread::time_millis()
 {
     return GetTickCount();
 }
@@ -187,10 +190,10 @@ auto create_thread(ThreadFunction aThreadFunction, void* aParameter) -> ThreadHa
     d->func  = aThreadFunction;
     d->param = aParameter;
 
-    auto* threadHandle = new ThreadHandleData();
-    pthread_create(&threadHandle->thread, nullptr, thread_func, d);
+    auto* thread_handle = new ThreadHandleData();
+    pthread_create(&thread_handle->thread, nullptr, thread_func, d);
 
-    return threadHandle;
+    return thread_handle;
 }
 
 void sleep(int ms)
@@ -221,6 +224,8 @@ auto time_millis() -> int
 }
 #endif
 
+namespace cer::thread
+{
 static void pool_worker(void* param)
 {
     auto* my_pool = static_cast<Pool*>(param);

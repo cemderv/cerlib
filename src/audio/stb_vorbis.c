@@ -82,10 +82,6 @@
 #include <stdio.h>
 #endif
 
-#ifndef SEEK_SET
-#error soloud_file_hack_on must be included after stdio, otherwise the #define hacks will break stdio.
-#endif
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -777,7 +773,7 @@ typedef struct
     uint8   classifications;
     uint8   classbook;
     uint8** classdata;
-    int16 (*residue_books)[8];
+    int16   (*residue_books)[8];
 } Residue;
 
 typedef struct
@@ -1763,8 +1759,6 @@ static void flush_packet(vorb* f)
 // as the huffman decoder?
 static uint32 get_bits(vorb* f, int n)
 {
-    uint32 z;
-
     if (f->valid_bits < 0)
         return 0;
     if (f->valid_bits < n)
@@ -1772,7 +1766,7 @@ static uint32 get_bits(vorb* f, int n)
         if (n > 24)
         {
             // the accumulator technique below would not work correctly in this case
-            z = get_bits(f, 24);
+            uint32 z = get_bits(f, 24);
             z += get_bits(f, n - 24) << 24;
             return z;
         }
@@ -1792,7 +1786,7 @@ static uint32 get_bits(vorb* f, int n)
     }
 
     assert(f->valid_bits >= n);
-    z = f->acc & ((1 << n) - 1);
+    uint32 z = f->acc & ((1 << n) - 1);
     f->acc >>= n;
     f->valid_bits -= n;
     return z;
@@ -1908,9 +1902,9 @@ static int codebook_decode_scalar_raw(vorb* f, Codebook* c)
     var = c->fast_huffman[var];                                                                    \
     if (var >= 0)                                                                                  \
     {                                                                                              \
-        int n = c->codeword_lengths[var];                                                          \
-        f->acc >>= n;                                                                              \
-        f->valid_bits -= n;                                                                        \
+        int n2m = c->codeword_lengths[var];                                                        \
+        f->acc >>= n2m;                                                                            \
+        f->valid_bits -= n2m;                                                                      \
         if (f->valid_bits < 0)                                                                     \
         {                                                                                          \
             f->valid_bits = 0;                                                                     \
@@ -2410,9 +2404,9 @@ static void decode_residue(
                     int c_inter = (z & 1), p_inter = z >> 1;
                     if (pass == 0)
                     {
-                        Codebook* c = f->codebooks + r->classbook;
+                        Codebook* c2 = f->codebooks + r->classbook;
                         int       q;
-                        DECODE(q, f, c);
+                        DECODE(q, f, c2);
                         if (q == EOP)
                             goto done;
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
@@ -2427,13 +2421,13 @@ static void decode_residue(
                     }
                     for (i = 0; i < classwords && pcount < part_read; ++i, ++pcount)
                     {
-                        int z = r->begin + pcount * r->part_size;
+                        int z2 = r->begin + pcount * r->part_size;
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
-                        int c = part_classdata[0][class_set][i];
+                        int c2 = part_classdata[0][class_set][i];
 #else
-                        int c = classifications[0][pcount];
+                        int c2 = classifications[0][pcount];
 #endif
-                        int b = r->residue_books[c][pass];
+                        int b = r->residue_books[c2][pass];
                         if (b >= 0)
                         {
                             Codebook* book = f->codebooks + b;
@@ -2462,9 +2456,9 @@ static void decode_residue(
                         }
                         else
                         {
-                            z += r->part_size;
-                            c_inter = z & 1;
-                            p_inter = z >> 1;
+                            z2 += r->part_size;
+                            c_inter = z2 & 1;
+                            p_inter = z2 >> 1;
                         }
                     }
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
@@ -2480,9 +2474,9 @@ static void decode_residue(
                     int c_inter = z % ch, p_inter = z / ch;
                     if (pass == 0)
                     {
-                        Codebook* c = f->codebooks + r->classbook;
+                        Codebook* c2 = f->codebooks + r->classbook;
                         int       q;
-                        DECODE(q, f, c);
+                        DECODE(q, f, c2);
                         if (q == EOP)
                             goto done;
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
@@ -2497,13 +2491,13 @@ static void decode_residue(
                     }
                     for (i = 0; i < classwords && pcount < part_read; ++i, ++pcount)
                     {
-                        int z = r->begin + pcount * r->part_size;
+                        int z2 = r->begin + pcount * r->part_size;
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
-                        int c = part_classdata[0][class_set][i];
+                        int c2 = part_classdata[0][class_set][i];
 #else
                         int c = classifications[0][pcount];
 #endif
-                        int b = r->residue_books[c][pass];
+                        int b = r->residue_books[c2][pass];
                         if (b >= 0)
                         {
                             Codebook* book = f->codebooks + b;
@@ -2519,9 +2513,9 @@ static void decode_residue(
                         }
                         else
                         {
-                            z += r->part_size;
-                            c_inter = z % ch;
-                            p_inter = z / ch;
+                            z2 += r->part_size;
+                            c_inter = z2 % ch;
+                            p_inter = z2 / ch;
                         }
                     }
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
@@ -2545,9 +2539,9 @@ static void decode_residue(
                 {
                     if (!do_not_decode[j])
                     {
-                        Codebook* c = f->codebooks + r->classbook;
+                        Codebook* c2 = f->codebooks + r->classbook;
                         int       temp;
-                        DECODE(temp, f, c);
+                        DECODE(temp, f, c2);
                         if (temp == EOP)
                             goto done;
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
@@ -2569,11 +2563,11 @@ static void decode_residue(
                     if (!do_not_decode[j])
                     {
 #ifndef STB_VORBIS_DIVIDES_IN_RESIDUE
-                        int c = part_classdata[j][class_set][i];
+                        int c2 = part_classdata[j][class_set][i];
 #else
-                        int c = classifications[j][pcount];
+                        int c2 = classifications[j][pcount];
 #endif
-                        int b = r->residue_books[c][pass];
+                        int b = r->residue_books[c2][pass];
                         if (b >= 0)
                         {
                             float*    target = residue_buffers[j];
@@ -3612,8 +3606,8 @@ static int vorbis_decode_packet_rest(vorb* f,
                         if (book >= 0)
                         {
                             int       temp;
-                            Codebook* c = f->codebooks + book;
-                            DECODE(temp, f, c);
+                            Codebook* c2 = f->codebooks + book;
+                            DECODE(temp, f, c2);
                             finalY[offset++] = temp;
                         }
                         else
@@ -3733,10 +3727,10 @@ static int vorbis_decode_packet_rest(vorb* f,
     // INVERSE COUPLING
     for (i = map->coupling_steps - 1; i >= 0; --i)
     {
-        int    n2 = n >> 1;
+        int    n3 = n >> 1;
         float* m  = f->channel_buffers[map->chan[i].magnitude];
         float* a  = f->channel_buffers[map->chan[i].angle];
-        for (j = 0; j < n2; ++j)
+        for (j = 0; j < n3; ++j)
         {
             float a2, m2;
             if (m[j] > 0)
@@ -3905,7 +3899,7 @@ static int vorbis_finish_frame(stb_vorbis* f, int len, int left, int right)
     // mixin from previous window
     if (f->previous_length)
     {
-        int    i, j, n = f->previous_length;
+        int    n = f->previous_length;
         float* w = get_window(f, n);
         if (w == NULL)
             return 0;
@@ -4390,10 +4384,10 @@ static int start_decoder(vorb* f)
             c->sequence_p    = get_bits(f, 1);
             if (c->lookup_type == 1)
             {
-                int values = lookup1_values(c->entries, c->dimensions);
-                if (values < 0)
+                int values2 = lookup1_values(c->entries, c->dimensions);
+                if (values2 < 0)
                     return error(f, VORBIS_invalid_setup);
-                c->lookup_values = (uint32)values;
+                c->lookup_values = (uint32)values2;
             }
             else
             {
@@ -4418,7 +4412,7 @@ static int start_decoder(vorb* f)
 #ifndef STB_VORBIS_DIVIDES_IN_CODEBOOK
             if (c->lookup_type == 1)
             {
-                int   len, sparse = c->sparse;
+                int   len2, sparse = c->sparse;
                 float last = 0;
                 // pre-expand the lookup1-style multiplicands, to avoid a divide in the inner loop
                 if (sparse)
@@ -4438,8 +4432,8 @@ static int start_decoder(vorb* f)
                     setup_temp_free(f, mults, sizeof(mults[0]) * c->lookup_values);
                     return error(f, VORBIS_outofmem);
                 }
-                len = sparse ? c->sorted_entries : c->entries;
-                for (j = 0; j < len; ++j)
+                len2 = sparse ? c->sorted_entries : c->entries;
+                for (j = 0; j < len2; ++j)
                 {
                     unsigned int z   = sparse ? c->sorted_values[j] : j;
                     unsigned int div = 1;
@@ -4792,10 +4786,10 @@ static int start_decoder(vorb* f)
     {
         uint32 imdct_mem = (f->blocksize_1 * sizeof(float) >> 1);
         uint32 classify_mem;
-        int    i, max_part_read = 0;
-        for (i = 0; i < f->residue_count; ++i)
+        int    i2, max_part_read = 0;
+        for (i2 = 0; i2 < f->residue_count; ++i2)
         {
-            Residue*     r             = f->residue_config + i;
+            Residue*     r             = f->residue_config + i2;
             unsigned int actual_size   = f->blocksize_1 / 2;
             unsigned int limit_r_begin = r->begin < actual_size ? r->begin : actual_size;
             unsigned int limit_r_end   = r->end < actual_size ? r->end : actual_size;
@@ -5068,14 +5062,14 @@ static int vorbis_search_for_page_pushdata(vorb* f, uint8* data, int data_len)
     {
         uint32 crc;
         int    j;
-        int    n = f->scan[i].bytes_done;
-        int    m = f->scan[i].bytes_left;
-        if (m > data_len - n)
-            m = data_len - n;
+        int    n2 = f->scan[i].bytes_done;
+        int    m  = f->scan[i].bytes_left;
+        if (m > data_len - n2)
+            m = data_len - n2;
         // m is the bytes to scan in the current chunk
         crc = f->scan[i].crc_so_far;
         for (j = 0; j < m; ++j)
-            crc = crc32_update(crc, data[n + j]);
+            crc = crc32_update(crc, data[n2 + j]);
         f->scan[i].bytes_left -= m;
         f->scan[i].crc_so_far = crc;
         if (f->scan[i].bytes_left == 0)
@@ -5084,7 +5078,7 @@ static int vorbis_search_for_page_pushdata(vorb* f, uint8* data, int data_len)
             if (f->scan[i].crc_so_far == f->scan[i].goal_crc)
             {
                 // Houston, we have page
-                data_len           = n + m; // consumption amount is wherever that scan ended
+                data_len           = n2 + m; // consumption amount is wherever that scan ended
                 f->page_crc_tests  = -1; // drop out of page scan mode
                 f->previous_length = 0; // decode-but-don't-output one frame
                 f->next_seg        = -1; // start a new page
@@ -5267,24 +5261,24 @@ static uint32 vorbis_find_page(stb_vorbis* f, uint32* end, uint32* last)
             if (i == 4)
             {
                 uint8  header[27];
-                uint32 i, crc, goal, len;
-                for (i = 0; i < 4; ++i)
-                    header[i] = ogg_page_header[i];
-                for (; i < 27; ++i)
-                    header[i] = get8(f);
+                uint32 i2, crc, goal, len;
+                for (i2 = 0; i2 < 4; ++i2)
+                    header[i2] = ogg_page_header[i2];
+                for (; i2 < 27; ++i2)
+                    header[i2] = get8(f);
                 if (f->eof)
                     return 0;
                 if (header[4] != 0)
                     goto invalid;
                 goal = header[22] + (header[23] << 8) + (header[24] << 16) +
                        ((uint32)header[25] << 24);
-                for (i = 22; i < 26; ++i)
-                    header[i] = 0;
+                for (i2 = 22; i2 < 26; ++i2)
+                    header[i2] = 0;
                 crc = 0;
-                for (i = 0; i < 27; ++i)
-                    crc = crc32_update(crc, header[i]);
+                for (i2 = 0; i2 < 27; ++i2)
+                    crc = crc32_update(crc, header[i2]);
                 len = 0;
-                for (i = 0; i < header[26]; ++i)
+                for (i2 = 0; i2 < header[26]; ++i2)
                 {
                     int s = get8(f);
                     crc   = crc32_update(crc, s);
@@ -5292,7 +5286,7 @@ static uint32 vorbis_find_page(stb_vorbis* f, uint32* end, uint32* last)
                 }
                 if (len && f->eof)
                     return 0;
-                for (i = 0; i < len; ++i)
+                for (i2 = 0; i2 < len; ++i2)
                     crc = crc32_update(crc, get8(f));
                 // finished parsing probable page
                 if (crc == goal)
@@ -5397,7 +5391,9 @@ static int go_to_page_before(stb_vorbis* f, unsigned int limit_offset)
 // better).
 static int seek_to_sample_coarse(stb_vorbis* f, uint32 sample_number)
 {
-    ProbedPage left, right, mid;
+    ProbedPage left  = {0};
+    ProbedPage right = {0};
+    ProbedPage mid   = {0};
     int        i, start_seg_with_known_loc, end_pos, page_start;
     uint32     delta, stream_length, padding, last_sample_limit;
     double     offset = 0.0, bytes_per_sample = 0.0;

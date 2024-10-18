@@ -143,7 +143,7 @@ void Wav::load_wav(const MemoryReader& reader)
 void Wav::load_ogg(const MemoryReader& reader)
 {
     int   e      = 0;
-    auto* vorbis = stb_vorbis_open_memory(reader.data_uc(), reader.size(), &e, nullptr);
+    auto* vorbis = stb_vorbis_open_memory(reader.data_uc(), int(reader.size()), &e, nullptr);
 
     if (vorbis == nullptr)
     {

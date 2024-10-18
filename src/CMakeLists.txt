@@ -283,8 +283,6 @@ elseif (WIN32)
 
   target_compile_definitions(cerlib PRIVATE
     -DWITH_WINMM
-    -DWIN32_LEAN_AND_MEAN
-    -DVC_EXTRA_LEAN
     -D_USE_MATH_DEFINES
   )
 

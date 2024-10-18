@@ -17,14 +17,19 @@
 #include "graphics/FontImpl.hpp"
 #include "graphics/ImageImpl.hpp"
 #include "graphics/ShaderImpl.hpp"
+#include "util/Platform.hpp"
 #include <algorithm>
 #include <ranges>
+
+#ifdef CERLIB_PLATFORM_WINDOWS
+#include <Windows.h>
+#endif
 
 namespace cer::details
 {
 static auto root_directory() -> std::string
 {
-#if defined(_WIN32)
+#ifdef CERLIB_PLATFORM_WINDOWS
     TCHAR szFileName[MAX_PATH];
     GetModuleFileName(NULL, szFileName, MAX_PATH);
 

@@ -45,7 +45,7 @@ auto QueueInstance::audio(float* buffer, size_t samples_to_read, size_t buffer_s
 
     while (copy_count && m_parent->m_count)
     {
-        const int read_count =
+        const auto read_count =
             m_parent->m_source[m_parent->m_read_index]->audio(buffer + copy_offset,
                                                               copy_count,
                                                               buffer_size);

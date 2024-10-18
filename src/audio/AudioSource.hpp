@@ -143,7 +143,7 @@ class AudioSourceInstance
     virtual ~AudioSourceInstance() noexcept = default;
 
     // Initialize instance. Mostly internal use.
-    void init(const AudioSource& source, int play_index);
+    void init(const AudioSource& source, size_t play_index);
 
     // Get N samples from the stream to the buffer. Report samples written.
     virtual auto audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t = 0;

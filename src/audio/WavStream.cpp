@@ -58,7 +58,7 @@ drflac_bool32 drflac_seek_func(void* pUserData, int offset, drflac_seek_origin o
 {
     auto* fp = static_cast<MemoryReader*>(pUserData);
     if (origin != drflac_seek_origin_start)
-        offset += fp->pos();
+        offset += int(fp->pos());
     fp->seek(offset);
     return 1;
 }
@@ -67,7 +67,7 @@ drmp3_bool32 drmp3_seek_func(void* pUserData, int offset, drmp3_seek_origin orig
 {
     MemoryReader* fp = (MemoryReader*)pUserData;
     if (origin != drmp3_seek_origin_start)
-        offset += fp->pos();
+        offset += int(fp->pos());
     fp->seek(offset);
     return 1;
 }
@@ -76,7 +76,7 @@ drmp3_bool32 drwav_seek_func(void* pUserData, int offset, drwav_seek_origin orig
 {
     MemoryReader* fp = (MemoryReader*)pUserData;
     if (origin != drwav_seek_origin_start)
-        offset += fp->pos();
+        offset += int(fp->pos());
     fp->seek(offset);
     return 1;
 }
@@ -275,11 +275,11 @@ size_t WavStreamInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aB
             {
                 const int b = getOggData(mOggOutputs,
                                          aBuffer,
-                                         aSamplesToRead,
-                                         aBufferSize,
-                                         mOggFrameSize,
-                                         mOggFrameOffset,
-                                         channel_count);
+                                         int(aSamplesToRead),
+                                         int(aBufferSize),
+                                         int(mOggFrameSize),
+                                         int(mOggFrameOffset),
+                                         int(channel_count));
                 mOffset += b;
                 offset += b;
                 mOggFrameOffset += b;
@@ -294,11 +294,11 @@ size_t WavStreamInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aB
 
                 const int b = getOggData(mOggOutputs,
                                          aBuffer + offset,
-                                         aSamplesToRead - offset,
-                                         aBufferSize,
-                                         mOggFrameSize,
-                                         mOggFrameOffset,
-                                         channel_count);
+                                         int(aSamplesToRead - offset),
+                                         int(aBufferSize),
+                                         int(mOggFrameSize),
+                                         int(mOggFrameOffset),
+                                         int(channel_count));
 
                 mOffset += b;
                 offset += b;

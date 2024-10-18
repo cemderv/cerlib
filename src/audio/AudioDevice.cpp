@@ -64,7 +64,13 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!buffer_size.has_value())
             buffer_size = 4096;
 
-        winmm_init(this, flags, sample_rate, buffer_size, channels);
+        winmm_init(AudioBackendArgs{
+            .engine        = this,
+            .flags         = flags,
+            .sample_rate   = *sample_rate,
+            .buffer        = *buffer_size,
+            .channel_count = channels,
+        });
     }
 #endif
 
@@ -266,7 +272,7 @@ auto AudioDevice::play(AudioSource& sound, float volume, float pan, bool paused,
     auto instance = sound.create_instance();
 
     lockAudioMutex_internal();
-    int ch = findFreeVoice_internal();
+    auto ch = findFreeVoice_internal();
     if (ch < 0)
     {
         unlockAudioMutex_internal();
@@ -1037,16 +1043,16 @@ static float catmull_rom(float t, float p0, float p1, float p2, float p3)
 static void resample_catmullrom(const float* aSrc,
                                 const float* aSrc1,
                                 float*       aDst,
-                                int          aSrcOffset,
-                                int          aDstSampleCount,
-                                int          aStepFixed)
+                                size_t       aSrcOffset,
+                                size_t       aDstSampleCount,
+                                size_t       aStepFixed)
 {
-    int pos = aSrcOffset;
+    auto pos = aSrcOffset;
 
     for (int i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
-        const int p = pos >> FIXPOINT_FRAC_BITS;
-        const int f = pos & FIXPOINT_FRAC_MASK;
+        const auto p = pos >> FIXPOINT_FRAC_BITS;
+        const auto f = pos & FIXPOINT_FRAC_MASK;
 
         auto s3 = 0.0f;
 
@@ -1090,18 +1096,18 @@ static void resample_catmullrom(const float* aSrc,
 static void resample_linear(const float* aSrc,
                             const float* aSrc1,
                             float*       aDst,
-                            int          aSrcOffset,
-                            int          aDstSampleCount,
-                            int          aStepFixed)
+                            size_t       aSrcOffset,
+                            size_t       aDstSampleCount,
+                            size_t       aStepFixed)
 {
-    int pos = aSrcOffset;
+    auto pos = aSrcOffset;
 
     for (int i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
-        const int   p  = pos >> FIXPOINT_FRAC_BITS;
-        const int   f  = pos & FIXPOINT_FRAC_MASK;
-        float       s1 = aSrc1[sample_granularity - 1];
-        const float s2 = aSrc[p];
+        const auto p  = pos >> FIXPOINT_FRAC_BITS;
+        const auto f  = pos & FIXPOINT_FRAC_MASK;
+        auto       s1 = aSrc1[sample_granularity - 1];
+        const auto s2 = aSrc[p];
         if (p != 0)
         {
             s1 = aSrc[p - 1];
@@ -1113,17 +1119,16 @@ static void resample_linear(const float* aSrc,
 static void resample_point(const float* aSrc,
                            const float* aSrc1,
                            float*       aDst,
-                           int          aSrcOffset,
-                           int          aDstSampleCount,
-                           int          aStepFixed)
+                           size_t       aSrcOffset,
+                           size_t       aDstSampleCount,
+                           size_t       aStepFixed)
 {
-    int pos = aSrcOffset;
+    auto pos = aSrcOffset;
 
     for (int i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
-        const int p = pos >> FIXPOINT_FRAC_BITS;
-
-        aDst[i] = aSrc[p];
+        const auto p = pos >> FIXPOINT_FRAC_BITS;
+        aDst[i]      = aSrc[p];
     }
 }
 
@@ -1770,7 +1775,7 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                                 {
                                     voice->loop_count++;
 
-                                    const int inc =
+                                    const auto inc =
                                         voice->audio(voice->resample_data[0] + read_count,
                                                      sample_granularity - read_count,
                                                      sample_granularity);
@@ -2060,13 +2065,13 @@ void AudioDevice::mapResampleBuffers_internal()
         }
     }
 
-    auto latestfree = 0;
+    auto latestfree = size_t(0);
 
     for (size_t i = 0; i < m_active_voice_count; ++i)
     {
         if (!(live[i] & 2) && m_voice[m_active_voice[i]]) // For all live voices with no channel..
         {
-            int found = -1;
+            auto found = size_t(-1);
 
             for (size_t j = latestfree; found == -1 && j < m_max_active_voices; ++j)
             {
@@ -2152,10 +2157,12 @@ void AudioDevice::calcActiveVoices_internal()
     // audible.
 
     // Iterative partial quicksort:
-    int       left = 0, stack[24], pos = 0;
-    int       len  = candidates - mustlive;
-    size_t*   data = m_active_voice.data() + mustlive;
-    const int k    = m_active_voice_count;
+    auto       left  = size_t(0);
+    auto       stack = std::array<size_t, 24>{};
+    auto       pos   = size_t(0);
+    auto       len   = candidates - mustlive;
+    size_t*    data  = m_active_voice.data() + mustlive;
+    const auto k     = m_active_voice_count;
     while (true)
     {
         for (; left + 1 < len; len++)
@@ -2165,11 +2172,11 @@ void AudioDevice::calcActiveVoices_internal()
                 len = stack[pos = 0];
             }
 
-            const int   pivot    = data[left];
-            const float pivotvol = m_voice[pivot]->overall_volume;
-            stack[pos++]         = len;
+            const auto pivot    = data[left];
+            const auto pivotvol = m_voice[pivot]->overall_volume;
+            stack[pos++]        = len;
 
-            for (int right = left - 1;;)
+            for (auto right = left - 1;;)
             {
                 do
                 {
@@ -2774,10 +2781,10 @@ bool AudioDevice::is_voice_protected(SoundHandle voice_handle)
     return v;
 }
 
-int AudioDevice::findFreeVoice_internal()
+size_t AudioDevice::findFreeVoice_internal()
 {
     size_t lowest_play_index_value = 0xffffffff;
-    int    lowest_play_index       = -1;
+    size_t lowest_play_index       = size_t(-1);
 
     // (slowly) drag the highest active voice index down
     if (m_highest_voice > 0 && m_voice[m_highest_voice - 1] == nullptr)
@@ -2815,7 +2822,7 @@ size_t AudioDevice::getLoopCount(SoundHandle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const int v = m_voice[ch]->loop_count;
+    const auto v = m_voice[ch]->loop_count;
     unlockAudioMutex_internal();
     return v;
 }

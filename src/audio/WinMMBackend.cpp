@@ -22,13 +22,16 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#include "soloud.hpp"
-#include "soloud_engine.hpp"
-#include "soloud_misc.hpp"
-#include "soloud_thread.hpp"
+#include "audio/AudioDevice.hpp"
+#include "audio/Misc.hpp"
+#include "audio/Thread.hpp"
+#include "audio/soloud_internal.hpp"
+
+#include <windows.h>
 
 #include <mmsystem.h>
-#include <windows.h>
+
+#include <array>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "winmm.lib")
@@ -36,40 +39,25 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-static const int BUFFER_COUNT = 2;
+static constexpr auto BUFFER_COUNT = size_t(2);
 
 struct SoLoudWinMMData
 {
-    AlignedFloatBuffer   buffer;
-    short*               sampleBuffer[BUFFER_COUNT];
-    WAVEHDR              header[BUFFER_COUNT];
-    HWAVEOUT             waveOut;
-    HANDLE               bufferEndEvent;
-    HANDLE               audioProcessingDoneEvent;
-    AudioDevice*         soloud;
-    int                  samples;
-    Thread::ThreadHandle threadHandle;
-    SoLoudWinMMData()
-    {
-        buffer.clear();
-        for (int i = 0; i < BUFFER_COUNT; ++i)
-        {
-            sampleBuffer[i] = 0;
-            memset(&header[i], 0, sizeof(WAVEHDR));
-        }
-        waveOut                  = 0;
-        bufferEndEvent           = 0;
-        audioProcessingDoneEvent = 0;
-        soloud                   = 0;
-        samples                  = 0;
-        threadHandle             = 0;
-    }
+    AlignedFloatBuffer                buffer;
+    std::array<short*, BUFFER_COUNT>  sample_buffer               = {};
+    std::array<WAVEHDR, BUFFER_COUNT> header                      = {};
+    HWAVEOUT                          wave_out                    = nullptr;
+    HANDLE                            buffer_end_event            = nullptr;
+    HANDLE                            audio_processing_done_event = nullptr;
+    AudioDevice*                      device                      = nullptr;
+    size_t                            samples                     = 0;
+    thread::ThreadHandle              thread_handle               = {};
 };
 
 static void winMMThread(LPVOID aParam)
 {
     SoLoudWinMMData* data = static_cast<SoLoudWinMMData*>(aParam);
-    while (WAIT_OBJECT_0 != WaitForSingleObject(data->audioProcessingDoneEvent, 0))
+    while (WAIT_OBJECT_0 != WaitForSingleObject(data->audio_processing_done_event, 0))
     {
         for (int i = 0; i < BUFFER_COUNT; ++i)
         {
@@ -77,97 +65,99 @@ static void winMMThread(LPVOID aParam)
             {
                 continue;
             }
-            short* tgtBuf = data->sampleBuffer[i];
+            short* tgtBuf = data->sample_buffer[i];
 
-            data->soloud->mixSigned16(tgtBuf, data->samples);
+            data->device->mixSigned16(tgtBuf, data->samples);
 
-            if (MMSYSERR_NOERROR != waveOutWrite(data->waveOut, &data->header[i], sizeof(WAVEHDR)))
+            if (MMSYSERR_NOERROR != waveOutWrite(data->wave_out, &data->header[i], sizeof(WAVEHDR)))
             {
                 return;
             }
         }
-        WaitForSingleObject(data->bufferEndEvent, INFINITE);
+        WaitForSingleObject(data->buffer_end_event, INFINITE);
     }
 }
 
 static void winMMCleanup(AudioDevice* engine)
 {
-    if (0 == engine->mBackendData)
+    if (0 == engine->m_backend_data)
     {
         return;
     }
-    SoLoudWinMMData* data = static_cast<SoLoudWinMMData*>(engine->mBackendData);
-    if (data->audioProcessingDoneEvent)
+    SoLoudWinMMData* data = static_cast<SoLoudWinMMData*>(engine->m_backend_data);
+    if (data->audio_processing_done_event)
     {
-        SetEvent(data->audioProcessingDoneEvent);
+        SetEvent(data->audio_processing_done_event);
     }
-    if (data->bufferEndEvent)
+    if (data->buffer_end_event)
     {
-        SetEvent(data->bufferEndEvent);
+        SetEvent(data->buffer_end_event);
     }
-    if (data->threadHandle)
+    if (data->thread_handle)
     {
-        Thread::wait(data->threadHandle);
-        Thread::release(data->threadHandle);
+        thread::wait(data->thread_handle);
+        thread::release(data->thread_handle);
     }
-    if (data->waveOut)
+    if (data->wave_out)
     {
-        waveOutReset(data->waveOut);
+        waveOutReset(data->wave_out);
 
         for (int i = 0; i < BUFFER_COUNT; ++i)
         {
-            waveOutUnprepareHeader(data->waveOut, &data->header[i], sizeof(WAVEHDR));
-            if (0 != data->sampleBuffer[i])
+            waveOutUnprepareHeader(data->wave_out, &data->header[i], sizeof(WAVEHDR));
+            if (0 != data->sample_buffer[i])
             {
-                delete[] data->sampleBuffer[i];
+                delete[] data->sample_buffer[i];
             }
         }
-        waveOutClose(data->waveOut);
+        waveOutClose(data->wave_out);
     }
-    if (data->audioProcessingDoneEvent)
+    if (data->audio_processing_done_event)
     {
-        CloseHandle(data->audioProcessingDoneEvent);
+        CloseHandle(data->audio_processing_done_event);
     }
-    if (data->bufferEndEvent)
+    if (data->buffer_end_event)
     {
-        CloseHandle(data->bufferEndEvent);
+        CloseHandle(data->buffer_end_event);
     }
     delete data;
-    engine->mBackendData = 0;
+    engine->m_backend_data = 0;
 }
+} // namespace cer
 
-void winmm_init(
-    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+void cer::winmm_init(const AudioBackendArgs& args)
 {
-    SoLoudWinMMData* data       = new SoLoudWinMMData;
-    engine->mBackendData        = data;
-    engine->mBackendCleanupFunc = winMMCleanup;
-    data->samples               = aBuffer;
-    data->soloud                = engine;
-    data->bufferEndEvent        = CreateEvent(0, FALSE, FALSE, 0);
-    if (0 == data->bufferEndEvent)
+    auto* engine = args.engine;
+
+    SoLoudWinMMData* data          = new SoLoudWinMMData;
+    engine->m_backend_data         = data;
+    engine->m_backend_cleanup_func = winMMCleanup;
+    data->samples                  = args.buffer;
+    data->device                   = engine;
+    data->buffer_end_event         = CreateEvent(0, FALSE, FALSE, 0);
+    if (0 == data->buffer_end_event)
     {
         winMMCleanup(engine);
         throw std::runtime_error{"Failed to initialize winMM"};
     }
-    data->audioProcessingDoneEvent = CreateEvent(0, FALSE, FALSE, 0);
-    if (0 == data->audioProcessingDoneEvent)
+    data->audio_processing_done_event = CreateEvent(0, FALSE, FALSE, 0);
+    if (0 == data->audio_processing_done_event)
     {
         winMMCleanup(engine);
         throw std::runtime_error{"Failed to initialize winMM"};
     }
     WAVEFORMATEX format;
     ZeroMemory(&format, sizeof(WAVEFORMATEX));
-    format.nChannels       = (WORD)aChannels;
-    format.nSamplesPerSec  = aSamplerate;
+    format.nChannels       = WORD(args.channel_count);
+    format.nSamplesPerSec  = DWORD(args.sample_rate);
     format.wFormatTag      = WAVE_FORMAT_PCM;
     format.wBitsPerSample  = sizeof(short) * 8;
     format.nBlockAlign     = (format.nChannels * format.wBitsPerSample) / 8;
     format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
-    if (MMSYSERR_NOERROR != waveOutOpen(&data->waveOut,
+    if (MMSYSERR_NOERROR != waveOutOpen(&data->wave_out,
                                         WAVE_MAPPER,
                                         &format,
-                                        reinterpret_cast<DWORD_PTR>(data->bufferEndEvent),
+                                        reinterpret_cast<DWORD_PTR>(data->buffer_end_event),
                                         0,
                                         CALLBACK_EVENT))
     {
@@ -177,23 +167,25 @@ void winmm_init(
     data->buffer = AlignedFloatBuffer{size_t(data->samples * format.nChannels)};
     for (int i = 0; i < BUFFER_COUNT; ++i)
     {
-        data->sampleBuffer[i] = new short[data->samples * format.nChannels];
+        data->sample_buffer[i] = new short[data->samples * format.nChannels];
         ZeroMemory(&data->header[i], sizeof(WAVEHDR));
-        data->header[i].dwBufferLength = data->samples * sizeof(short) * format.nChannels;
-        data->header[i].lpData         = reinterpret_cast<LPSTR>(data->sampleBuffer[i]);
+        data->header[i].dwBufferLength = DWORD(data->samples * sizeof(short) * format.nChannels);
+        data->header[i].lpData         = reinterpret_cast<LPSTR>(data->sample_buffer[i]);
         if (MMSYSERR_NOERROR !=
-            waveOutPrepareHeader(data->waveOut, &data->header[i], sizeof(WAVEHDR)))
+            waveOutPrepareHeader(data->wave_out, &data->header[i], sizeof(WAVEHDR)))
         {
             winMMCleanup(engine);
             throw std::runtime_error{"Failed to initialize winMM"};
         }
     }
-    engine->postinit_internal(aSamplerate, data->samples * format.nChannels, aFlags, aChannels);
-    data->threadHandle = Thread::createThread(winMMThread, data);
-    if (0 == data->threadHandle)
+    engine->postinit_internal(args.sample_rate,
+                              data->samples * format.nChannels,
+                              args.flags,
+                              args.channel_count);
+    data->thread_handle = thread::create_thread(winMMThread, data);
+    if (0 == data->thread_handle)
     {
         winMMCleanup(engine);
         throw std::runtime_error{"Failed to initialize winMM"};
     }
 }
-}; // namespace cer

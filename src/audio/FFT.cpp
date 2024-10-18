@@ -1006,7 +1006,7 @@ void cftb1st(int n, float* a)
     wd1i      = 0;
     wd3r      = 1;
     wd3i      = 0;
-    ew        = M_PI_2 / m;
+    ew        = cer::half_pi / float(m);
     w1r       = (float)cos(2 * ew);
     w1i       = (float)sin(2 * ew);
     wk1r      = w1r;
@@ -1236,7 +1236,7 @@ void cftmdl1(int n, float* a)
     wd1i      = 0;
     wd3r      = 1;
     wd3i      = 0;
-    ew        = M_PI_2 / m;
+    ew        = cer::half_pi / float(m);
     w1r       = (float)cos(2 * ew);
     w1i       = (float)sin(2 * ew);
     wk1r      = w1r;
@@ -1477,7 +1477,7 @@ void cftmdl2(int n, float* a)
     we1i      = wn4r;
     we3r      = -wn4r;
     we3i      = -wn4r;
-    ew        = M_PI_2 / (2 * m);
+    ew        = cer::half_pi / (2.0f * m);
     w1r       = (float)cos(2 * ew);
     w1i       = (float)sin(2 * ew);
     wk1r      = w1r;
@@ -2503,12 +2503,12 @@ void ifft256(float* buffer)
 
 void fft(float* buffer, size_t buffer_size)
 {
-    fftimpl::cftbsub(buffer_size, buffer);
+    fftimpl::cftbsub(int(buffer_size), buffer);
 }
 
 void ifft(float* buffer, size_t buffer_size)
 {
-    fftimpl::cftfsub(buffer_size, buffer);
+    fftimpl::cftfsub(int(buffer_size), buffer);
 
     for (size_t i = 0; i < buffer_size; ++i)
     {

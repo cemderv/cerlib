@@ -117,7 +117,7 @@ class Revmodel
     Revmodel();
 
     void mute();
-    void process(float* aSampleData, long aNumSamples, long aStride);
+    void process(float* aSampleData, size_t aNumSamples, size_t aStride);
     void setroomsize(float aValue);
     void setdamp(float aValue);
     void setwet(float aValue);
@@ -336,7 +336,7 @@ void Revmodel::mute()
     }
 }
 
-void Revmodel::process(float* aSampleData, long aNumSamples, long aStride)
+void Revmodel::process(float* aSampleData, size_t aNumSamples, size_t aStride)
 {
     float* inputL = aSampleData;
     float* inputR = aSampleData + aStride;
