@@ -288,13 +288,13 @@ elseif (WIN32)
     -D_USE_MATH_DEFINES
   )
 
-  target_sources(cerlib PRIVATE audio/soloud_winmm.cpp)
+  target_sources(cerlib PRIVATE audio/WinMMBackend.cpp)
 elseif (APPLE)
   find_library(COREAUDIO_FRAMEWORK CoreAudio REQUIRED)
   find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)
 
   target_compile_definitions(cerlib PRIVATE -DWITH_COREAUDIO)
-  target_sources(cerlib PRIVATE audio/soloud_coreaudio.cpp)
+  target_sources(cerlib PRIVATE audio/CoreAudioBackend.cpp)
 
   target_link_libraries(cerlib PUBLIC
     ${COREAUDIO_FRAMEWORK}
@@ -302,13 +302,13 @@ elseif (APPLE)
   )
 elseif (ANDROID)
   target_compile_definitions(cerlib PRIVATE -DWITH_OPENSLES)
-  target_sources(cerlib PRIVATE audio/soloud_opensles.cpp)
+  target_sources(cerlib PRIVATE audio/OpenSLESBackend.cpp)
 
   find_library(OPENSLES_LIBRARY OpenSLES)
   target_link_libraries(cerlib PUBLIC ${OPENSLES_LIBRARY})
 elseif (UNIX)
   target_compile_definitions(cerlib PRIVATE -DWITH_ALSA)
-  target_sources(cerlib PRIVATE audio/soloud_alsa.cpp)
+  target_sources(cerlib PRIVATE audio/ALSABackend.cpp)
 
   find_library(ALSA_LIBRARY asound REQUIRED)
 

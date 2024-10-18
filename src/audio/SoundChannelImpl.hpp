@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include "audio/Common.hpp"
 #include "cerlib/SoundTypes.hpp"
-#include "soloud.hpp"
 #include "util/Object.hpp"
 #include <gsl/pointers>
 

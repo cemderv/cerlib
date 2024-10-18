@@ -41,7 +41,7 @@ void SoundImpl::stop()
     m_soloud->stop_audio_source(*m_soloud_audio_source);
 }
 
-auto SoundImpl::soloud_audio_source() -> cer::Wav&
+auto SoundImpl::soloud_audio_source() -> AudioSource&
 {
     return *m_soloud_audio_source;
 }

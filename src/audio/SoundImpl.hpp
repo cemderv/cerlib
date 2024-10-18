@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "audio/soloud_wav.hpp"
+#include "audio/Wav.hpp"
 #include "cerlib/Content.hpp"
 #include "util/Object.hpp"
 #include <gsl/pointers>
@@ -14,7 +14,7 @@ namespace cer::details
 {
 class SoundImpl final : public Object, public Asset
 {
-public:
+  public:
     // Creates copy of data.
     explicit SoundImpl(gsl::not_null<AudioDevice*> soloud, std::span<const std::byte> data);
 
@@ -26,9 +26,9 @@ public:
 
     void stop();
 
-    auto soloud_audio_source() -> Wav&;
+    auto soloud_audio_source() -> AudioSource&;
 
-private:
+  private:
     void init_soloud_audio_source();
 
     gsl::not_null<AudioDevice*>  m_soloud;

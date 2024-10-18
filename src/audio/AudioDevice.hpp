@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "audio/soloud_misc.hpp"
+#include "audio/AudioSource.hpp"
+#include "audio/Common.hpp"
+#include "audio/Misc.hpp"
 #include "cerlib/Sound.hpp"
 #include "cerlib/SoundTypes.hpp"
-#include "soloud.hpp"
-#include "soloud_audiosource.hpp"
 #include "util/NonCopyable.hpp"
 #include <memory>
 #include <optional>
@@ -25,7 +25,7 @@ auto to_soloud_time(const SoundTime& seconds) -> cer::time_t;
 
 class AudioDevice
 {
-public:
+  public:
     explicit AudioDevice(EngineFlags           flags       = {},
                          std::optional<size_t> sample_rate = std::nullopt,
                          std::optional<size_t> buffer_size = std::nullopt,
@@ -46,9 +46,7 @@ public:
                                     float                    pan,
                                     std::optional<SoundTime> delay);
 
-    auto play_sound_in_background(const Sound& sound,
-                                  float        volume,
-                                  bool         start_paused)
+    auto play_sound_in_background(const Sound& sound, float volume, bool start_paused)
         -> SoundChannel;
 
     void stop_all_sounds();
@@ -66,7 +64,7 @@ public:
     void purge_sounds();
 
     // From SoLoud::Soloud:
-public:
+  public:
     void pause();
 
     void resume();
@@ -148,17 +146,11 @@ public:
                               float  value);
 
     // Get a live filter parameter. Use 0 for the global filters.
-    auto filter_parameter(handle voice_handle,
-                          size_t filter_id,
-                          size_t attribute_id)
+    auto filter_parameter(handle voice_handle, size_t filter_id, size_t attribute_id)
         -> std::optional<float>;
     // Fade a live filter parameter. Use 0 for the global filters.
     void fade_filter_parameter(
-        handle voice_handle,
-        size_t filter_id,
-        size_t attribute_id,
-        float  to,
-        time_t time);
+        handle voice_handle, size_t filter_id, size_t attribute_id, float to, time_t time);
 
     // Oscillate a live filter parameter. Use 0 for the global filters.
     void oscillate_filter_parameter(handle voice_handle,
@@ -342,7 +334,7 @@ public:
     // null driver.
     void mixSigned16(short* aBuffer, size_t aSamples);
 
-public:
+  public:
     // Mix N samples * M channels. Called by other mix_ functions.
     void mix_internal(size_t aSamples, size_t aStride);
 
@@ -530,7 +522,7 @@ public:
     bool m_active_voice_dirty = true;
 
     // Previous AudioDevice members:
-private:
+  private:
     struct SoundHash
     {
         auto operator()(const Sound& sound) const -> size_t;
