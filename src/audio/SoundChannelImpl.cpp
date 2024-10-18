@@ -8,7 +8,7 @@
 
 namespace cer::details
 {
-SoundChannelImpl::SoundChannelImpl(gsl::not_null<SoLoud::Soloud*> soloud, SoLoud::handle handle)
+SoundChannelImpl::SoundChannelImpl(gsl::not_null<cer::Engine*> soloud, cer::handle handle)
     : m_soloud(soloud)
     , m_soloud_handle(handle)
 {

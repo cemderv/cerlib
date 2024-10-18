@@ -5,17 +5,16 @@
 #pragma once
 
 #include "cerlib/SoundTypes.hpp"
+#include "audio/soloud_engine.hpp"
 #include "util/Object.hpp"
-
 #include <gsl/pointers>
-#include <soloud.h>
 
 namespace cer::details
 {
 class SoundChannelImpl final : public Object
 {
-  public:
-    explicit SoundChannelImpl(gsl::not_null<SoLoud::Soloud*> soloud, SoLoud::handle handle);
+public:
+    explicit SoundChannelImpl(gsl::not_null<Engine*> soloud, cer::handle handle);
 
     auto id() const -> uint32_t;
 
@@ -63,8 +62,8 @@ class SoundChannelImpl final : public Object
 
     auto stream_position() const -> SoundTime;
 
-  private:
-    gsl::not_null<SoLoud::Soloud*> m_soloud;
-    SoLoud::handle                 m_soloud_handle;
+private:
+    gsl::not_null<cer::Engine*> m_soloud;
+    cer::handle                 m_soloud_handle;
 };
 } // namespace cer::details

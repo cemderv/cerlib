@@ -8,26 +8,26 @@
 #include "SoundImpl.hpp"
 #include "cerlib/Logging.hpp"
 #include "cerlib/SoundChannel.hpp"
-#include "soloud.h"
-#include "util/InternalError.hpp"
 
 namespace cer::details
 {
-auto to_soloud_time(const SoundTime& seconds) -> SoLoud::time
+auto to_soloud_time(const SoundTime& seconds) -> cer::time_t
 {
     return seconds.count();
 }
 
 AudioDevice::AudioDevice(bool& success)
 {
-    if (const SoLoud::result result = m_soloud.init(); result != SoLoud::SO_NO_ERROR)
+    try
     {
-        log_debug("Failed to initialize the internal audio engine.");
-        return;
+        m_soloud                       = std::make_unique<Engine>();
+        m_was_initialized_successfully = true;
+        success                        = true;
     }
-
-    m_was_initialized_successfully = true;
-    success                        = true;
+    catch (const std::exception& ex)
+    {
+        log_info("Failed to initialize the internal audio engine. Reason: {}", ex.what());
+    }
 }
 
 AudioDevice::~AudioDevice() noexcept
@@ -37,7 +37,7 @@ AudioDevice::~AudioDevice() noexcept
     if (m_was_initialized_successfully)
     {
         m_playing_sounds.clear();
-        m_soloud.deinit();
+        m_soloud.reset();
     }
 }
 
@@ -53,14 +53,15 @@ auto AudioDevice::play_sound(const Sound&             sound,
     }
 
     const auto channel_handle =
-        delay ? m_soloud.playClocked(to_soloud_time(*delay),
-                                     sound.impl()->soloud_audio_source(),
-                                     volume,
-                                     pan)
-              : m_soloud.play(sound.impl()->soloud_audio_source(), volume, pan, start_paused);
+        delay
+            ? m_soloud->playClocked(to_soloud_time(*delay),
+                                    sound.impl()->soloud_audio_source(),
+                                    volume,
+                                    pan)
+            : m_soloud->play(sound.impl()->soloud_audio_source(), volume, pan, start_paused);
 
     // TODO: Use pool allocation for SoundChannelImpl objects
-    auto channel_impl = std::make_unique<SoundChannelImpl>(&m_soloud, channel_handle);
+    auto channel_impl = std::make_unique<SoundChannelImpl>(m_soloud.get(), channel_handle);
 
     m_playing_sounds.insert(sound);
 
@@ -79,20 +80,22 @@ void AudioDevice::play_sound_fire_and_forget(const Sound&             sound,
 
     if (delay.has_value())
     {
-        m_soloud.playClocked(to_soloud_time(*delay),
-                             sound.impl()->soloud_audio_source(),
-                             volume,
-                             pan);
+        m_soloud->playClocked(to_soloud_time(*delay),
+                              sound.impl()->soloud_audio_source(),
+                              volume,
+                              pan);
     }
     else
     {
-        m_soloud.play(sound.impl()->soloud_audio_source(), volume, pan, false);
+        m_soloud->play(sound.impl()->soloud_audio_source(), volume, pan, false);
     }
 
     m_playing_sounds.insert(sound);
 }
 
-auto AudioDevice::play_sound_in_background(const Sound& sound, float volume, bool start_paused)
+auto AudioDevice::play_sound_in_background(const Sound& sound,
+                                           float        volume,
+                                           bool         start_paused)
     -> SoundChannel
 {
     if (!sound)
@@ -102,7 +105,7 @@ auto AudioDevice::play_sound_in_background(const Sound& sound, float volume, boo
 
     auto channel = play_sound(sound, volume, 0.0f, start_paused, std::nullopt);
 
-    m_soloud.setPanAbsolute(channel.id(), 1.0f, 1.0f);
+    m_soloud->setPanAbsolute(channel.id(), 1.0f, 1.0f);
 
     m_playing_sounds.insert(sound);
 
@@ -111,49 +114,50 @@ auto AudioDevice::play_sound_in_background(const Sound& sound, float volume, boo
 
 void AudioDevice::stop_all_sounds()
 {
-    m_soloud.stopAll();
+    m_soloud->stopAll();
 }
 
 void AudioDevice::pause_all_sounds()
 {
-    m_soloud.setPauseAll(true);
+    m_soloud->setPauseAll(true);
 }
 
 void AudioDevice::resume_all_sounds()
 {
-    m_soloud.setPauseAll(false);
+    m_soloud->setPauseAll(false);
 }
 
 auto AudioDevice::global_volume() const -> float
 {
-    return m_soloud.getGlobalVolume();
+    return m_soloud->getGlobalVolume();
 }
 
 void AudioDevice::set_global_volume(float value)
 {
-    m_soloud.setGlobalVolume(value);
+    m_soloud->setGlobalVolume(value);
 }
 
 void AudioDevice::fade_global_volume(float to_volume, SoundTime fade_duration)
 {
-    m_soloud.fadeGlobalVolume(to_volume, to_soloud_time(fade_duration));
+    m_soloud->fadeGlobalVolume(to_volume, to_soloud_time(fade_duration));
 }
 
-auto AudioDevice::soloud() -> SoLoud::Soloud*
+auto AudioDevice::soloud() -> cer::Engine*
 {
-    return &m_soloud;
+    return m_soloud.get();
 }
 
-auto AudioDevice::soloud() const -> const SoLoud::Soloud*
+auto AudioDevice::soloud() const -> const cer::Engine*
 {
-    return &m_soloud;
+    return m_soloud.get();
 }
 
 void AudioDevice::purge_sounds()
 {
-    std::erase_if(m_playing_sounds, [this](const Sound& sound) {
-        return m_soloud.countAudioSource(sound.impl()->soloud_audio_source()) == 0;
-    });
+    std::erase_if(m_playing_sounds,
+                  [this](const Sound& sound) {
+                      return m_soloud->countAudioSource(sound.impl()->soloud_audio_source()) == 0;
+                  });
 }
 
 auto AudioDevice::SoundHash::operator()(const Sound& sound) const -> size_t

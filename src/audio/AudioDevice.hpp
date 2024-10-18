@@ -6,10 +6,9 @@
 
 #include "cerlib/Sound.hpp"
 #include "cerlib/SoundTypes.hpp"
+#include "audio/soloud_engine.hpp"
 #include "util/NonCopyable.hpp"
-
 #include <optional>
-#include <soloud.h>
 #include <unordered_set>
 
 namespace cer
@@ -20,11 +19,11 @@ class SoundChannel;
 
 namespace cer::details
 {
-auto to_soloud_time(const SoundTime& seconds) -> SoLoud::time;
+auto to_soloud_time(const SoundTime& seconds) -> cer::time_t;
 
 class AudioDevice
 {
-  public:
+public:
     explicit AudioDevice(bool& success);
 
     NON_COPYABLE_NON_MOVABLE(AudioDevice);
@@ -42,7 +41,9 @@ class AudioDevice
                                     float                    pan,
                                     std::optional<SoundTime> delay);
 
-    auto play_sound_in_background(const Sound& sound, float volume, bool start_paused)
+    auto play_sound_in_background(const Sound& sound,
+                                  float        volume,
+                                  bool         start_paused)
         -> SoundChannel;
 
     void stop_all_sounds();
@@ -57,19 +58,19 @@ class AudioDevice
 
     void fade_global_volume(float to_volume, SoundTime fade_duration);
 
-    auto soloud() -> SoLoud::Soloud*;
+    auto soloud() -> cer::Engine*;
 
-    auto soloud() const -> const SoLoud::Soloud*;
+    auto soloud() const -> const cer::Engine*;
 
     void purge_sounds();
 
-  private:
+private:
     struct SoundHash
     {
         auto operator()(const Sound& sound) const -> size_t;
     };
 
-    SoLoud::Soloud                       m_soloud;
+    std::unique_ptr<Engine>              m_soloud;
     bool                                 m_was_initialized_successfully{};
     std::unordered_set<Sound, SoundHash> m_playing_sounds;
 };

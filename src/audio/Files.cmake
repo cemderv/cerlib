@@ -8,4 +8,41 @@ set(audio_files
   SoundChannelImpl.hpp
   SoundImpl.cpp
   SoundImpl.hpp
+  soloud.cpp
+  soloud_audiosource.cpp
+  soloud_bus.cpp
+  soloud_biquadresonantfilter.cpp
+  soloud_core_3d.cpp
+  soloud_core_basicops.cpp
+  soloud_core_faderops.cpp
+  soloud_core_filterops.cpp
+  soloud_core_getters.cpp
+  soloud_core_setters.cpp
+  soloud_core_voicegroup.cpp
+  soloud_core_voiceops.cpp
+  soloud_duckfilter.cpp
+  soloud_echofilter.cpp
+  soloud_eqfilter.cpp
+  soloud_fader.cpp
+  soloud_fft.cpp
+  soloud_fftfilter.cpp
+  soloud_file.cpp
+  soloud_filter.cpp
+  soloud_flangerfilter.cpp
+  soloud_freeverbfilter.cpp
+  soloud_lofifilter.cpp
+  soloud_misc.cpp
+  soloud_noise.cpp
+  soloud_queue.cpp
+  soloud_robotizefilter.cpp
+  soloud_sfxr.cpp
+  soloud_thread.cpp
+  soloud_wav.cpp
+  soloud_waveshaperfilter.cpp
+  soloud_wavstream.cpp
+  dr_impl.cpp
+  soloud_audiosource.hpp
+  soloud_bus.hpp
+  soloud_engine.hpp
+  soloud.hpp
 )

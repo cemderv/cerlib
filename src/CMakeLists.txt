@@ -73,15 +73,17 @@ target_precompile_headers(cerlib PRIVATE
   <any>
   <cassert>
   <chrono>
+  <cmath>
+  <compare>
   <cstddef>
   <cstdint>
-  <compare>
   <exception>
   <fmt/format.h>
   <functional>
   <gsl/narrow>
   <gsl/pointers>
   <gsl/util>
+  <limits>
   <map>
   <memory>
   <optional>
@@ -89,6 +91,7 @@ target_precompile_headers(cerlib PRIVATE
   <ranges>
   <set>
   <span>
+  <stdexcept>
   <string>
   <string_view>
   <thread>
@@ -98,10 +101,6 @@ target_precompile_headers(cerlib PRIVATE
   <utility>
   <variant>
   <vector>
-  <limits>
-  <cmath>
-  <soloud.h>
-  <soloud_wav.h>
   util/InternalError.hpp
   util/Object.hpp
   util/Util.hpp
@@ -246,13 +245,14 @@ if (IOS)
 endif ()
 
 target_link_libraries(cerlib PUBLIC cerlib_SDL)
-target_link_libraries(cerlib PRIVATE SoLoud)
 
 enable_default_cpp_flags(cerlib)
 enable_clang_tidy(cerlib)
 
 if (CERLIB_ENABLE_VERBOSE_LOGGING)
-  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_VERBOSE_LOGGING")
+  target_compile_definitions(cerlib PRIVATE
+    -DCERLIB_ENABLE_VERBOSE_LOGGING
+  )
 endif ()
 
 cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/VeraRegular.ttf)
@@ -262,3 +262,57 @@ cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/GrayscaleShader.s
 cerlib_compile_shader(shaders/SpriteBatchVS.vert)
 cerlib_compile_shader(shaders/SpriteBatchPSDefault.frag)
 cerlib_compile_shader(shaders/SpriteBatchPSMonochromatic.frag)
+
+target_compile_definitions(cerlib PRIVATE
+  -DSTB_VORBIS_NO_STDIO
+)
+
+# Audio
+if (EMSCRIPTEN)
+  target_compile_definitions(cerlib PRIVATE -DWITH_SDL2_STATIC)
+  target_sources(cerlib PRIVATE audio/soloud_sdl2_static.cpp)
+
+  set(LinkFlags "SHELL:-s USE_SDL=2")
+  target_compile_options(cerlib PRIVATE ${LinkFlags})
+  target_link_options(cerlib PRIVATE ${LinkFlags})
+  target_link_libraries(cerlib PRIVATE SDL2)
+elseif (WIN32)
+  if (MSVC)
+    target_compile_options(cerlib PRIVATE /wd4700)
+  endif ()
+
+  target_compile_definitions(cerlib PRIVATE
+    -DWITH_WINMM
+    -DWIN32_LEAN_AND_MEAN
+    -DVC_EXTRA_LEAN
+    -D_USE_MATH_DEFINES
+  )
+
+  target_sources(cerlib PRIVATE audio/soloud_winmm.cpp)
+elseif (APPLE)
+  find_library(COREAUDIO_FRAMEWORK CoreAudio REQUIRED)
+  find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)
+
+  target_compile_definitions(cerlib PRIVATE -DWITH_COREAUDIO)
+  target_sources(cerlib PRIVATE audio/soloud_coreaudio.cpp)
+
+  target_link_libraries(cerlib PUBLIC
+    ${COREAUDIO_FRAMEWORK}
+    ${AUDIOTOOLBOX_FRAMEWORK}
+  )
+elseif (ANDROID)
+  target_compile_definitions(cerlib PRIVATE -DWITH_OPENSLES)
+  target_sources(cerlib PRIVATE audio/soloud_opensles.cpp)
+
+  find_library(OPENSLES_LIBRARY OpenSLES)
+  target_link_libraries(cerlib PUBLIC ${OPENSLES_LIBRARY})
+elseif (UNIX)
+  target_compile_definitions(cerlib PRIVATE -DWITH_ALSA)
+  target_sources(cerlib PRIVATE audio/soloud_alsa.cpp)
+
+  find_library(ALSA_LIBRARY asound REQUIRED)
+
+  target_link_libraries(cerlib PUBLIC ${ALSA_LIBRARY})
+else ()
+  message(FATAL_ERROR "Could not detect a proper audio backend!")
+endif ()

@@ -4,37 +4,37 @@
 
 #pragma once
 
+#include "audio/soloud_wav.hpp"
 #include "cerlib/Content.hpp"
+#include "audio/soloud_engine.hpp"
 #include "util/Object.hpp"
 #include <gsl/pointers>
-#include <soloud.h>
-#include <soloud_wav.h>
 #include <span>
 
 namespace cer::details
 {
 class SoundImpl final : public Object, public Asset
 {
-  public:
+public:
     // Creates copy of data.
-    explicit SoundImpl(gsl::not_null<SoLoud::Soloud*> soloud, std::span<const std::byte> data);
+    explicit SoundImpl(gsl::not_null<Engine*> soloud, std::span<const std::byte> data);
 
-    explicit SoundImpl(gsl::not_null<SoLoud::Soloud*> soloud,
-                       std::unique_ptr<std::byte[]>   data,
-                       size_t                         data_size);
+    explicit SoundImpl(gsl::not_null<cer::Engine*>  soloud,
+                       std::unique_ptr<std::byte[]> data,
+                       size_t                       data_size);
 
     ~SoundImpl() noexcept override;
 
     void stop();
 
-    auto soloud_audio_source() -> SoLoud::Wav&;
+    auto soloud_audio_source() -> cer::Wav&;
 
-  private:
+private:
     void init_soloud_audio_source();
 
-    gsl::not_null<SoLoud::Soloud*> m_soloud;
-    std::unique_ptr<std::byte[]>   m_data;
-    size_t                         m_data_size{};
-    SoLoud::Wav                    m_soloud_audio_source{};
+    gsl::not_null<Engine*>       m_soloud;
+    std::unique_ptr<std::byte[]> m_data;
+    size_t                       m_data_size{};
+    std::unique_ptr<Wav>         m_soloud_audio_source;
 };
 } // namespace cer::details
