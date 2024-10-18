@@ -76,10 +76,10 @@ class Prg
 
     auto rand_float() -> float;
 
-    void srand(int aSeed);
+    void srand(int seed);
 
   private:
-    std::array<size_t, 16> mState{};
-    size_t                 mIndex = 0;
+    std::array<size_t, 16> m_state{};
+    size_t                 m_index = 0;
 };
 }; // namespace cer

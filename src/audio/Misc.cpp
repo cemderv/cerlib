@@ -31,28 +31,29 @@ Prg::Prg()
     srand(0);
 }
 
-void Prg::srand(int aSeed)
+void Prg::srand(int seed)
 {
-    for (int i = 0; i < 16; ++i)
+    for (size_t i = 0; i < 16; ++i)
     {
-        mState[i] = aSeed + i * aSeed + i;
+        m_state[i] = seed + i * seed + i;
     }
 }
 
 // WELL512 implementation, public domain by Chris Lomont
 auto Prg::rand() -> size_t
 {
-    size_t       a = mState[mIndex];
-    size_t       c = mState[(mIndex + 13) & 15];
+    auto         a = m_state[m_index];
+    auto         c = m_state[(m_index + 13) & 15];
     const size_t b = a ^ c ^ (a << 16) ^ (c << 15);
-    c              = mState[(mIndex + 9) & 15];
+    c              = m_state[(m_index + 9) & 15];
     c ^= (c >> 11);
-    a = mState[mIndex] = b ^ c;
-    const size_t d     = a ^ ((a << 5) & 0xDA442D24UL);
-    mIndex             = (mIndex + 15) & 15;
-    a                  = mState[mIndex];
-    mState[mIndex]     = a ^ b ^ d ^ (a << 2) ^ (b << 18) ^ (c << 28);
-    return mState[mIndex];
+    a = m_state[m_index] = b ^ c;
+    const size_t d       = a ^ ((a << 5) & 0xDA442D24UL);
+    m_index              = (m_index + 15) & 15;
+    a                    = m_state[m_index];
+    m_state[m_index]     = a ^ b ^ d ^ (a << 2) ^ (b << 18) ^ (c << 28);
+
+    return m_state[m_index];
 }
 
 auto Prg::rand_float() -> float

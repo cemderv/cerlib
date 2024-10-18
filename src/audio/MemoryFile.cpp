@@ -29,43 +29,71 @@ distribution.
 
 namespace cer
 {
-auto MemoryFile::read8() -> uint8_t
+auto MemoryFile::read_s8() -> int8_t
+{
+    int8_t d = 0;
+    read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
+    return d;
+}
+
+auto MemoryFile::read_s16() -> int16_t
+{
+    int16_t d = 0;
+    read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
+    return d;
+}
+
+auto MemoryFile::read_s32() -> int32_t
+{
+    int32_t d = 0;
+    read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
+    return d;
+}
+
+auto MemoryFile::read_u8() -> uint8_t
 {
     uint8_t d = 0;
     read(&d, sizeof(d));
     return d;
 }
 
-auto MemoryFile::read16() -> uint16_t
+auto MemoryFile::read_u16() -> uint16_t
 {
     uint16_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read32() -> uint32_t
+auto MemoryFile::read_u32() -> uint32_t
 {
     uint32_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read(unsigned char* aDst, size_t aBytes) -> size_t
+auto MemoryFile::read_f32() -> float
 {
-    if (mOffset + aBytes >= mData.size())
-    {
-        aBytes = mData.size() - mOffset;
-    }
-
-    std::memcpy(aDst, mData.data() + mOffset, aBytes);
-    mOffset += aBytes;
-
-    return aBytes;
+    float d = 0.0f;
+    read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
+    return d;
 }
 
-void MemoryFile::seek(int aOffset)
+auto MemoryFile::read(unsigned char* dst, size_t bytes) -> size_t
 {
-    mOffset = aOffset >= 0 ? aOffset : mData.size() + aOffset;
+    if (mOffset + bytes >= mData.size())
+    {
+        bytes = mData.size() - mOffset;
+    }
+
+    std::memcpy(dst, mData.data() + mOffset, bytes);
+    mOffset += bytes;
+
+    return bytes;
+}
+
+void MemoryFile::seek(int offset)
+{
+    mOffset = offset >= 0 ? offset : mData.size() + offset;
     mOffset = std::min(mOffset, mData.size() - 1);
 }
 

@@ -77,12 +77,20 @@ class Sfxr;
 
 class SfxrInstance final : public AudioSourceInstance
 {
-    Sfxr* mParent;
+  public:
+    explicit SfxrInstance(Sfxr* parent);
 
-    Prg        mRand;
-    SfxrParams mParams;
+    auto audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t override;
 
-    bool                    playing_sample;
+    auto has_ended() -> bool override;
+
+  private:
+    void reset_sample(bool restart);
+
+    Sfxr*                   m_parent = nullptr;
+    Prg                     m_rand;
+    SfxrParams              m_params;
+    bool                    playing_sample = true;
     int                     phase;
     double                  fperiod;
     double                  fmaxperiod;
@@ -117,18 +125,9 @@ class SfxrInstance final : public AudioSourceInstance
     int                     arp_time;
     int                     arp_limit;
     double                  arp_mod;
-
-    void resetSample(bool aRestart);
-
-  public:
-    explicit SfxrInstance(Sfxr* aParent);
-
-    size_t audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
-
-    bool has_ended() override;
 };
 
-enum class SFXR_PRESETS
+enum class SfxrPreset
 {
     COIN,
     LASER,
@@ -146,14 +145,14 @@ class Sfxr final : public AudioSource
   public:
     explicit Sfxr(std::span<const std::byte> data);
 
-    explicit Sfxr(int aPresetNo, int aRandSeed);
+    explicit Sfxr(SfxrPreset preset, int seed);
 
     ~Sfxr() override;
 
-    std::shared_ptr<AudioSourceInstance> create_instance() override;
+    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
 
   private:
-    SfxrParams mParams;
-    Prg        mRand;
+    SfxrParams m_params;
+    Prg        m_rand;
 };
 }; // namespace cer

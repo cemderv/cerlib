@@ -8,7 +8,7 @@
 #include "SoundImpl.hpp"
 #include "audio/FFT.hpp"
 #include "audio/Misc.hpp"
-#include "audio/Thread.hpp"
+#include "audio/thread.hpp"
 #include "cerlib/Logging.hpp"
 #include "cerlib/SoundChannel.hpp"
 #include "soloud_internal.hpp"
@@ -36,7 +36,7 @@ AudioDevice::AudioDevice(EngineFlags           flags,
     assert(channels != 3 && channels != 5 && channels != 7);
     assert(channels <= max_channels);
 
-    m_audio_thread_mutex = Thread::createMutex();
+    m_audio_thread_mutex = thread::create_mutex();
 
     auto samplerate = sample_rate.value_or(44100);
     auto buffersize = buffer_size.value_or(2048);
@@ -61,10 +61,10 @@ AudioDevice::AudioDevice(EngineFlags           flags,
 
 #if defined(WITH_WINMM)
     {
-        if (!aBufferSize.has_value())
-            buffersize = 4096;
+        if (!buffer_size.has_value())
+            buffer_size = 4096;
 
-        winmm_init(this, flags, samplerate, buffersize, channels);
+        winmm_init(this, flags, sample_rate, buffer_size, channels);
     }
 #endif
 
@@ -82,10 +82,10 @@ AudioDevice::AudioDevice(EngineFlags           flags,
 
 #if defined(WITH_ALSA)
     {
-        if (!aBufferSize.has_value())
-            buffersize = 2048;
+        if (!buffer_size.has_value())
+            buffer_size = 2048;
 
-        alsa_init(this, flags, samplerate, buffersize, channels);
+        alsa_init(this, flags, sample_rate, buffer_size, channels);
     }
 #endif
 
@@ -137,7 +137,7 @@ AudioDevice::~AudioDevice() noexcept
         m_backend_cleanup_func(this);
     m_backend_cleanup_func = 0;
     if (m_audio_thread_mutex)
-        Thread::destroyMutex(m_audio_thread_mutex);
+        thread::destroy_mutex(m_audio_thread_mutex);
     m_audio_thread_mutex = nullptr;
 
     for (size_t i = 0; i < filters_per_stream; ++i)
@@ -783,7 +783,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         __m128 vdelta = _mm_load_ps1(&vd);
         c             = 0;
         d             = 0;
-        for (size_t j = 0; j < mChannels; ++j)
+        for (size_t j = 0; j < m_channels; ++j)
         {
             __m128 vol = _mm_load_ps(volumes.mData);
 
@@ -831,7 +831,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         __m128                 negbound  = _mm_load_ps1(&nb);
         float                  pb        = 1.0f;
         __m128                 posbound  = _mm_load_ps1(&pb);
-        __m128                 postscale = _mm_load_ps1(&mPostClipScaler);
+        __m128                 postscale = _mm_load_ps1(&m_post_clip_scaler);
         TinyAlignedFloatBuffer volumes;
         volumes.mData[0] = v;
         volumes.mData[1] = v + vd;
@@ -841,7 +841,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         __m128 vdelta = _mm_load_ps1(&vd);
         c             = 0;
         d             = 0;
-        for (size_t j = 0; j < mChannels; ++j)
+        for (size_t j = 0; j < m_channels; ++j)
         {
             __m128 vol = _mm_load_ps(volumes.mData);
             for (i = 0; i < samplequads; ++i)
@@ -2179,7 +2179,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
         if (!once)
         {
             once = true;
-            if (!m_flags.NoFpuRegisterChange)
+            if (!m_flags.no_fpu_register_change)
             {
                 _controlfp(_DN_FLUSH, _MCW_DN);
             }
@@ -2426,7 +2426,7 @@ void AudioDevice::lockAudioMutex_internal()
 {
     if (m_audio_thread_mutex)
     {
-        Thread::lockMutex(m_audio_thread_mutex);
+        thread::lock_mutex(m_audio_thread_mutex);
     }
     assert(!m_inside_audio_thread_mutex);
     m_inside_audio_thread_mutex = true;
@@ -2438,7 +2438,7 @@ void AudioDevice::unlockAudioMutex_internal()
     m_inside_audio_thread_mutex = false;
     if (m_audio_thread_mutex)
     {
-        Thread::unlockMutex(m_audio_thread_mutex);
+        thread::unlock_mutex(m_audio_thread_mutex);
     }
 }
 

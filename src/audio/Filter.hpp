@@ -260,7 +260,7 @@ class LofiFilterInstance final : public FilterInstance
   public:
     void filter_channel(const FilterChannelArgs& args) override;
 
-    explicit LofiFilterInstance(LofiFilter* aParent);
+    explicit LofiFilterInstance(LofiFilter* parent);
 
   private:
     enum FILTERPARAMS
@@ -345,7 +345,7 @@ class RobotizeFilter final : public Filter
         WAVE
     };
 
-    std::shared_ptr<FilterInstance> create_instance() override;
+    auto create_instance() -> std::shared_ptr<FilterInstance> override;
 
     float mFreq = 30.0f;
     int   mWave = 0;
@@ -448,7 +448,7 @@ struct BQRStateData
 class BiquadResonantFilterInstance final : public FilterInstance
 {
   public:
-    explicit BiquadResonantFilterInstance(BiquadResonantFilter* aParent);
+    explicit BiquadResonantFilterInstance(BiquadResonantFilter* parent);
 
     void filter_channel(const FilterChannelArgs& args) override;
 
@@ -461,41 +461,41 @@ class BiquadResonantFilterInstance final : public FilterInstance
         Resonance
     };
 
-    std::array<BQRStateData, 8> mState{};
-    float                       mA0 = 0.0f;
-    float                       mA1 = 0.0f;
-    float                       mA2 = 0.0f;
-    float                       mB1 = 0.0f;
-    float                       mB2 = 0.0f;
-    int                         mDirty{};
-    float                       mSamplerate = 44'100.0f;
+    void calc_bqr_params();
 
-    BiquadResonantFilter* mParent;
-    void                  calcBQRParams();
+    BiquadResonantFilter*       m_parent      = nullptr;
+    std::array<BQRStateData, 8> m_state       = {};
+    float                       m_a0          = 0.0f;
+    float                       m_a1          = 0.0f;
+    float                       m_a2          = 0.0f;
+    float                       m_b1          = 0.0f;
+    float                       m_b2          = 0.0f;
+    int                         m_dirty       = {};
+    float                       m_sample_rate = 44'100.0f;
 };
 
 class BiquadResonantFilter final : public Filter
 {
   public:
-    enum FILTERTYPE
+    enum class FilterType
     {
-        LOWPASS  = 0,
-        HIGHPASS = 1,
-        BANDPASS = 2
+        LowPass  = 0,
+        HighPass = 1,
+        BandPass = 2
     };
 
-    enum FILTERATTRIBUTE
+    enum class FilterAttribute
     {
-        WET = 0,
-        TYPE,
-        FREQUENCY,
-        RESONANCE
+        Wet = 0,
+        Type,
+        Frequency,
+        Resonance
     };
 
     auto create_instance() -> std::shared_ptr<FilterInstance> override;
 
-    int   mFilterType = LOWPASS;
-    float mFrequency  = 1000.0f;
-    float mResonance  = 2.0f;
+    FilterType filter_type = FilterType::LowPass;
+    float      frequency   = 1000.0f;
+    float      resonance   = 2.0f;
 };
 }; // namespace cer

@@ -29,6 +29,7 @@ freely, subject to the following restrictions:
 #include "dr_mp3.h"
 #include "dr_wav.h"
 #include "stb_vorbis.h"
+#include <algorithm>
 #include <cstring>
 
 #define MAKEDWORD(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))
@@ -41,55 +42,55 @@ WavInstance::WavInstance(Wav* aParent)
     m_offset = 0;
 }
 
-size_t WavInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
+auto WavInstance::audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t
 {
-    if (m_parent->mData == nullptr)
+    if (m_parent->m_data == nullptr)
+    {
         return 0;
+    }
 
-    size_t dataleft = m_parent->mSampleCount - m_offset;
-    size_t copylen  = dataleft;
-
-    if (copylen > aSamplesToRead)
-        copylen = aSamplesToRead;
+    const auto data_left   = m_parent->m_sample_count - m_offset;
+    const auto copy_length = std::min(data_left, samples_to_read);
 
     for (size_t i = 0; i < channel_count; ++i)
     {
-        memcpy(aBuffer + i * aBufferSize,
-               m_parent->mData.get() + m_offset + i * m_parent->mSampleCount,
-               sizeof(float) * copylen);
+        memcpy(buffer + (i * buffer_size),
+               m_parent->m_data.get() + m_offset + (i * m_parent->m_sample_count),
+               sizeof(float) * copy_length);
     }
 
-    m_offset += copylen;
-    return copylen;
+    m_offset += copy_length;
+
+    return copy_length;
 }
 
-bool WavInstance::rewind()
+auto WavInstance::rewind() -> bool
 {
     m_offset        = 0;
     stream_position = 0.0f;
     return true;
 }
 
-bool WavInstance::has_ended()
+auto WavInstance::has_ended() -> bool
 {
-    return !flags.Looping && m_offset >= m_parent->mSampleCount;
+    return !flags.Looping && m_offset >= m_parent->m_sample_count;
 }
 
 Wav::Wav(std::span<const std::byte> data)
 {
     assert(data.data() != nullptr);
-    assert(data.size() > 0);
+    assert(!data.empty());
 
     auto dr = MemoryFile{data};
 
     channel_count = 1;
 
-    switch (dr.read32())
+    switch (dr.read_u32())
     {
-        case MAKEDWORD('O', 'g', 'g', 'S'): loadogg(dr); break;
-        case MAKEDWORD('R', 'I', 'F', 'F'): loadwav(dr); break;
-        case MAKEDWORD('f', 'L', 'a', 'C'): loadflac(dr); break;
-        default: loadmp3(dr); break;
+        case MAKEDWORD('O', 'g', 'g', 'S'): load_ogg(dr); break;
+        case MAKEDWORD('R', 'I', 'F', 'F'): load_wav(dr); break;
+        case MAKEDWORD('f', 'L', 'a', 'C'): load_flac(dr); break;
+        default: load_mp3(dr); break;
     }
 }
 
@@ -98,39 +99,40 @@ Wav::~Wav()
     stop();
 }
 
-void Wav::loadwav(const MemoryFile& aReader)
+void Wav::load_wav(const MemoryFile& reader)
 {
     drwav decoder;
 
-    if (!drwav_init_memory(&decoder, aReader.data(), aReader.size(), nullptr))
+    if (drwav_init_memory(&decoder, reader.data(), reader.size(), nullptr) == 0u)
     {
         throw std::runtime_error{"Failed to load WAV"};
     }
 
     drwav_uint64 samples = decoder.totalPCMFrameCount;
 
-    if (!samples)
+    if (samples == 0u)
     {
         drwav_uninit(&decoder);
         throw std::runtime_error{"Failed to load WAV"};
     }
 
-    mData            = std::make_unique<float[]>(samples * decoder.channels);
+    m_data           = std::make_unique<float[]>(samples * decoder.channels);
     base_sample_rate = float(decoder.sampleRate);
-    mSampleCount     = samples;
+    m_sample_count   = samples;
     channel_count    = decoder.channels;
 
-    for (size_t i = 0; i < mSampleCount; i += 512)
+    for (size_t i = 0; i < m_sample_count; i += 512)
     {
-        float      tmp[512 * max_channels];
-        const auto blockSize = (mSampleCount - i) > 512 ? 512 : mSampleCount - i;
-        drwav_read_pcm_frames_f32(&decoder, blockSize, tmp);
+        auto       tmp       = std::array<float, 512 * max_channels>{};
+        const auto blockSize = (m_sample_count - i) > 512 ? 512 : m_sample_count - i;
+
+        drwav_read_pcm_frames_f32(&decoder, blockSize, tmp.data());
 
         for (size_t j = 0; j < blockSize; ++j)
         {
             for (size_t k = 0; k < decoder.channels; k++)
             {
-                mData[k * mSampleCount + i + j] = tmp[j * decoder.channels + k];
+                m_data[(k * m_sample_count) + i + j] = tmp[(j * decoder.channels) + k];
             }
         }
     }
@@ -138,10 +140,10 @@ void Wav::loadwav(const MemoryFile& aReader)
     drwav_uninit(&decoder);
 }
 
-void Wav::loadogg(const MemoryFile& aReader)
+void Wav::load_ogg(const MemoryFile& reader)
 {
     int   e      = 0;
-    auto* vorbis = stb_vorbis_open_memory(aReader.data_uc(), aReader.size(), &e, 0);
+    auto* vorbis = stb_vorbis_open_memory(reader.data_uc(), reader.size(), &e, nullptr);
 
     if (vorbis == nullptr)
     {
@@ -161,9 +163,9 @@ void Wav::loadogg(const MemoryFile& aReader)
         channel_count = info.channels;
     }
 
-    mData        = std::make_unique<float[]>(samples * channel_count);
-    mSampleCount = samples;
-    samples      = 0;
+    m_data         = std::make_unique<float[]>(samples * channel_count);
+    m_sample_count = samples;
+    samples        = 0;
 
     while (true)
     {
@@ -177,7 +179,7 @@ void Wav::loadogg(const MemoryFile& aReader)
 
         for (size_t ch = 0; ch < channel_count; ch++)
         {
-            memcpy(mData.get() + samples + mSampleCount * ch, outputs[ch], sizeof(float) * n);
+            memcpy(m_data.get() + samples + (m_sample_count * ch), outputs[ch], sizeof(float) * n);
         }
 
         samples += n;
@@ -186,40 +188,40 @@ void Wav::loadogg(const MemoryFile& aReader)
     stb_vorbis_close(vorbis);
 }
 
-void Wav::loadmp3(const MemoryFile& aReader)
+void Wav::load_mp3(const MemoryFile& reader)
 {
     drmp3 decoder;
 
-    if (!drmp3_init_memory(&decoder, aReader.data_uc(), aReader.size(), nullptr))
+    if (drmp3_init_memory(&decoder, reader.data_uc(), reader.size(), nullptr) == 0u)
     {
         throw std::runtime_error{"Failed to load MP3"};
     }
 
     const auto samples = drmp3_get_pcm_frame_count(&decoder);
 
-    if (!samples)
+    if (samples == 0u)
     {
         drmp3_uninit(&decoder);
         throw std::runtime_error{"Failed to load MP3"};
     }
 
-    mData            = std::make_unique<float[]>(samples * decoder.channels);
+    m_data           = std::make_unique<float[]>(samples * decoder.channels);
     base_sample_rate = float(decoder.sampleRate);
-    mSampleCount     = samples;
+    m_sample_count   = samples;
     channel_count    = decoder.channels;
     drmp3_seek_to_pcm_frame(&decoder, 0);
 
-    for (size_t i = 0; i < mSampleCount; i += 512)
+    for (size_t i = 0; i < m_sample_count; i += 512)
     {
         auto         tmp       = std::array<float, 512 * max_channels>{};
-        const size_t blockSize = (mSampleCount - i) > 512 ? 512 : mSampleCount - i;
+        const size_t blockSize = (m_sample_count - i) > 512 ? 512 : m_sample_count - i;
         drmp3_read_pcm_frames_f32(&decoder, blockSize, tmp.data());
 
         for (size_t j = 0; j < blockSize; ++j)
         {
             for (size_t k = 0; k < decoder.channels; k++)
             {
-                mData[k * mSampleCount + i + j] = tmp[j * decoder.channels + k];
+                m_data[(k * m_sample_count) + i + j] = tmp[j * decoder.channels + k];
             }
         }
     }
@@ -227,39 +229,40 @@ void Wav::loadmp3(const MemoryFile& aReader)
     drmp3_uninit(&decoder);
 }
 
-void Wav::loadflac(const MemoryFile& aReader)
+void Wav::load_flac(const MemoryFile& reader)
 {
-    drflac* decoder = drflac_open_memory(aReader.data(), aReader.size(), nullptr);
+    drflac* decoder = drflac_open_memory(reader.data(), reader.size(), nullptr);
 
-    if (!decoder)
+    if (decoder == nullptr)
     {
         throw std::runtime_error{"Failed to load FLAC"};
     }
 
     const auto samples = decoder->totalPCMFrameCount;
 
-    if (!samples)
+    if (samples == 0u)
     {
         drflac_close(decoder);
         throw std::runtime_error{"Failed to load FLAC"};
     }
 
-    mData            = std::make_unique<float[]>(samples * decoder->channels);
+    m_data           = std::make_unique<float[]>(samples * decoder->channels);
     base_sample_rate = float(decoder->sampleRate);
-    mSampleCount     = samples;
+    m_sample_count   = samples;
     channel_count    = decoder->channels;
     drflac_seek_to_pcm_frame(decoder, 0);
 
-    for (size_t i = 0; i < mSampleCount; i += 512)
+    for (size_t i = 0; i < m_sample_count; i += 512)
     {
         auto         tmp       = std::array<float, 512 * max_channels>{};
-        const size_t blockSize = (mSampleCount - i) > 512 ? 512 : mSampleCount - i;
+        const size_t blockSize = (m_sample_count - i) > 512 ? 512 : m_sample_count - i;
         drflac_read_pcm_frames_f32(decoder, blockSize, tmp.data());
+
         for (size_t j = 0; j < blockSize; ++j)
         {
             for (size_t k = 0; k < decoder->channels; k++)
             {
-                mData[k * mSampleCount + i + j] = tmp[j * decoder->channels + k];
+                m_data[(k * m_sample_count) + i + j] = tmp[j * decoder->channels + k];
             }
         }
     }
@@ -267,13 +270,13 @@ void Wav::loadflac(const MemoryFile& aReader)
     drflac_close(decoder);
 }
 
-std::shared_ptr<AudioSourceInstance> Wav::create_instance()
+auto Wav::create_instance() -> std::shared_ptr<AudioSourceInstance>
 {
     return std::make_shared<WavInstance>(this);
 }
 
-double Wav::length_time() const
+auto Wav::length_time() const -> double
 {
-    return base_sample_rate == 0 ? 0 : mSampleCount / base_sample_rate;
+    return base_sample_rate == 0 ? 0 : m_sample_count / base_sample_rate;
 }
 }; // namespace cer

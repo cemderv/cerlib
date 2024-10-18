@@ -401,7 +401,7 @@ bool WavStreamInstance::has_ended()
 WavStream::WavStream(std::span<const std::byte> data)
     : mFile(data)
 {
-    switch (mFile.read32())
+    switch (mFile.read_u32())
     {
         case MAKEDWORD('O', 'g', 'g', 'S'): loadogg(mFile); break;
         case MAKEDWORD('R', 'I', 'F', 'F'): loadwav(mFile); break;

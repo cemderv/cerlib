@@ -35,81 +35,63 @@ NoiseInstance::NoiseInstance(const Noise* aParent)
     m_prg.srand(0xfade);
 }
 
-size_t NoiseInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBufferSize*/)
+auto NoiseInstance::audio(float*                  buffer,
+                          size_t                  samples_to_read,
+                          [[maybe_unused]] size_t buffer_size) -> size_t
 {
-    int   octavestep[10];
-    float octavevalue[10];
-    float totalscale = 0;
-    for (int j = 0; j < 10; ++j)
+    struct Octave
     {
-        octavevalue[j] = 0;
-        octavestep[j]  = 1 << j;
-        totalscale += m_octave_scale[j];
+        int   step  = 0;
+        float value = 0.0f;
+    };
+
+    constexpr size_t octave_count = 10;
+
+    auto octaves     = std::array<Octave, octave_count>{};
+    auto total_scale = 0.0f;
+
+    for (size_t j = 0; j < octave_count; ++j)
+    {
+        octaves[j] = {
+            .step  = 0,
+            .value = float(1 << j),
+        };
+
+        total_scale += m_octave_scale[j];
     }
 
-    for (size_t i = 0; i < aSamplesToRead; ++i)
+    for (size_t i = 0; i < samples_to_read; ++i)
     {
-        aBuffer[i] = m_prg.rand_float() - 0.5f;
-        for (int j = 0; j < 10; ++j)
+        buffer[i] = m_prg.rand_float() - 0.5f;
+
+        for (size_t j = 0; j < octave_count; ++j)
         {
-            octavestep[j]++;
-            if (octavestep[j] > (1 << (j + 1)))
+            auto& octave = octaves[j];
+            ++octave.step;
+
+            if (octave.step > (1 << (j + 1)))
             {
-                octavestep[j]  = 0;
-                octavevalue[j] = m_prg.rand_float() - 0.5f;
+                octave.step  = 0;
+                octave.value = m_prg.rand_float() - 0.5f;
             }
-            aBuffer[i] += octavevalue[j] * m_octave_scale[j];
+
+            buffer[i] += octave.value * m_octave_scale[j];
         }
-        aBuffer[i] *= 1.0f / totalscale;
+
+        buffer[i] *= 1.0f / total_scale;
     }
 
-    return aSamplesToRead;
+    return samples_to_read;
 }
 
-bool NoiseInstance::has_ended()
+auto NoiseInstance::has_ended() -> bool
 {
     return false;
 }
 
-void Noise::setOctaveScale(float aOct0,
-                           float aOct1,
-                           float aOct2,
-                           float aOct3,
-                           float aOct4,
-                           float aOct5,
-                           float aOct6,
-                           float aOct7,
-                           float aOct8,
-                           float aOct9)
-{
-    octave_scale[0] = aOct0;
-    octave_scale[1] = aOct1;
-    octave_scale[2] = aOct2;
-    octave_scale[3] = aOct3;
-    octave_scale[4] = aOct4;
-    octave_scale[5] = aOct5;
-    octave_scale[6] = aOct6;
-    octave_scale[7] = aOct7;
-    octave_scale[8] = aOct8;
-    octave_scale[9] = aOct9;
-}
-
-void Noise::setType(int aType)
-{
-    switch (aType)
-    {
-        default:
-        case White: setOctaveScale(1, 0, 0, 0, 0, 0, 0, 0, 0, 0); break;
-        case Pink: setOctaveScale(1, 1, 1, 1, 1, 1, 1, 1, 1, 1); break;
-        case Brownish: setOctaveScale(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); break;
-        case Blueish: setOctaveScale(10, 9, 8, 7, 6, 5, 4, 3, 2, 1); break;
-    }
-}
-
 Noise::Noise()
 {
-    base_sample_rate = 44100;
-    setType(White);
+    set_type(NoiseType::White);
 }
 
 Noise::~Noise()
@@ -117,8 +99,20 @@ Noise::~Noise()
     stop();
 }
 
-std::shared_ptr<AudioSourceInstance> Noise::create_instance()
+auto Noise::create_instance() -> std::shared_ptr<AudioSourceInstance>
 {
     return std::make_shared<NoiseInstance>(this);
+}
+
+void Noise::set_type(NoiseType type)
+{
+    switch (type)
+    {
+        default:
+        case NoiseType::White: octave_scale = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0}; break;
+        case NoiseType::Pink: octave_scale = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1}; break;
+        case NoiseType::Brownish: octave_scale = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; break;
+        case NoiseType::Blueish: octave_scale = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1}; break;
+    }
 }
 }; // namespace cer

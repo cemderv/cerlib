@@ -37,7 +37,7 @@ class NoiseInstance final : public AudioSourceInstance
   public:
     explicit NoiseInstance(const Noise* parent);
 
-    auto audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) -> size_t override;
+    auto audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t override;
 
     auto has_ended() -> bool override;
 
@@ -49,7 +49,7 @@ class NoiseInstance final : public AudioSourceInstance
 class Noise final : public AudioSource
 {
   public:
-    enum NoiseTypes
+    enum class NoiseType
     {
         White = 0,
         Pink,
@@ -59,21 +59,11 @@ class Noise final : public AudioSource
 
     Noise();
 
-    void setOctaveScale(float aOct0,
-                        float aOct1,
-                        float aOct2,
-                        float aOct3,
-                        float aOct4,
-                        float aOct5,
-                        float aOct6,
-                        float aOct7,
-                        float aOct8,
-                        float aOct9);
-    void setType(int aType);
-
     ~Noise() override;
 
-    std::shared_ptr<AudioSourceInstance> create_instance() override;
+    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
+
+    void set_type(NoiseType type);
 
     std::array<float, 10> octave_scale{};
 };

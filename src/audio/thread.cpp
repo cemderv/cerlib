@@ -30,11 +30,9 @@ freely, subject to the following restrictions:
 #include <unistd.h>
 #endif
 
-#include "audio/Thread.hpp"
+#include "audio/thread.hpp"
 
-namespace cer
-{
-namespace Thread
+namespace cer::thread
 {
 #if defined(_WIN32) || defined(_WIN64)
 struct ThreadHandleData
@@ -130,43 +128,38 @@ struct ThreadHandleData
     pthread_t thread;
 };
 
-void* createMutex()
+auto create_mutex() -> void*
 {
-    pthread_mutex_t* mutex;
-    mutex = new pthread_mutex_t;
+    auto* mutex = new pthread_mutex_t();
 
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
 
     pthread_mutex_init(mutex, &attr);
 
-    return (void*)mutex;
+    return mutex;
 }
 
-void destroyMutex(void* aHandle)
+void destroy_mutex(void* handle)
 {
-    auto mutex = static_cast<pthread_mutex_t*>(aHandle);
-
-    if (mutex)
+    if (auto* mutex = static_cast<pthread_mutex_t*>(handle))
     {
         pthread_mutex_destroy(mutex);
         delete mutex;
     }
 }
 
-void lockMutex(void* aHandle)
+void lock_mutex(void* handle)
 {
-    auto mutex = static_cast<pthread_mutex_t*>(aHandle);
-    if (mutex)
+    if (auto* mutex = static_cast<pthread_mutex_t*>(handle))
     {
         pthread_mutex_lock(mutex);
     }
 }
 
-void unlockMutex(void* aHandle)
+void unlock_mutex(void* aHandle)
 {
-    auto mutex = static_cast<pthread_mutex_t*>(aHandle);
-    if (mutex)
+    if (auto* mutex = static_cast<pthread_mutex_t*>(aHandle))
     {
         pthread_mutex_unlock(mutex);
     }
@@ -174,63 +167,67 @@ void unlockMutex(void* aHandle)
 
 struct soloud_thread_data
 {
-    threadFunction mFunc;
-    void*          mParam;
+    ThreadFunction func  = nullptr;
+    void*          param = nullptr;
 };
 
-static void* threadfunc(void* d)
+static void* thread_func(void* d)
 {
-    auto* p = static_cast<soloud_thread_data*>(d);
-    p->mFunc(p->mParam);
+    const auto* p = static_cast<const soloud_thread_data*>(d);
+
+    p->func(p->param);
     delete p;
+
     return nullptr;
 }
 
-ThreadHandle createThread(threadFunction aThreadFunction, void* aParameter)
+auto create_thread(ThreadFunction aThreadFunction, void* aParameter) -> ThreadHandle
 {
-    auto* d   = new soloud_thread_data;
-    d->mFunc  = aThreadFunction;
-    d->mParam = aParameter;
+    auto* d  = new soloud_thread_data();
+    d->func  = aThreadFunction;
+    d->param = aParameter;
 
-    auto* threadHandle = new ThreadHandleData;
-    pthread_create(&threadHandle->thread, nullptr, threadfunc, d);
+    auto* threadHandle = new ThreadHandleData();
+    pthread_create(&threadHandle->thread, nullptr, thread_func, d);
+
     return threadHandle;
 }
 
-void sleep(int aMSec)
+void sleep(int ms)
 {
     // usleep(aMSec * 1000);
     timespec req = {};
     req.tv_sec   = 0;
-    req.tv_nsec  = aMSec * 1000000L;
+    req.tv_nsec  = ms * 1000000L;
+
     nanosleep(&req, nullptr);
 }
 
-void wait(ThreadHandle aThreadHandle)
+void wait(ThreadHandle thread_handle)
 {
-    pthread_join(aThreadHandle->thread, 0);
+    pthread_join(thread_handle->thread, 0);
 }
 
-void release(ThreadHandle aThreadHandle)
+void release(ThreadHandle thread_handle)
 {
-    delete aThreadHandle;
+    delete thread_handle;
 }
 
-int getTimeMillis()
+auto time_millis() -> int
 {
     timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);
-    return spec.tv_sec * 1000 + (int)(spec.tv_nsec / 1.0e6);
+    return spec.tv_sec * 1000 + int(spec.tv_nsec / 1.0e6);
 }
 #endif
 
-static void poolWorker(void* aParam)
+static void pool_worker(void* param)
 {
-    auto* myPool = static_cast<Pool*>(aParam);
-    while (myPool->mRunning)
+    auto* my_pool = static_cast<Pool*>(param);
+
+    while (my_pool->m_running)
     {
-        PoolTask* t = myPool->getWork();
-        if (!t)
+        if (PoolTask* t = my_pool->get_work(); t == nullptr)
         {
             sleep(1);
         }
@@ -241,105 +238,90 @@ static void poolWorker(void* aParam)
     }
 }
 
-Pool::Pool()
-{
-    mRunning     = 0;
-    mThreadCount = 0;
-    mThread      = 0;
-    mWorkMutex   = 0;
-    mRobin       = 0;
-    mMaxTask     = 0;
-
-    for (int i = 0; i < MAX_THREADPOOL_TASKS; ++i)
-    {
-        mTaskArray[i] = nullptr;
-    }
-}
-
 Pool::~Pool()
 {
-    mRunning = 0;
-    int i;
-    for (i = 0; i < mThreadCount; ++i)
+    m_running = 0;
+
+    for (size_t i = 0; i < m_thread_count; ++i)
     {
-        wait(mThread[i]);
-        release(mThread[i]);
+        wait(m_thread[i]);
+        release(m_thread[i]);
     }
 
-    delete[] mThread;
-    if (mWorkMutex)
+    delete[] m_thread;
+
+    if (m_work_mutex != nullptr)
     {
-        destroyMutex(mWorkMutex);
+        destroy_mutex(m_work_mutex);
     }
 }
 
-void Pool::init(int aThreadCount)
+void Pool::init(size_t thread_count)
 {
-    if (aThreadCount > 0)
+    if (thread_count > 0)
     {
-        mMaxTask     = 0;
-        mWorkMutex   = createMutex();
-        mRunning     = 1;
-        mThreadCount = aThreadCount;
-        mThread      = new ThreadHandle[aThreadCount];
-        int i;
-        for (i = 0; i < mThreadCount; ++i)
+        m_max_task     = 0;
+        m_work_mutex   = create_mutex();
+        m_running      = 1;
+        m_thread_count = thread_count;
+        m_thread       = new ThreadHandle[thread_count];
+
+        for (size_t i = 0; i < m_thread_count; ++i)
         {
-            mThread[i] = createThread(poolWorker, this);
+            m_thread[i] = create_thread(pool_worker, this);
         }
     }
 }
 
-void Pool::addWork(PoolTask* aTask)
+void Pool::add_work(PoolTask* aTask)
 {
-    if (mThreadCount == 0)
+    if (m_thread_count == 0)
     {
         aTask->work();
     }
     else
     {
-        if (mWorkMutex)
-            lockMutex(mWorkMutex);
-        if (mMaxTask == MAX_THREADPOOL_TASKS)
+        if (m_work_mutex)
+            lock_mutex(m_work_mutex);
+        if (m_max_task == max_threadpool_tasks)
         {
             // If we're at max tasks, do the task on calling thread
             // (we're in trouble anyway, might as well slow down adding more work)
-            if (mWorkMutex)
-                unlockMutex(mWorkMutex);
+            if (m_work_mutex)
+                unlock_mutex(m_work_mutex);
             aTask->work();
         }
         else
         {
-            mTaskArray[mMaxTask] = aTask;
-            mMaxTask++;
-            if (mWorkMutex)
-                unlockMutex(mWorkMutex);
+            m_task_array[m_max_task] = aTask;
+            m_max_task++;
+            if (m_work_mutex)
+                unlock_mutex(m_work_mutex);
         }
     }
 }
 
-PoolTask* Pool::getWork()
+PoolTask* Pool::get_work()
 {
     PoolTask* t = nullptr;
-    if (mWorkMutex)
+    if (m_work_mutex)
     {
-        lockMutex(mWorkMutex);
+        lock_mutex(m_work_mutex);
     }
 
-    if (mMaxTask > 0)
+    if (m_max_task > 0)
     {
-        const int r = mRobin % mMaxTask;
-        mRobin++;
-        t             = mTaskArray[r];
-        mTaskArray[r] = mTaskArray[mMaxTask - 1];
-        mMaxTask--;
+        const int r = m_robin % m_max_task;
+        m_robin++;
+        t               = m_task_array[r];
+        m_task_array[r] = m_task_array[m_max_task - 1];
+        m_max_task--;
     }
 
-    if (mWorkMutex)
+    if (m_work_mutex)
     {
-        unlockMutex(mWorkMutex);
+        unlock_mutex(m_work_mutex);
     }
     return t;
 }
-} // namespace Thread
-} // namespace cer
+} // namespace cer::thread

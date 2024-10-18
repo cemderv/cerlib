@@ -26,51 +26,55 @@ freely, subject to the following restrictions:
 
 #include "audio/AudioSource.hpp"
 
-#define SOLOUD_QUEUE_MAX 32
-
 namespace cer
 {
 class Queue;
 
 class QueueInstance final : public AudioSourceInstance
 {
-    Queue* mParent = nullptr;
-
   public:
-    explicit QueueInstance(Queue* aParent);
+    explicit QueueInstance(Queue* parent);
 
-    size_t audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
+    auto audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t override;
 
-    bool has_ended() override;
+    auto has_ended() -> bool override;
+
+  private:
+    Queue* m_parent = nullptr;
 };
 
 class Queue final : public AudioSource
 {
+    friend QueueInstance;
+
   public:
-    std::shared_ptr<AudioSourceInstance> create_instance() override;
+    static constexpr auto queue_max = size_t(32);
+
+    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
 
     // Play sound through the queue
-    void play(AudioSource& aSound);
+    void play(AudioSource& sound);
 
     // Number of audio sources queued for replay
-    size_t getQueueCount() const;
+    auto queue_count() const -> size_t;
 
     // Is this audio source currently playing?
-    bool isCurrentlyPlaying(const AudioSource& aSound) const;
+    auto is_currently_playing(const AudioSource& sound) const -> bool;
 
     // Set params by reading them from an audio source
-    void setParamsFromAudioSource(const AudioSource& aSound);
+    void set_params_from_audio_source(const AudioSource& sound);
 
     // Set params manually
-    void setParams(float aSamplerate, size_t aChannels = 2);
+    void set_params(float sample_rate, size_t channel_count = 2);
 
-    void findQueueHandle();
+    void find_queue_handle();
 
-    size_t                                                             mReadIndex  = 0;
-    size_t                                                             mWriteIndex = 0;
-    size_t                                                             mCount      = 0;
-    std::array<std::shared_ptr<AudioSourceInstance>, SOLOUD_QUEUE_MAX> mSource{};
-    std::shared_ptr<QueueInstance>                                     mInstance;
-    SoundHandle                                                        mQueueHandle = 0;
+  private:
+    size_t                                                      m_read_index  = 0;
+    size_t                                                      m_write_index = 0;
+    size_t                                                      m_count       = 0;
+    std::array<std::shared_ptr<AudioSourceInstance>, queue_max> m_source{};
+    std::shared_ptr<QueueInstance>                              m_instance;
+    SoundHandle                                                 m_queue_handle = 0;
 };
 }; // namespace cer

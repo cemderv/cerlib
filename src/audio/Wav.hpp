@@ -64,12 +64,15 @@ class Wav final : public AudioSource
     auto length_time() const -> SoundTime;
 
   private:
-    void loadwav(const MemoryFile& aReader);
-    void loadogg(const MemoryFile& aReader);
-    void loadmp3(const MemoryFile& aReader);
-    void loadflac(const MemoryFile& aReader);
+    void load_wav(const MemoryFile& reader);
 
-    std::unique_ptr<float[]> mData;
-    size_t                   mSampleCount = 0;
+    void load_ogg(const MemoryFile& reader);
+
+    void load_mp3(const MemoryFile& reader);
+
+    void load_flac(const MemoryFile& reader);
+
+    std::unique_ptr<float[]> m_data;
+    size_t                   m_sample_count = 0;
 };
 }; // namespace cer

@@ -447,18 +447,16 @@ void Revmodel::setmode(float aValue)
 }
 } // namespace freeverb_impl
 
-FreeverbFilterInstance::FreeverbFilterInstance(FreeverbFilter* aParent)
+FreeverbFilterInstance::FreeverbFilterInstance(FreeverbFilter* parent)
+    : m_parent(parent)
+    , m_model(std::make_unique<freeverb_impl::Revmodel>())
 {
     FilterInstance::init_params(5);
 
-    m_parent = aParent;
-
-    m_model = std::make_unique<freeverb_impl::Revmodel>();
-
-    m_params[FREEZE]   = aParent->mode;
-    m_params[ROOMSIZE] = aParent->room_size;
-    m_params[DAMP]     = aParent->damp;
-    m_params[WIDTH]    = aParent->width;
+    m_params[FREEZE]   = parent->mode;
+    m_params[ROOMSIZE] = parent->room_size;
+    m_params[DAMP]     = parent->damp;
+    m_params[WIDTH]    = parent->width;
     m_params[WET]      = 1;
 }
 

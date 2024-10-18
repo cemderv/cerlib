@@ -24,26 +24,37 @@ freely, subject to the following restrictions:
 
 #pragma once
 
-namespace cer::Thread
+#include <array>
+
+// TODO: replace this entire file by std::jthread and std::mutex
+
+namespace cer::thread
 {
-typedef void (*threadFunction)(void* aParam);
-
 struct ThreadHandleData;
-typedef ThreadHandleData* ThreadHandle;
 
-void* createMutex();
-void  destroyMutex(void* aHandle);
-void  lockMutex(void* aHandle);
-void  unlockMutex(void* aHandle);
+using ThreadFunction = void (*)(void*);
 
-ThreadHandle createThread(threadFunction aThreadFunction, void* aParameter);
+using ThreadHandle = ThreadHandleData*;
 
-void sleep(int aMSec);
-void wait(ThreadHandle aThreadHandle);
-void release(ThreadHandle aThreadHandle);
-int  getTimeMillis();
+auto create_mutex() -> void*;
 
-#define MAX_THREADPOOL_TASKS 1024
+void destroy_mutex(void* handle);
+
+void lock_mutex(void* handle);
+
+void unlock_mutex(void* handle);
+
+auto create_thread(ThreadFunction thread_function, void* parameter) -> ThreadHandle;
+
+void sleep(int ms);
+
+void wait(ThreadHandle thread_handle);
+
+void release(ThreadHandle thread_handle);
+
+auto time_millis() -> int;
+
+static constexpr auto max_threadpool_tasks = size_t(1024);
 
 class PoolTask
 {
@@ -57,22 +68,25 @@ class Pool
 {
   public:
     // Initialize and run thread pool. For thread count 0, work is done at addWork call.
-    void init(int aThreadCount);
-    // Ctor, sets known state
-    Pool();
+    void init(size_t thread_count);
+
+    Pool() = default;
+
     // Dtor. Waits for the threads to finish. Work may be unfinished.
     ~Pool();
-    // Add work to work list. Object is not automatically deleted when work is done.
-    void addWork(PoolTask* aTask);
-    // Called from worker thread to get a new task. Returns null if no work available.
-    PoolTask* getWork();
 
-    int           mThreadCount; // number of threads
-    ThreadHandle* mThread; // array of thread handles
-    void*         mWorkMutex; // mutex to protect task array/maxtask
-    PoolTask*     mTaskArray[MAX_THREADPOOL_TASKS]; // pointers to tasks
-    int           mMaxTask; // how many tasks are pending
-    int           mRobin; // cyclic counter, used to pick jobs for threads
-    volatile int  mRunning; // running flag, used to flag threads to stop
+    // Add work to work list. Object is not automatically deleted when work is done.
+    void add_work(PoolTask* task);
+
+    // Called from worker thread to get a new task. Returns null if no work available.
+    auto get_work() -> PoolTask*;
+
+    size_t        m_thread_count = 0; // number of threads
+    ThreadHandle* m_thread       = nullptr; // array of thread handles
+    void*         m_work_mutex   = nullptr; // mutex to protect task array/maxtask
+    std::array<PoolTask*, max_threadpool_tasks> m_task_array = {}; // pointers to tasks
+    size_t                                      m_max_task   = 0; // how many tasks are pending
+    int          m_robin   = 0; // cyclic counter, used to pick jobs for threads
+    volatile int m_running = 0; // running flag, used to flag threads to stop
 };
-} // namespace cer::Thread
+} // namespace cer::thread

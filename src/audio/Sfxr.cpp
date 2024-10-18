@@ -25,21 +25,18 @@ freely, subject to the following restrictions:
 
 #include "audio/Sfxr.hpp"
 #include "audio/MemoryFile.hpp"
-#include <cmath>
-#include <cstdlib>
 
 namespace cer
 {
-SfxrInstance::SfxrInstance(Sfxr* aParent)
+SfxrInstance::SfxrInstance(Sfxr* parent)
+    : m_parent(parent)
 {
-    mParent = aParent;
-    mParams = aParent->mParams;
-    mRand.srand(0x792352);
-    resetSample(false);
-    playing_sample = 1;
+    m_params = parent->m_params;
+    m_rand.srand(0x792352);
+    reset_sample(false);
 }
 
-#define frnd(x) ((float)(mRand.rand() % 10001) / 10000 * (x))
+#define frnd(x) ((float)(m_rand.rand() % 10001) / 10000 * (x))
 
 size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBufferSize*/)
 {
@@ -51,7 +48,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
         if (rep_limit != 0 && rep_time >= rep_limit)
         {
             rep_time = 0;
-            resetSample(true);
+            reset_sample(true);
         }
 
         // frequency envelopes/arpeggios
@@ -66,11 +63,11 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
         if (fperiod > fmaxperiod)
         {
             fperiod = fmaxperiod;
-            if (mParams.p_freq_limit > 0.0f)
+            if (m_params.p_freq_limit > 0.0f)
             {
                 if (flags.Looping)
                 {
-                    resetSample(false);
+                    reset_sample(false);
                 }
                 else
                 {
@@ -103,7 +100,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
             {
                 if (flags.Looping)
                 {
-                    resetSample(false);
+                    reset_sample(false);
                 }
                 else
                 {
@@ -114,7 +111,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
         }
         if (env_stage == 0)
         {
-            if (env_length[0])
+            if (env_length[0] != 0)
             {
                 env_vol = float(env_time) / env_length[0];
             }
@@ -125,10 +122,10 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
         }
         if (env_stage == 1)
         {
-            if (env_length[1])
+            if (env_length[1] != 0)
             {
-                env_vol = 1.0f + pow(1.0f - float(env_time) / env_length[1], 1.0f) * 2.0f *
-                                     mParams.p_env_punch;
+                env_vol = 1.0f + pow(1.0f - (float(env_time) / env_length[1]), 1.0f) * 2.0f *
+                                     m_params.p_env_punch;
             }
             else
             {
@@ -137,7 +134,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
         }
         if (env_stage == 2)
         {
-            if (env_length[2])
+            if (env_length[2] != 0)
             {
                 env_vol = 1.0f - float(env_time) / env_length[2];
             }
@@ -150,16 +147,13 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
         // phaser step
         fphase += fdphase;
         iphase = abs((int)fphase);
-        if (iphase > 1023)
-            iphase = 1023;
+        iphase = std::min(iphase, 1023);
 
         if (flthp_d != 0.0f)
         {
             flthp *= flthp_d;
-            if (flthp < 0.00001f)
-                flthp = 0.00001f;
-            if (flthp > 0.1f)
-                flthp = 0.1f;
+            flthp = std::max(flthp, 0.00001f);
+            flthp = std::min(flthp, 0.1f);
         }
 
         float ssample = 0.0f;
@@ -170,7 +164,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
             if (phase >= period)
             {
                 phase %= period;
-                if (mParams.wave_type == 3)
+                if (m_params.wave_type == 3)
                 {
                     for (float& k : noise_buffer)
                     {
@@ -180,7 +174,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
             }
             // base waveform
             const float fp = float(phase) / period;
-            switch (mParams.wave_type)
+            switch (m_params.wave_type)
             {
                 case 0: // square
                     if (fp < square_duty)
@@ -206,11 +200,9 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
             // lp filter
             const float pp = fltp;
             fltw *= fltw_d;
-            if (fltw < 0.0f)
-                fltw = 0.0f;
-            if (fltw > 0.1f)
-                fltw = 0.1f;
-            if (mParams.p_lpf_freq != 1.0f)
+            fltw = std::max(fltw, 0.0f);
+            fltw = std::min(fltw, 0.1f);
+            if (m_params.p_lpf_freq != 1.0f)
             {
                 fltdp += (sample - fltp) * fltw;
                 fltdp -= fltdp * fltdmp;
@@ -232,16 +224,14 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
             // final accumulation and envelope application
             ssample += sample * env_vol;
         }
-        ssample = ssample / 8 * mParams.master_vol;
+        ssample = ssample / 8 * m_params.master_vol;
 
-        ssample *= 2.0f * mParams.sound_vol;
+        ssample *= 2.0f * m_params.sound_vol;
 
         if (buffer != nullptr)
         {
-            if (ssample > 1.0f)
-                ssample = 1.0f;
-            if (ssample < -1.0f)
-                ssample = -1.0f;
+            ssample = std::min(ssample, 1.0f);
+            ssample = std::max(ssample, -1.0f);
             *buffer = ssample;
             buffer++;
         }
@@ -249,240 +239,290 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
     return aSamplesToRead;
 }
 
-bool SfxrInstance::has_ended()
+auto SfxrInstance::has_ended() -> bool
 {
     return !playing_sample;
 }
 
-void SfxrInstance::resetSample(bool aRestart)
+void SfxrInstance::reset_sample(bool restart)
 {
-    if (!aRestart)
+    if (!restart)
+    {
         phase = 0;
-    fperiod      = 100.0 / (mParams.p_base_freq * mParams.p_base_freq + 0.001);
+    }
+
+    fperiod      = 100.0 / (m_params.p_base_freq * m_params.p_base_freq + 0.001);
     period       = int(fperiod);
-    fmaxperiod   = 100.0 / (mParams.p_freq_limit * mParams.p_freq_limit + 0.001);
-    fslide       = 1.0 - pow(double(mParams.p_freq_ramp), 3.0) * 0.01;
-    fdslide      = -pow(double(mParams.p_freq_dramp), 3.0) * 0.000001;
-    square_duty  = 0.5f - mParams.p_duty * 0.5f;
-    square_slide = -mParams.p_duty_ramp * 0.00005f;
-    if (mParams.p_arp_mod >= 0.0f)
-        arp_mod = 1.0 - pow(double(mParams.p_arp_mod), 2.0) * 0.9;
+    fmaxperiod   = 100.0 / (m_params.p_freq_limit * m_params.p_freq_limit + 0.001);
+    fslide       = 1.0 - pow(double(m_params.p_freq_ramp), 3.0) * 0.01;
+    fdslide      = -pow(double(m_params.p_freq_dramp), 3.0) * 0.000001;
+    square_duty  = 0.5f - m_params.p_duty * 0.5f;
+    square_slide = -m_params.p_duty_ramp * 0.00005f;
+
+    if (m_params.p_arp_mod >= 0.0f)
+    {
+        arp_mod = 1.0 - pow(double(m_params.p_arp_mod), 2.0) * 0.9;
+    }
     else
-        arp_mod = 1.0 + pow(double(mParams.p_arp_mod), 2.0) * 10.0;
+    {
+        arp_mod = 1.0 + pow(double(m_params.p_arp_mod), 2.0) * 10.0;
+    }
+
     arp_time  = 0;
-    arp_limit = int(pow(1.0f - mParams.p_arp_speed, 2.0f) * 20000 + 32);
-    if (mParams.p_arp_speed == 1.0f)
+    arp_limit = int((pow(1.0f - m_params.p_arp_speed, 2.0f) * 20000) + 32);
+
+    if (m_params.p_arp_speed == 1.0f)
+    {
         arp_limit = 0;
-    if (!aRestart)
+    }
+
+    if (!restart)
     {
         // reset filter
         fltp   = 0.0f;
         fltdp  = 0.0f;
-        fltw   = pow(mParams.p_lpf_freq, 3.0f) * 0.1f;
-        fltw_d = 1.0f + mParams.p_lpf_ramp * 0.0001f;
-        fltdmp = 5.0f / (1.0f + pow(mParams.p_lpf_resonance, 2.0f) * 20.0f) * (0.01f + fltw);
-        if (fltdmp > 0.8f)
-            fltdmp = 0.8f;
+        fltw   = pow(m_params.p_lpf_freq, 3.0f) * 0.1f;
+        fltw_d = 1.0f + m_params.p_lpf_ramp * 0.0001f;
+
+        fltdmp = 5.0f / (1.0f + pow(m_params.p_lpf_resonance, 2.0f) * 20.0f) * (0.01f + fltw);
+        fltdmp = std::min(fltdmp, 0.8f);
+
         fltphp  = 0.0f;
-        flthp   = pow(mParams.p_hpf_freq, 2.0f) * 0.1f;
-        flthp_d = float(1.0 + mParams.p_hpf_ramp * 0.0003f);
+        flthp   = pow(m_params.p_hpf_freq, 2.0f) * 0.1f;
+        flthp_d = float(1.0 + m_params.p_hpf_ramp * 0.0003f);
         // reset vibrato
         vib_phase = 0.0f;
-        vib_speed = pow(mParams.p_vib_speed, 2.0f) * 0.01f;
-        vib_amp   = mParams.p_vib_strength * 0.5f;
+        vib_speed = pow(m_params.p_vib_speed, 2.0f) * 0.01f;
+        vib_amp   = m_params.p_vib_strength * 0.5f;
         // reset envelope
         env_vol       = 0.0f;
         env_stage     = 0;
         env_time      = 0;
-        env_length[0] = int(mParams.p_env_attack * mParams.p_env_attack * 100000.0f);
-        env_length[1] = int(mParams.p_env_sustain * mParams.p_env_sustain * 100000.0f);
-        env_length[2] = int(mParams.p_env_decay * mParams.p_env_decay * 100000.0f);
+        env_length[0] = int(m_params.p_env_attack * m_params.p_env_attack * 100000.0f);
+        env_length[1] = int(m_params.p_env_sustain * m_params.p_env_sustain * 100000.0f);
+        env_length[2] = int(m_params.p_env_decay * m_params.p_env_decay * 100000.0f);
 
-        fphase = pow(mParams.p_pha_offset, 2.0f) * 1020.0f;
-        if (mParams.p_pha_offset < 0.0f)
+        fphase = pow(m_params.p_pha_offset, 2.0f) * 1020.0f;
+
+        if (m_params.p_pha_offset < 0.0f)
+        {
             fphase = -fphase;
-        fdphase = pow(mParams.p_pha_ramp, 2.0f) * 1.0f;
-        if (mParams.p_pha_ramp < 0.0f)
+        }
+
+        fdphase = pow(m_params.p_pha_ramp, 2.0f) * 1.0f;
+
+        if (m_params.p_pha_ramp < 0.0f)
+        {
             fdphase = -fdphase;
+        }
+
         iphase = abs(int(fphase));
         ipp    = 0;
 
-        for (float& i : phaser_buffer)
-            i = 0.0f;
+        std::ranges::fill(phaser_buffer, 0.0f);
 
-        for (float& i : noise_buffer)
+        for (auto& i : noise_buffer)
+        {
             i = frnd(2.0f) - 1.0f;
+        }
 
         rep_time  = 0;
-        rep_limit = int(pow(1.0f - mParams.p_repeat_speed, 2.0f) * 20000 + 32);
-        if (mParams.p_repeat_speed == 0.0f)
+        rep_limit = int((pow(1.0f - m_params.p_repeat_speed, 2.0f) * 20000) + 32);
+
+        if (m_params.p_repeat_speed == 0.0f)
+        {
             rep_limit = 0;
+        }
     }
 }
 
 
-#define rnd(n) (mRand.rand() % ((n) + 1))
+#define rnd(n) (m_rand.rand() % ((n) + 1))
 #undef frnd
-#define frnd(x) ((float)(mRand.rand() % 10001) / 10000 * (x))
+#define frnd(x) ((float)(m_rand.rand() % 10001) / 10000 * (x))
 
-Sfxr::Sfxr(int aPresetNo, int aRandSeed)
+Sfxr::Sfxr(SfxrPreset preset, int seed)
 {
-    assert(aPresetNo >= 0);
-    assert(aPresetNo <= 6);
+    m_rand.srand(seed);
 
-    mRand.srand(aRandSeed);
-
-    switch (aPresetNo)
+    switch (preset)
     {
-        case 0: // pickup/coin
-            mParams.p_base_freq   = 0.4f + frnd(0.5f);
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = frnd(0.1f);
-            mParams.p_env_decay   = 0.1f + frnd(0.4f);
-            mParams.p_env_punch   = 0.3f + frnd(0.3f);
+        case SfxrPreset::COIN: {
+            m_params.p_base_freq   = 0.4f + frnd(0.5f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = frnd(0.1f);
+            m_params.p_env_decay   = 0.1f + frnd(0.4f);
+            m_params.p_env_punch   = 0.3f + frnd(0.3f);
             if (rnd(1))
             {
-                mParams.p_arp_speed = 0.5f + frnd(0.2f);
-                mParams.p_arp_mod   = 0.2f + frnd(0.4f);
+                m_params.p_arp_speed = 0.5f + frnd(0.2f);
+                m_params.p_arp_mod   = 0.2f + frnd(0.4f);
             }
             break;
-        case 1: // laser/shoot
-            mParams.wave_type = rnd(2);
-            if (mParams.wave_type == 2 && rnd(1))
-                mParams.wave_type = rnd(1);
-            mParams.p_base_freq  = 0.5f + frnd(0.5f);
-            mParams.p_freq_limit = mParams.p_base_freq - 0.2f - frnd(0.6f);
-            if (mParams.p_freq_limit < 0.2f)
-                mParams.p_freq_limit = 0.2f;
-            mParams.p_freq_ramp = -0.15f - frnd(0.2f);
+        }
+        case SfxrPreset::LASER: {
+            m_params.wave_type = rnd(2);
+
+            if (m_params.wave_type == 2 && rnd(1))
+            {
+                m_params.wave_type = rnd(1);
+            }
+
+            m_params.p_base_freq  = 0.5f + frnd(0.5f);
+            m_params.p_freq_limit = m_params.p_base_freq - 0.2f - frnd(0.6f);
+            if (m_params.p_freq_limit < 0.2f)
+                m_params.p_freq_limit = 0.2f;
+            m_params.p_freq_ramp = -0.15f - frnd(0.2f);
             if (rnd(2) == 0)
             {
-                mParams.p_base_freq  = 0.3f + frnd(0.6f);
-                mParams.p_freq_limit = frnd(0.1f);
-                mParams.p_freq_ramp  = -0.35f - frnd(0.3f);
+                m_params.p_base_freq  = 0.3f + frnd(0.6f);
+                m_params.p_freq_limit = frnd(0.1f);
+                m_params.p_freq_ramp  = -0.35f - frnd(0.3f);
             }
             if (rnd(1))
             {
-                mParams.p_duty      = frnd(0.5f);
-                mParams.p_duty_ramp = frnd(0.2f);
+                m_params.p_duty      = frnd(0.5f);
+                m_params.p_duty_ramp = frnd(0.2f);
             }
             else
             {
-                mParams.p_duty      = 0.4f + frnd(0.5f);
-                mParams.p_duty_ramp = -frnd(0.7f);
+                m_params.p_duty      = 0.4f + frnd(0.5f);
+                m_params.p_duty_ramp = -frnd(0.7f);
             }
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = 0.1f + frnd(0.2f);
-            mParams.p_env_decay   = frnd(0.4f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = 0.1f + frnd(0.2f);
+            m_params.p_env_decay   = frnd(0.4f);
             if (rnd(1))
-                mParams.p_env_punch = frnd(0.3f);
+                m_params.p_env_punch = frnd(0.3f);
             if (rnd(2) == 0)
             {
-                mParams.p_pha_offset = frnd(0.2f);
-                mParams.p_pha_ramp   = -frnd(0.2f);
+                m_params.p_pha_offset = frnd(0.2f);
+                m_params.p_pha_ramp   = -frnd(0.2f);
             }
             if (rnd(1))
-                mParams.p_hpf_freq = frnd(0.3f);
+                m_params.p_hpf_freq = frnd(0.3f);
             break;
-        case 2: // explosion
-            mParams.wave_type = 3;
+        }
+        case SfxrPreset::EXPLOSION: {
+            m_params.wave_type = 3;
             if (rnd(1))
             {
-                mParams.p_base_freq = 0.1f + frnd(0.4f);
-                mParams.p_freq_ramp = -0.1f + frnd(0.4f);
+                m_params.p_base_freq = 0.1f + frnd(0.4f);
+                m_params.p_freq_ramp = -0.1f + frnd(0.4f);
             }
             else
             {
-                mParams.p_base_freq = 0.2f + frnd(0.7f);
-                mParams.p_freq_ramp = -0.2f - frnd(0.2f);
+                m_params.p_base_freq = 0.2f + frnd(0.7f);
+                m_params.p_freq_ramp = -0.2f - frnd(0.2f);
             }
-            mParams.p_base_freq *= mParams.p_base_freq;
+            m_params.p_base_freq *= m_params.p_base_freq;
             if (rnd(4) == 0)
-                mParams.p_freq_ramp = 0.0f;
+                m_params.p_freq_ramp = 0.0f;
             if (rnd(2) == 0)
-                mParams.p_repeat_speed = 0.3f + frnd(0.5f);
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = 0.1f + frnd(0.3f);
-            mParams.p_env_decay   = frnd(0.5f);
+                m_params.p_repeat_speed = 0.3f + frnd(0.5f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = 0.1f + frnd(0.3f);
+            m_params.p_env_decay   = frnd(0.5f);
             if (rnd(1) == 0)
             {
-                mParams.p_pha_offset = -0.3f + frnd(0.9f);
-                mParams.p_pha_ramp   = -frnd(0.3f);
+                m_params.p_pha_offset = -0.3f + frnd(0.9f);
+                m_params.p_pha_ramp   = -frnd(0.3f);
             }
-            mParams.p_env_punch = 0.2f + frnd(0.6f);
+            m_params.p_env_punch = 0.2f + frnd(0.6f);
             if (rnd(1))
             {
-                mParams.p_vib_strength = frnd(0.7f);
-                mParams.p_vib_speed    = frnd(0.6f);
+                m_params.p_vib_strength = frnd(0.7f);
+                m_params.p_vib_speed    = frnd(0.6f);
             }
             if (rnd(2) == 0)
             {
-                mParams.p_arp_speed = 0.6f + frnd(0.3f);
-                mParams.p_arp_mod   = 0.8f - frnd(1.6f);
+                m_params.p_arp_speed = 0.6f + frnd(0.3f);
+                m_params.p_arp_mod   = 0.8f - frnd(1.6f);
             }
             break;
-        case 3: // powerup
-            if (rnd(1))
-                mParams.wave_type = 1;
-            else
-                mParams.p_duty = frnd(0.6f);
+        }
+        case SfxrPreset::POWERUP: {
             if (rnd(1))
             {
-                mParams.p_base_freq    = 0.2f + frnd(0.3f);
-                mParams.p_freq_ramp    = 0.1f + frnd(0.4f);
-                mParams.p_repeat_speed = 0.4f + frnd(0.4f);
+                m_params.wave_type = 1;
             }
             else
             {
-                mParams.p_base_freq = 0.2f + frnd(0.3f);
-                mParams.p_freq_ramp = 0.05f + frnd(0.2f);
+                m_params.p_duty = frnd(0.6f);
+            }
+            if (rnd(1))
+            {
+                m_params.p_base_freq    = 0.2f + frnd(0.3f);
+                m_params.p_freq_ramp    = 0.1f + frnd(0.4f);
+                m_params.p_repeat_speed = 0.4f + frnd(0.4f);
+            }
+            else
+            {
+                m_params.p_base_freq = 0.2f + frnd(0.3f);
+                m_params.p_freq_ramp = 0.05f + frnd(0.2f);
                 if (rnd(1))
                 {
-                    mParams.p_vib_strength = frnd(0.7f);
-                    mParams.p_vib_speed    = frnd(0.6f);
+                    m_params.p_vib_strength = frnd(0.7f);
+                    m_params.p_vib_speed    = frnd(0.6f);
                 }
             }
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = frnd(0.4f);
-            mParams.p_env_decay   = 0.1f + frnd(0.4f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = frnd(0.4f);
+            m_params.p_env_decay   = 0.1f + frnd(0.4f);
             break;
-        case 4: // hit/hurt
-            mParams.wave_type = rnd(2);
-            if (mParams.wave_type == 2)
-                mParams.wave_type = 3;
-            if (mParams.wave_type == 0)
-                mParams.p_duty = frnd(0.6f);
-            mParams.p_base_freq   = 0.2f + frnd(0.6f);
-            mParams.p_freq_ramp   = -0.3f - frnd(0.4f);
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = frnd(0.1f);
-            mParams.p_env_decay   = 0.1f + frnd(0.2f);
+        }
+        case SfxrPreset::HURT: {
+            m_params.wave_type = rnd(2);
+            if (m_params.wave_type == 2)
+            {
+                m_params.wave_type = 3;
+            }
+            if (m_params.wave_type == 0)
+            {
+                m_params.p_duty = frnd(0.6f);
+            }
+            m_params.p_base_freq   = 0.2f + frnd(0.6f);
+            m_params.p_freq_ramp   = -0.3f - frnd(0.4f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = frnd(0.1f);
+            m_params.p_env_decay   = 0.1f + frnd(0.2f);
             if (rnd(1))
-                mParams.p_hpf_freq = frnd(0.3f);
+            {
+                m_params.p_hpf_freq = frnd(0.3f);
+            }
             break;
-        case 5: // jump
-            mParams.wave_type     = 0;
-            mParams.p_duty        = frnd(0.6f);
-            mParams.p_base_freq   = 0.3f + frnd(0.3f);
-            mParams.p_freq_ramp   = 0.1f + frnd(0.2f);
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = 0.1f + frnd(0.3f);
-            mParams.p_env_decay   = 0.1f + frnd(0.2f);
+        }
+        case SfxrPreset::JUMP: {
+            m_params.wave_type     = 0;
+            m_params.p_duty        = frnd(0.6f);
+            m_params.p_base_freq   = 0.3f + frnd(0.3f);
+            m_params.p_freq_ramp   = 0.1f + frnd(0.2f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = 0.1f + frnd(0.3f);
+            m_params.p_env_decay   = 0.1f + frnd(0.2f);
             if (rnd(1))
-                mParams.p_hpf_freq = frnd(0.3f);
+            {
+                m_params.p_hpf_freq = frnd(0.3f);
+            }
             if (rnd(1))
-                mParams.p_lpf_freq = 1.0f - frnd(0.6f);
+            {
+                m_params.p_lpf_freq = 1.0f - frnd(0.6f);
+            }
             break;
-        case 6: // blip/select
-            mParams.wave_type = rnd(1);
-            if (mParams.wave_type == 0)
-                mParams.p_duty = frnd(0.6f);
-            mParams.p_base_freq   = 0.2f + frnd(0.4f);
-            mParams.p_env_attack  = 0.0f;
-            mParams.p_env_sustain = 0.1f + frnd(0.1f);
-            mParams.p_env_decay   = frnd(0.2f);
-            mParams.p_hpf_freq    = 0.1f;
+        }
+        case SfxrPreset::BLIP: {
+            m_params.wave_type = rnd(1);
+            if (m_params.wave_type == 0)
+            {
+                m_params.p_duty = frnd(0.6f);
+            }
+            m_params.p_base_freq   = 0.2f + frnd(0.4f);
+            m_params.p_env_attack  = 0.0f;
+            m_params.p_env_sustain = 0.1f + frnd(0.1f);
+            m_params.p_env_decay   = frnd(0.2f);
+            m_params.p_hpf_freq    = 0.1f;
             break;
+        }
         default: break;
     }
 }
@@ -491,53 +531,57 @@ Sfxr::Sfxr(std::span<const std::byte> data)
 {
     auto mf = MemoryFile{data};
 
-    int version = 0;
-    mf.read((unsigned char*)&version, sizeof(int));
+    const auto version = mf.read_s32();
+
     if (version != 100 && version != 101 && version != 102)
     {
         throw std::runtime_error{"Failed to load sfxr"};
     }
 
-    mf.read((unsigned char*)&mParams.wave_type, sizeof(int));
+    m_params.wave_type = mf.read_s32();
 
     if (version == 102)
-        mf.read((unsigned char*)&mParams.sound_vol, sizeof(float));
+    {
+        m_params.sound_vol = mf.read_f32();
+    }
 
-    mf.read((unsigned char*)&mParams.p_base_freq, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_freq_limit, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_freq_ramp, sizeof(float));
-
-    if (version >= 101)
-        mf.read((unsigned char*)&mParams.p_freq_dramp, sizeof(float));
-
-    mf.read((unsigned char*)&mParams.p_duty, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_duty_ramp, sizeof(float));
-
-    mf.read((unsigned char*)&mParams.p_vib_strength, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_vib_speed, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_vib_delay, sizeof(float));
-
-    mf.read((unsigned char*)&mParams.p_env_attack, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_env_sustain, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_env_decay, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_env_punch, sizeof(float));
-
-    mf.read((unsigned char*)&mParams.filter_on, sizeof(bool));
-    mf.read((unsigned char*)&mParams.p_lpf_resonance, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_lpf_freq, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_lpf_ramp, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_hpf_freq, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_hpf_ramp, sizeof(float));
-
-    mf.read((unsigned char*)&mParams.p_pha_offset, sizeof(float));
-    mf.read((unsigned char*)&mParams.p_pha_ramp, sizeof(float));
-
-    mf.read((unsigned char*)&mParams.p_repeat_speed, sizeof(float));
+    m_params.p_base_freq  = mf.read_f32();
+    m_params.p_freq_limit = mf.read_f32();
+    m_params.p_freq_ramp  = mf.read_f32();
 
     if (version >= 101)
     {
-        mf.read((unsigned char*)&mParams.p_arp_speed, sizeof(float));
-        mf.read((unsigned char*)&mParams.p_arp_mod, sizeof(float));
+        m_params.p_freq_dramp = mf.read_f32();
+    }
+
+    m_params.p_duty      = mf.read_f32();
+    m_params.p_duty_ramp = mf.read_f32();
+
+    m_params.p_vib_strength = mf.read_f32();
+    m_params.p_vib_speed    = mf.read_f32();
+    m_params.p_vib_delay    = mf.read_f32();
+
+    m_params.p_env_attack  = mf.read_f32();
+    m_params.p_env_sustain = mf.read_f32();
+    m_params.p_env_decay   = mf.read_f32();
+    m_params.p_env_punch   = mf.read_f32();
+
+    m_params.filter_on       = mf.read_f32();
+    m_params.p_lpf_resonance = mf.read_f32();
+    m_params.p_lpf_freq      = mf.read_f32();
+    m_params.p_lpf_ramp      = mf.read_f32();
+    m_params.p_hpf_freq      = mf.read_f32();
+    m_params.p_hpf_ramp      = mf.read_f32();
+
+    m_params.p_pha_offset = mf.read_f32();
+    m_params.p_pha_ramp   = mf.read_f32();
+
+    m_params.p_repeat_speed = mf.read_f32();
+
+    if (version >= 101)
+    {
+        m_params.p_arp_speed = mf.read_f32();
+        m_params.p_arp_mod   = mf.read_f32();
     }
 }
 
@@ -546,7 +590,7 @@ Sfxr::~Sfxr()
     stop();
 }
 
-std::shared_ptr<AudioSourceInstance> Sfxr::create_instance()
+auto Sfxr::create_instance() -> std::shared_ptr<AudioSourceInstance>
 {
     return std::make_shared<SfxrInstance>(this);
 }

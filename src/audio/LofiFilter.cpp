@@ -27,12 +27,12 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-LofiFilterInstance::LofiFilterInstance(LofiFilter* aParent)
+LofiFilterInstance::LofiFilterInstance(LofiFilter* parent)
+    : mParent(parent)
 {
-    mParent = aParent;
     FilterInstance::init_params(3);
-    m_params[SAMPLERATE] = aParent->mSampleRate;
-    m_params[BITDEPTH]   = aParent->mBitdepth;
+    m_params[SAMPLERATE] = parent->mSampleRate;
+    m_params[BITDEPTH]   = parent->mBitdepth;
 }
 
 void LofiFilterInstance::filter_channel(const FilterChannelArgs& args)
@@ -59,7 +59,7 @@ void LofiFilterInstance::filter_channel(const FilterChannelArgs& args)
     }
 }
 
-std::shared_ptr<FilterInstance> LofiFilter::create_instance()
+auto LofiFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<LofiFilterInstance>(this);
 }
