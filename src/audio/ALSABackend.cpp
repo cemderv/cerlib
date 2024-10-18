@@ -22,9 +22,9 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#include "soloud.hpp"
-#include "soloud_engine.hpp"
-#include "soloud_thread.hpp"
+#include "audio/soloud_internal.hpp"
+#include "audio/AudioDevice.hpp"
+#include "audio/Thread.hpp"
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #include <alsa/asoundlib.h>
@@ -44,7 +44,7 @@ struct ALSAData
     int                  samples;
     int                  channels;
     bool                 audioProcessingDone;
-    Thread::ThreadHandle threadHandle;
+    thread::ThreadHandle threadHandle;
 };
 
 
@@ -67,16 +67,16 @@ static void alsaThread(void* aParam)
 
 static void alsaCleanup(AudioDevice* engine)
 {
-    if (0 == engine->mBackendData)
+    if (0 == engine->m_backend_data)
     {
         return;
     }
-    ALSAData* data            = static_cast<ALSAData*>(engine->mBackendData);
+    ALSAData* data            = static_cast<ALSAData*>(engine->m_backend_data);
     data->audioProcessingDone = true;
     if (data->threadHandle)
     {
-        Thread::wait(data->threadHandle);
-        Thread::release(data->threadHandle);
+        thread::wait(data->threadHandle);
+        thread::release(data->threadHandle);
     }
     snd_pcm_drain(data->alsaDeviceHandle);
     snd_pcm_close(data->alsaDeviceHandle);
@@ -89,17 +89,19 @@ static void alsaCleanup(AudioDevice* engine)
         delete[] data->buffer;
     }
     delete data;
-    engine->mBackendData = 0;
+    engine->m_backend_data = 0;
+}
 }
 
-void alsa_init(
-    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+void cer::alsa_init(const AudioBackendArgs& args)
 {
+    auto* engine = args.engine;
+
     ALSAData* data = new ALSAData;
     memset(data, 0, sizeof(ALSAData));
-    engine->mBackendData        = data;
-    engine->mBackendCleanupFunc = alsaCleanup;
-    data->samples               = aBuffer;
+    engine->m_backend_data        = data;
+    engine->m_backend_cleanup_func = alsaCleanup;
+    data->samples               = args.buffer;
     data->channels              = 2;
     data->soloud                = engine;
 
@@ -120,9 +122,9 @@ void alsa_init(
     snd_pcm_hw_params_set_access(handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
     snd_pcm_hw_params_set_format(handle, params, SND_PCM_FORMAT_S16_LE);
     snd_pcm_hw_params_set_channels(handle, params, 2);
-    snd_pcm_hw_params_set_buffer_size(handle, params, aBuffer);
+    snd_pcm_hw_params_set_buffer_size(handle, params, args.buffer);
 
-    auto val = static_cast<unsigned int>(aSamplerate);
+    auto val = static_cast<unsigned int>(args.sample_rate);
     int  dir = 0;
     rc       = snd_pcm_hw_params_set_rate_near(handle, params, &val, &dir);
     if (rc < 0)
@@ -137,18 +139,16 @@ void alsa_init(
     }
 
     snd_pcm_hw_params_get_rate(params, &val, &dir);
-    aSamplerate = val;
     snd_pcm_hw_params_get_channels(params, &val);
     data->channels = val;
 
     data->buffer       = new float[data->samples * data->channels];
     data->sampleBuffer = new short[data->samples * data->channels];
-    engine->postinit_internal(aSamplerate, data->samples * data->channels, aFlags, 2);
-    data->threadHandle = Thread::createThread(alsaThread, data);
+    engine->postinit_internal(val, data->samples * data->channels, args.flags, 2);
+    data->threadHandle = thread::create_thread(alsaThread, data);
 
     if (0 == data->threadHandle)
     {
         throw std::runtime_error{"Failed to initialize the audio device"};
     }
 }
-}; // namespace cer

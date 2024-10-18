@@ -598,7 +598,7 @@ auto AlignedFloatBuffer::operator[](size_t index) const -> const float&
 
 TinyAlignedFloatBuffer::TinyAlignedFloatBuffer()
 {
-    m_aligned_ptr = reinterpret_cast<float*>(uintptr_t(m_data.data()) + 15 & ~15);
+    m_aligned_ptr = reinterpret_cast<float*>((uintptr_t(m_data.data()) + 15) & ~15);
 }
 
 auto TinyAlignedFloatBuffer::data() -> float*
