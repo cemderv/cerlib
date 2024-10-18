@@ -115,8 +115,8 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
         GL_CALL(glGetShaderInfoLog(gl_handle, shader_log_max_length, &length, buffer.get()));
 
-        const auto msg = std::string_view{reinterpret_cast<const char*>(buffer.get()),
-                                          size_t(length)};
+        const auto msg =
+            std::string_view{reinterpret_cast<const char*>(buffer.get()), size_t(length)};
 
         CER_THROW_RUNTIME_ERROR("Failed to compile the generated OpenGL shader: {}", msg);
     }

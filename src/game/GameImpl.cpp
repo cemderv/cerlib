@@ -291,9 +291,9 @@ static auto from_sdl_display_mode(const SDL_DisplayMode& sdl_mode) -> std::optio
     if (const auto format = from_sdl_display_mode_format(sdl_mode.format))
     {
         return DisplayMode{
-            .format = format,
-            .width = uint32_t(sdl_mode.w),
-            .height = uint32_t(sdl_mode.h),
+            .format       = format,
+            .width        = uint32_t(sdl_mode.w),
+            .height       = uint32_t(sdl_mode.h),
             .refresh_rate = uint32_t(sdl_mode.refresh_rate),
             // .ContentScale = sdlMode.pixel_density,
             .content_scale = 1.0,
@@ -415,8 +415,8 @@ auto GameImpl::graphics_device() -> GraphicsDevice&
     if (!m_graphics_device)
     {
         CER_THROW_LOGIC_ERROR_STR("Attempting to load graphics resources or draw. However, "
-            "no window was created. Please "
-            "create a window first.");
+                                  "no window was created. Please "
+                                  "create a window first.");
     }
 
     return *m_graphics_device;
@@ -593,7 +593,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_SHOWN: {
             raise_event(WindowShownEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -601,7 +601,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_HIDDEN: {
             raise_event(WindowHiddenEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -609,16 +609,16 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_MOVED: {
             raise_event(WindowMovedEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
         }
         case CER_EVENT_WINDOW_RESIZED: {
             raise_event(WindowResizedEvent{
-                .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
-                .new_width = uint32_t(event.window.data1),
+                .timestamp  = event.window.timestamp,
+                .window     = find_window_by_sdl_window_id(event.window.windowID),
+                .new_width  = uint32_t(event.window.data1),
                 .new_height = uint32_t(event.window.data2),
             });
 
@@ -627,7 +627,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_MINIMIZED: {
             raise_event(WindowMinimizedEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -635,7 +635,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_MAXIMIZED: {
             raise_event(WindowMaximizedEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -643,7 +643,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_ENTER: {
             raise_event(WindowGotMouseFocusEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -651,7 +651,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_LEAVE: {
             raise_event(WindowLostMouseFocusEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -659,7 +659,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_FOCUS_GAINED: {
             raise_event(WindowGotKeyboardFocusEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -667,7 +667,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_FOCUS_LOST: {
             raise_event(WindowLostKeyboardFocusEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -675,7 +675,7 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
         case CER_EVENT_WINDOW_CLOSE: {
             raise_event(WindowCloseEvent{
                 .timestamp = event.window.timestamp,
-                .window = find_window_by_sdl_window_id(event.window.windowID),
+                .window    = find_window_by_sdl_window_id(event.window.windowID),
             });
 
             break;
@@ -696,8 +696,8 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
 
             raise_event(KeyPressEvent{
                 .timestamp = event.key.timestamp,
-                .window = find_window_by_sdl_window_id(event.key.windowID),
-                .key = key,
+                .window    = find_window_by_sdl_window_id(event.key.windowID),
+                .key       = key,
                 .modifiers = modifiers,
                 .is_repeat = event.key.repeat != 0,
             });
@@ -720,8 +720,8 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
 
             raise_event(KeyReleaseEvent{
                 .timestamp = event.key.timestamp,
-                .window = find_window_by_sdl_window_id(event.key.windowID),
-                .key = key,
+                .window    = find_window_by_sdl_window_id(event.key.windowID),
+                .key       = key,
                 .modifiers = modifiers,
                 .is_repeat = event.key.repeat != 0,
             });
@@ -741,10 +741,10 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
 
             raise_event(MouseMoveEvent{
                 .timestamp = event.motion.timestamp,
-                .window = find_window_by_sdl_window_id(event.motion.windowID),
-                .id = event.motion.which,
-                .position = position,
-                .delta = delta,
+                .window    = find_window_by_sdl_window_id(event.motion.windowID),
+                .id        = event.motion.which,
+                .position  = position,
+                .delta     = delta,
             });
 
             break;
@@ -770,20 +770,20 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
                 {
                     raise_event(MouseButtonPressEvent{
                         .timestamp = timestamp,
-                        .window = std::move(window),
-                        .id = id,
-                        .button = button,
-                        .position = position,
+                        .window    = std::move(window),
+                        .id        = id,
+                        .button    = button,
+                        .position  = position,
                     });
                 }
                 else if (event.button.clicks == 2)
                 {
                     raise_event(MouseDoubleClickEvent{
                         .timestamp = timestamp,
-                        .window = std::move(window),
-                        .id = id,
-                        .button = button,
-                        .position = position,
+                        .window    = std::move(window),
+                        .id        = id,
+                        .button    = button,
+                        .position  = position,
                     });
                 }
             }
@@ -791,10 +791,10 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
             {
                 raise_event(MouseButtonReleaseEvent{
                     .timestamp = timestamp,
-                    .window = std::move(window),
-                    .id = id,
-                    .button = button,
-                    .position = position,
+                    .window    = std::move(window),
+                    .id        = id,
+                    .button    = button,
+                    .position  = position,
                 });
             }
 
@@ -823,10 +823,10 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
 
             raise_event(MouseWheelEvent{
                 .timestamp = event.motion.timestamp,
-                .window = find_window_by_sdl_window_id(event.motion.windowID),
-                .id = event.motion.which,
-                .position = position,
-                .delta = delta,
+                .window    = find_window_by_sdl_window_id(event.motion.windowID),
+                .id        = event.motion.which,
+                .position  = position,
+                .delta     = delta,
             });
 
             input_impl.set_mouse_wheel_delta(delta);
@@ -871,10 +871,9 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
             const auto id = event.gdevice.which;
 #endif
 
-            const auto it = std::ranges::find_if(m_connected_gamepads,
-                                                 [id](const auto& e) {
-                                                     return e.impl()->joystick_id() == id;
-                                                 });
+            const auto it = std::ranges::find_if(m_connected_gamepads, [id](const auto& e) {
+                return e.impl()->joystick_id() == id;
+            });
 
             if (it != m_connected_gamepads.cend())
             {
@@ -914,18 +913,18 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
                 const auto delta       = Vector2{event.tfinger.dx, event.tfinger.dy} * window_size;
 
                 const auto evt = TouchFingerEvent{
-                    .type = type,
+                    .type      = type,
                     .timestamp = event.tfinger.timestamp,
-                    .window = std::move(window),
+                    .window    = std::move(window),
 #ifdef __EMSCRIPTEN__
                     .touch_id  = uint64_t(event.tfinger.touchId),
                     .finger_id = uint64_t(event.tfinger.fingerId),
 #else
-                    .touch_id = event.tfinger.touchID,
+                    .touch_id  = event.tfinger.touchID,
                     .finger_id = event.tfinger.fingerID,
 #endif
                     .position = position,
-                    .delta = delta,
+                    .delta    = delta,
                     .pressure = event.tfinger.pressure,
                 };
 
@@ -946,8 +945,8 @@ void GameImpl::process_single_event(const SDL_Event& event, InputImpl& input_imp
 
             raise_event(TextInputEvent{
                 .timestamp = event.text.timestamp,
-                .window = std::move(window),
-                .text = event.text.text,
+                .window    = std::move(window),
+                .text      = event.text.text,
             });
         }
         default: break;
@@ -959,10 +958,9 @@ void GameImpl::do_time_measurement()
     const auto current_time   = SDL_GetPerformanceCounter();
     const auto time_frequency = SDL_GetPerformanceFrequency();
 
-    m_game_time.elapsed_time = m_is_first_tick
-                                   ? 0
-                                   : (double(current_time) - double(m_previous_time)) *
-                                     1000 / double(time_frequency) * 0.001;
+    m_game_time.elapsed_time = m_is_first_tick ? 0
+                                               : (double(current_time) - double(m_previous_time)) *
+                                                     1000 / double(time_frequency) * 0.001;
 
     m_game_time.total_time += m_game_time.elapsed_time;
 
@@ -1055,10 +1053,9 @@ auto GameImpl::find_window_by_sdl_window_id(Uint32 sdl_window_id) const -> Windo
 
 auto GameImpl::find_window_by_sdl_window(SDL_Window* sdl_window) const -> WindowImpl*
 {
-    const auto it = std::ranges::find_if(m_windows,
-                                         [sdl_window](WindowImpl* e) {
-                                             return e->sdl_window() == sdl_window;
-                                         });
+    const auto it = std::ranges::find_if(m_windows, [sdl_window](WindowImpl* e) {
+        return e->sdl_window() == sdl_window;
+    });
 
     return it != m_windows.cend() ? *it : nullptr;
 }
@@ -1074,10 +1071,9 @@ void GameImpl::raise_event(const Event& event)
 auto GameImpl::find_gamepad_by_sdl_joystick_id(SDL_JoystickID sdl_joystick_id) const
     -> std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&>
 {
-    return std::ranges::find_if(m_connected_gamepads,
-                                [sdl_joystick_id](const auto& e) {
-                                    return e.impl()->joystick_id() == sdl_joystick_id;
-                                });
+    return std::ranges::find_if(m_connected_gamepads, [sdl_joystick_id](const auto& e) {
+        return e.impl()->joystick_id() == sdl_joystick_id;
+    });
 }
 
 auto run_game(int a, char* b[], MainFunc c, void* d) -> int

@@ -131,19 +131,15 @@ auto ContentManager::load_image(std::string_view name) -> Image
 {
     auto key = std::string{name};
 
-    return lazy_load<Image, ImageImpl>(key,
-                                       name,
-                                       [](std::string_view name) {
-                                           const auto data = AssetData{
-                                               filesystem::load_asset_data(name)};
-                                           auto image = Image{data.as_span()};
-                                           image.set_name(name);
-                                           return image;
-                                       });
+    return lazy_load<Image, ImageImpl>(key, name, [](std::string_view name) {
+        const auto data  = AssetData{filesystem::load_asset_data(name)};
+        auto       image = Image{data.as_span()};
+        image.set_name(name);
+        return image;
+    });
 }
 
-static auto build_shader_key(std::string_view                  asset_name,
-                             std::span<const std::string_view> defines)
+static auto build_shader_key(std::string_view asset_name, std::span<const std::string_view> defines)
     -> std::string
 {
     auto key = std::string{asset_name};
@@ -157,58 +153,45 @@ static auto build_shader_key(std::string_view                  asset_name,
     return key;
 }
 
-auto ContentManager::load_shader(std::string_view                  name,
-                                 std::span<const std::string_view> defines)
+auto ContentManager::load_shader(std::string_view name, std::span<const std::string_view> defines)
     -> Shader
 {
     const auto key = std::string{build_shader_key(name, defines)};
 
-    return lazy_load<Shader, ShaderImpl>(key,
-                                         name,
-                                         [defines](std::string_view full_name) {
-                                             const auto data = filesystem::load_asset_data(
-                                                 full_name);
-                                             auto shader = Shader{
-                                                 full_name, data.as_string_view(), defines};
-                                             shader.set_name(full_name);
-                                             return shader;
-                                         });
+    return lazy_load<Shader, ShaderImpl>(key, name, [defines](std::string_view full_name) {
+        const auto data   = filesystem::load_asset_data(full_name);
+        auto       shader = Shader{full_name, data.as_string_view(), defines};
+        shader.set_name(full_name);
+        return shader;
+    });
 }
 
 auto ContentManager::load_font(std::string_view name) -> Font
 {
-    return lazy_load<Font, FontImpl>(name,
-                                     name,
-                                     [](std::string_view full_name) {
-                                         auto data      = filesystem::load_asset_data(full_name);
-                                         auto font_impl = std::make_unique<FontImpl>(
-                                             std::move(data.data));
+    return lazy_load<Font, FontImpl>(name, name, [](std::string_view full_name) {
+        auto data      = filesystem::load_asset_data(full_name);
+        auto font_impl = std::make_unique<FontImpl>(std::move(data.data));
 
-                                         return Font{font_impl.release()};
-                                     });
+        return Font{font_impl.release()};
+    });
 }
 
 auto ContentManager::load_sound(std::string_view name) -> Sound
 {
-    return lazy_load<Sound, SoundImpl>(name,
-                                       name,
-                                       [](std::string_view full_name) {
-                                           if (!is_audio_device_initialized())
-                                           {
-                                               return Sound{};
-                                           }
+    return lazy_load<Sound, SoundImpl>(name, name, [](std::string_view full_name) {
+        if (!is_audio_device_initialized())
+        {
+            return Sound{};
+        }
 
-                                           auto& audio_device = GameImpl::instance().audio_device();
-                                           auto  data = filesystem::load_asset_data(full_name);
+        auto& audio_device = GameImpl::instance().audio_device();
+        auto  data         = filesystem::load_asset_data(full_name);
 
-                                           auto sound_impl =
-                                               std::make_unique<SoundImpl>(
-                                                   &audio_device,
-                                                   std::move(data.data),
-                                                   data.size);
+        auto sound_impl =
+            std::make_unique<SoundImpl>(&audio_device, std::move(data.data), data.size);
 
-                                           return Sound{sound_impl.release()};
-                                       });
+        return Sound{sound_impl.release()};
+    });
 }
 
 auto ContentManager::load_custom_asset(std::string_view type_id,
