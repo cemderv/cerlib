@@ -821,10 +821,10 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         __m128                 poswall     = _mm_load_ps1(&pw);
         __m128                 postscale   = _mm_load_ps1(&m_post_clip_scaler);
         TinyAlignedFloatBuffer volumes;
-        volumes.mData[0] = v;
-        volumes.mData[1] = v + vd;
-        volumes.mData[2] = v + vd + vd;
-        volumes.mData[3] = v + vd + vd + vd;
+        volumes[0] = v;
+        volumes[1] = v + vd;
+        volumes[2] = v + vd + vd;
+        volumes[3] = v + vd + vd + vd;
         vd *= 4;
         __m128 vdelta = _mm_load_ps1(&vd);
         c             = 0;
@@ -866,7 +866,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
 
                 // outdata[d] = f1 * postclip; d++;
                 f = _mm_mul_ps(f, postscale);
-                _mm_store_ps(&aDestBuffer.mData[d], f);
+                _mm_store_ps(&aDestBuffer[d], f);
                 d += 4;
             }
         }
@@ -879,10 +879,10 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         __m128                 posbound  = _mm_load_ps1(&pb);
         __m128                 postscale = _mm_load_ps1(&m_post_clip_scaler);
         TinyAlignedFloatBuffer volumes;
-        volumes.mData[0] = v;
-        volumes.mData[1] = v + vd;
-        volumes.mData[2] = v + vd + vd;
-        volumes.mData[3] = v + vd + vd + vd;
+        volumes[0] = v;
+        volumes[1] = v + vd;
+        volumes[2] = v + vd + vd;
+        volumes[3] = v + vd + vd + vd;
         vd *= 4;
         __m128 vdelta = _mm_load_ps1(&vd);
         c             = 0;
@@ -892,7 +892,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
             __m128 vol = _mm_load_ps(volumes.data());
             for (i = 0; i < samplequads; ++i)
             {
-                // float f1 = aBuffer.mData[c] * v; ++c; v += vd;
+                // float f1 = aBuffer[c] * v; ++c; v += vd;
                 __m128 f = _mm_load_ps(&aBuffer[c]);
                 c += 4;
                 f   = _mm_mul_ps(f, vol);
@@ -902,7 +902,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
                 f = _mm_max_ps(f, negbound);
                 f = _mm_min_ps(f, posbound);
 
-                // aDestBuffer.mData[d] = f1 * mPostClipScaler; d++;
+                // aDestBuffer[d] = f1 * mPostClipScaler; d++;
                 f = _mm_mul_ps(f, postscale);
                 _mm_store_ps(&aDestBuffer[d], f);
                 d += 4;
@@ -1222,21 +1222,21 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                     {
                         size_t                 samplequads = aSamplesToRead / 4; // rounded down
                         TinyAlignedFloatBuffer pan0;
-                        pan0.mData[0] = pan[0] + pani[0];
-                        pan0.mData[1] = pan[0] + pani[0] * 2;
-                        pan0.mData[2] = pan[0] + pani[0] * 3;
-                        pan0.mData[3] = pan[0] + pani[0] * 4;
+                        pan0[0] = pan[0] + pani[0];
+                        pan0[1] = pan[0] + pani[0] * 2;
+                        pan0[2] = pan[0] + pani[0] * 3;
+                        pan0[3] = pan[0] + pani[0] * 4;
                         TinyAlignedFloatBuffer pan1;
-                        pan1.mData[0] = pan[1] + pani[1];
-                        pan1.mData[1] = pan[1] + pani[1] * 2;
-                        pan1.mData[2] = pan[1] + pani[1] * 3;
-                        pan1.mData[3] = pan[1] + pani[1] * 4;
+                        pan1[0] = pan[1] + pani[1];
+                        pan1[1] = pan[1] + pani[1] * 2;
+                        pan1[2] = pan[1] + pani[1] * 3;
+                        pan1[3] = pan[1] + pani[1] * 4;
                         pani[0] *= 4;
                         pani[1] *= 4;
                         __m128 pan0delta = _mm_load_ps1(&pani[0]);
                         __m128 pan1delta = _mm_load_ps1(&pani[1]);
-                        __m128 p0        = _mm_load_ps(pan0.mData);
-                        __m128 p1        = _mm_load_ps(pan1.mData);
+                        __m128 p0        = _mm_load_ps(pan0.data());
+                        __m128 p1        = _mm_load_ps(pan1.data());
 
                         for (size_t j = 0; j < samplequads; ++j)
                         {
@@ -1287,21 +1287,21 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                     {
                         size_t                 samplequads = aSamplesToRead / 4; // rounded down
                         TinyAlignedFloatBuffer pan0;
-                        pan0.mData[0] = pan[0] + pani[0];
-                        pan0.mData[1] = pan[0] + pani[0] * 2;
-                        pan0.mData[2] = pan[0] + pani[0] * 3;
-                        pan0.mData[3] = pan[0] + pani[0] * 4;
+                        pan0[0] = pan[0] + pani[0];
+                        pan0[1] = pan[0] + pani[0] * 2;
+                        pan0[2] = pan[0] + pani[0] * 3;
+                        pan0[3] = pan[0] + pani[0] * 4;
                         TinyAlignedFloatBuffer pan1;
-                        pan1.mData[0] = pan[1] + pani[1];
-                        pan1.mData[1] = pan[1] + pani[1] * 2;
-                        pan1.mData[2] = pan[1] + pani[1] * 3;
-                        pan1.mData[3] = pan[1] + pani[1] * 4;
+                        pan1[0] = pan[1] + pani[1];
+                        pan1[1] = pan[1] + pani[1] * 2;
+                        pan1[2] = pan[1] + pani[1] * 3;
+                        pan1[3] = pan[1] + pani[1] * 4;
                         pani[0] *= 4;
                         pani[1] *= 4;
                         __m128 pan0delta = _mm_load_ps1(&pani[0]);
                         __m128 pan1delta = _mm_load_ps1(&pani[1]);
-                        __m128 p0        = _mm_load_ps(pan0.mData);
-                        __m128 p1        = _mm_load_ps(pan1.mData);
+                        __m128 p0        = _mm_load_ps(pan0.data());
+                        __m128 p1        = _mm_load_ps(pan1.data());
 
                         for (size_t j = 0; j < samplequads; ++j)
                         {
