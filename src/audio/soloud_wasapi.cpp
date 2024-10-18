@@ -48,7 +48,7 @@ struct WASAPIData
     HANDLE                      bufferEndEvent;
     HANDLE                      audioProcessingDoneEvent;
     Thread::ThreadHandle        thread;
-    AudioDevice*                     soloud;
+    AudioDevice*                soloud;
     UINT32                      bufferFrames;
     int                         channels;
     REFERENCE_TIME              duration;
@@ -294,8 +294,11 @@ static void wasapiCleanup(AudioDevice* engine)
     CoUninitialize();
 }
 
-result wasapi_init(
-    AudioDevice* engine, size_t aFlags, size_t /*aSamplerate*/, size_t aBuffer, size_t /*aChannels*/)
+result wasapi_init(AudioDevice* engine,
+                   size_t       aFlags,
+                   size_t /*aSamplerate*/,
+                   size_t aBuffer,
+                   size_t /*aChannels*/)
 {
     CoInitializeEx(0, COINIT_MULTITHREADED);
     WASAPIData* data = new WASAPIData;

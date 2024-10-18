@@ -31,11 +31,11 @@ struct stb_vorbis;
 
 namespace cer
 {
-  class Wav;
-  class MemoryFile;
+class Wav;
+class MemoryFile;
 
-  class WavInstance final : public AudioSourceInstance
-  {
+class WavInstance final : public AudioSourceInstance
+{
   public:
     explicit WavInstance(Wav* aParent);
 
@@ -46,12 +46,12 @@ namespace cer
     bool hasEnded() override;
 
   private:
-    Wav* mParent = nullptr;
+    Wav*   mParent = nullptr;
     size_t mOffset = 0;
-  };
+};
 
-  class Wav final : public AudioSource
-  {
+class Wav final : public AudioSource
+{
     friend WavInstance;
 
   public:
@@ -70,6 +70,6 @@ namespace cer
     void loadflac(const MemoryFile& aReader);
 
     std::unique_ptr<float[]> mData;
-    size_t mSampleCount = 0;
-  };
+    size_t                   mSampleCount = 0;
+};
 }; // namespace cer

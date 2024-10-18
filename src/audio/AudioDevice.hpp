@@ -4,16 +4,16 @@
 
 #pragma once
 
+#include "audio/soloud_misc.hpp"
 #include "cerlib/Sound.hpp"
 #include "cerlib/SoundTypes.hpp"
-#include "util/NonCopyable.hpp"
-#include <optional>
-#include <unordered_set>
-#include "audio/soloud_misc.hpp"
 #include "soloud.hpp"
 #include "soloud_audiosource.hpp"
+#include "util/NonCopyable.hpp"
 #include <memory>
+#include <optional>
 #include <span>
+#include <unordered_set>
 #include <vector>
 
 namespace cer
@@ -127,7 +127,7 @@ public:
 
     // Seek the audio stream to certain point in time. Some streams can't seek backwards. Relative
     // play speed affects time.
-    auto seek(handle voice_handle, time_t aSeconds) -> bool;
+    auto seek(handle voice_handle, time_t seconds) -> bool;
 
     // Stop the sound.
     void stop(handle voice_handle);
@@ -136,10 +136,10 @@ public:
     void stop_all();
 
     // Stop all voices that play this sound source
-    void stop_audio_source(AudioSource& aSound);
+    void stop_audio_source(AudioSource& sound);
 
     // Count voices that play this audio source
-    auto count_audio_source(AudioSource& aSound) -> int;
+    auto count_audio_source(AudioSource& sound) -> int;
 
     // Set a live filter parameter. Use 0 for the global filters.
     void set_filter_parameter(handle voice_handle,
@@ -150,59 +150,60 @@ public:
     // Get a live filter parameter. Use 0 for the global filters.
     auto filter_parameter(handle voice_handle,
                           size_t filter_id,
-                          size_t attribute_id) -> std::optional<float>;
+                          size_t attribute_id)
+        -> std::optional<float>;
     // Fade a live filter parameter. Use 0 for the global filters.
     void fade_filter_parameter(
         handle voice_handle,
-        size_t aFilterId,
-        size_t aAttributeId,
-        float  aTo,
-        time_t aTime);
+        size_t filter_id,
+        size_t attribute_id,
+        float  to,
+        time_t time);
 
     // Oscillate a live filter parameter. Use 0 for the global filters.
     void oscillate_filter_parameter(handle voice_handle,
-                                    size_t aFilterId,
-                                    size_t aAttributeId,
-                                    float  aFrom,
-                                    float  aTo,
-                                    time_t aTime);
+                                    size_t filter_id,
+                                    size_t attribute_id,
+                                    float  from,
+                                    float  to,
+                                    time_t time);
 
     // Get current play time, in seconds.
-    time_t stream_time(handle voice_handle);
+    auto stream_time(handle voice_handle) -> time_t;
     // Get current sample position, in seconds.
-    time_t stream_position(handle voice_handle);
+    auto stream_position(handle voice_handle) -> time_t;
     // Get current pause state.
-    bool pause(handle voice_handle);
+    auto pause(handle voice_handle) -> bool;
     // Get current volume.
-    float volume(handle voice_handle);
+    auto volume(handle voice_handle) -> float;
     // Get current overall volume (set volume * 3d volume)
-    float overall_volume(handle voice_handle);
+    auto overall_volume(handle voice_handle) -> float;
     // Get current pan.
-    float pan(handle voice_handle);
+    auto pan(handle voice_handle) -> float;
     // Get current sample rate.
-    float sample_rate(handle voice_handle);
+    auto sample_rate(handle voice_handle) -> float;
     // Get current voice protection state.
-    bool is_voice_protected(handle voice_handle);
+    auto is_voice_protected(handle voice_handle) -> bool;
     // Get the current number of busy voices.
-    size_t active_voice_count();
+    auto active_voice_count() -> size_t;
     // Get the current number of voices in SoLoud
-    size_t voice_count();
+    auto voice_count() -> size_t;
     // Check if the handle is still valid, or if the sound has stopped.
-    bool is_valid_voice_handle(handle voice_handle);
+    auto is_valid_voice_handle(handle voice_handle) -> bool;
     // Get current relative play speed.
-    float relative_play_speed(handle voice_handle);
+    auto relative_play_speed(handle voice_handle) -> float;
     // Get current post-clip scaler value.
-    float post_clip_scaler() const;
+    auto post_clip_scaler() const -> float;
     // Get the current main resampler
-    Resampler main_resampler() const;
+    auto main_resampler() const -> Resampler;
     // Get current maximum active voice setting
-    size_t max_active_voice_count() const;
+    auto max_active_voice_count() const -> size_t;
     // Query whether a voice is set to loop.
-    bool is_voice_looping(handle voice_handle);
+    auto is_voice_looping(handle voice_handle) -> bool;
     // Query whether a voice is set to auto-stop when it ends.
-    bool getAutoStop(handle voice_handle);
+    auto getAutoStop(handle voice_handle) -> bool;
     // Get voice loop point value
-    time_t getLoopPoint(handle voice_handle);
+    auto getLoopPoint(handle voice_handle) -> time_t;
 
     // Set voice loop point value
     void setLoopPoint(handle voice_handle, time_t aLoopPoint);
@@ -272,32 +273,32 @@ public:
 
     // Calculate and get 256 floats of FFT data for visualization. Visualization has to be enabled
     // before use.
-    float* calcFFT();
+    auto calcFFT() -> float*;
 
     // Get 256 floats of wave data for visualization. Visualization has to be enabled before use.
-    float* getWave();
+    auto getWave() -> float*;
 
     // Get approximate output volume for a channel for visualization. Visualization has to be
     // enabled before use.
-    float getApproximateVolume(size_t aChannel);
+    auto getApproximateVolume(size_t aChannel) -> float;
 
     // Get current loop count. Returns 0 if handle is not valid. (All audio sources may not update
     // loop count)
-    size_t getLoopCount(handle voice_handle);
+    auto getLoopCount(handle voice_handle) -> size_t;
 
     // Get audiosource-specific information from a voice.
-    float getInfo(handle voice_handle, size_t aInfoKey);
+    auto getInfo(handle voice_handle, size_t aInfoKey) -> float;
 
     // Create a voice group. Returns 0 if unable (out of voice groups / out of memory)
-    handle createVoiceGroup();
+    auto createVoiceGroup() -> handle;
     // Destroy a voice group.
     void destroyVoiceGroup(handle aVoiceGroupHandle);
     // Add a voice handle to a voice group
     void addVoiceToGroup(handle aVoiceGroupHandle, handle voice_handle);
     // Is this handle a valid voice group?
-    bool isVoiceGroup(handle aVoiceGroupHandle);
+    auto isVoiceGroup(handle aVoiceGroupHandle) -> bool;
     // Is this voice group empty?
-    bool isVoiceGroupEmpty(handle aVoiceGroupHandle);
+    auto isVoiceGroupEmpty(handle aVoiceGroupHandle) -> bool;
 
     // Perform 3d audio parameter update
     void update3dAudio();
@@ -305,7 +306,7 @@ public:
     // Set the speed of sound constant for doppler
     void set3dSoundSpeed(float aSpeed);
     // Get the current speed of sound constant for doppler
-    float get3dSoundSpeed() const;
+    auto get3dSoundSpeed() const -> float;
     // Set 3d listener parameters
     void set3dListenerParameters(Vector3 pos, Vector3 at, Vector3 up, Vector3 velocity = {});
     // Set 3d listener position
@@ -365,11 +366,11 @@ public:
                          size_t    aChannels,
                          Resampler aResampler);
     // Find a free voice, stopping the oldest if no free voice is found.
-    int findFreeVoice_internal();
+    auto findFreeVoice_internal() -> int;
     // Converts handle to voice, if the handle is valid. Returns -1 if not.
-    int getVoiceFromHandle_internal(handle voice_handle) const;
+    auto getVoiceFromHandle_internal(handle voice_handle) const -> int;
     // Converts voice + playindex into handle
-    handle getHandleFromVoice_internal(size_t aVoice) const;
+    auto getHandleFromVoice_internal(size_t aVoice) const -> handle;
     // Stop voice (not handle).
     void stopVoice_internal(size_t aVoice);
     // Set voice (not handle) pan.
@@ -406,127 +407,127 @@ public:
     void unlockAudioMutex_internal();
 
     // Back-end data; content is up to the back-end implementation.
-    void* mBackendData = nullptr;
+    void* m_backend_data = nullptr;
     // Pointer for the audio thread mutex.
-    void* mAudioThreadMutex = nullptr;
+    void* m_audio_thread_mutex = nullptr;
     // Flag for when we're inside the mutex, used for debugging.
-    bool mInsideAudioThreadMutex = false;
+    bool m_inside_audio_thread_mutex = false;
     // Called by SoLoud to shut down the back-end. If nullptr, not called. Should be set by
     // back-end.
-    soloudCallFunction mBackendCleanupFunc = nullptr;
+    soloudCallFunction m_backend_cleanup_func = nullptr;
 
     // Some backends like CoreAudio on iOS must be paused/resumed in some cases. On incoming call as
     // instance.
-    soloudResultFunction mBackendPauseFunc  = nullptr;
-    soloudResultFunction mBackendResumeFunc = nullptr;
+    soloudResultFunction m_backend_pause_func  = nullptr;
+    soloudResultFunction m_backend_resume_func = nullptr;
 
     // Max. number of active voices. Busses and tickable inaudibles also count against this.
-    size_t mMaxActiveVoices = 16;
+    size_t m_max_active_voices = 16;
 
     // Highest voice in use so far
-    size_t mHighestVoice = 0;
+    size_t m_highest_voice = 0;
 
     // Scratch buffer, used for resampling.
-    AlignedFloatBuffer mScratch;
+    AlignedFloatBuffer m_scratch;
 
     // Current size of the scratch, in samples.
-    size_t mScratchSize = 0;
+    size_t m_scratch_size = 0;
 
     // Output scratch buffer, used in mix_().
-    AlignedFloatBuffer mOutputScratch;
+    AlignedFloatBuffer m_output_scratch;
 
     // Pointers to resampler buffers, two per active voice.
-    std::vector<float*> mResampleData;
+    std::vector<float*> m_resample_data;
 
     // Actual allocated memory for resampler buffers
-    AlignedFloatBuffer mResampleDataBuffer;
+    AlignedFloatBuffer m_resample_data_buffer;
 
     // Owners of the resample data
-    std::vector<std::shared_ptr<AudioSourceInstance>> mResampleDataOwner;
+    std::vector<std::shared_ptr<AudioSourceInstance>> m_resample_data_owner;
 
     // Audio voices.
-    std::array<std::shared_ptr<AudioSourceInstance>, cer::voice_count> mVoice;
+    std::array<std::shared_ptr<AudioSourceInstance>, cer::voice_count> m_voice;
 
     // Resampler for the main bus
-    Resampler mResampler = default_resampler;
+    Resampler m_resampler = default_resampler;
 
     // Output sample rate (not float)
-    size_t mSamplerate = 0;
+    size_t m_samplerate = 0;
 
     // Output channel count
-    size_t mChannels = 2;
+    size_t m_channels = 2;
 
     // Maximum size of output buffer; used to calculate needed scratch.
-    size_t mBufferSize = 0;
+    size_t m_buffer_size = 0;
 
-    EngineFlags mFlags;
+    EngineFlags m_flags;
 
     // Global volume. Applied before clipping.
-    float mGlobalVolume = 0.0f;
+    float m_global_volume = 0.0f;
 
     // Post-clip scaler. Applied after clipping.
-    float mPostClipScaler = 0.0f;
+    float m_post_clip_scaler = 0.0f;
 
     // Current play index. Used to create audio handles.
-    size_t mPlayIndex = 0;
+    size_t m_play_index = 0;
 
     // Current sound source index. Used to create sound source IDs.
-    size_t mAudioSourceID = 1;
+    size_t m_audio_source_id = 1;
 
     // Fader for the global volume.
-    Fader mGlobalVolumeFader;
+    Fader m_global_volume_fader;
 
     // Global stream time, for the global volume fader.
-    time_t mStreamTime = 0;
+    time_t m_stream_time = 0;
 
     // Last time seen by the playClocked call
-    time_t mLastClockedTime = 0;
+    time_t m_last_clocked_time = 0;
 
     // Global filter
-    std::array<Filter*, filters_per_stream> mFilter{};
+    std::array<Filter*, filters_per_stream> m_filter{};
 
     // Global filter instance
-    std::array<std::shared_ptr<FilterInstance>, filters_per_stream> mFilterInstance{};
+    std::array<std::shared_ptr<FilterInstance>, filters_per_stream> m_filter_instance{};
 
     // Approximate volume for channels.
-    std::array<float, max_channels> mVisualizationChannelVolume{};
+    std::array<float, max_channels> m_visualization_channel_volume{};
 
     // Mono-mixed wave data for visualization and for visualization FFT input
-    std::array<float, 256> mVisualizationWaveData{};
+    std::array<float, 256> m_visualization_wave_data{};
 
     // FFT output data
-    std::array<float, 256> mFFTData{};
+    std::array<float, 256> m_fft_data{};
 
     // Snapshot of wave data for visualization
-    std::array<float, 256> mWaveData{};
+    std::array<float, 256> m_wave_data{};
 
-    Vector3 m3dPosition{};
-    Vector3 m3dAt{0, 0, -1};
-    Vector3 m3dUp{0, 1, 0};
-    Vector3 m3dVelocity;
+    Vector3 m_3d_position{};
+    Vector3 m_3d_at{0, 0, -1};
+    Vector3 m_3d_up{0, 1, 0};
+    Vector3 m_3d_velocity;
 
     // 3d speed of sound (for doppler)
-    float m3dSoundSpeed = 343.3f;
+    float m_3d_sound_speed = 343.3f;
 
     // 3d position of speakers
-    std::array<Vector3, max_channels> m3dSpeakerPosition;
+    std::array<Vector3, max_channels> m_3d_speaker_position;
 
     // Data related to 3d processing, separate from AudioSource so we can do 3d calculations without
     // audio mutex.
-    AudioSourceInstance3dData m3dData[cer::voice_count];
+    AudioSourceInstance3dData m_3d_data[cer::voice_count];
 
     // For each voice group, first int is number of ints alocated.
-    size_t** mVoiceGroup;
-    size_t   mVoiceGroupCount;
+    size_t** m_voice_group       = nullptr;
+    size_t   m_voice_group_count = 0;
 
     // List of currently active voices
-    std::array<size_t, cer::voice_count> mActiveVoice{};
+    std::array<size_t, cer::voice_count> m_active_voice{};
 
     // Number of currently active voices
-    size_t mActiveVoiceCount = 0;
+    size_t m_active_voice_count = 0;
 
     // Active voices list needs to be recalculated
-    bool mActiveVoiceDirty = true;
+    bool m_active_voice_dirty = true;
 
     // Previous AudioDevice members:
 private:
@@ -538,4 +539,4 @@ private:
     bool                                 m_was_initialized_successfully{};
     std::unordered_set<Sound, SoundHash> m_playing_sounds;
 };
-} // namespace cer::details
+} // namespace cer

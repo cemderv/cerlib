@@ -23,9 +23,9 @@ freely, subject to the following restrictions:
 */
 
 #include "audio/soloud_bus.hpp"
+#include "audio/AudioDevice.hpp"
 #include "audio/soloud_fft.hpp"
 #include "audio/soloud_internal.hpp"
-#include "audio/AudioDevice.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -33,8 +33,8 @@ namespace cer
 {
 BusInstance::BusInstance(Bus* aParent)
     : mParent(aParent)
-      , mScratchSize(sample_granularity)
-      , mScratch(mScratchSize * max_channels)
+    , mScratchSize(sample_granularity)
+    , mScratch(mScratchSize * max_channels)
 {
     mFlags.Protected     = true;
     mFlags.InaudibleTick = true;
@@ -120,9 +120,9 @@ bool BusInstance::hasEnded()
 BusInstance::~BusInstance() noexcept
 {
     auto* s = mParent->engine;
-    for (size_t i = 0; i < s->mHighestVoice; ++i)
+    for (size_t i = 0; i < s->m_highest_voice; ++i)
     {
-        if (s->mVoice[i] && s->mVoice[i]->mBusHandle == mParent->mChannelHandle)
+        if (s->m_voice[i] && s->m_voice[i]->mBusHandle == mParent->mChannelHandle)
         {
             s->stopVoice_internal(i);
         }
@@ -150,9 +150,9 @@ void Bus::findBusHandle()
     if (mChannelHandle == 0)
     {
         // Find the channel the bus is playing on to calculate handle..
-        for (size_t i = 0; mChannelHandle == 0 && i < engine->mHighestVoice; ++i)
+        for (size_t i = 0; mChannelHandle == 0 && i < engine->m_highest_voice; ++i)
         {
-            if (engine->mVoice[i].get() == mInstance.get())
+            if (engine->m_voice[i].get() == mInstance.get())
             {
                 mChannelHandle = engine->getHandleFromVoice_internal(i);
             }
@@ -211,11 +211,7 @@ handle Bus::play3d(AudioSource& aSound, Vector3 aPos, Vector3 aVel, float aVolum
 }
 
 handle Bus::play3dClocked(
-    time_t       aSoundTime,
-    AudioSource& aSound,
-    Vector3      aPos,
-    Vector3      aVel,
-    float        aVolume)
+    time_t aSoundTime, AudioSource& aSound, Vector3 aPos, Vector3 aVel, float aVolume)
 {
     if (!mInstance || !engine)
     {
@@ -235,7 +231,7 @@ void Bus::annexSound(handle voice_handle)
 {
     findBusHandle();
     FOR_ALL_VOICES_PRE_EXT
-        engine->mVoice[ch]->mBusHandle = mChannelHandle;
+    engine->m_voice[ch]->mBusHandle = mChannelHandle;
     FOR_ALL_VOICES_POST_EXT
 }
 
@@ -303,7 +299,7 @@ float* Bus::getWave()
     if (mInstance && engine)
     {
         engine->lockAudioMutex_internal();
-        for (int i       = 0; i < 256; ++i)
+        for (int i = 0; i < 256; ++i)
             mWaveData[i] = mInstance->mVisualizationWaveData[i];
         engine->unlockAudioMutex_internal();
     }
@@ -333,7 +329,7 @@ size_t Bus::getActiveVoiceCount()
     engine->lockAudioMutex_internal();
     for (size_t i = 0; i < voice_count; ++i)
     {
-        if (engine->mVoice[i] && engine->mVoice[i]->mBusHandle == mChannelHandle)
+        if (engine->m_voice[i] && engine->m_voice[i]->mBusHandle == mChannelHandle)
         {
             count++;
         }

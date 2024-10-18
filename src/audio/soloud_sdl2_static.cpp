@@ -36,7 +36,7 @@ static SDL_AudioDeviceID gAudioDeviceID;
 
 void soloud_sdl2static_audiomixer(void* userdata, Uint8* stream, int len)
 {
-    short*  buf    = (short*)stream;
+    short*       buf    = (short*)stream;
     AudioDevice* soloud = (AudioDevice*)userdata;
     if (gActiveAudioSpec.format == AUDIO_F32)
     {
@@ -56,11 +56,7 @@ static void soloud_sdl2static_deinit(AudioDevice* engine)
 }
 
 void sdl2static_init(
-    AudioDevice*     engine,
-    EngineFlags aFlags,
-    size_t      aSamplerate,
-    size_t      aBuffer,
-    size_t      aChannels)
+    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
 {
     if (!SDL_WasInit(SDL_INIT_AUDIO))
     {
@@ -84,10 +80,10 @@ void sdl2static_init(
                             &as,
                             &gActiveAudioSpec,
                             SDL_AUDIO_ALLOW_ANY_CHANGE &
-                            ~(SDL_AUDIO_ALLOW_FORMAT_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE));
+                                ~(SDL_AUDIO_ALLOW_FORMAT_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE));
     if (gAudioDeviceID == 0)
     {
-        as.format      = AUDIO_S16;
+        as.format = AUDIO_S16;
         gAudioDeviceID =
             SDL_OpenAudioDevice(nullptr,
                                 0,

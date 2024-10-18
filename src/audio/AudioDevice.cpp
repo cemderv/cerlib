@@ -10,8 +10,8 @@
 #include "cerlib/SoundChannel.hpp"
 #include "soloud_fft.hpp"
 #include "soloud_internal.hpp"
-#include "soloud_thread.hpp"
 #include "soloud_misc.hpp"
+#include "soloud_thread.hpp"
 #include <algorithm>
 #include <cfloat> // _controlfp
 #include <cmath> // sin
@@ -32,40 +32,26 @@ auto to_soloud_time(const SoundTime& seconds) -> cer::time_t
     return seconds.count();
 }
 
-// AudioDevice::AudioDevice(bool& success)
-// {
-//     try
-//     {
-//         m_soloud                       = std::make_unique<Engine>();
-//         m_was_initialized_successfully = true;
-//         success                        = true;
-//     }
-//     catch (const std::exception& ex)
-//     {
-//         log_info("Failed to initialize the internal audio engine. Reason: {}", ex.what());
-//     }
-// }
-
 AudioDevice::AudioDevice(EngineFlags           flags,
                          std::optional<size_t> sample_rate,
                          std::optional<size_t> buffer_size,
                          size_t                channels)
-    : mFlags(flags)
+    : m_flags(flags)
 {
     assert(channels != 3 && channels != 5 && channels != 7);
     assert(channels <= max_channels);
 
-    mAudioThreadMutex = Thread::createMutex();
+    m_audio_thread_mutex = Thread::createMutex();
 
-    int samplerate = sample_rate.value_or(44100);
-    int buffersize = buffer_size.value_or(2048);
+    auto samplerate = sample_rate.value_or(44100);
+    auto buffersize = buffer_size.value_or(2048);
 
 #if defined(WITH_SDL2_STATIC)
     {
         if (!aBufferSize.has_value())
             buffersize = 2048;
 
-        sdl2static_init(this, flags, samplerate, buffersize, aChannels);
+        sdl2static_init(this, flags, samplerate, buffersize, channels);
     }
 #endif
 
@@ -74,7 +60,7 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!aBufferSize.has_value())
             buffersize = 4096;
 
-        xaudio2_init(this, flags, samplerate, buffersize, aChannels);
+        xaudio2_init(this, flags, samplerate, buffersize, channels);
     }
 #endif
 
@@ -83,7 +69,7 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!aBufferSize.has_value())
             buffersize = 4096;
 
-        winmm_init(this, flags, samplerate, buffersize, aChannels);
+        winmm_init(this, flags, samplerate, buffersize, channels);
     }
 #endif
 
@@ -95,7 +81,7 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!aSamplerate.has_value())
             samplerate = 48000;
 
-        wasapi_init(this, flags, samplerate, buffersize, aChannels);
+        wasapi_init(this, flags, samplerate, buffersize, channels);
     }
 #endif
 
@@ -104,7 +90,7 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!aBufferSize.has_value())
             buffersize = 2048;
 
-        alsa_init(this, flags, samplerate, buffersize, aChannels);
+        alsa_init(this, flags, samplerate, buffersize, channels);
     }
 #endif
 
@@ -122,7 +108,7 @@ AudioDevice::AudioDevice(EngineFlags           flags,
         if (!aBufferSize.has_value())
             buffersize = 4096;
 
-        opensles_init(this, flags, samplerate, buffersize, aChannels);
+        opensles_init(this, flags, samplerate, buffersize, channels);
     }
 #endif
 }
@@ -142,18 +128,18 @@ AudioDevice::~AudioDevice() noexcept
     // Make sure no audio operation is currently pending
     lockAudioMutex_internal();
     unlockAudioMutex_internal();
-    assert(!mInsideAudioThreadMutex);
+    assert(!m_inside_audio_thread_mutex);
     stop_all();
-    if (mBackendCleanupFunc)
-        mBackendCleanupFunc(this);
-    mBackendCleanupFunc = 0;
-    if (mAudioThreadMutex)
-        Thread::destroyMutex(mAudioThreadMutex);
-    mAudioThreadMutex = nullptr;
+    if (m_backend_cleanup_func)
+        m_backend_cleanup_func(this);
+    m_backend_cleanup_func = 0;
+    if (m_audio_thread_mutex)
+        Thread::destroyMutex(m_audio_thread_mutex);
+    m_audio_thread_mutex = nullptr;
 
     for (size_t i = 0; i < filters_per_stream; ++i)
     {
-        mFilterInstance[i].reset();
+        m_filter_instance[i].reset();
     }
 }
 
@@ -170,10 +156,7 @@ auto AudioDevice::play_sound(const Sound&             sound,
 
     const auto channel_handle =
         delay
-            ? play_clocked(to_soloud_time(*delay),
-                           sound.impl()->soloud_audio_source(),
-                           volume,
-                           pan)
+            ? play_clocked(to_soloud_time(*delay), sound.impl()->soloud_audio_source(), volume, pan)
             : play(sound.impl()->soloud_audio_source(), volume, pan, start_paused);
 
     // TODO: Use pool allocation for SoundChannelImpl objects
@@ -196,10 +179,7 @@ void AudioDevice::play_sound_fire_and_forget(const Sound&             sound,
 
     if (delay.has_value())
     {
-        play_clocked(to_soloud_time(*delay),
-                     sound.impl()->soloud_audio_source(),
-                     volume,
-                     pan);
+        play_clocked(to_soloud_time(*delay), sound.impl()->soloud_audio_source(), volume, pan);
     }
     else
     {
@@ -288,26 +268,26 @@ handle AudioDevice::play(AudioSource& sound, float volume, float pan, bool pause
     }
     if (!sound.audio_source_id)
     {
-        sound.audio_source_id = mAudioSourceID;
-        mAudioSourceID++;
+        sound.audio_source_id = m_audio_source_id;
+        m_audio_source_id++;
     }
-    mVoice[ch]                 = instance;
-    mVoice[ch]->mAudioSourceID = sound.audio_source_id;
-    mVoice[ch]->mBusHandle     = bus;
-    mVoice[ch]->init(sound, mPlayIndex);
-    m3dData[ch] = AudioSourceInstance3dData{sound};
+    m_voice[ch]                 = instance;
+    m_voice[ch]->mAudioSourceID = sound.audio_source_id;
+    m_voice[ch]->mBusHandle     = bus;
+    m_voice[ch]->init(sound, m_play_index);
+    m_3d_data[ch] = AudioSourceInstance3dData{sound};
 
-    mPlayIndex++;
+    m_play_index++;
 
     // 20 bits, skip the last one (top bits full = voice group)
-    if (mPlayIndex == 0xfffff)
+    if (m_play_index == 0xfffff)
     {
-        mPlayIndex = 0;
+        m_play_index = 0;
     }
 
     if (paused)
     {
-        mVoice[ch]->mFlags.Paused = true;
+        m_voice[ch]->mFlags.Paused = true;
     }
 
     setVoicePan_internal(ch, pan);
@@ -323,8 +303,8 @@ handle AudioDevice::play(AudioSource& sound, float volume, float pan, bool pause
     // Fix initial voice volume ramp up
     for (size_t i = 0; i < max_channels; ++i)
     {
-        mVoice[ch]->mCurrentChannelVolume[i] =
-            mVoice[ch]->mChannelVolume[i] * mVoice[ch]->mOverallVolume;
+        m_voice[ch]->mCurrentChannelVolume[i] =
+            m_voice[ch]->mChannelVolume[i] * m_voice[ch]->mOverallVolume;
     }
 
     setVoiceRelativePlaySpeed_internal(ch, 1);
@@ -333,11 +313,11 @@ handle AudioDevice::play(AudioSource& sound, float volume, float pan, bool pause
     {
         if (sound.filter[i])
         {
-            mVoice[ch]->mFilter[i] = sound.filter[i]->createInstance();
+            m_voice[ch]->mFilter[i] = sound.filter[i]->createInstance();
         }
     }
 
-    mActiveVoiceDirty = true;
+    m_active_voice_dirty = true;
 
     unlockAudioMutex_internal();
 
@@ -354,14 +334,14 @@ handle AudioDevice::play_clocked(
     const handle h = play(sound, volume, pan, 1, bus);
     lockAudioMutex_internal();
     // mLastClockedTime is cleared to zero at start of every output buffer
-    time_t lasttime = mLastClockedTime;
+    time_t lasttime = m_last_clocked_time;
     if (lasttime == 0)
     {
-        mLastClockedTime = sound_time;
-        lasttime         = sound_time;
+        m_last_clocked_time = sound_time;
+        lasttime            = sound_time;
     }
     unlockAudioMutex_internal();
-    int samples = (int)floor((sound_time - lasttime) * mSamplerate);
+    int samples = (int)floor((sound_time - lasttime) * m_samplerate);
     // Make sure we don't delay too much (or overflow)
     if (samples < 0 || samples > 2048)
         samples = 0;
@@ -377,13 +357,13 @@ handle AudioDevice::play3d_background(AudioSource& sound, float volume, bool pau
     return h;
 }
 
-bool AudioDevice::seek(handle voice_handle, time_t aSeconds)
+bool AudioDevice::seek(handle voice_handle, time_t seconds)
 {
     bool res = true;
 
 
     FOR_ALL_VOICES_PRE
-        const auto singleres = mVoice[ch]->seek(aSeconds, mScratch.mData, mScratchSize);
+        const auto singleres = m_voice[ch]->seek(seconds, m_scratch.mData, m_scratch_size);
         if (!singleres)
             res = singleres;
     FOR_ALL_VOICES_POST
@@ -404,9 +384,9 @@ void AudioDevice::stop_audio_source(AudioSource& aSound)
     {
         lockAudioMutex_internal();
 
-        for (size_t i = 0; i < mHighestVoice; ++i)
+        for (size_t i = 0; i < m_highest_voice; ++i)
         {
-            if (mVoice[i] && mVoice[i]->mAudioSourceID == aSound.audio_source_id)
+            if (m_voice[i] && m_voice[i]->mAudioSourceID == aSound.audio_source_id)
             {
                 stopVoice_internal(i);
             }
@@ -418,7 +398,7 @@ void AudioDevice::stop_audio_source(AudioSource& aSound)
 void AudioDevice::stop_all()
 {
     lockAudioMutex_internal();
-    for (size_t i = 0; i < mHighestVoice; ++i)
+    for (size_t i = 0; i < m_highest_voice; ++i)
     {
         stopVoice_internal(i);
     }
@@ -432,9 +412,9 @@ int AudioDevice::count_audio_source(AudioSource& aSound)
     {
         lockAudioMutex_internal();
 
-        for (size_t i = 0; i < mHighestVoice; ++i)
+        for (size_t i = 0; i < m_highest_voice; ++i)
         {
-            if (mVoice[i] && mVoice[i]->mAudioSourceID == aSound.audio_source_id)
+            if (m_voice[i] && m_voice[i]->mAudioSourceID == aSound.audio_source_id)
             {
                 count++;
             }
@@ -452,9 +432,7 @@ void AudioDevice::schedulePause(handle voice_handle, time_t aTime)
         return;
     }
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mPauseScheduler.set(1, 0, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mPauseScheduler.set(1, 0, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -466,9 +444,7 @@ void AudioDevice::scheduleStop(handle voice_handle, time_t aTime)
         return;
     }
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mStopScheduler.set(1, 0, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mStopScheduler.set(1, 0, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -482,9 +458,7 @@ void AudioDevice::fadeVolume(handle voice_handle, float aTo, time_t aTime)
     }
 
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mVolumeFader.set(from, aTo, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mVolumeFader.set(from, aTo, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -499,9 +473,7 @@ void AudioDevice::fadePan(handle voice_handle, float aTo, time_t aTime)
     }
 
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mPanFader.set(from, aTo, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mPanFader.set(from, aTo, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -514,9 +486,7 @@ void AudioDevice::fadeRelativePlaySpeed(handle voice_handle, float aTo, time_t a
         return;
     }
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mRelativePlaySpeedFader.set(from, aTo, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mRelativePlaySpeedFader.set(from, aTo, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -528,7 +498,7 @@ void AudioDevice::fadeGlobalVolume(float aTo, time_t aTime)
         setGlobalVolume(aTo);
         return;
     }
-    mGlobalVolumeFader.set(from, aTo, aTime, mStreamTime);
+    m_global_volume_fader.set(from, aTo, aTime, m_stream_time);
 }
 
 
@@ -541,9 +511,7 @@ void AudioDevice::oscillateVolume(handle voice_handle, float aFrom, float aTo, t
     }
 
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mVolumeFader.setLFO(aFrom, aTo, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mVolumeFader.setLFO(aFrom, aTo, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -556,9 +524,7 @@ void AudioDevice::oscillatePan(handle voice_handle, float aFrom, float aTo, time
     }
 
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mPanFader.setLFO(aFrom, aTo, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mPanFader.setLFO(aFrom, aTo, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -574,9 +540,7 @@ void AudioDevice::oscillateRelativePlaySpeed(handle voice_handle,
     }
 
     FOR_ALL_VOICES_PRE
-        mVoice[ch]
-            ->
-            mRelativePlaySpeedFader.setLFO(aFrom, aTo, aTime, mVoice[ch]->mStreamTime);
+        m_voice[ch]->mRelativePlaySpeedFader.setLFO(aFrom, aTo, aTime, m_voice[ch]->mStreamTime);
     FOR_ALL_VOICES_POST
 }
 
@@ -588,7 +552,7 @@ void AudioDevice::oscillateGlobalVolume(float aFrom, float aTo, time_t aTime)
         return;
     }
 
-    mGlobalVolumeFader.setLFO(aFrom, aTo, aTime, mStreamTime);
+    m_global_volume_fader.setLFO(aFrom, aTo, aTime, m_stream_time);
 }
 
 AlignedFloatBuffer::AlignedFloatBuffer(size_t floats)
@@ -616,17 +580,17 @@ TinyAlignedFloatBuffer::TinyAlignedFloatBuffer()
 
 void AudioDevice::pause()
 {
-    if (mBackendPauseFunc != nullptr)
+    if (m_backend_pause_func != nullptr)
     {
-        mBackendPauseFunc(this);
+        m_backend_pause_func(this);
     }
 }
 
 void AudioDevice::resume()
 {
-    if (mBackendResumeFunc != nullptr)
+    if (m_backend_resume_func != nullptr)
     {
-        mBackendResumeFunc(this);
+        m_backend_resume_func(this);
     }
 }
 
@@ -636,90 +600,90 @@ void AudioDevice::postinit_internal(size_t      sample_rate,
                                     EngineFlags flags,
                                     size_t      channels)
 {
-    mGlobalVolume = 1;
-    mChannels     = channels;
-    mSamplerate   = sample_rate;
-    mBufferSize   = buffer_size;
-    mScratchSize  = (buffer_size + 15) & (~0xf); // round to the next div by 16
+    m_global_volume = 1;
+    m_channels      = channels;
+    m_samplerate    = sample_rate;
+    m_buffer_size   = buffer_size;
+    m_scratch_size  = (buffer_size + 15) & (~0xf); // round to the next div by 16
 
-    mScratchSize = std::max(mScratchSize, sample_granularity * 2);
-    mScratchSize = std::max(mScratchSize, size_t(4096));
+    m_scratch_size = std::max(m_scratch_size, sample_granularity * 2);
+    m_scratch_size = std::max(m_scratch_size, size_t(4096));
 
-    mScratch       = AlignedFloatBuffer{mScratchSize * max_channels};
-    mOutputScratch = AlignedFloatBuffer{mScratchSize * max_channels};
+    m_scratch        = AlignedFloatBuffer{m_scratch_size * max_channels};
+    m_output_scratch = AlignedFloatBuffer{m_scratch_size * max_channels};
 
-    mResampleData.resize(mMaxActiveVoices * 2);
-    mResampleDataOwner.resize(mMaxActiveVoices);
+    m_resample_data.resize(m_max_active_voices * 2);
+    m_resample_data_owner.resize(m_max_active_voices);
 
-    mResampleDataBuffer =
-        AlignedFloatBuffer{mMaxActiveVoices * 2 * sample_granularity * max_channels};
+    m_resample_data_buffer =
+        AlignedFloatBuffer{m_max_active_voices * 2 * sample_granularity * max_channels};
 
-    for (size_t i = 0; i < mMaxActiveVoices * 2; ++i)
+    for (size_t i = 0; i < m_max_active_voices * 2; ++i)
     {
-        mResampleData[i] = mResampleDataBuffer.mData + (sample_granularity * max_channels * i);
+        m_resample_data[i] = m_resample_data_buffer.mData + (sample_granularity * max_channels * i);
     }
 
-    mFlags          = flags;
-    mPostClipScaler = 0.95f;
+    m_flags            = flags;
+    m_post_clip_scaler = 0.95f;
 
-    switch (mChannels)
+    switch (m_channels)
     {
         case 1: {
-            m3dSpeakerPosition[0] = {0, 0, 1};
+            m_3d_speaker_position[0] = {0, 0, 1};
             break;
         }
         case 2: {
-            m3dSpeakerPosition[0] = {2, 0, 1};
-            m3dSpeakerPosition[1] = {-2, 0, 1};
+            m_3d_speaker_position[0] = {2, 0, 1};
+            m_3d_speaker_position[1] = {-2, 0, 1};
             break;
         }
         case 4: {
-            m3dSpeakerPosition[0] = {2, 0, 1};
-            m3dSpeakerPosition[1] = {-2, 0, 1};
+            m_3d_speaker_position[0] = {2, 0, 1};
+            m_3d_speaker_position[1] = {-2, 0, 1};
 
             // I suppose technically the second pair should be straight left & right,
             // but I prefer moving them a bit back to mirror the front speakers.
-            m3dSpeakerPosition[2] = {2, 0, -1};
-            m3dSpeakerPosition[3] = {-2, 0, -1};
+            m_3d_speaker_position[2] = {2, 0, -1};
+            m_3d_speaker_position[3] = {-2, 0, -1};
 
             break;
         }
         case 6: {
-            m3dSpeakerPosition[0] = {2, 0, 1};
-            m3dSpeakerPosition[1] = {-2, 0, 1};
+            m_3d_speaker_position[0] = {2, 0, 1};
+            m_3d_speaker_position[1] = {-2, 0, 1};
 
             // center and subwoofer.
-            m3dSpeakerPosition[2] = {0, 0, 1};
+            m_3d_speaker_position[2] = {0, 0, 1};
 
             // Sub should be "mix of everything". We'll handle it as a special case and make it a
             // null vector.
-            m3dSpeakerPosition[3] = {0, 0, 0};
+            m_3d_speaker_position[3] = {0, 0, 0};
 
             // I suppose technically the second pair should be straight left & right,
             // but I prefer moving them a bit back to mirror the front speakers.
-            m3dSpeakerPosition[4] = {2, 0, -1};
-            m3dSpeakerPosition[5] = {-2, 0, -1};
+            m_3d_speaker_position[4] = {2, 0, -1};
+            m_3d_speaker_position[5] = {-2, 0, -1};
 
             break;
         }
         case 8: {
-            m3dSpeakerPosition[0] = {2, 0, 1};
-            m3dSpeakerPosition[1] = {-2, 0, 1};
+            m_3d_speaker_position[0] = {2, 0, 1};
+            m_3d_speaker_position[1] = {-2, 0, 1};
 
             // center and subwoofer.
-            m3dSpeakerPosition[2] = {0, 0, 1};
+            m_3d_speaker_position[2] = {0, 0, 1};
 
             // Sub should be "mix of everything". We'll handle it as a special case and make it a
             // null vector.
-            m3dSpeakerPosition[3] = {0, 0, 0};
+            m_3d_speaker_position[3] = {0, 0, 0};
 
             // side
-            m3dSpeakerPosition[4] = {2, 0, 0};
-            m3dSpeakerPosition[5] = {-2, 0, 0};
+            m_3d_speaker_position[4] = {2, 0, 0};
+            m_3d_speaker_position[5] = {-2, 0, 0};
 
             // back
-            m3dSpeakerPosition[6] = {2, 0, -1};
-            m3dSpeakerPosition[7] = {-2, 0, -1};
+            m_3d_speaker_position[6] = {2, 0, -1};
+            m_3d_speaker_position[7] = {-2, 0, -1};
 
             break;
         }
@@ -733,16 +697,16 @@ auto AudioDevice::getWave() -> float*
 
     for (int i = 0; i < 256; ++i)
     {
-        mWaveData[i] = mVisualizationWaveData[i];
+        m_wave_data[i] = m_visualization_wave_data[i];
     }
 
     unlockAudioMutex_internal();
-    return mWaveData.data();
+    return m_wave_data.data();
 }
 
 auto AudioDevice::getApproximateVolume(size_t aChannel) -> float
 {
-    if (aChannel > mChannels)
+    if (aChannel > m_channels)
     {
         return 0;
     }
@@ -750,7 +714,7 @@ auto AudioDevice::getApproximateVolume(size_t aChannel) -> float
     float vol = 0;
 
     lockAudioMutex_internal();
-    vol = mVisualizationChannelVolume[aChannel];
+    vol = m_visualization_channel_volume[aChannel];
     unlockAudioMutex_internal();
 
     return vol;
@@ -764,7 +728,7 @@ auto AudioDevice::calcFFT() -> float*
 
     for (size_t i = 0; i < 256; ++i)
     {
-        temp[i * 2]     = mVisualizationWaveData[i];
+        temp[i * 2]     = m_visualization_wave_data[i];
         temp[i * 2 + 1] = 0;
         temp[i + 512]   = 0;
         temp[i + 768]   = 0;
@@ -778,18 +742,18 @@ auto AudioDevice::calcFFT() -> float*
         const auto real = temp[i * 2];
         const auto imag = temp[i * 2 + 1];
 
-        mFFTData[i] = std::sqrt(real * real + imag * imag);
+        m_fft_data[i] = std::sqrt(real * real + imag * imag);
     }
 
-    return mFFTData.data();
+    return m_fft_data.data();
 }
 
 #if defined(SOLOUD_SSE_INTRINSICS)
 void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
-                           const AlignedFloatBuffer& aDestBuffer,
-                           size_t                    aSamples,
-                           float                     aVolume0,
-                           float                     aVolume1)
+                                const AlignedFloatBuffer& aDestBuffer,
+                                size_t                    aSamples,
+                                float                     aVolume0,
+                                float                     aVolume1)
 {
     float  vd = (aVolume1 - aVolume0) / aSamples;
     float  v  = aVolume0;
@@ -913,12 +877,12 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
     const auto  samplequads = (aSamples + 3) / 4; // rounded up
 
     // Clip
-    if (mFlags.ClipRoundoff)
+    if (m_flags.ClipRoundoff)
     {
         auto c = size_t(0);
         auto d = size_t(0);
 
-        for (size_t j = 0; j < mChannels; ++j)
+        for (size_t j = 0; j < m_channels; ++j)
         {
             auto v = aVolume0;
             for (size_t i = 0; i < samplequads; ++i)
@@ -960,16 +924,16 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
                          ? 0.9862875f
                          : 0.87f * f4 - 0.1f * f4 * f4 * f4;
 
-                aDestBuffer.mData[d] = f1 * mPostClipScaler;
+                aDestBuffer.mData[d] = f1 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f2 * mPostClipScaler;
+                aDestBuffer.mData[d] = f2 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f3 * mPostClipScaler;
+                aDestBuffer.mData[d] = f3 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f4 * mPostClipScaler;
+                aDestBuffer.mData[d] = f4 * m_post_clip_scaler;
                 d++;
             }
         }
@@ -979,7 +943,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
         auto c = size_t(0);
         auto d = size_t(0);
 
-        for (size_t j = 0; j < mChannels; ++j)
+        for (size_t j = 0; j < m_channels; ++j)
         {
             auto v = aVolume0;
 
@@ -1006,16 +970,16 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
                 f3 = f3 <= -1 ? -1 : f3 >= 1 ? 1 : f3;
                 f4 = f4 <= -1 ? -1 : f4 >= 1 ? 1 : f4;
 
-                aDestBuffer.mData[d] = f1 * mPostClipScaler;
+                aDestBuffer.mData[d] = f1 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f2 * mPostClipScaler;
+                aDestBuffer.mData[d] = f2 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f3 * mPostClipScaler;
+                aDestBuffer.mData[d] = f3 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f4 * mPostClipScaler;
+                aDestBuffer.mData[d] = f4 * m_post_clip_scaler;
                 d++;
             }
         }
@@ -1125,7 +1089,6 @@ static void resample_point(const float* aSrc,
         aDst[i] = aSrc[p];
     }
 }
-
 
 void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                   float*                                aBuffer,
@@ -1700,9 +1663,9 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
     }
 
     // Accumulate sound sources
-    for (size_t i = 0; i < mActiveVoiceCount; ++i)
+    for (size_t i = 0; i < m_active_voice_count; ++i)
     {
-        auto& voice = mVoice[mActiveVoice[i]];
+        auto& voice = m_voice[m_active_voice[i]];
 
         if (voice != nullptr && voice->mBusHandle == aBus && !voice->mFlags.Paused &&
             !voice->mFlags.Inaudible)
@@ -1759,8 +1722,9 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                         {
                             if (voice->mFlags.Looping)
                             {
-                                while (readcount < sample_granularity &&
-                                       voice->seek(voice->mLoopPoint, mScratch.mData, mScratchSize))
+                                while (
+                                    readcount < sample_granularity &&
+                                    voice->seek(voice->mLoopPoint, m_scratch.mData, m_scratch_size))
                                 {
                                     voice->mLoopCount++;
 
@@ -1796,16 +1760,13 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                     else
                     {
                         // We have new block of data, move pointer backwards
-                        voice->mSrcOffset -= sample_granularity *
-                            FIXPOINT_FRAC_MUL;
+                        voice->mSrcOffset -= sample_granularity * FIXPOINT_FRAC_MUL;
                     }
 
 
                     // Run the per-stream filters to get our source data
 
-                    for (size_t j = 0; j < filters_per_stream;
-                         ++j
-                    )
+                    for (size_t j = 0; j < filters_per_stream; ++j)
                     {
                         if (voice->mFilter[j])
                         {
@@ -1814,7 +1775,7 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                                                       sample_granularity,
                                                       voice->mChannels,
                                                       voice->mSamplerate,
-                                                      mStreamTime);
+                                                      m_stream_time);
                         }
                     }
                 }
@@ -1830,11 +1791,9 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
 
                 if (voice->mSrcOffset < sample_granularity * FIXPOINT_FRAC_MUL)
                 {
-                    writesamples =
-                        ((sample_granularity * FIXPOINT_FRAC_MUL) - voice->
-                         mSrcOffset) /
-                        step_fixed +
-                        1;
+                    writesamples = ((sample_granularity * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) /
+                                   step_fixed +
+                                   1;
 
                     // avoid reading past the current buffer..
                     if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >=
@@ -1906,7 +1865,7 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
             // TODO: check this condition some day
             if (!voice->mFlags.Looping && !voice->mFlags.DisableAutostop && voice->hasEnded())
             {
-                stopVoice_internal(mActiveVoice[i]);
+                stopVoice_internal(m_active_voice[i]);
             }
         }
         else if (voice && voice->mBusHandle == aBus && !voice->mFlags.Paused &&
@@ -1952,8 +1911,9 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                         {
                             if (voice->mFlags.Looping)
                             {
-                                while (readcount < sample_granularity &&
-                                       voice->seek(voice->mLoopPoint, mScratch.mData, mScratchSize))
+                                while (
+                                    readcount < sample_granularity &&
+                                    voice->seek(voice->mLoopPoint, m_scratch.mData, m_scratch_size))
                                 {
                                     voice->mLoopCount++;
                                     readcount +=
@@ -1973,13 +1933,10 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                     else
                     {
                         // We have new block of data, move pointer backwards
-                        voice->mSrcOffset -= sample_granularity *
-                            FIXPOINT_FRAC_MUL;
+                        voice->mSrcOffset -= sample_granularity * FIXPOINT_FRAC_MUL;
                     }
 
                     // Skip filters
-
-
                 }
                 else
                 {
@@ -1993,11 +1950,9 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
 
                 if (voice->mSrcOffset < sample_granularity * FIXPOINT_FRAC_MUL)
                 {
-                    writesamples =
-                        ((sample_granularity * FIXPOINT_FRAC_MUL) - voice->
-                         mSrcOffset) /
-                        step_fixed +
-                        1;
+                    writesamples = ((sample_granularity * FIXPOINT_FRAC_MUL) - voice->mSrcOffset) /
+                                   step_fixed +
+                                   1;
 
                     // avoid reading past the current buffer..
                     if (((writesamples * step_fixed + voice->mSrcOffset) >> FIXPOINT_FRAC_BITS) >=
@@ -2026,7 +1981,7 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
             // TODO: check this condition some day
             if (!voice->mFlags.Looping && !voice->mFlags.DisableAutostop && voice->hasEnded())
             {
-                stopVoice_internal(mActiveVoice[i]);
+                stopVoice_internal(m_active_voice[i]);
             }
         }
     }
@@ -2034,15 +1989,15 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
 
 void AudioDevice::mapResampleBuffers_internal()
 {
-    assert(mMaxActiveVoices < 256);
+    assert(m_max_active_voices < 256);
     auto live = std::array<char, 256>{};
 
-    for (size_t i = 0; i < mMaxActiveVoices; ++i)
+    for (size_t i = 0; i < m_max_active_voices; ++i)
     {
-        for (size_t j = 0; j < mMaxActiveVoices; ++j)
+        for (size_t j = 0; j < m_max_active_voices; ++j)
         {
-            if (mResampleDataOwner[i] &&
-                mResampleDataOwner[i].get() == mVoice[mActiveVoice[j]].get())
+            if (m_resample_data_owner[i] &&
+                m_resample_data_owner[i].get() == m_voice[m_active_voice[j]].get())
             {
                 live[i] |= 1; // Live channel
                 live[j] |= 2; // Live voice
@@ -2050,42 +2005,42 @@ void AudioDevice::mapResampleBuffers_internal()
         }
     }
 
-    for (size_t i = 0; i < mMaxActiveVoices; ++i)
+    for (size_t i = 0; i < m_max_active_voices; ++i)
     {
-        if (!(live[i] & 1) && mResampleDataOwner[i]) // For all dead channels with owners..
+        if (!(live[i] & 1) && m_resample_data_owner[i]) // For all dead channels with owners..
         {
-            mResampleDataOwner[i]->mResampleData[0] = nullptr;
-            mResampleDataOwner[i]->mResampleData[1] = nullptr;
-            mResampleDataOwner[i]                   = nullptr;
+            m_resample_data_owner[i]->mResampleData[0] = nullptr;
+            m_resample_data_owner[i]->mResampleData[1] = nullptr;
+            m_resample_data_owner[i]                   = nullptr;
         }
     }
 
     auto latestfree = 0;
 
-    for (size_t i = 0; i < mActiveVoiceCount; ++i)
+    for (size_t i = 0; i < m_active_voice_count; ++i)
     {
-        if (!(live[i] & 2) && mVoice[mActiveVoice[i]]) // For all live voices with no channel..
+        if (!(live[i] & 2) && m_voice[m_active_voice[i]]) // For all live voices with no channel..
         {
             int found = -1;
 
-            for (size_t j = latestfree; found == -1 && j < mMaxActiveVoices; ++j)
+            for (size_t j = latestfree; found == -1 && j < m_max_active_voices; ++j)
             {
-                if (mResampleDataOwner[j] == nullptr)
+                if (m_resample_data_owner[j] == nullptr)
                 {
                     found = j;
                 }
             }
 
             assert(found != -1);
-            mResampleDataOwner[found]                   = mVoice[mActiveVoice[i]];
-            mResampleDataOwner[found]->mResampleData[0] = mResampleData[found * 2 + 0];
-            mResampleDataOwner[found]->mResampleData[1] = mResampleData[found * 2 + 1];
+            m_resample_data_owner[found]                   = m_voice[m_active_voice[i]];
+            m_resample_data_owner[found]->mResampleData[0] = m_resample_data[found * 2 + 0];
+            m_resample_data_owner[found]->mResampleData[1] = m_resample_data[found * 2 + 1];
 
-            memset(mResampleDataOwner[found]->mResampleData[0],
+            memset(m_resample_data_owner[found]->mResampleData[0],
                    0,
                    sizeof(float) * sample_granularity * max_channels);
 
-            memset(mResampleDataOwner[found]->mResampleData[1],
+            memset(m_resample_data_owner[found]->mResampleData[1],
                    0,
                    sizeof(float) * sample_granularity * max_channels);
 
@@ -2100,15 +2055,15 @@ void AudioDevice::calcActiveVoices_internal()
     // It is a must when new voices are started, but otherwise we could get away
     // with postponing it sometimes..
 
-    mActiveVoiceDirty = false;
+    m_active_voice_dirty = false;
 
     // Populate
     size_t candidates = 0;
     size_t mustlive   = 0;
 
-    for (size_t i = 0; i < mHighestVoice; ++i)
+    for (size_t i = 0; i < m_highest_voice; ++i)
     {
-        const auto voice = mVoice[i];
+        const auto voice = m_voice[i];
         if (voice == nullptr)
         {
             continue;
@@ -2117,29 +2072,29 @@ void AudioDevice::calcActiveVoices_internal()
         // TODO: check this some day
         if ((!voice->mFlags.Inaudible && !voice->mFlags.Paused) || voice->mFlags.InaudibleTick)
         {
-            mActiveVoice[candidates] = i;
+            m_active_voice[candidates] = i;
             candidates++;
-            if (mVoice[i]->mFlags.InaudibleTick)
+            if (m_voice[i]->mFlags.InaudibleTick)
             {
-                mActiveVoice[candidates - 1] = mActiveVoice[mustlive];
-                mActiveVoice[mustlive]       = i;
+                m_active_voice[candidates - 1] = m_active_voice[mustlive];
+                m_active_voice[mustlive]       = i;
                 mustlive++;
             }
         }
     }
 
     // Check for early out
-    if (candidates <= mMaxActiveVoices)
+    if (candidates <= m_max_active_voices)
     {
         // everything is audible, early out
-        mActiveVoiceCount = candidates;
+        m_active_voice_count = candidates;
         mapResampleBuffers_internal();
         return;
     }
 
-    mActiveVoiceCount = mMaxActiveVoices;
+    m_active_voice_count = m_max_active_voices;
 
-    if (mustlive >= mMaxActiveVoices)
+    if (mustlive >= m_max_active_voices)
     {
         // Oopsie. Well, nothing to sort, since the "must live" voices already
         // ate all our active voice slots.
@@ -2154,8 +2109,8 @@ void AudioDevice::calcActiveVoices_internal()
     // Iterative partial quicksort:
     int       left = 0, stack[24], pos = 0;
     int       len  = candidates - mustlive;
-    size_t*   data = mActiveVoice.data() + mustlive;
-    const int k    = mActiveVoiceCount;
+    size_t*   data = m_active_voice.data() + mustlive;
+    const int k    = m_active_voice_count;
     while (true)
     {
         for (; left + 1 < len; len++)
@@ -2166,7 +2121,7 @@ void AudioDevice::calcActiveVoices_internal()
             }
 
             const int   pivot    = data[left];
-            const float pivotvol = mVoice[pivot]->mOverallVolume;
+            const float pivotvol = m_voice[pivot]->mOverallVolume;
             stack[pos++]         = len;
 
             for (int right = left - 1;;)
@@ -2174,12 +2129,12 @@ void AudioDevice::calcActiveVoices_internal()
                 do
                 {
                     ++right;
-                } while (mVoice[data[right]]->mOverallVolume > pivotvol);
+                } while (m_voice[data[right]]->mOverallVolume > pivotvol);
 
                 do
                 {
                     --len;
-                } while (pivotvol > mVoice[data[len]]->mOverallVolume);
+                } while (pivotvol > m_voice[data[len]]->mOverallVolume);
 
                 if (right >= len)
                 {
@@ -2254,114 +2209,114 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
     }
 #endif
 
-    const auto buffertime   = aSamples / float(mSamplerate);
+    const auto buffertime   = aSamples / float(m_samplerate);
     auto       globalVolume = std::array<float, 2>{};
 
-    mStreamTime += buffertime;
-    mLastClockedTime = 0;
+    m_stream_time += buffertime;
+    m_last_clocked_time = 0;
 
-    globalVolume[0] = mGlobalVolume;
+    globalVolume[0] = m_global_volume;
 
-    if (mGlobalVolumeFader.mActive)
+    if (m_global_volume_fader.mActive)
     {
-        mGlobalVolume = mGlobalVolumeFader.get(mStreamTime);
+        m_global_volume = m_global_volume_fader.get(m_stream_time);
     }
 
-    globalVolume[1] = mGlobalVolume;
+    globalVolume[1] = m_global_volume;
 
     lockAudioMutex_internal();
 
     // Process faders. May change scratch size.
-    for (size_t i = 0; i < mHighestVoice; ++i)
+    for (size_t i = 0; i < m_highest_voice; ++i)
     {
-        if (mVoice[i] != nullptr && !mVoice[i]->mFlags.Paused)
+        if (m_voice[i] != nullptr && !m_voice[i]->mFlags.Paused)
         {
             auto volume = std::array<float, 2>{};
 
-            mVoice[i]->mActiveFader = 0;
+            m_voice[i]->mActiveFader = 0;
 
-            if (mGlobalVolumeFader.mActive > 0)
+            if (m_global_volume_fader.mActive > 0)
             {
-                mVoice[i]->mActiveFader = 1;
+                m_voice[i]->mActiveFader = 1;
             }
 
-            mVoice[i]->mStreamTime += buffertime;
-            mVoice[i]->mStreamPosition +=
-                double(buffertime) * double(mVoice[i]->mOverallRelativePlaySpeed);
+            m_voice[i]->mStreamTime += buffertime;
+            m_voice[i]->mStreamPosition +=
+                double(buffertime) * double(m_voice[i]->mOverallRelativePlaySpeed);
 
             // TODO: this is actually unstable, because mStreamTime depends on the relative play
             // speed.
-            if (mVoice[i]->mRelativePlaySpeedFader.mActive > 0)
+            if (m_voice[i]->mRelativePlaySpeedFader.mActive > 0)
             {
-                float speed = mVoice[i]->mRelativePlaySpeedFader.get(mVoice[i]->mStreamTime);
+                float speed = m_voice[i]->mRelativePlaySpeedFader.get(m_voice[i]->mStreamTime);
                 setVoiceRelativePlaySpeed_internal(i, speed);
             }
 
-            volume[0] = mVoice[i]->mOverallVolume;
+            volume[0] = m_voice[i]->mOverallVolume;
 
-            if (mVoice[i]->mVolumeFader.mActive > 0)
+            if (m_voice[i]->mVolumeFader.mActive > 0)
             {
-                mVoice[i]->mSetVolume   = mVoice[i]->mVolumeFader.get(mVoice[i]->mStreamTime);
-                mVoice[i]->mActiveFader = 1;
+                m_voice[i]->mSetVolume   = m_voice[i]->mVolumeFader.get(m_voice[i]->mStreamTime);
+                m_voice[i]->mActiveFader = 1;
                 updateVoiceVolume_internal(i);
-                mActiveVoiceDirty = true;
+                m_active_voice_dirty = true;
             }
 
-            volume[1] = mVoice[i]->mOverallVolume;
+            volume[1] = m_voice[i]->mOverallVolume;
 
-            if (mVoice[i]->mPanFader.mActive > 0)
+            if (m_voice[i]->mPanFader.mActive > 0)
             {
-                float pan = mVoice[i]->mPanFader.get(mVoice[i]->mStreamTime);
+                float pan = m_voice[i]->mPanFader.get(m_voice[i]->mStreamTime);
                 setVoicePan_internal(i, pan);
-                mVoice[i]->mActiveFader = 1;
+                m_voice[i]->mActiveFader = 1;
             }
 
-            if (mVoice[i]->mPauseScheduler.mActive)
+            if (m_voice[i]->mPauseScheduler.mActive)
             {
-                mVoice[i]->mPauseScheduler.get(mVoice[i]->mStreamTime);
-                if (mVoice[i]->mPauseScheduler.mActive == -1)
+                m_voice[i]->mPauseScheduler.get(m_voice[i]->mStreamTime);
+                if (m_voice[i]->mPauseScheduler.mActive == -1)
                 {
-                    mVoice[i]->mPauseScheduler.mActive = 0;
+                    m_voice[i]->mPauseScheduler.mActive = 0;
                     setVoicePause_internal(i, 1);
                 }
             }
 
-            if (mVoice[i]->mStopScheduler.mActive)
+            if (m_voice[i]->mStopScheduler.mActive)
             {
-                mVoice[i]->mStopScheduler.get(mVoice[i]->mStreamTime);
-                if (mVoice[i]->mStopScheduler.mActive == -1)
+                m_voice[i]->mStopScheduler.get(m_voice[i]->mStreamTime);
+                if (m_voice[i]->mStopScheduler.mActive == -1)
                 {
-                    mVoice[i]->mStopScheduler.mActive = 0;
+                    m_voice[i]->mStopScheduler.mActive = 0;
                     stopVoice_internal(i);
                 }
             }
         }
     }
 
-    if (mActiveVoiceDirty)
+    if (m_active_voice_dirty)
     {
         calcActiveVoices_internal();
     }
 
-    mixBus_internal(mOutputScratch.mData,
+    mixBus_internal(m_output_scratch.mData,
                     aSamples,
                     aStride,
-                    mScratch.mData,
+                    m_scratch.mData,
                     0,
-                    float(mSamplerate),
-                    mChannels,
-                    mResampler);
+                    float(m_samplerate),
+                    m_channels,
+                    m_resampler);
 
     for (size_t i = 0; i < filters_per_stream; ++i)
     {
-        if (mFilterInstance[i])
+        if (m_filter_instance[i])
         {
-            mFilterInstance[i]->filter(mOutputScratch.mData,
-                                       aSamples,
-                                       aStride,
-                                       mChannels,
-                                       float(mSamplerate),
-                                       mStreamTime);
+            m_filter_instance[i]->filter(m_output_scratch.mData,
+                                         aSamples,
+                                         aStride,
+                                         m_channels,
+                                         float(m_samplerate),
+                                         m_stream_time);
         }
     }
 
@@ -2370,31 +2325,31 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
     // Note: clipping channels*aStride, not channels*aSamples, so we're possibly clipping some
     // unused data. The buffers should be large enough for it, we just may do a few bytes of
     // unneccessary work.
-    clip_internal(mOutputScratch, mScratch, aStride, globalVolume[0], globalVolume[1]);
+    clip_internal(m_output_scratch, m_scratch, aStride, globalVolume[0], globalVolume[1]);
 
-    if (mFlags.EnableVisualization)
+    if (m_flags.EnableVisualization)
     {
         for (size_t i = 0; i < max_channels; ++i)
         {
-            mVisualizationChannelVolume[i] = 0;
+            m_visualization_channel_volume[i] = 0;
         }
 
         if (aSamples > 255)
         {
             for (size_t i = 0; i < 256; ++i)
             {
-                mVisualizationWaveData[i] = 0;
-                for (size_t j = 0; j < mChannels; ++j)
+                m_visualization_wave_data[i] = 0;
+                for (size_t j = 0; j < m_channels; ++j)
                 {
-                    const auto sample = mScratch.mData[i + j * aStride];
+                    const auto sample = m_scratch.mData[i + j * aStride];
                     const auto absvol = fabs(sample);
 
-                    if (mVisualizationChannelVolume[j] < absvol)
+                    if (m_visualization_channel_volume[j] < absvol)
                     {
-                        mVisualizationChannelVolume[j] = absvol;
+                        m_visualization_channel_volume[j] = absvol;
                     }
 
-                    mVisualizationWaveData[i] += sample;
+                    m_visualization_wave_data[i] += sample;
                 }
             }
         }
@@ -2403,19 +2358,19 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
             // Very unlikely failsafe branch
             for (size_t i = 0; i < 256; ++i)
             {
-                mVisualizationWaveData[i] = 0;
+                m_visualization_wave_data[i] = 0;
 
-                for (size_t j = 0; j < mChannels; ++j)
+                for (size_t j = 0; j < m_channels; ++j)
                 {
-                    const auto sample = mScratch.mData[(i % aSamples) + j * aStride];
+                    const auto sample = m_scratch.mData[(i % aSamples) + j * aStride];
                     const auto absvol = fabs(sample);
 
-                    if (mVisualizationChannelVolume[j] < absvol)
+                    if (m_visualization_channel_volume[j] < absvol)
                     {
-                        mVisualizationChannelVolume[j] = absvol;
+                        m_visualization_channel_volume[j] = absvol;
                     }
 
-                    mVisualizationWaveData[i] += sample;
+                    m_visualization_wave_data[i] += sample;
                 }
             }
         }
@@ -2463,59 +2418,59 @@ void AudioDevice::mix(float* aBuffer, size_t aSamples)
 {
     size_t stride = (aSamples + 15) & ~0xf;
     mix_internal(aSamples, stride);
-    interlace_samples_float(mScratch.mData, aBuffer, aSamples, mChannels, stride);
+    interlace_samples_float(m_scratch.mData, aBuffer, aSamples, m_channels, stride);
 }
 
 void AudioDevice::mixSigned16(short* aBuffer, size_t aSamples)
 {
     size_t stride = (aSamples + 15) & ~0xf;
     mix_internal(aSamples, stride);
-    interlace_samples_s16(mScratch.mData, aBuffer, aSamples, mChannels, stride);
+    interlace_samples_s16(m_scratch.mData, aBuffer, aSamples, m_channels, stride);
 }
 
 void AudioDevice::lockAudioMutex_internal()
 {
-    if (mAudioThreadMutex)
+    if (m_audio_thread_mutex)
     {
-        Thread::lockMutex(mAudioThreadMutex);
+        Thread::lockMutex(m_audio_thread_mutex);
     }
-    assert(!mInsideAudioThreadMutex);
-    mInsideAudioThreadMutex = true;
+    assert(!m_inside_audio_thread_mutex);
+    m_inside_audio_thread_mutex = true;
 }
 
 void AudioDevice::unlockAudioMutex_internal()
 {
-    assert(mInsideAudioThreadMutex);
-    mInsideAudioThreadMutex = false;
-    if (mAudioThreadMutex)
+    assert(m_inside_audio_thread_mutex);
+    m_inside_audio_thread_mutex = false;
+    if (m_audio_thread_mutex)
     {
-        Thread::unlockMutex(mAudioThreadMutex);
+        Thread::unlockMutex(m_audio_thread_mutex);
     }
 }
 
 float AudioDevice::post_clip_scaler() const
 {
-    return mPostClipScaler;
+    return m_post_clip_scaler;
 }
 
 Resampler AudioDevice::main_resampler() const
 {
-    return mResampler;
+    return m_resampler;
 }
 
 float AudioDevice::global_volume() const
 {
-    return mGlobalVolume;
+    return m_global_volume;
 }
 
 handle AudioDevice::getHandleFromVoice_internal(size_t aVoice) const
 {
-    if (mVoice[aVoice] == nullptr)
+    if (m_voice[aVoice] == nullptr)
     {
         return 0;
     }
 
-    return (aVoice + 1) | (mVoice[aVoice]->mPlayIndex << 12);
+    return (aVoice + 1) | (m_voice[aVoice]->mPlayIndex << 12);
 }
 
 int AudioDevice::getVoiceFromHandle_internal(handle voice_handle) const
@@ -2534,7 +2489,7 @@ int AudioDevice::getVoiceFromHandle_internal(handle voice_handle) const
     const int    ch  = (voice_handle & 0xfff) - 1;
     const size_t idx = voice_handle >> 12;
 
-    if (mVoice[ch] != nullptr && (mVoice[ch]->mPlayIndex & 0xfffff) == idx)
+    if (m_voice[ch] != nullptr && (m_voice[ch]->mPlayIndex & 0xfffff) == idx)
     {
         return ch;
     }
@@ -2544,17 +2499,17 @@ int AudioDevice::getVoiceFromHandle_internal(handle voice_handle) const
 
 size_t AudioDevice::max_active_voice_count() const
 {
-    return mMaxActiveVoices;
+    return m_max_active_voices;
 }
 
 size_t AudioDevice::active_voice_count()
 {
     lockAudioMutex_internal();
-    if (mActiveVoiceDirty)
+    if (m_active_voice_dirty)
     {
         calcActiveVoices_internal();
     }
-    const size_t c = mActiveVoiceCount;
+    const size_t c = m_active_voice_count;
     unlockAudioMutex_internal();
 
     return c;
@@ -2564,9 +2519,9 @@ size_t AudioDevice::voice_count()
 {
     lockAudioMutex_internal();
     int c = 0;
-    for (size_t i = 0; i < mHighestVoice; ++i)
+    for (size_t i = 0; i < m_highest_voice; ++i)
     {
-        if (mVoice[i])
+        if (m_voice[i])
         {
             ++c;
         }
@@ -2603,7 +2558,7 @@ time_t AudioDevice::getLoopPoint(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const time_t v = mVoice[ch]->mLoopPoint;
+    const time_t v = m_voice[ch]->mLoopPoint;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2617,7 +2572,7 @@ bool AudioDevice::is_voice_looping(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const bool v = mVoice[ch]->mFlags.Looping;
+    const bool v = m_voice[ch]->mFlags.Looping;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2631,7 +2586,7 @@ bool AudioDevice::getAutoStop(handle voice_handle)
         unlockAudioMutex_internal();
         return false;
     }
-    const auto v = mVoice[ch]->mFlags.DisableAutostop;
+    const auto v = m_voice[ch]->mFlags.DisableAutostop;
     unlockAudioMutex_internal();
     return !v;
 }
@@ -2645,7 +2600,7 @@ float AudioDevice::getInfo(handle voice_handle, size_t mInfoKey)
         unlockAudioMutex_internal();
         return 0;
     }
-    const float v = mVoice[ch]->getInfo(mInfoKey);
+    const float v = m_voice[ch]->getInfo(mInfoKey);
     unlockAudioMutex_internal();
     return v;
 }
@@ -2659,7 +2614,7 @@ float AudioDevice::volume(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const float v = mVoice[ch]->mSetVolume;
+    const float v = m_voice[ch]->mSetVolume;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2673,7 +2628,7 @@ float AudioDevice::overall_volume(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const float v = mVoice[ch]->mOverallVolume;
+    const float v = m_voice[ch]->mOverallVolume;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2687,7 +2642,7 @@ float AudioDevice::pan(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const float v = mVoice[ch]->mPan;
+    const float v = m_voice[ch]->mPan;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2701,7 +2656,7 @@ time_t AudioDevice::stream_time(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const double v = mVoice[ch]->mStreamTime;
+    const double v = m_voice[ch]->mStreamTime;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2715,7 +2670,7 @@ time_t AudioDevice::stream_position(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const double v = mVoice[ch]->mStreamPosition;
+    const double v = m_voice[ch]->mStreamPosition;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2729,7 +2684,7 @@ float AudioDevice::relative_play_speed(handle voice_handle)
         unlockAudioMutex_internal();
         return 1;
     }
-    const float v = mVoice[ch]->mSetRelativePlaySpeed;
+    const float v = m_voice[ch]->mSetRelativePlaySpeed;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2743,7 +2698,7 @@ float AudioDevice::sample_rate(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const float v = mVoice[ch]->mBaseSamplerate;
+    const float v = m_voice[ch]->mBaseSamplerate;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2757,7 +2712,7 @@ bool AudioDevice::pause(handle voice_handle)
         unlockAudioMutex_internal();
         return false;
     }
-    const auto v = mVoice[ch]->mFlags.Paused;
+    const auto v = m_voice[ch]->mFlags.Paused;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2771,7 +2726,7 @@ bool AudioDevice::is_voice_protected(handle voice_handle)
         unlockAudioMutex_internal();
         return false;
     }
-    const auto v = mVoice[ch]->mFlags.Protected;
+    const auto v = m_voice[ch]->mFlags.Protected;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2782,25 +2737,25 @@ int AudioDevice::findFreeVoice_internal()
     int    lowest_play_index       = -1;
 
     // (slowly) drag the highest active voice index down
-    if (mHighestVoice > 0 && mVoice[mHighestVoice - 1] == nullptr)
+    if (m_highest_voice > 0 && m_voice[m_highest_voice - 1] == nullptr)
     {
-        mHighestVoice--;
+        m_highest_voice--;
     }
 
     for (size_t i = 0; i < cer::voice_count; ++i)
     {
-        if (mVoice[i] == nullptr)
+        if (m_voice[i] == nullptr)
         {
-            if (i + 1 > mHighestVoice)
+            if (i + 1 > m_highest_voice)
             {
-                mHighestVoice = i + 1;
+                m_highest_voice = i + 1;
             }
             return i;
         }
 
-        if (!mVoice[i]->mFlags.Protected && mVoice[i]->mPlayIndex < lowest_play_index_value)
+        if (!m_voice[i]->mFlags.Protected && m_voice[i]->mPlayIndex < lowest_play_index_value)
         {
-            lowest_play_index_value = mVoice[i]->mPlayIndex;
+            lowest_play_index_value = m_voice[i]->mPlayIndex;
             lowest_play_index       = i;
         }
     }
@@ -2817,7 +2772,7 @@ size_t AudioDevice::getLoopCount(handle voice_handle)
         unlockAudioMutex_internal();
         return 0;
     }
-    const int v = mVoice[ch]->mLoopCount;
+    const int v = m_voice[ch]->mLoopCount;
     unlockAudioMutex_internal();
     return v;
 }
@@ -2825,47 +2780,47 @@ size_t AudioDevice::getLoopCount(handle voice_handle)
 // Returns current backend channel count (1 mono, 2 stereo, etc)
 size_t AudioDevice::backend_channels() const
 {
-    return mChannels;
+    return m_channels;
 }
 
 // Returns current backend sample rate
 size_t AudioDevice::backend_sample_rate() const
 {
-    return mSamplerate;
+    return m_samplerate;
 }
 
 // Returns current backend buffer size
 size_t AudioDevice::backend_buffer_size() const
 {
-    return mBufferSize;
+    return m_buffer_size;
 }
 
 // Get speaker position in 3d space
 Vector3 AudioDevice::speaker_position(size_t channel) const
 {
-    return m3dSpeakerPosition.at(channel);
+    return m_3d_speaker_position.at(channel);
 }
 
 void AudioDevice::setPostClipScaler(float aScaler)
 {
-    mPostClipScaler = aScaler;
+    m_post_clip_scaler = aScaler;
 }
 
 void AudioDevice::setMainResampler(Resampler aResampler)
 {
-    mResampler = aResampler;
+    m_resampler = aResampler;
 }
 
 void AudioDevice::setGlobalVolume(float aVolume)
 {
-    mGlobalVolumeFader.mActive = 0;
-    mGlobalVolume              = aVolume;
+    m_global_volume_fader.mActive = 0;
+    m_global_volume               = aVolume;
 }
 
 void AudioDevice::setRelativePlaySpeed(handle voice_handle, float aSpeed)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mRelativePlaySpeedFader.mActive = 0;
+        m_voice[ch]->mRelativePlaySpeedFader.mActive = 0;
         setVoiceRelativePlaySpeed_internal(ch, aSpeed);
     FOR_ALL_VOICES_POST
 }
@@ -2873,7 +2828,7 @@ void AudioDevice::setRelativePlaySpeed(handle voice_handle, float aSpeed)
 void AudioDevice::setSamplerate(handle voice_handle, float aSamplerate)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mBaseSamplerate = aSamplerate;
+        m_voice[ch]->mBaseSamplerate = aSamplerate;
         updateVoiceRelativePlaySpeed_internal(ch);
     FOR_ALL_VOICES_POST
 }
@@ -2891,27 +2846,28 @@ void AudioDevice::setMaxActiveVoiceCount(size_t aVoiceCount)
     assert(aVoiceCount <= cer::voice_count);
 
     lockAudioMutex_internal();
-    mMaxActiveVoices = aVoiceCount;
+    m_max_active_voices = aVoiceCount;
 
-    mResampleData.resize(aVoiceCount * 2);
-    mResampleDataOwner.resize(aVoiceCount);
+    m_resample_data.resize(aVoiceCount * 2);
+    m_resample_data_owner.resize(aVoiceCount);
 
-    mResampleDataBuffer = AlignedFloatBuffer{sample_granularity * max_channels * aVoiceCount * 2};
+    m_resample_data_buffer =
+        AlignedFloatBuffer{sample_granularity * max_channels * aVoiceCount * 2};
 
-    for (size_t i        = 0; i < aVoiceCount * 2; ++i)
-        mResampleData[i] = mResampleDataBuffer.mData + (sample_granularity * max_channels * i);
+    for (size_t i          = 0; i < aVoiceCount * 2; ++i)
+        m_resample_data[i] = m_resample_data_buffer.mData + (sample_granularity * max_channels * i);
 
-    for (size_t i             = 0; i < aVoiceCount; ++i)
-        mResampleDataOwner[i] = nullptr;
+    for (size_t i                = 0; i < aVoiceCount; ++i)
+        m_resample_data_owner[i] = nullptr;
 
-    mActiveVoiceDirty = true;
+    m_active_voice_dirty = true;
     unlockAudioMutex_internal();
 }
 
 void AudioDevice::setPauseAll(bool aPause)
 {
     lockAudioMutex_internal();
-    for (size_t ch = 0; ch < mHighestVoice; ++ch)
+    for (size_t ch = 0; ch < m_highest_voice; ++ch)
     {
         setVoicePause_internal(ch, aPause);
     }
@@ -2921,7 +2877,7 @@ void AudioDevice::setPauseAll(bool aPause)
 void AudioDevice::setProtectVoice(handle voice_handle, bool aProtect)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mFlags.Protected = aProtect;
+        m_voice[ch]->mFlags.Protected = aProtect;
     FOR_ALL_VOICES_POST
 }
 
@@ -2935,9 +2891,9 @@ void AudioDevice::setPan(handle voice_handle, float aPan)
 void AudioDevice::setChannelVolume(handle voice_handle, size_t aChannel, float aVolume)
 {
     FOR_ALL_VOICES_PRE
-        if (mVoice[ch]->mChannels > aChannel)
+        if (m_voice[ch]->mChannels > aChannel)
         {
-            mVoice[ch]->mChannelVolume[aChannel] = aVolume;
+            m_voice[ch]->mChannelVolume[aChannel] = aVolume;
         }
     FOR_ALL_VOICES_POST
 }
@@ -2945,29 +2901,29 @@ void AudioDevice::setChannelVolume(handle voice_handle, size_t aChannel, float a
 void AudioDevice::setPanAbsolute(handle voice_handle, float aLVolume, float aRVolume)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mPanFader.mActive = 0;
-        mVoice[ch]->mChannelVolume[0] = aLVolume;
-        mVoice[ch]->mChannelVolume[1] = aRVolume;
-        if (mVoice[ch]->mChannels == 4)
+        m_voice[ch]->mPanFader.mActive = 0;
+        m_voice[ch]->mChannelVolume[0] = aLVolume;
+        m_voice[ch]->mChannelVolume[1] = aRVolume;
+        if (m_voice[ch]->mChannels == 4)
         {
-            mVoice[ch]->mChannelVolume[2] = aLVolume;
-            mVoice[ch]->mChannelVolume[3] = aRVolume;
+            m_voice[ch]->mChannelVolume[2] = aLVolume;
+            m_voice[ch]->mChannelVolume[3] = aRVolume;
         }
-        if (mVoice[ch]->mChannels == 6)
+        if (m_voice[ch]->mChannels == 6)
         {
-            mVoice[ch]->mChannelVolume[2] = (aLVolume + aRVolume) * 0.5f;
-            mVoice[ch]->mChannelVolume[3] = (aLVolume + aRVolume) * 0.5f;
-            mVoice[ch]->mChannelVolume[4] = aLVolume;
-            mVoice[ch]->mChannelVolume[5] = aRVolume;
+            m_voice[ch]->mChannelVolume[2] = (aLVolume + aRVolume) * 0.5f;
+            m_voice[ch]->mChannelVolume[3] = (aLVolume + aRVolume) * 0.5f;
+            m_voice[ch]->mChannelVolume[4] = aLVolume;
+            m_voice[ch]->mChannelVolume[5] = aRVolume;
         }
-        if (mVoice[ch]->mChannels == 8)
+        if (m_voice[ch]->mChannels == 8)
         {
-            mVoice[ch]->mChannelVolume[2] = (aLVolume + aRVolume) * 0.5f;
-            mVoice[ch]->mChannelVolume[3] = (aLVolume + aRVolume) * 0.5f;
-            mVoice[ch]->mChannelVolume[4] = aLVolume;
-            mVoice[ch]->mChannelVolume[5] = aRVolume;
-            mVoice[ch]->mChannelVolume[6] = aLVolume;
-            mVoice[ch]->mChannelVolume[7] = aRVolume;
+            m_voice[ch]->mChannelVolume[2] = (aLVolume + aRVolume) * 0.5f;
+            m_voice[ch]->mChannelVolume[3] = (aLVolume + aRVolume) * 0.5f;
+            m_voice[ch]->mChannelVolume[4] = aLVolume;
+            m_voice[ch]->mChannelVolume[5] = aRVolume;
+            m_voice[ch]->mChannelVolume[6] = aLVolume;
+            m_voice[ch]->mChannelVolume[7] = aRVolume;
         }
     FOR_ALL_VOICES_POST
 }
@@ -2975,36 +2931,36 @@ void AudioDevice::setPanAbsolute(handle voice_handle, float aLVolume, float aRVo
 void AudioDevice::setInaudibleBehavior(handle voice_handle, bool aMustTick, bool aKill)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mFlags.InaudibleKill = aKill;
-        mVoice[ch]->mFlags.InaudibleTick = aMustTick;
+        m_voice[ch]->mFlags.InaudibleKill = aKill;
+        m_voice[ch]->mFlags.InaudibleTick = aMustTick;
     FOR_ALL_VOICES_POST
 }
 
 void AudioDevice::setLoopPoint(handle voice_handle, time_t aLoopPoint)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mLoopPoint = aLoopPoint;
+        m_voice[ch]->mLoopPoint = aLoopPoint;
     FOR_ALL_VOICES_POST
 }
 
 void AudioDevice::setLooping(handle voice_handle, bool aLooping)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mFlags.Looping = aLooping;
+        m_voice[ch]->mFlags.Looping = aLooping;
     FOR_ALL_VOICES_POST
 }
 
 void AudioDevice::setAutoStop(handle voice_handle, bool aAutoStop)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mFlags.DisableAutostop = !aAutoStop;
+        m_voice[ch]->mFlags.DisableAutostop = !aAutoStop;
     FOR_ALL_VOICES_POST
 }
 
 void AudioDevice::setVolume(handle voice_handle, float aVolume)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mVolumeFader.mActive = 0;
+        m_voice[ch]->mVolumeFader.mActive = 0;
         setVoiceVolume_internal(ch, aVolume);
     FOR_ALL_VOICES_POST
 }
@@ -3012,18 +2968,18 @@ void AudioDevice::setVolume(handle voice_handle, float aVolume)
 void AudioDevice::setDelaySamples(handle voice_handle, size_t aSamples)
 {
     FOR_ALL_VOICES_PRE
-        mVoice[ch]->mDelaySamples = aSamples;
+        m_voice[ch]->mDelaySamples = aSamples;
     FOR_ALL_VOICES_POST
 }
 
 void AudioDevice::setVisualizationEnable(bool aEnable)
 {
-    mFlags.EnableVisualization = aEnable;
+    m_flags.EnableVisualization = aEnable;
 }
 
 void AudioDevice::speaker_position(size_t channel, Vector3 value)
 {
-    m3dSpeakerPosition.at(channel) = value;
+    m_3d_speaker_position.at(channel) = value;
 }
 
 struct mat3 : std::array<Vector3, 3>
@@ -3056,12 +3012,11 @@ static mat3 lookatRH(const Vector3& at, Vector3 up)
 #define MAX(a, b) ((a) > (b)) ? (a) : (b)
 #endif
 
-float doppler(
-    Vector3        aDeltaPos,
-    const Vector3& aSrcVel,
-    const Vector3& aDstVel,
-    float          aFactor,
-    float          aSoundSpeed)
+float doppler(Vector3        aDeltaPos,
+              const Vector3& aSrcVel,
+              const Vector3& aDstVel,
+              float          aFactor,
+              float          aSoundSpeed)
 {
     float deltamag = length(aDeltaPos);
     if (deltamag == 0)
@@ -3108,18 +3063,18 @@ void AudioDevice::update3dVoices_internal(std::span<const size_t> voiceList)
 {
     auto speaker = std::array<Vector3, max_channels>{};
 
-    for (size_t i  = 0; i < mChannels; ++i)
-        speaker[i] = normalize(m3dSpeakerPosition[i]);
+    for (size_t i  = 0; i < m_channels; ++i)
+        speaker[i] = normalize(m_3d_speaker_position[i]);
 
-    const auto lpos = m3dPosition;
-    const auto lvel = m3dVelocity;
-    const auto at   = m3dAt;
-    const auto up   = m3dUp;
+    const auto lpos = m_3d_position;
+    const auto lvel = m_3d_velocity;
+    const auto at   = m_3d_at;
+    const auto up   = m_3d_up;
     const auto m    = lookatRH(at, up);
 
     for (const size_t voice_id : voiceList)
     {
-        auto& v = m3dData[voice_id];
+        auto& v = m_3d_data[voice_id];
 
         auto vol = v.mCollider != nullptr ? v.mCollider->collide(this, v, v.mColliderData) : 1.0f;
 
@@ -3172,7 +3127,7 @@ void AudioDevice::update3dVoices_internal(std::span<const size_t> voiceList)
         // (todo) vol *= conev;
 
         // doppler
-        v.mDopplerValue = doppler(pos, vel, lvel, v.m3dDopplerFactor, m3dSoundSpeed);
+        v.mDopplerValue = doppler(pos, vel, lvel, v.m3dDopplerFactor, m_3d_sound_speed);
 
         // panning
         pos = normalize(m * pos);
@@ -3180,7 +3135,7 @@ void AudioDevice::update3dVoices_internal(std::span<const size_t> voiceList)
         v.mChannelVolume = {};
 
         // Apply volume to channels based on speaker vectors
-        for (size_t j = 0; j < mChannels; ++j)
+        for (size_t j = 0; j < m_channels; ++j)
         {
             float speakervol = (dot(speaker[j], pos) + 1) / 2;
             if (is_zero(speaker[j]))
@@ -3202,13 +3157,13 @@ void AudioDevice::update3dAudio()
 
     // Step 1 - find voices that need 3d processing
     lockAudioMutex_internal();
-    for (size_t i = 0; i < mHighestVoice; ++i)
+    for (size_t i = 0; i < m_highest_voice; ++i)
     {
-        if (mVoice[i] && mVoice[i]->mFlags.Process3D)
+        if (m_voice[i] && m_voice[i]->mFlags.Process3D)
         {
             voices[voicecount] = i;
             voicecount++;
-            m3dData[i].mFlags = mVoice[i]->mFlags;
+            m_3d_data[i].mFlags = m_voice[i]->mFlags;
         }
     }
     unlockAudioMutex_internal();
@@ -3222,9 +3177,9 @@ void AudioDevice::update3dAudio()
     lockAudioMutex_internal();
     for (size_t i = 0; i < voicecount; ++i)
     {
-        auto& v = m3dData[voices[i]];
+        auto& v = m_3d_data[voices[i]];
 
-        if (const auto& vi = mVoice[voices[i]])
+        if (const auto& vi = m_voice[voices[i]])
         {
             updateVoiceRelativePlaySpeed_internal(voices[i]);
             updateVoiceVolume_internal(voices[i]);
@@ -3250,7 +3205,7 @@ void AudioDevice::update3dAudio()
         }
     }
 
-    mActiveVoiceDirty = true;
+    m_active_voice_dirty = true;
     unlockAudioMutex_internal();
 }
 
@@ -3273,18 +3228,18 @@ handle AudioDevice::play3d(
         return h;
     }
 
-    m3dData[v].mHandle          = h;
-    mVoice[v]->mFlags.Process3D = true;
+    m_3d_data[v].mHandle         = h;
+    m_voice[v]->mFlags.Process3D = true;
 
     set3dSourceParameters(h, pos, vel);
 
     int samples = 0;
     if (sound.distance_delay)
     {
-        const auto corrected_pos = mVoice[v]->mFlags.ListenerRelative ? pos : pos - m3dPosition;
+        const auto corrected_pos = m_voice[v]->mFlags.ListenerRelative ? pos : pos - m_3d_position;
 
         const float dist = length(corrected_pos);
-        samples += int(floor(dist / m3dSoundSpeed * float(mSamplerate)));
+        samples += int(floor(dist / m_3d_sound_speed * float(m_samplerate)));
     }
 
     update3dVoices_internal({reinterpret_cast<size_t*>(&v), 1});
@@ -3292,7 +3247,7 @@ handle AudioDevice::play3d(
 
     for (size_t j = 0; j < max_channels; ++j)
     {
-        mVoice[v]->mChannelVolume[j] = m3dData[v].mChannelVolume[j];
+        m_voice[v]->mChannelVolume[j] = m_3d_data[v].mChannelVolume[j];
     }
 
     updateVoiceVolume_internal(v);
@@ -3300,26 +3255,26 @@ handle AudioDevice::play3d(
     // Fix initial voice volume ramp up
     for (size_t i = 0; i < max_channels; ++i)
     {
-        mVoice[v]->mCurrentChannelVolume[i] =
-            mVoice[v]->mChannelVolume[i] * mVoice[v]->mOverallVolume;
+        m_voice[v]->mCurrentChannelVolume[i] =
+            m_voice[v]->mChannelVolume[i] * m_voice[v]->mOverallVolume;
     }
 
-    if (mVoice[v]->mOverallVolume < 0.01f)
+    if (m_voice[v]->mOverallVolume < 0.01f)
     {
         // Inaudible.
-        mVoice[v]->mFlags.Inaudible = true;
+        m_voice[v]->mFlags.Inaudible = true;
 
-        if (mVoice[v]->mFlags.InaudibleKill)
+        if (m_voice[v]->mFlags.InaudibleKill)
         {
             stopVoice_internal(v);
         }
     }
     else
     {
-        mVoice[v]->mFlags.Inaudible = false;
+        m_voice[v]->mFlags.Inaudible = false;
     }
 
-    mActiveVoiceDirty = true;
+    m_active_voice_dirty = true;
 
     unlockAudioMutex_internal();
     setDelaySamples(h, samples);
@@ -3344,18 +3299,18 @@ handle AudioDevice::play3d_clocked(
         unlockAudioMutex_internal();
         return h;
     }
-    m3dData[v].mHandle          = h;
-    mVoice[v]->mFlags.Process3D = true;
+    m_3d_data[v].mHandle         = h;
+    m_voice[v]->mFlags.Process3D = true;
     set3dSourceParameters(h, pos, vel);
-    time_t lasttime = mLastClockedTime;
+    time_t lasttime = m_last_clocked_time;
     if (lasttime == 0)
     {
-        lasttime         = sound_time;
-        mLastClockedTime = sound_time;
+        lasttime            = sound_time;
+        m_last_clocked_time = sound_time;
     }
     unlockAudioMutex_internal();
 
-    auto samples = int(floor((sound_time - lasttime) * mSamplerate));
+    auto samples = int(floor((sound_time - lasttime) * m_samplerate));
 
     // Make sure we don't delay too much (or overflow)
     if (samples < 0 || samples > 2048)
@@ -3366,7 +3321,7 @@ handle AudioDevice::play3d_clocked(
     if (sound.distance_delay)
     {
         const float dist = length(pos);
-        samples += int(floor((dist / m3dSoundSpeed) * mSamplerate));
+        samples += int(floor((dist / m_3d_sound_speed) * m_samplerate));
     }
 
     update3dVoices_internal({reinterpret_cast<size_t*>(&v), 1});
@@ -3375,7 +3330,7 @@ handle AudioDevice::play3d_clocked(
 
     for (size_t j = 0; j < max_channels; ++j)
     {
-        mVoice[v]->mChannelVolume[j] = m3dData[v].mChannelVolume[j];
+        m_voice[v]->mChannelVolume[j] = m_3d_data[v].mChannelVolume[j];
     }
 
     updateVoiceVolume_internal(v);
@@ -3383,26 +3338,26 @@ handle AudioDevice::play3d_clocked(
     // Fix initial voice volume ramp up
     for (size_t i = 0; i < max_channels; ++i)
     {
-        mVoice[v]->mCurrentChannelVolume[i] =
-            mVoice[v]->mChannelVolume[i] * mVoice[v]->mOverallVolume;
+        m_voice[v]->mCurrentChannelVolume[i] =
+            m_voice[v]->mChannelVolume[i] * m_voice[v]->mOverallVolume;
     }
 
-    if (mVoice[v]->mOverallVolume < 0.01f)
+    if (m_voice[v]->mOverallVolume < 0.01f)
     {
         // Inaudible.
-        mVoice[v]->mFlags.Inaudible = true;
+        m_voice[v]->mFlags.Inaudible = true;
 
-        if (mVoice[v]->mFlags.InaudibleKill)
+        if (m_voice[v]->mFlags.InaudibleKill)
         {
             stopVoice_internal(v);
         }
     }
     else
     {
-        mVoice[v]->mFlags.Inaudible = false;
+        m_voice[v]->mFlags.Inaudible = false;
     }
 
-    mActiveVoiceDirty = true;
+    m_active_voice_dirty = true;
     unlockAudioMutex_internal();
 
     setDelaySamples(h, samples);
@@ -3415,54 +3370,54 @@ handle AudioDevice::play3d_clocked(
 void AudioDevice::set3dSoundSpeed(float aSpeed)
 {
     assert(aSpeed > 0.0f);
-    m3dSoundSpeed = aSpeed;
+    m_3d_sound_speed = aSpeed;
 }
 
 
 float AudioDevice::get3dSoundSpeed() const
 {
-    return m3dSoundSpeed;
+    return m_3d_sound_speed;
 }
 
 
 void AudioDevice::set3dListenerParameters(Vector3 pos, Vector3 at, Vector3 up, Vector3 velocity)
 {
-    m3dPosition = pos;
-    m3dAt       = at;
-    m3dUp       = up;
-    m3dVelocity = velocity;
+    m_3d_position = pos;
+    m_3d_at       = at;
+    m_3d_up       = up;
+    m_3d_velocity = velocity;
 }
 
 
 void AudioDevice::set3dListenerPosition(Vector3 value)
 {
-    m3dPosition = value;
+    m_3d_position = value;
 }
 
 
 void AudioDevice::set3dListenerAt(Vector3 value)
 {
-    m3dAt = value;
+    m_3d_at = value;
 }
 
 
 void AudioDevice::set3dListenerUp(Vector3 value)
 {
-    m3dUp = value;
+    m_3d_up = value;
 }
 
 
 void AudioDevice::set3dListenerVelocity(Vector3 value)
 {
-    m3dVelocity = value;
+    m_3d_velocity = value;
 }
 
 
 void AudioDevice::set3dSourceParameters(handle voice_handle, Vector3 aPos, Vector3 aVelocity)
 {
     FOR_ALL_VOICES_PRE_3D
-        m3dData[ch].m3dPosition = aPos;
-        m3dData[ch].m3dVelocity = aVelocity;
+        m_3d_data[ch].m3dPosition = aPos;
+        m_3d_data[ch].m3dVelocity = aVelocity;
     FOR_ALL_VOICES_POST_3D
 }
 
@@ -3470,7 +3425,7 @@ void AudioDevice::set3dSourceParameters(handle voice_handle, Vector3 aPos, Vecto
 void AudioDevice::set3dSourcePosition(handle voice_handle, Vector3 value)
 {
     FOR_ALL_VOICES_PRE_3D
-        m3dData[ch].m3dPosition = value;
+        m_3d_data[ch].m3dPosition = value;
     FOR_ALL_VOICES_POST_3D
 }
 
@@ -3478,7 +3433,7 @@ void AudioDevice::set3dSourcePosition(handle voice_handle, Vector3 value)
 void AudioDevice::set3dSourceVelocity(handle voice_handle, Vector3 velocity)
 {
     FOR_ALL_VOICES_PRE_3D
-        m3dData[ch].m3dVelocity = velocity;
+        m_3d_data[ch].m3dVelocity = velocity;
     FOR_ALL_VOICES_POST_3D
 }
 
@@ -3488,8 +3443,8 @@ void AudioDevice::set3dSourceMinMaxDistance(handle voice_handle,
                                             float  aMaxDistance)
 {
     FOR_ALL_VOICES_PRE_3D
-        m3dData[ch].m3dMinDistance = aMinDistance;
-        m3dData[ch].m3dMaxDistance = aMaxDistance;
+        m_3d_data[ch].m3dMinDistance = aMinDistance;
+        m_3d_data[ch].m3dMaxDistance = aMaxDistance;
     FOR_ALL_VOICES_POST_3D
 }
 
@@ -3499,8 +3454,8 @@ void AudioDevice::set3dSourceAttenuation(handle           voice_handle,
                                          float            aAttenuationRolloffFactor)
 {
     FOR_ALL_VOICES_PRE_3D
-        m3dData[ch].m3dAttenuationModel   = aAttenuationModel;
-        m3dData[ch].m3dAttenuationRolloff = aAttenuationRolloffFactor;
+        m_3d_data[ch].m3dAttenuationModel   = aAttenuationModel;
+        m_3d_data[ch].m3dAttenuationRolloff = aAttenuationRolloffFactor;
     FOR_ALL_VOICES_POST_3D
 }
 
@@ -3508,7 +3463,7 @@ void AudioDevice::set3dSourceAttenuation(handle           voice_handle,
 void AudioDevice::set3dSourceDopplerFactor(handle voice_handle, float aDopplerFactor)
 {
     FOR_ALL_VOICES_PRE_3D
-        m3dData[ch].m3dDopplerFactor = aDopplerFactor;
+        m_3d_data[ch].m3dDopplerFactor = aDopplerFactor;
     FOR_ALL_VOICES_POST_3D
 }
 
@@ -3521,10 +3476,10 @@ void AudioDevice::setGlobalFilter(size_t aFilterId, Filter* aFilter)
 
     lockAudioMutex_internal();
 
-    mFilter[aFilterId] = aFilter;
+    m_filter[aFilterId] = aFilter;
     if (aFilter)
     {
-        mFilterInstance[aFilterId] = mFilter[aFilterId]->createInstance();
+        m_filter_instance[aFilterId] = m_filter[aFilterId]->createInstance();
     }
 
     unlockAudioMutex_internal();
@@ -3544,9 +3499,9 @@ std::optional<float> AudioDevice::filter_parameter(handle voice_handle,
     if (voice_handle == 0)
     {
         lockAudioMutex_internal();
-        if (mFilterInstance[filter_id])
+        if (m_filter_instance[filter_id])
         {
-            ret = mFilterInstance[filter_id]->getFilterParameter(attribute_id);
+            ret = m_filter_instance[filter_id]->getFilterParameter(attribute_id);
         }
         unlockAudioMutex_internal();
         return ret;
@@ -3559,9 +3514,9 @@ std::optional<float> AudioDevice::filter_parameter(handle voice_handle,
     }
 
     lockAudioMutex_internal();
-    if (mVoice[ch] && mVoice[ch]->mFilter[filter_id])
+    if (m_voice[ch] && m_voice[ch]->mFilter[filter_id])
     {
-        ret = mVoice[ch]->mFilter[filter_id]->getFilterParameter(attribute_id);
+        ret = m_voice[ch]->mFilter[filter_id]->getFilterParameter(attribute_id);
     }
     unlockAudioMutex_internal();
 
@@ -3581,18 +3536,18 @@ void AudioDevice::set_filter_parameter(handle voice_handle,
     if (voice_handle == 0)
     {
         lockAudioMutex_internal();
-        if (mFilterInstance[filter_id])
+        if (m_filter_instance[filter_id])
         {
-            mFilterInstance[filter_id]->setFilterParameter(attribute_id, value);
+            m_filter_instance[filter_id]->setFilterParameter(attribute_id, value);
         }
         unlockAudioMutex_internal();
         return;
     }
 
     FOR_ALL_VOICES_PRE
-        if (mVoice[ch] && mVoice[ch]->mFilter[filter_id])
+        if (m_voice[ch] && m_voice[ch]->mFilter[filter_id])
         {
-            mVoice[ch]->mFilter[filter_id]->setFilterParameter(attribute_id, value);
+            m_voice[ch]->mFilter[filter_id]->setFilterParameter(attribute_id, value);
         }
     FOR_ALL_VOICES_POST
 }
@@ -3600,9 +3555,9 @@ void AudioDevice::set_filter_parameter(handle voice_handle,
 void AudioDevice::fade_filter_parameter(
     handle voice_handle,
     size_t aFilterId,
-    size_t aAttributeId,
-    float  aTo,
-    double aTime)
+    size_t attribute_id,
+    float  to,
+    double time)
 {
     if (aFilterId >= filters_per_stream)
     {
@@ -3612,34 +3567,38 @@ void AudioDevice::fade_filter_parameter(
     if (voice_handle == 0)
     {
         lockAudioMutex_internal();
-        if (mFilterInstance[aFilterId])
+        if (m_filter_instance[aFilterId])
         {
-            mFilterInstance[aFilterId]->fadeFilterParameter(aAttributeId, aTo, aTime, mStreamTime);
+            m_filter_instance[aFilterId]->fadeFilterParameter(attribute_id,
+                                                              to,
+                                                              time,
+                                                              m_stream_time);
         }
         unlockAudioMutex_internal();
         return;
     }
 
     FOR_ALL_VOICES_PRE
-        if (mVoice[ch] && mVoice[ch]->mFilter[aFilterId])
+        if (m_voice[ch] && m_voice[ch]->mFilter[aFilterId])
         {
-            mVoice[ch]->mFilter[aFilterId]->fadeFilterParameter(
-                aAttributeId,
-                aTo,
-                aTime,
-                mStreamTime);
+            m_voice[ch]->mFilter[aFilterId]->fadeFilterParameter(
+                attribute_id,
+                to,
+                time,
+                m_stream_time);
         }
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::oscillate_filter_parameter(handle voice_handle,
-                                             size_t aFilterId,
-                                             size_t aAttributeId,
-                                             float  aFrom,
-                                             float  aTo,
-                                             double aTime)
+void AudioDevice::oscillate_filter_parameter(
+    handle voice_handle,
+    size_t filter_id,
+    size_t attribute_id,
+    float  from,
+    float  to,
+    double time)
 {
-    if (aFilterId >= filters_per_stream)
+    if (filter_id >= filters_per_stream)
     {
         return;
     }
@@ -3647,26 +3606,26 @@ void AudioDevice::oscillate_filter_parameter(handle voice_handle,
     if (voice_handle == 0)
     {
         lockAudioMutex_internal();
-        if (mFilterInstance[aFilterId])
+        if (m_filter_instance[filter_id])
         {
-            mFilterInstance[aFilterId]->oscillateFilterParameter(aAttributeId,
-                                                                 aFrom,
-                                                                 aTo,
-                                                                 aTime,
-                                                                 mStreamTime);
+            m_filter_instance[filter_id]->oscillateFilterParameter(attribute_id,
+                from,
+                to,
+                time,
+                m_stream_time);
         }
         unlockAudioMutex_internal();
         return;
     }
 
     FOR_ALL_VOICES_PRE
-        if (mVoice[ch] && mVoice[ch]->mFilter[aFilterId])
+        if (m_voice[ch] && m_voice[ch]->mFilter[filter_id])
         {
-            mVoice[ch]->mFilter[aFilterId]->oscillateFilterParameter(aAttributeId,
-                aFrom,
-                aTo,
-                aTime,
-                mStreamTime);
+            m_voice[ch]->mFilter[filter_id]->oscillateFilterParameter(attribute_id,
+                from,
+                to,
+                time,
+                m_stream_time);
         }
     FOR_ALL_VOICES_POST
 }
@@ -3678,61 +3637,61 @@ handle AudioDevice::createVoiceGroup()
 
     size_t i;
     // Check if there's any deleted voice groups and re-use if found
-    for (i = 0; i < mVoiceGroupCount; ++i)
+    for (i = 0; i < m_voice_group_count; ++i)
     {
-        if (mVoiceGroup[i] == nullptr)
+        if (m_voice_group[i] == nullptr)
         {
-            mVoiceGroup[i] = new size_t[17];
-            if (mVoiceGroup[i] == nullptr)
+            m_voice_group[i] = new size_t[17];
+            if (m_voice_group[i] == nullptr)
             {
                 unlockAudioMutex_internal();
                 return 0;
             }
-            mVoiceGroup[i][0] = 16;
-            mVoiceGroup[i][1] = 0;
+            m_voice_group[i][0] = 16;
+            m_voice_group[i][1] = 0;
             unlockAudioMutex_internal();
             return 0xfffff000 | i;
         }
     }
-    if (mVoiceGroupCount == 4096)
+    if (m_voice_group_count == 4096)
     {
         unlockAudioMutex_internal();
         return 0;
     }
-    size_t oldcount = mVoiceGroupCount;
-    if (mVoiceGroupCount == 0)
+    size_t oldcount = m_voice_group_count;
+    if (m_voice_group_count == 0)
     {
-        mVoiceGroupCount = 4;
+        m_voice_group_count = 4;
     }
-    mVoiceGroupCount *= 2;
-    size_t** vg = new size_t*[mVoiceGroupCount];
+    m_voice_group_count *= 2;
+    size_t** vg = new size_t*[m_voice_group_count];
     if (vg == nullptr)
     {
-        mVoiceGroupCount = oldcount;
+        m_voice_group_count = oldcount;
         unlockAudioMutex_internal();
         return 0;
     }
     for (i = 0; i < oldcount; ++i)
     {
-        vg[i] = mVoiceGroup[i];
+        vg[i] = m_voice_group[i];
     }
 
-    for (; i < mVoiceGroupCount; ++i)
+    for (; i < m_voice_group_count; ++i)
     {
         vg[i] = nullptr;
     }
 
-    delete[] mVoiceGroup;
-    mVoiceGroup    = vg;
-    i              = oldcount;
-    mVoiceGroup[i] = new size_t[17];
-    if (mVoiceGroup[i] == nullptr)
+    delete[] m_voice_group;
+    m_voice_group    = vg;
+    i                = oldcount;
+    m_voice_group[i] = new size_t[17];
+    if (m_voice_group[i] == nullptr)
     {
         unlockAudioMutex_internal();
         return 0;
     }
-    mVoiceGroup[i][0] = 16;
-    mVoiceGroup[i][1] = 0;
+    m_voice_group[i][0] = 16;
+    m_voice_group[i][1] = 0;
     unlockAudioMutex_internal();
     return 0xfffff000 | i;
 }
@@ -3746,8 +3705,8 @@ void AudioDevice::destroyVoiceGroup(handle aVoiceGroupHandle)
     const int c = aVoiceGroupHandle & 0xfff;
 
     lockAudioMutex_internal();
-    delete[] mVoiceGroup[c];
-    mVoiceGroup[c] = nullptr;
+    delete[] m_voice_group[c];
+    m_voice_group[c] = nullptr;
     unlockAudioMutex_internal();
 }
 
@@ -3767,18 +3726,18 @@ void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle voice_handle)
 
     lockAudioMutex_internal();
 
-    for (size_t i = 1; i < mVoiceGroup[c][0]; ++i)
+    for (size_t i = 1; i < m_voice_group[c][0]; ++i)
     {
-        if (mVoiceGroup[c][i] == voice_handle)
+        if (m_voice_group[c][i] == voice_handle)
         {
             unlockAudioMutex_internal();
             return; // already there
         }
 
-        if (mVoiceGroup[c][i] == 0)
+        if (m_voice_group[c][i] == 0)
         {
-            mVoiceGroup[c][i]     = voice_handle;
-            mVoiceGroup[c][i + 1] = 0;
+            m_voice_group[c][i]     = voice_handle;
+            m_voice_group[c][i + 1] = 0;
 
             unlockAudioMutex_internal();
             return;
@@ -3786,18 +3745,18 @@ void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle voice_handle)
     }
 
     // Full group, allocate more memory
-    const auto n = new size_t[mVoiceGroup[c][0] * 2 + 1];
+    const auto n = new size_t[m_voice_group[c][0] * 2 + 1];
 
-    for (size_t i = 0; i < mVoiceGroup[c][0]; ++i)
+    for (size_t i = 0; i < m_voice_group[c][0]; ++i)
     {
-        n[i] = mVoiceGroup[c][i];
+        n[i] = m_voice_group[c][i];
     }
 
     n[n[0]]     = voice_handle;
     n[n[0] + 1] = 0;
     n[0] *= 2;
-    delete[] mVoiceGroup[c];
-    mVoiceGroup[c] = n;
+    delete[] m_voice_group[c];
+    m_voice_group[c] = n;
     unlockAudioMutex_internal();
 }
 
@@ -3810,13 +3769,13 @@ bool AudioDevice::isVoiceGroup(handle aVoiceGroupHandle)
     }
 
     const size_t c = aVoiceGroupHandle & 0xfff;
-    if (c >= mVoiceGroupCount)
+    if (c >= m_voice_group_count)
     {
         return false;
     }
 
     lockAudioMutex_internal();
-    const bool res = mVoiceGroup[c] != nullptr;
+    const bool res = m_voice_group[c] != nullptr;
     unlockAudioMutex_internal();
 
     return res;
@@ -3835,7 +3794,7 @@ bool AudioDevice::isVoiceGroupEmpty(handle aVoiceGroupHandle)
     const int c = aVoiceGroupHandle & 0xfff;
 
     lockAudioMutex_internal();
-    const bool res = mVoiceGroup[c][1] == 0;
+    const bool res = m_voice_group[c][1] == 0;
     unlockAudioMutex_internal();
 
     return res;
@@ -3854,17 +3813,17 @@ void AudioDevice::trimVoiceGroup_internal(handle aVoiceGroupHandle)
     lockAudioMutex_internal();
 
     // empty group
-    if (mVoiceGroup[c][1] == 0)
+    if (m_voice_group[c][1] == 0)
     {
         unlockAudioMutex_internal();
         return;
     }
 
     // first item in voice group is number of allocated indices
-    for (size_t i = 1; i < mVoiceGroup[c][0]; ++i)
+    for (size_t i = 1; i < m_voice_group[c][0]; ++i)
     {
         // If we hit a voice in the group that's not set, we're done
-        if (mVoiceGroup[c][i] == 0)
+        if (m_voice_group[c][i] == 0)
         {
             unlockAudioMutex_internal();
             return;
@@ -3872,21 +3831,21 @@ void AudioDevice::trimVoiceGroup_internal(handle aVoiceGroupHandle)
 
         unlockAudioMutex_internal();
         while (!is_valid_voice_handle(
-            mVoiceGroup[c][i])) // function locks mutex, so we need to unlock it before the call
+            m_voice_group[c][i])) // function locks mutex, so we need to unlock it before the call
         {
             lockAudioMutex_internal();
             // current index is an invalid handle, move all following handles backwards
-            for (size_t j = i; j < mVoiceGroup[c][0] - 1; ++j)
+            for (size_t j = i; j < m_voice_group[c][0] - 1; ++j)
             {
-                mVoiceGroup[c][j] = mVoiceGroup[c][j + 1];
+                m_voice_group[c][j] = m_voice_group[c][j + 1];
                 // not a full group, we can stop copying
-                if (mVoiceGroup[c][j] == 0)
+                if (m_voice_group[c][j] == 0)
                     break;
             }
             // be sure to mark the last one as unused in any case
-            mVoiceGroup[c][mVoiceGroup[c][0] - 1] = 0;
+            m_voice_group[c][m_voice_group[c][0] - 1] = 0;
             // did we end up with an empty group? we're done then
-            if (mVoiceGroup[c][i] == 0)
+            if (m_voice_group[c][i] == 0)
             {
                 unlockAudioMutex_internal();
                 return;
@@ -3906,28 +3865,28 @@ handle* AudioDevice::voiceGroupHandleToArray_internal(handle aVoiceGroupHandle) 
     }
 
     const size_t c = aVoiceGroupHandle & 0xfff;
-    if (c >= mVoiceGroupCount)
+    if (c >= m_voice_group_count)
     {
         return nullptr;
     }
 
-    if (mVoiceGroup[c] == nullptr)
+    if (m_voice_group[c] == nullptr)
     {
         return nullptr;
     }
 
-    return mVoiceGroup[c] + 1;
+    return m_voice_group[c] + 1;
 }
 
 void AudioDevice::setVoiceRelativePlaySpeed_internal(size_t aVoice, float aSpeed)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
+    assert(m_inside_audio_thread_mutex);
     assert(aSpeed > 0.0f);
 
-    if (mVoice[aVoice])
+    if (m_voice[aVoice])
     {
-        mVoice[aVoice]->mSetRelativePlaySpeed = aSpeed;
+        m_voice[aVoice]->mSetRelativePlaySpeed = aSpeed;
         updateVoiceRelativePlaySpeed_internal(aVoice);
     }
 }
@@ -3935,47 +3894,47 @@ void AudioDevice::setVoiceRelativePlaySpeed_internal(size_t aVoice, float aSpeed
 void AudioDevice::setVoicePause_internal(size_t aVoice, int aPause)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
-    mActiveVoiceDirty = true;
+    assert(m_inside_audio_thread_mutex);
+    m_active_voice_dirty = true;
 
-    if (mVoice[aVoice])
+    if (m_voice[aVoice])
     {
-        mVoice[aVoice]->mPauseScheduler.mActive = 0;
-        mVoice[aVoice]->mFlags.Paused           = aPause;
+        m_voice[aVoice]->mPauseScheduler.mActive = 0;
+        m_voice[aVoice]->mFlags.Paused           = aPause;
     }
 }
 
 void AudioDevice::setVoicePan_internal(size_t aVoice, float aPan)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
-    if (mVoice[aVoice])
+    assert(m_inside_audio_thread_mutex);
+    if (m_voice[aVoice])
     {
-        mVoice[aVoice]->mPan              = aPan;
-        const auto l                      = float(std::cos((aPan + 1) * M_PI / 4));
-        const auto r                      = float(std::sin((aPan + 1) * M_PI / 4));
-        mVoice[aVoice]->mChannelVolume[0] = l;
-        mVoice[aVoice]->mChannelVolume[1] = r;
-        if (mVoice[aVoice]->mChannels == 4)
+        m_voice[aVoice]->mPan              = aPan;
+        const auto l                       = float(std::cos((aPan + 1) * M_PI / 4));
+        const auto r                       = float(std::sin((aPan + 1) * M_PI / 4));
+        m_voice[aVoice]->mChannelVolume[0] = l;
+        m_voice[aVoice]->mChannelVolume[1] = r;
+        if (m_voice[aVoice]->mChannels == 4)
         {
-            mVoice[aVoice]->mChannelVolume[2] = l;
-            mVoice[aVoice]->mChannelVolume[3] = r;
+            m_voice[aVoice]->mChannelVolume[2] = l;
+            m_voice[aVoice]->mChannelVolume[3] = r;
         }
-        if (mVoice[aVoice]->mChannels == 6)
+        if (m_voice[aVoice]->mChannels == 6)
         {
-            mVoice[aVoice]->mChannelVolume[2] = 1.0f / std::sqrt(2.0f);
-            mVoice[aVoice]->mChannelVolume[3] = 1;
-            mVoice[aVoice]->mChannelVolume[4] = l;
-            mVoice[aVoice]->mChannelVolume[5] = r;
+            m_voice[aVoice]->mChannelVolume[2] = 1.0f / std::sqrt(2.0f);
+            m_voice[aVoice]->mChannelVolume[3] = 1;
+            m_voice[aVoice]->mChannelVolume[4] = l;
+            m_voice[aVoice]->mChannelVolume[5] = r;
         }
-        if (mVoice[aVoice]->mChannels == 8)
+        if (m_voice[aVoice]->mChannels == 8)
         {
-            mVoice[aVoice]->mChannelVolume[2] = 1.0f / std::sqrt(2.0f);
-            mVoice[aVoice]->mChannelVolume[3] = 1;
-            mVoice[aVoice]->mChannelVolume[4] = l;
-            mVoice[aVoice]->mChannelVolume[5] = r;
-            mVoice[aVoice]->mChannelVolume[6] = l;
-            mVoice[aVoice]->mChannelVolume[7] = r;
+            m_voice[aVoice]->mChannelVolume[2] = 1.0f / std::sqrt(2.0f);
+            m_voice[aVoice]->mChannelVolume[3] = 1;
+            m_voice[aVoice]->mChannelVolume[4] = l;
+            m_voice[aVoice]->mChannelVolume[5] = r;
+            m_voice[aVoice]->mChannelVolume[6] = l;
+            m_voice[aVoice]->mChannelVolume[7] = r;
         }
     }
 }
@@ -3983,11 +3942,11 @@ void AudioDevice::setVoicePan_internal(size_t aVoice, float aPan)
 void AudioDevice::setVoiceVolume_internal(size_t aVoice, float aVolume)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
-    mActiveVoiceDirty = true;
-    if (mVoice[aVoice])
+    assert(m_inside_audio_thread_mutex);
+    m_active_voice_dirty = true;
+    if (m_voice[aVoice])
     {
-        mVoice[aVoice]->mSetVolume = aVolume;
+        m_voice[aVoice]->mSetVolume = aVolume;
         updateVoiceVolume_internal(aVoice);
     }
 }
@@ -3995,19 +3954,19 @@ void AudioDevice::setVoiceVolume_internal(size_t aVoice, float aVolume)
 void AudioDevice::stopVoice_internal(size_t aVoice)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
-    mActiveVoiceDirty = true;
-    if (mVoice[aVoice])
+    assert(m_inside_audio_thread_mutex);
+    m_active_voice_dirty = true;
+    if (m_voice[aVoice])
     {
         // Delete via temporary variable to avoid recursion
-        auto v = mVoice[aVoice];
-        mVoice[aVoice].reset();
+        auto v = m_voice[aVoice];
+        m_voice[aVoice].reset();
 
-        for (size_t i = 0; i < mMaxActiveVoices; ++i)
+        for (size_t i = 0; i < m_max_active_voices; ++i)
         {
-            if (mResampleDataOwner[i].get() == v.get())
+            if (m_resample_data_owner[i].get() == v.get())
             {
-                mResampleDataOwner[i].reset();
+                m_resample_data_owner[i].reset();
             }
         }
     }
@@ -4016,25 +3975,25 @@ void AudioDevice::stopVoice_internal(size_t aVoice)
 void AudioDevice::updateVoiceRelativePlaySpeed_internal(size_t aVoice)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
-    mVoice[aVoice]->mOverallRelativePlaySpeed =
-        m3dData[aVoice].mDopplerValue * mVoice[aVoice]->mSetRelativePlaySpeed;
-    mVoice[aVoice]->mSamplerate =
-        mVoice[aVoice]->mBaseSamplerate * mVoice[aVoice]->mOverallRelativePlaySpeed;
+    assert(m_inside_audio_thread_mutex);
+    m_voice[aVoice]->mOverallRelativePlaySpeed =
+        m_3d_data[aVoice].mDopplerValue * m_voice[aVoice]->mSetRelativePlaySpeed;
+    m_voice[aVoice]->mSamplerate =
+        m_voice[aVoice]->mBaseSamplerate * m_voice[aVoice]->mOverallRelativePlaySpeed;
 }
 
 void AudioDevice::updateVoiceVolume_internal(size_t aVoice)
 {
     assert(aVoice < cer::voice_count);
-    assert(mInsideAudioThreadMutex);
-    mVoice[aVoice]->mOverallVolume = mVoice[aVoice]->mSetVolume * m3dData[aVoice].m3dVolume;
-    if (mVoice[aVoice]->mFlags.Paused)
+    assert(m_inside_audio_thread_mutex);
+    m_voice[aVoice]->mOverallVolume = m_voice[aVoice]->mSetVolume * m_3d_data[aVoice].m3dVolume;
+    if (m_voice[aVoice]->mFlags.Paused)
     {
         for (size_t i = 0; i < max_channels; ++i)
         {
-            mVoice[aVoice]->mCurrentChannelVolume[i] =
-                mVoice[aVoice]->mChannelVolume[i] * mVoice[aVoice]->mOverallVolume;
+            m_voice[aVoice]->mCurrentChannelVolume[i] =
+                m_voice[aVoice]->mChannelVolume[i] * m_voice[aVoice]->mOverallVolume;
         }
     }
 }
-} // namespace cer::details
+} // namespace cer

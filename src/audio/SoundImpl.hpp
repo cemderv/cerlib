@@ -18,15 +18,15 @@ public:
     // Creates copy of data.
     explicit SoundImpl(gsl::not_null<AudioDevice*> soloud, std::span<const std::byte> data);
 
-    explicit SoundImpl(gsl::not_null<cer::AudioDevice*> soloud,
-                       std::unique_ptr<std::byte[]>     data,
-                       size_t                           data_size);
+    explicit SoundImpl(gsl::not_null<AudioDevice*>  soloud,
+                       std::unique_ptr<std::byte[]> data,
+                       size_t                       data_size);
 
     ~SoundImpl() noexcept override;
 
     void stop();
 
-    auto soloud_audio_source() -> cer::Wav&;
+    auto soloud_audio_source() -> Wav&;
 
 private:
     void init_soloud_audio_source();
@@ -34,6 +34,6 @@ private:
     gsl::not_null<AudioDevice*>  m_soloud;
     std::unique_ptr<std::byte[]> m_data;
     size_t                       m_data_size{};
-    std::unique_ptr<Wav>         m_soloud_audio_source;
+    std::unique_ptr<AudioSource> m_soloud_audio_source;
 };
 } // namespace cer::details

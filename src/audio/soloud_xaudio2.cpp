@@ -49,7 +49,7 @@ struct XAudio2Data
     HANDLE                  audioProcessingDoneEvent;
     class VoiceCallback*    voiceCb;
     Thread::ThreadHandle    thread;
-    AudioDevice*                 soloud;
+    AudioDevice*            soloud;
     int                     samples;
     UINT32                  bufferLengthBytes;
 };

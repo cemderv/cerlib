@@ -46,7 +46,7 @@ struct SoLoudWinMMData
     HWAVEOUT             waveOut;
     HANDLE               bufferEndEvent;
     HANDLE               audioProcessingDoneEvent;
-    AudioDevice*              soloud;
+    AudioDevice*         soloud;
     int                  samples;
     Thread::ThreadHandle threadHandle;
     SoLoudWinMMData()

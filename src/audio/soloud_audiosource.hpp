@@ -42,7 +42,7 @@ public:
     virtual ~AudioCollider() noexcept = default;
 
     // Calculate volume multiplier. Assumed to return value between 0 and 1.
-    virtual float collide(AudioDevice*                    engine,
+    virtual float collide(AudioDevice*               engine,
                           AudioSourceInstance3dData& aAudioInstance3dData,
                           int                        aUserData) = 0;
 };
@@ -246,8 +246,6 @@ public:
     // Get information. Returns 0 by default.
     virtual float getInfo(size_t aInfoKey);
 };
-
-class Engine;
 
 // Base class for audio sources
 class AudioSource

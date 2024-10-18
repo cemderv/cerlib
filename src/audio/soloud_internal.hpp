@@ -28,77 +28,77 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-    class AudioDevice;
+class AudioDevice;
 
-    // SDL2 "non-dynamic" back-end initialization call
-    void sdl2static_init(AudioDevice* engine,
-                         EngineFlags aFlags,
-                         size_t aSamplerate = 44100,
-                         size_t aBuffer = 2048,
-                         size_t aChannels = 2);
+// SDL2 "non-dynamic" back-end initialization call
+void sdl2static_init(AudioDevice* engine,
+                     EngineFlags  aFlags,
+                     size_t       aSamplerate = 44100,
+                     size_t       aBuffer     = 2048,
+                     size_t       aChannels   = 2);
 
-    // Core Audio driver back-end initialization call
-    void coreaudio_init(AudioDevice* engine,
-                        EngineFlags aFlags,
-                        size_t aSamplerate = 44100,
-                        size_t aBuffer = 2048,
-                        size_t aChannels = 2);
+// Core Audio driver back-end initialization call
+void coreaudio_init(AudioDevice* engine,
+                    EngineFlags  aFlags,
+                    size_t       aSamplerate = 44100,
+                    size_t       aBuffer     = 2048,
+                    size_t       aChannels   = 2);
 
-    // OpenSL ES back-end initialization call
-    void opensles_init(AudioDevice* engine,
-                       EngineFlags aFlags,
-                       size_t aSamplerate = 44100,
-                       size_t aBuffer = 2048,
-                       size_t aChannels = 2);
+// OpenSL ES back-end initialization call
+void opensles_init(AudioDevice* engine,
+                   EngineFlags  aFlags,
+                   size_t       aSamplerate = 44100,
+                   size_t       aBuffer     = 2048,
+                   size_t       aChannels   = 2);
 
-    // WinMM back-end initialization call
-    void winmm_init(AudioDevice* engine,
-                    EngineFlags aFlags,
-                    size_t aSamplerate = 44100,
-                    size_t aBuffer = 4096,
-                    size_t aChannels = 2);
+// WinMM back-end initialization call
+void winmm_init(AudioDevice* engine,
+                EngineFlags  aFlags,
+                size_t       aSamplerate = 44100,
+                size_t       aBuffer     = 4096,
+                size_t       aChannels   = 2);
 
-    // XAudio2 back-end initialization call
-    void xaudio2_init(AudioDevice* engine,
-                      EngineFlags aFlags,
-                      size_t aSamplerate = 44100,
-                      size_t aBuffer = 2048,
-                      size_t aChannels = 2);
+// XAudio2 back-end initialization call
+void xaudio2_init(AudioDevice* engine,
+                  EngineFlags  aFlags,
+                  size_t       aSamplerate = 44100,
+                  size_t       aBuffer     = 2048,
+                  size_t       aChannels   = 2);
 
-    // WASAPI back-end initialization call
-    void wasapi_init(AudioDevice* engine,
-                     EngineFlags aFlags,
-                     size_t aSamplerate = 44100,
-                     size_t aBuffer = 4096,
-                     size_t aChannels = 2);
+// WASAPI back-end initialization call
+void wasapi_init(AudioDevice* engine,
+                 EngineFlags  aFlags,
+                 size_t       aSamplerate = 44100,
+                 size_t       aBuffer     = 4096,
+                 size_t       aChannels   = 2);
 
-    // PS Vita homebrew back-end initialization call
-    void vita_homebrew_init(AudioDevice* engine,
-                            EngineFlags aFlags,
-                            size_t aSamplerate = 44100,
-                            size_t aBuffer = 2048,
-                            size_t aChannels = 2);
+// PS Vita homebrew back-end initialization call
+void vita_homebrew_init(AudioDevice* engine,
+                        EngineFlags  aFlags,
+                        size_t       aSamplerate = 44100,
+                        size_t       aBuffer     = 2048,
+                        size_t       aChannels   = 2);
 
-    // ALSA back-end initialization call
-    void alsa_init(AudioDevice* engine,
-                   EngineFlags aFlags,
-                   size_t aSamplerate = 44100,
-                   size_t aBuffer = 2048,
-                   size_t aChannels = 2);
+// ALSA back-end initialization call
+void alsa_init(AudioDevice* engine,
+               EngineFlags  aFlags,
+               size_t       aSamplerate = 44100,
+               size_t       aBuffer     = 2048,
+               size_t       aChannels   = 2);
 
-    // Interlace samples in a buffer. From 11112222 to 12121212
-    void interlace_samples_float(const float* aSourceBuffer,
-                                 float* aDestBuffer,
-                                 size_t aSamples,
-                                 size_t aChannels,
-                                 size_t aStride);
+// Interlace samples in a buffer. From 11112222 to 12121212
+void interlace_samples_float(const float* aSourceBuffer,
+                             float*       aDestBuffer,
+                             size_t       aSamples,
+                             size_t       aChannels,
+                             size_t       aStride);
 
-    // Convert to 16-bit and interlace samples in a buffer. From 11112222 to 12121212
-    void interlace_samples_s16(const float* aSourceBuffer,
-                               short* aDestBuffer,
-                               size_t aSamples,
-                               size_t aChannels,
-                               size_t aStride);
+// Convert to 16-bit and interlace samples in a buffer. From 11112222 to 12121212
+void interlace_samples_s16(const float* aSourceBuffer,
+                           short*       aDestBuffer,
+                           size_t       aSamples,
+                           size_t       aChannels,
+                           size_t       aStride);
 }; // namespace cer
 
 #define FOR_ALL_VOICES_PRE                                                                         \
@@ -121,15 +121,15 @@ namespace cer
     unlockAudioMutex_internal();
 
 #define FOR_ALL_VOICES_PRE_3D                                                                      \
-    handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {voice_handle, 0};                                                            \
-    h_             = voiceGroupHandleToArray_internal(voice_handle);                               \
+    handle*               h_  = nullptr;                                                           \
+    std::array<handle, 2> th_ = {voice_handle, 0};                                                 \
+    h_                        = voiceGroupHandleToArray_internal(voice_handle);                    \
     if (h_ == nullptr)                                                                             \
-        h_ = th_;                                                                                  \
+        h_ = th_.data();                                                                           \
     while (*h_)                                                                                    \
     {                                                                                              \
         int ch = (*h_ & 0xfff) - 1;                                                                \
-        if (ch != -1 && m3dData[ch].mHandle == *h_)                                                \
+        if (ch != -1 && m_3d_data[ch].mHandle == *h_)                                              \
         {
 
 #define FOR_ALL_VOICES_POST_3D                                                                     \
@@ -165,7 +165,7 @@ namespace cer
     while (*h_)                                                                                    \
     {                                                                                              \
         int ch = (*h_ & 0xfff) - 1;                                                                \
-        if (ch != -1 && mEngine->m3dData[ch].mHandle == *h_)                                       \
+        if (ch != -1 && engine->m_3d_data[ch].mHandle == *h_)                                      \
         {
 
 #define FOR_ALL_VOICES_POST_3D_EXT                                                                 \

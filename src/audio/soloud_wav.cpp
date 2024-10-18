@@ -86,14 +86,10 @@ Wav::Wav(std::span<const std::byte> data)
 
     switch (dr.read32())
     {
-        case MAKEDWORD('O', 'g', 'g', 'S'): loadogg(dr);
-            break;
-        case MAKEDWORD('R', 'I', 'F', 'F'): loadwav(dr);
-            break;
-        case MAKEDWORD('f', 'L', 'a', 'C'): loadflac(dr);
-            break;
-        default: loadmp3(dr);
-            break;
+        case MAKEDWORD('O', 'g', 'g', 'S'): loadogg(dr); break;
+        case MAKEDWORD('R', 'I', 'F', 'F'): loadwav(dr); break;
+        case MAKEDWORD('f', 'L', 'a', 'C'): loadflac(dr); break;
+        default: loadmp3(dr); break;
     }
 }
 

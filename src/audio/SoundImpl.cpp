@@ -4,9 +4,9 @@
 
 #include "SoundImpl.hpp"
 
+#include "audio/AudioDevice.hpp"
 #include "util/InternalError.hpp"
 #include <cstdint>
-#include "audio/AudioDevice.hpp"
 #include <cstring>
 #include <gsl/narrow>
 
@@ -14,8 +14,8 @@ namespace cer::details
 {
 SoundImpl::SoundImpl(gsl::not_null<AudioDevice*> soloud, std::span<const std::byte> data)
     : m_soloud(soloud)
-      , m_data(std::make_unique<std::byte[]>(data.size()))
-      , m_data_size(data.size())
+    , m_data(std::make_unique<std::byte[]>(data.size()))
+    , m_data_size(data.size())
 {
     std::memcpy(m_data.get(), data.data(), data.size());
     init_soloud_audio_source();
@@ -25,8 +25,8 @@ SoundImpl::SoundImpl(gsl::not_null<AudioDevice*>  soloud,
                      std::unique_ptr<std::byte[]> data,
                      size_t                       data_size)
     : m_soloud(soloud)
-      , m_data(std::move(data))
-      , m_data_size(data_size)
+    , m_data(std::move(data))
+    , m_data_size(data_size)
 {
     init_soloud_audio_source();
 }

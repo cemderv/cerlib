@@ -44,8 +44,8 @@ size_t QueueInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBu
     while (copycount && mParent->mCount)
     {
         int readcount = mParent->mSource[mParent->mReadIndex]->getAudio(aBuffer + copyofs,
-            copycount,
-            aBufferSize);
+                                                                        copycount,
+                                                                        aBufferSize);
         copyofs += readcount;
         copycount -= readcount;
         if (mParent->mSource[mParent->mReadIndex]->hasEnded())
@@ -78,9 +78,9 @@ std::shared_ptr<AudioSourceInstance> Queue::createInstance()
 void Queue::findQueueHandle()
 {
     // Find the channel the queue is playing on to calculate handle..
-    for (int i = 0; mQueueHandle == 0 && i < (signed)engine->mHighestVoice; ++i)
+    for (int i = 0; mQueueHandle == 0 && i < (signed)engine->m_highest_voice; ++i)
     {
-        if (engine->mVoice[i] == mInstance)
+        if (engine->m_voice[i] == mInstance)
         {
             mQueueHandle = engine->getHandleFromVoice_internal(i);
         }
@@ -98,8 +98,8 @@ void Queue::play(AudioSource& aSound)
 
     if (!aSound.audio_source_id)
     {
-        aSound.audio_source_id = engine->mAudioSourceID;
-        engine->mAudioSourceID++;
+        aSound.audio_source_id = engine->m_audio_source_id;
+        engine->m_audio_source_id++;
     }
 
     auto instance = aSound.createInstance();

@@ -358,22 +358,26 @@ bool WavStreamInstance::rewind()
 {
     switch (mParent->mFiletype)
     {
-        case WAVSTREAM_OGG: if (auto** ogg = std::get_if<stb_vorbis*>(&mCodec))
+        case WAVSTREAM_OGG:
+            if (auto** ogg = std::get_if<stb_vorbis*>(&mCodec))
             {
                 stb_vorbis_seek_start(*ogg);
             }
             break;
-        case WAVSTREAM_FLAC: if (auto** flac = std::get_if<drflac*>(&mCodec))
+        case WAVSTREAM_FLAC:
+            if (auto** flac = std::get_if<drflac*>(&mCodec))
             {
                 drflac_seek_to_pcm_frame(*flac, 0);
             }
             break;
-        case WAVSTREAM_MP3: if (auto** mp3 = std::get_if<drmp3*>(&mCodec))
+        case WAVSTREAM_MP3:
+            if (auto** mp3 = std::get_if<drmp3*>(&mCodec))
             {
                 drmp3_seek_to_pcm_frame(*mp3, 0);
             }
             break;
-        case WAVSTREAM_WAV: if (auto** wav = std::get_if<drwav*>(&mCodec))
+        case WAVSTREAM_WAV:
+            if (auto** wav = std::get_if<drwav*>(&mCodec))
             {
                 drwav_seek_to_pcm_frame(*wav, 0);
             }
@@ -399,14 +403,10 @@ WavStream::WavStream(std::span<const std::byte> data)
 {
     switch (mFile.read32())
     {
-        case MAKEDWORD('O', 'g', 'g', 'S'): loadogg(mFile);
-            break;
-        case MAKEDWORD('R', 'I', 'F', 'F'): loadwav(mFile);
-            break;
-        case MAKEDWORD('f', 'L', 'a', 'C'): loadflac(mFile);
-            break;
-        default: loadmp3(mFile);
-            break;
+        case MAKEDWORD('O', 'g', 'g', 'S'): loadogg(mFile); break;
+        case MAKEDWORD('R', 'I', 'F', 'F'): loadwav(mFile); break;
+        case MAKEDWORD('f', 'L', 'a', 'C'): loadflac(mFile); break;
+        default: loadmp3(mFile); break;
     }
 }
 

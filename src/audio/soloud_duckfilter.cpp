@@ -22,8 +22,8 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#include "audio/soloud_bus.hpp"
 #include "audio/AudioDevice.hpp"
+#include "audio/soloud_bus.hpp"
 #include "soloud_filter.hpp"
 
 namespace cer
@@ -68,7 +68,7 @@ void DuckFilterInstance::filter(float* aBuffer,
         const auto voice_num = mEngine->getVoiceFromHandle_internal(mListenTo);
         if (voice_num != -1)
         {
-            const auto bi = std::static_pointer_cast<BusInstance>(mEngine->mVoice[voice_num]);
+            const auto bi = std::static_pointer_cast<BusInstance>(mEngine->m_voice[voice_num]);
 
             auto v = 0.0f;
             for (size_t i = 0; i < bi->mChannels; ++i)

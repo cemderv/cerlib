@@ -145,7 +145,7 @@ static void opensles_iterate(AudioDevice* engine)
 
 static void opensles_thread(void* aParam)
 {
-    AudioDevice*      soloud = static_cast<AudioDevice*>(aParam);
+    AudioDevice* soloud = static_cast<AudioDevice*>(aParam);
     BackendData* data   = static_cast<BackendData*>(soloud->mBackendData);
     while (data->threadrun == 0)
     {
@@ -161,7 +161,7 @@ static void SLAPIENTRY soloud_opensles_play_callback(SLPlayItf player,
                                                      void*     context,
                                                      SLuint32  event)
 {
-    AudioDevice*      soloud = static_cast<AudioDevice*>(context);
+    AudioDevice* soloud = static_cast<AudioDevice*>(context);
     BackendData* data   = static_cast<BackendData*>(soloud->mBackendData);
     if (event & SL_PLAYEVENT_HEADATEND && data->buffersQueued > 0)
     {

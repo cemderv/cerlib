@@ -70,16 +70,12 @@ static void coreaudio_fill_buffer(void* context, AudioQueueRef queue, AudioQueue
 }
 
 void coreaudio_init(
-    AudioDevice* engine,
-    EngineFlags  aFlags,
-    size_t       aSamplerate,
-    size_t       aBuffer,
-    size_t       aChannels)
+    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
 {
     engine->postinit_internal(aSamplerate, aBuffer, aFlags, 2);
-    engine->mBackendCleanupFunc = soloud_coreaudio_deinit;
-    engine->mBackendPauseFunc   = soloud_coreaudio_pause;
-    engine->mBackendResumeFunc  = soloud_coreaudio_resume;
+    engine->m_backend_cleanup_func = soloud_coreaudio_deinit;
+    engine->m_backend_pause_func   = soloud_coreaudio_pause;
+    engine->m_backend_resume_func  = soloud_coreaudio_resume;
 
     AudioStreamBasicDescription audioFormat;
     audioFormat.mSampleRate       = aSamplerate;

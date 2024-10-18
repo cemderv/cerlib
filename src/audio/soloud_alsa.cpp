@@ -40,7 +40,7 @@ struct ALSAData
     float*               buffer;
     short*               sampleBuffer;
     snd_pcm_t*           alsaDeviceHandle;
-    AudioDevice*              soloud;
+    AudioDevice*         soloud;
     int                  samples;
     int                  channels;
     bool                 audioProcessingDone;
