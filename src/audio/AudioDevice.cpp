@@ -798,7 +798,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
 {
     float  vd = (aVolume1 - aVolume0) / aSamples;
     float  v  = aVolume0;
-    size_t i, j, c, d;
+    size_t i, c, d;
     size_t samplequads = (aSamples + 3) / 4; // rounded up
 
     // Clip
