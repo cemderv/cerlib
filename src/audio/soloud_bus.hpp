@@ -102,7 +102,7 @@ class Bus final : public AudioSource
     void setVisualizationEnable(bool aEnable);
 
     // Move a live sound to this bus
-    void annexSound(handle aVoiceHandle);
+    void annexSound(handle voice_handle);
 
     // Calculate and get 256 floats of FFT data for visualization. Visualization has to be enabled
     // before use.

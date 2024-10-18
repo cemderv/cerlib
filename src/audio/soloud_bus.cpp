@@ -228,10 +228,10 @@ handle Bus::play3dClocked(
     {
         return 0;
     }
-    return engine->play3dClocked(aSoundTime, aSound, aPos, aVel, aVolume, mChannelHandle);
+    return engine->play3d_clocked(aSoundTime, aSound, aPos, aVel, aVolume, mChannelHandle);
 }
 
-void Bus::annexSound(handle aVoiceHandle)
+void Bus::annexSound(handle voice_handle)
 {
     findBusHandle();
     FOR_ALL_VOICES_PRE_EXT

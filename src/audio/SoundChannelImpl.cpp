@@ -21,7 +21,7 @@ uint32_t SoundChannelImpl::id() const
 
 auto SoundChannelImpl::is_paused() const -> bool
 {
-    return m_soloud->getPause(m_soloud_handle);
+    return m_soloud->pause(m_soloud_handle);
 }
 
 void SoundChannelImpl::set_is_paused(bool value)
@@ -31,7 +31,7 @@ void SoundChannelImpl::set_is_paused(bool value)
 
 auto SoundChannelImpl::relative_play_speed() const -> float
 {
-    return m_soloud->getRelativePlaySpeed(m_soloud_handle);
+    return m_soloud->relative_play_speed(m_soloud_handle);
 }
 
 void SoundChannelImpl::set_relative_play_speed(float value)
@@ -51,7 +51,7 @@ void SoundChannelImpl::stop()
 
 auto SoundChannelImpl::volume() const -> float
 {
-    return m_soloud->getVolume(m_soloud_handle);
+    return m_soloud->volume(m_soloud_handle);
 }
 
 void SoundChannelImpl::set_volume(float value)
@@ -61,7 +61,7 @@ void SoundChannelImpl::set_volume(float value)
 
 auto SoundChannelImpl::pan() const -> float
 {
-    return m_soloud->getPan(m_soloud_handle);
+    return m_soloud->pan(m_soloud_handle);
 }
 
 void SoundChannelImpl::set_pan(float value)
@@ -76,7 +76,7 @@ void SoundChannelImpl::set_is_protected(bool value)
 
 auto SoundChannelImpl::is_looping() const -> bool
 {
-    return m_soloud->getLooping(m_soloud_handle);
+    return m_soloud->is_voice_looping(m_soloud_handle);
 }
 
 void SoundChannelImpl::set_is_looping(bool value)
@@ -136,6 +136,6 @@ void SoundChannelImpl::pause_after(SoundTime after)
 
 auto SoundChannelImpl::stream_position() const -> SoundTime
 {
-    return SoundTime{m_soloud->getStreamPosition(m_soloud_handle)};
+    return SoundTime{m_soloud->stream_position(m_soloud_handle)};
 }
 } // namespace cer::details

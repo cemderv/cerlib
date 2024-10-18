@@ -136,7 +136,7 @@ void AudioSource::stop()
 {
     if (engine)
     {
-        engine->stopAudioSource(*this);
+        engine->stop_audio_source(*this);
     }
 }
 

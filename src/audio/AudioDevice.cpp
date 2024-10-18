@@ -137,13 +137,13 @@ AudioDevice::~AudioDevice() noexcept
     }
 
     // let's stop all sounds before deinit, so we don't mess up our mutexes
-    stopAll();
+    stop_all();
 
     // Make sure no audio operation is currently pending
     lockAudioMutex_internal();
     unlockAudioMutex_internal();
     assert(!mInsideAudioThreadMutex);
-    stopAll();
+    stop_all();
     if (mBackendCleanupFunc)
         mBackendCleanupFunc(this);
     mBackendCleanupFunc = 0;
@@ -230,7 +230,7 @@ auto AudioDevice::play_sound_in_background(const Sound& sound,
 
 void AudioDevice::stop_all_sounds()
 {
-    stopAll();
+    stop_all();
 }
 
 void AudioDevice::pause_all_sounds()
@@ -241,11 +241,6 @@ void AudioDevice::pause_all_sounds()
 void AudioDevice::resume_all_sounds()
 {
     setPauseAll(false);
-}
-
-auto AudioDevice::global_volume() const -> float
-{
-    return getGlobalVolume();
 }
 
 void AudioDevice::set_global_volume(float value)
@@ -262,7 +257,7 @@ void AudioDevice::purge_sounds()
 {
     std::erase_if(m_playing_sounds,
                   [this](const Sound& sound) {
-                      return countAudioSource(sound.impl()->soloud_audio_source()) == 0;
+                      return count_audio_source(sound.impl()->soloud_audio_source()) == 0;
                   });
 }
 
@@ -350,23 +345,23 @@ handle AudioDevice::play(AudioSource& sound, float volume, float pan, bool pause
 }
 
 handle AudioDevice::play_clocked(
-    time_t       aSoundTime,
-    AudioSource& aSound,
-    float        aVolume,
-    float        aPan,
-    size_t       aBus)
+    time_t       sound_time,
+    AudioSource& sound,
+    float        volume,
+    float        pan,
+    size_t       bus)
 {
-    const handle h = play(aSound, aVolume, aPan, 1, aBus);
+    const handle h = play(sound, volume, pan, 1, bus);
     lockAudioMutex_internal();
     // mLastClockedTime is cleared to zero at start of every output buffer
     time_t lasttime = mLastClockedTime;
     if (lasttime == 0)
     {
-        mLastClockedTime = aSoundTime;
-        lasttime         = aSoundTime;
+        mLastClockedTime = sound_time;
+        lasttime         = sound_time;
     }
     unlockAudioMutex_internal();
-    int samples = (int)floor((aSoundTime - lasttime) * mSamplerate);
+    int samples = (int)floor((sound_time - lasttime) * mSamplerate);
     // Make sure we don't delay too much (or overflow)
     if (samples < 0 || samples > 2048)
         samples = 0;
@@ -375,14 +370,14 @@ handle AudioDevice::play_clocked(
     return h;
 }
 
-handle AudioDevice::playBackground(AudioSource& sound, float volume, bool paused, size_t bus)
+handle AudioDevice::play3d_background(AudioSource& sound, float volume, bool paused, size_t bus)
 {
     const handle h = play(sound, volume, 0.0f, paused, bus);
     setPanAbsolute(h, 1.0f, 1.0f);
     return h;
 }
 
-bool AudioDevice::seek(handle aVoiceHandle, time_t aSeconds)
+bool AudioDevice::seek(handle voice_handle, time_t aSeconds)
 {
     bool res = true;
 
@@ -396,14 +391,14 @@ bool AudioDevice::seek(handle aVoiceHandle, time_t aSeconds)
 }
 
 
-void AudioDevice::stop(handle aVoiceHandle)
+void AudioDevice::stop(handle voice_handle)
 {
     FOR_ALL_VOICES_PRE
         stopVoice_internal(ch);
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::stopAudioSource(AudioSource& aSound)
+void AudioDevice::stop_audio_source(AudioSource& aSound)
 {
     if (aSound.audio_source_id)
     {
@@ -420,7 +415,7 @@ void AudioDevice::stopAudioSource(AudioSource& aSound)
     }
 }
 
-void AudioDevice::stopAll()
+void AudioDevice::stop_all()
 {
     lockAudioMutex_internal();
     for (size_t i = 0; i < mHighestVoice; ++i)
@@ -430,7 +425,7 @@ void AudioDevice::stopAll()
     unlockAudioMutex_internal();
 }
 
-int AudioDevice::countAudioSource(AudioSource& aSound)
+int AudioDevice::count_audio_source(AudioSource& aSound)
 {
     int count = 0;
     if (aSound.audio_source_id)
@@ -449,11 +444,11 @@ int AudioDevice::countAudioSource(AudioSource& aSound)
     return count;
 }
 
-void AudioDevice::schedulePause(handle aVoiceHandle, time_t aTime)
+void AudioDevice::schedulePause(handle voice_handle, time_t aTime)
 {
     if (aTime <= 0)
     {
-        setPause(aVoiceHandle, 1);
+        setPause(voice_handle, 1);
         return;
     }
     FOR_ALL_VOICES_PRE
@@ -463,11 +458,11 @@ void AudioDevice::schedulePause(handle aVoiceHandle, time_t aTime)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::scheduleStop(handle aVoiceHandle, time_t aTime)
+void AudioDevice::scheduleStop(handle voice_handle, time_t aTime)
 {
     if (aTime <= 0)
     {
-        stop(aVoiceHandle);
+        stop(voice_handle);
         return;
     }
     FOR_ALL_VOICES_PRE
@@ -477,12 +472,12 @@ void AudioDevice::scheduleStop(handle aVoiceHandle, time_t aTime)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::fadeVolume(handle aVoiceHandle, float aTo, time_t aTime)
+void AudioDevice::fadeVolume(handle voice_handle, float aTo, time_t aTime)
 {
-    float from = getVolume(aVoiceHandle);
+    float from = volume(voice_handle);
     if (aTime <= 0 || aTo == from)
     {
-        setVolume(aVoiceHandle, aTo);
+        setVolume(voice_handle, aTo);
         return;
     }
 
@@ -493,13 +488,13 @@ void AudioDevice::fadeVolume(handle aVoiceHandle, float aTo, time_t aTime)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::fadePan(handle aVoiceHandle, float aTo, time_t aTime)
+void AudioDevice::fadePan(handle voice_handle, float aTo, time_t aTime)
 {
-    const float from = getPan(aVoiceHandle);
+    const float from = pan(voice_handle);
 
     if (aTime <= 0 || aTo == from)
     {
-        setPan(aVoiceHandle, aTo);
+        setPan(voice_handle, aTo);
         return;
     }
 
@@ -510,12 +505,12 @@ void AudioDevice::fadePan(handle aVoiceHandle, float aTo, time_t aTime)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::fadeRelativePlaySpeed(handle aVoiceHandle, float aTo, time_t aTime)
+void AudioDevice::fadeRelativePlaySpeed(handle voice_handle, float aTo, time_t aTime)
 {
-    const float from = getRelativePlaySpeed(aVoiceHandle);
+    const float from = relative_play_speed(voice_handle);
     if (aTime <= 0 || aTo == from)
     {
-        setRelativePlaySpeed(aVoiceHandle, aTo);
+        setRelativePlaySpeed(voice_handle, aTo);
         return;
     }
     FOR_ALL_VOICES_PRE
@@ -527,7 +522,7 @@ void AudioDevice::fadeRelativePlaySpeed(handle aVoiceHandle, float aTo, time_t a
 
 void AudioDevice::fadeGlobalVolume(float aTo, time_t aTime)
 {
-    const float from = getGlobalVolume();
+    const float from = global_volume();
     if (aTime <= 0 || aTo == from)
     {
         setGlobalVolume(aTo);
@@ -537,11 +532,11 @@ void AudioDevice::fadeGlobalVolume(float aTo, time_t aTime)
 }
 
 
-void AudioDevice::oscillateVolume(handle aVoiceHandle, float aFrom, float aTo, time_t aTime)
+void AudioDevice::oscillateVolume(handle voice_handle, float aFrom, float aTo, time_t aTime)
 {
     if (aTime <= 0 || aTo == aFrom)
     {
-        setVolume(aVoiceHandle, aTo);
+        setVolume(voice_handle, aTo);
         return;
     }
 
@@ -552,11 +547,11 @@ void AudioDevice::oscillateVolume(handle aVoiceHandle, float aFrom, float aTo, t
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::oscillatePan(handle aVoiceHandle, float aFrom, float aTo, time_t aTime)
+void AudioDevice::oscillatePan(handle voice_handle, float aFrom, float aTo, time_t aTime)
 {
     if (aTime <= 0 || aTo == aFrom)
     {
-        setPan(aVoiceHandle, aTo);
+        setPan(voice_handle, aTo);
         return;
     }
 
@@ -567,14 +562,14 @@ void AudioDevice::oscillatePan(handle aVoiceHandle, float aFrom, float aTo, time
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::oscillateRelativePlaySpeed(handle aVoiceHandle,
+void AudioDevice::oscillateRelativePlaySpeed(handle voice_handle,
                                              float  aFrom,
                                              float  aTo,
                                              time_t aTime)
 {
     if (aTime <= 0 || aTo == aFrom)
     {
-        setRelativePlaySpeed(aVoiceHandle, aTo);
+        setRelativePlaySpeed(voice_handle, aTo);
         return;
     }
 
@@ -603,7 +598,7 @@ AlignedFloatBuffer::AlignedFloatBuffer(size_t floats)
     mBasePtr = std::make_unique<unsigned char[]>(mFloats * sizeof(float));
     mData    = reinterpret_cast<float*>(mBasePtr.get());
 #else
-    mBasePtr = std::make_unique<unsigned char[]>(aFloats * sizeof(float) + 16);
+    mBasePtr = std::make_unique<unsigned char[]>(mFloats * sizeof(float) + 16);
     mData    = (float*)(((size_t)mBasePtr.get() + 15) & ~15);
 #endif
 }
@@ -2498,17 +2493,17 @@ void AudioDevice::unlockAudioMutex_internal()
     }
 }
 
-float AudioDevice::getPostClipScaler() const
+float AudioDevice::post_clip_scaler() const
 {
     return mPostClipScaler;
 }
 
-Resampler AudioDevice::getMainResampler() const
+Resampler AudioDevice::main_resampler() const
 {
     return mResampler;
 }
 
-float AudioDevice::getGlobalVolume() const
+float AudioDevice::global_volume() const
 {
     return mGlobalVolume;
 }
@@ -2523,21 +2518,21 @@ handle AudioDevice::getHandleFromVoice_internal(size_t aVoice) const
     return (aVoice + 1) | (mVoice[aVoice]->mPlayIndex << 12);
 }
 
-int AudioDevice::getVoiceFromHandle_internal(handle aVoiceHandle) const
+int AudioDevice::getVoiceFromHandle_internal(handle voice_handle) const
 {
     // If this is a voice group handle, pick the first handle from the group
-    if (const auto* h = voiceGroupHandleToArray_internal(aVoiceHandle); h != nullptr)
+    if (const auto* h = voiceGroupHandleToArray_internal(voice_handle); h != nullptr)
     {
-        aVoiceHandle = *h;
+        voice_handle = *h;
     }
 
-    if (aVoiceHandle == 0)
+    if (voice_handle == 0)
     {
         return -1;
     }
 
-    const int    ch  = (aVoiceHandle & 0xfff) - 1;
-    const size_t idx = aVoiceHandle >> 12;
+    const int    ch  = (voice_handle & 0xfff) - 1;
+    const size_t idx = voice_handle >> 12;
 
     if (mVoice[ch] != nullptr && (mVoice[ch]->mPlayIndex & 0xfffff) == idx)
     {
@@ -2547,12 +2542,12 @@ int AudioDevice::getVoiceFromHandle_internal(handle aVoiceHandle) const
     return -1;
 }
 
-size_t AudioDevice::getMaxActiveVoiceCount() const
+size_t AudioDevice::max_active_voice_count() const
 {
     return mMaxActiveVoices;
 }
 
-size_t AudioDevice::getActiveVoiceCount()
+size_t AudioDevice::active_voice_count()
 {
     lockAudioMutex_internal();
     if (mActiveVoiceDirty)
@@ -2565,7 +2560,7 @@ size_t AudioDevice::getActiveVoiceCount()
     return c;
 }
 
-size_t AudioDevice::getVoiceCount()
+size_t AudioDevice::voice_count()
 {
     lockAudioMutex_internal();
     int c = 0;
@@ -2580,16 +2575,16 @@ size_t AudioDevice::getVoiceCount()
     return c;
 }
 
-bool AudioDevice::isValidVoiceHandle(handle aVoiceHandle)
+bool AudioDevice::is_valid_voice_handle(handle voice_handle)
 {
     // voice groups are not valid voice handles
-    if ((aVoiceHandle & 0xfffff000) == 0xfffff000)
+    if ((voice_handle & 0xfffff000) == 0xfffff000)
     {
         return false;
     }
 
     lockAudioMutex_internal();
-    if (getVoiceFromHandle_internal(aVoiceHandle) != -1)
+    if (getVoiceFromHandle_internal(voice_handle) != -1)
     {
         unlockAudioMutex_internal();
         return true;
@@ -2599,10 +2594,10 @@ bool AudioDevice::isValidVoiceHandle(handle aVoiceHandle)
 }
 
 
-time_t AudioDevice::getLoopPoint(handle aVoiceHandle)
+time_t AudioDevice::getLoopPoint(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2613,10 +2608,10 @@ time_t AudioDevice::getLoopPoint(handle aVoiceHandle)
     return v;
 }
 
-bool AudioDevice::getLooping(handle aVoiceHandle)
+bool AudioDevice::is_voice_looping(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2627,10 +2622,10 @@ bool AudioDevice::getLooping(handle aVoiceHandle)
     return v;
 }
 
-bool AudioDevice::getAutoStop(handle aVoiceHandle)
+bool AudioDevice::getAutoStop(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2641,10 +2636,10 @@ bool AudioDevice::getAutoStop(handle aVoiceHandle)
     return !v;
 }
 
-float AudioDevice::getInfo(handle aVoiceHandle, size_t mInfoKey)
+float AudioDevice::getInfo(handle voice_handle, size_t mInfoKey)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2655,10 +2650,10 @@ float AudioDevice::getInfo(handle aVoiceHandle, size_t mInfoKey)
     return v;
 }
 
-float AudioDevice::getVolume(handle aVoiceHandle)
+float AudioDevice::volume(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2669,10 +2664,10 @@ float AudioDevice::getVolume(handle aVoiceHandle)
     return v;
 }
 
-float AudioDevice::getOverallVolume(handle aVoiceHandle)
+float AudioDevice::overall_volume(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2683,10 +2678,10 @@ float AudioDevice::getOverallVolume(handle aVoiceHandle)
     return v;
 }
 
-float AudioDevice::getPan(handle aVoiceHandle)
+float AudioDevice::pan(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2697,10 +2692,10 @@ float AudioDevice::getPan(handle aVoiceHandle)
     return v;
 }
 
-time_t AudioDevice::getStreamTime(handle aVoiceHandle)
+time_t AudioDevice::stream_time(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2711,10 +2706,10 @@ time_t AudioDevice::getStreamTime(handle aVoiceHandle)
     return v;
 }
 
-time_t AudioDevice::getStreamPosition(handle aVoiceHandle)
+time_t AudioDevice::stream_position(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2725,10 +2720,10 @@ time_t AudioDevice::getStreamPosition(handle aVoiceHandle)
     return v;
 }
 
-float AudioDevice::getRelativePlaySpeed(handle aVoiceHandle)
+float AudioDevice::relative_play_speed(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2739,10 +2734,10 @@ float AudioDevice::getRelativePlaySpeed(handle aVoiceHandle)
     return v;
 }
 
-float AudioDevice::getSamplerate(handle aVoiceHandle)
+float AudioDevice::sample_rate(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2753,10 +2748,10 @@ float AudioDevice::getSamplerate(handle aVoiceHandle)
     return v;
 }
 
-bool AudioDevice::getPause(handle aVoiceHandle)
+bool AudioDevice::pause(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2767,10 +2762,10 @@ bool AudioDevice::getPause(handle aVoiceHandle)
     return v;
 }
 
-bool AudioDevice::getProtectVoice(handle aVoiceHandle)
+bool AudioDevice::is_voice_protected(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2792,7 +2787,7 @@ int AudioDevice::findFreeVoice_internal()
         mHighestVoice--;
     }
 
-    for (size_t i = 0; i < voice_count; ++i)
+    for (size_t i = 0; i < cer::voice_count; ++i)
     {
         if (mVoice[i] == nullptr)
         {
@@ -2813,10 +2808,10 @@ int AudioDevice::findFreeVoice_internal()
     return lowest_play_index;
 }
 
-size_t AudioDevice::getLoopCount(handle aVoiceHandle)
+size_t AudioDevice::getLoopCount(handle voice_handle)
 {
     lockAudioMutex_internal();
-    const int ch = getVoiceFromHandle_internal(aVoiceHandle);
+    const int ch = getVoiceFromHandle_internal(voice_handle);
     if (ch == -1)
     {
         unlockAudioMutex_internal();
@@ -2867,7 +2862,7 @@ void AudioDevice::setGlobalVolume(float aVolume)
     mGlobalVolume              = aVolume;
 }
 
-void AudioDevice::setRelativePlaySpeed(handle aVoiceHandle, float aSpeed)
+void AudioDevice::setRelativePlaySpeed(handle voice_handle, float aSpeed)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mRelativePlaySpeedFader.mActive = 0;
@@ -2875,7 +2870,7 @@ void AudioDevice::setRelativePlaySpeed(handle aVoiceHandle, float aSpeed)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setSamplerate(handle aVoiceHandle, float aSamplerate)
+void AudioDevice::setSamplerate(handle voice_handle, float aSamplerate)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mBaseSamplerate = aSamplerate;
@@ -2883,7 +2878,7 @@ void AudioDevice::setSamplerate(handle aVoiceHandle, float aSamplerate)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setPause(handle aVoiceHandle, bool aPause)
+void AudioDevice::setPause(handle voice_handle, bool aPause)
 {
     FOR_ALL_VOICES_PRE
         setVoicePause_internal(ch, aPause);
@@ -2893,7 +2888,7 @@ void AudioDevice::setPause(handle aVoiceHandle, bool aPause)
 void AudioDevice::setMaxActiveVoiceCount(size_t aVoiceCount)
 {
     assert(aVoiceCount > 0);
-    assert(aVoiceCount <= voice_count);
+    assert(aVoiceCount <= cer::voice_count);
 
     lockAudioMutex_internal();
     mMaxActiveVoices = aVoiceCount;
@@ -2923,21 +2918,21 @@ void AudioDevice::setPauseAll(bool aPause)
     unlockAudioMutex_internal();
 }
 
-void AudioDevice::setProtectVoice(handle aVoiceHandle, bool aProtect)
+void AudioDevice::setProtectVoice(handle voice_handle, bool aProtect)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mFlags.Protected = aProtect;
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setPan(handle aVoiceHandle, float aPan)
+void AudioDevice::setPan(handle voice_handle, float aPan)
 {
     FOR_ALL_VOICES_PRE
         setVoicePan_internal(ch, aPan);
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setChannelVolume(handle aVoiceHandle, size_t aChannel, float aVolume)
+void AudioDevice::setChannelVolume(handle voice_handle, size_t aChannel, float aVolume)
 {
     FOR_ALL_VOICES_PRE
         if (mVoice[ch]->mChannels > aChannel)
@@ -2947,7 +2942,7 @@ void AudioDevice::setChannelVolume(handle aVoiceHandle, size_t aChannel, float a
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setPanAbsolute(handle aVoiceHandle, float aLVolume, float aRVolume)
+void AudioDevice::setPanAbsolute(handle voice_handle, float aLVolume, float aRVolume)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mPanFader.mActive = 0;
@@ -2977,7 +2972,7 @@ void AudioDevice::setPanAbsolute(handle aVoiceHandle, float aLVolume, float aRVo
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setInaudibleBehavior(handle aVoiceHandle, bool aMustTick, bool aKill)
+void AudioDevice::setInaudibleBehavior(handle voice_handle, bool aMustTick, bool aKill)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mFlags.InaudibleKill = aKill;
@@ -2985,28 +2980,28 @@ void AudioDevice::setInaudibleBehavior(handle aVoiceHandle, bool aMustTick, bool
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setLoopPoint(handle aVoiceHandle, time_t aLoopPoint)
+void AudioDevice::setLoopPoint(handle voice_handle, time_t aLoopPoint)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mLoopPoint = aLoopPoint;
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setLooping(handle aVoiceHandle, bool aLooping)
+void AudioDevice::setLooping(handle voice_handle, bool aLooping)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mFlags.Looping = aLooping;
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setAutoStop(handle aVoiceHandle, bool aAutoStop)
+void AudioDevice::setAutoStop(handle voice_handle, bool aAutoStop)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mFlags.DisableAutostop = !aAutoStop;
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setVolume(handle aVoiceHandle, float aVolume)
+void AudioDevice::setVolume(handle voice_handle, float aVolume)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mVolumeFader.mActive = 0;
@@ -3014,7 +3009,7 @@ void AudioDevice::setVolume(handle aVoiceHandle, float aVolume)
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setDelaySamples(handle aVoiceHandle, size_t aSamples)
+void AudioDevice::setDelaySamples(handle voice_handle, size_t aSamples)
 {
     FOR_ALL_VOICES_PRE
         mVoice[ch]->mDelaySamples = aSamples;
@@ -3203,7 +3198,7 @@ void AudioDevice::update3dVoices_internal(std::span<const size_t> voiceList)
 void AudioDevice::update3dAudio()
 {
     size_t voicecount = 0;
-    size_t voices[voice_count];
+    size_t voices[cer::voice_count];
 
     // Step 1 - find voices that need 3d processing
     lockAudioMutex_internal();
@@ -3261,14 +3256,14 @@ void AudioDevice::update3dAudio()
 
 
 handle AudioDevice::play3d(
-    AudioSource& aSound,
-    Vector3      aPos,
-    Vector3      aVel,
-    float        aVolume,
-    bool         aPaused,
-    size_t       aBus)
+    AudioSource& sound,
+    Vector3      pos,
+    Vector3      vel,
+    float        volume,
+    bool         paused,
+    size_t       bus)
 {
-    const handle h = play(aSound, aVolume, 0, true, aBus);
+    const handle h = play(sound, volume, 0, true, bus);
     lockAudioMutex_internal();
     auto v = getVoiceFromHandle_internal(h);
 
@@ -3281,14 +3276,14 @@ handle AudioDevice::play3d(
     m3dData[v].mHandle          = h;
     mVoice[v]->mFlags.Process3D = true;
 
-    set3dSourceParameters(h, aPos, aVel);
+    set3dSourceParameters(h, pos, vel);
 
     int samples = 0;
-    if (aSound.distance_delay)
+    if (sound.distance_delay)
     {
-        const auto pos = mVoice[v]->mFlags.ListenerRelative ? aPos : aPos - m3dPosition;
+        const auto corrected_pos = mVoice[v]->mFlags.ListenerRelative ? pos : pos - m3dPosition;
 
-        const float dist = length(pos);
+        const float dist = length(corrected_pos);
         samples += int(floor(dist / m3dSoundSpeed * float(mSamplerate)));
     }
 
@@ -3328,12 +3323,12 @@ handle AudioDevice::play3d(
 
     unlockAudioMutex_internal();
     setDelaySamples(h, samples);
-    setPause(h, aPaused);
+    setPause(h, paused);
 
     return h;
 }
 
-handle AudioDevice::play3dClocked(
+handle AudioDevice::play3d_clocked(
     time_t       sound_time,
     AudioSource& sound,
     Vector3      pos,
@@ -3463,7 +3458,7 @@ void AudioDevice::set3dListenerVelocity(Vector3 value)
 }
 
 
-void AudioDevice::set3dSourceParameters(handle aVoiceHandle, Vector3 aPos, Vector3 aVelocity)
+void AudioDevice::set3dSourceParameters(handle voice_handle, Vector3 aPos, Vector3 aVelocity)
 {
     FOR_ALL_VOICES_PRE_3D
         m3dData[ch].m3dPosition = aPos;
@@ -3472,7 +3467,7 @@ void AudioDevice::set3dSourceParameters(handle aVoiceHandle, Vector3 aPos, Vecto
 }
 
 
-void AudioDevice::set3dSourcePosition(handle aVoiceHandle, Vector3 value)
+void AudioDevice::set3dSourcePosition(handle voice_handle, Vector3 value)
 {
     FOR_ALL_VOICES_PRE_3D
         m3dData[ch].m3dPosition = value;
@@ -3480,7 +3475,7 @@ void AudioDevice::set3dSourcePosition(handle aVoiceHandle, Vector3 value)
 }
 
 
-void AudioDevice::set3dSourceVelocity(handle aVoiceHandle, Vector3 velocity)
+void AudioDevice::set3dSourceVelocity(handle voice_handle, Vector3 velocity)
 {
     FOR_ALL_VOICES_PRE_3D
         m3dData[ch].m3dVelocity = velocity;
@@ -3488,7 +3483,7 @@ void AudioDevice::set3dSourceVelocity(handle aVoiceHandle, Vector3 velocity)
 }
 
 
-void AudioDevice::set3dSourceMinMaxDistance(handle aVoiceHandle,
+void AudioDevice::set3dSourceMinMaxDistance(handle voice_handle,
                                             float  aMinDistance,
                                             float  aMaxDistance)
 {
@@ -3499,7 +3494,7 @@ void AudioDevice::set3dSourceMinMaxDistance(handle aVoiceHandle,
 }
 
 
-void AudioDevice::set3dSourceAttenuation(handle           aVoiceHandle,
+void AudioDevice::set3dSourceAttenuation(handle           voice_handle,
                                          AttenuationModel aAttenuationModel,
                                          float            aAttenuationRolloffFactor)
 {
@@ -3510,7 +3505,7 @@ void AudioDevice::set3dSourceAttenuation(handle           aVoiceHandle,
 }
 
 
-void AudioDevice::set3dSourceDopplerFactor(handle aVoiceHandle, float aDopplerFactor)
+void AudioDevice::set3dSourceDopplerFactor(handle voice_handle, float aDopplerFactor)
 {
     FOR_ALL_VOICES_PRE_3D
         m3dData[ch].m3dDopplerFactor = aDopplerFactor;
@@ -3535,9 +3530,9 @@ void AudioDevice::setGlobalFilter(size_t aFilterId, Filter* aFilter)
     unlockAudioMutex_internal();
 }
 
-std::optional<float> AudioDevice::getFilterParameter(handle voice_handle,
-                                                     size_t filter_id,
-                                                     size_t attribute_id)
+std::optional<float> AudioDevice::filter_parameter(handle voice_handle,
+                                                   size_t filter_id,
+                                                   size_t attribute_id)
 {
     if (filter_id >= filters_per_stream)
     {
@@ -3573,17 +3568,17 @@ std::optional<float> AudioDevice::getFilterParameter(handle voice_handle,
     return ret;
 }
 
-void AudioDevice::setFilterParameter(handle aVoiceHandle,
-                                     size_t filter_id,
-                                     size_t attribute_id,
-                                     float  value)
+void AudioDevice::set_filter_parameter(handle voice_handle,
+                                       size_t filter_id,
+                                       size_t attribute_id,
+                                       float  value)
 {
     if (filter_id >= filters_per_stream)
     {
         return;
     }
 
-    if (aVoiceHandle == 0)
+    if (voice_handle == 0)
     {
         lockAudioMutex_internal();
         if (mFilterInstance[filter_id])
@@ -3602,8 +3597,8 @@ void AudioDevice::setFilterParameter(handle aVoiceHandle,
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::fadeFilterParameter(
-    handle aVoiceHandle,
+void AudioDevice::fade_filter_parameter(
+    handle voice_handle,
     size_t aFilterId,
     size_t aAttributeId,
     float  aTo,
@@ -3614,7 +3609,7 @@ void AudioDevice::fadeFilterParameter(
         return;
     }
 
-    if (aVoiceHandle == 0)
+    if (voice_handle == 0)
     {
         lockAudioMutex_internal();
         if (mFilterInstance[aFilterId])
@@ -3637,19 +3632,19 @@ void AudioDevice::fadeFilterParameter(
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::oscillateFilterParameter(handle aVoiceHandle,
-                                           size_t aFilterId,
-                                           size_t aAttributeId,
-                                           float  aFrom,
-                                           float  aTo,
-                                           double aTime)
+void AudioDevice::oscillate_filter_parameter(handle voice_handle,
+                                             size_t aFilterId,
+                                             size_t aAttributeId,
+                                             float  aFrom,
+                                             float  aTo,
+                                             double aTime)
 {
     if (aFilterId >= filters_per_stream)
     {
         return;
     }
 
-    if (aVoiceHandle == 0)
+    if (voice_handle == 0)
     {
         lockAudioMutex_internal();
         if (mFilterInstance[aFilterId])
@@ -3757,13 +3752,13 @@ void AudioDevice::destroyVoiceGroup(handle aVoiceGroupHandle)
 }
 
 // Add a voice handle to a voice group
-void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle aVoiceHandle)
+void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle voice_handle)
 {
     if (!isVoiceGroup(aVoiceGroupHandle))
         return;
 
     // Don't consider adding invalid voice handles as an error, since the voice may just have ended.
-    if (!isValidVoiceHandle(aVoiceHandle))
+    if (!is_valid_voice_handle(voice_handle))
         return;
 
     trimVoiceGroup_internal(aVoiceGroupHandle);
@@ -3774,7 +3769,7 @@ void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle aVoiceHandle)
 
     for (size_t i = 1; i < mVoiceGroup[c][0]; ++i)
     {
-        if (mVoiceGroup[c][i] == aVoiceHandle)
+        if (mVoiceGroup[c][i] == voice_handle)
         {
             unlockAudioMutex_internal();
             return; // already there
@@ -3782,7 +3777,7 @@ void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle aVoiceHandle)
 
         if (mVoiceGroup[c][i] == 0)
         {
-            mVoiceGroup[c][i]     = aVoiceHandle;
+            mVoiceGroup[c][i]     = voice_handle;
             mVoiceGroup[c][i + 1] = 0;
 
             unlockAudioMutex_internal();
@@ -3798,7 +3793,7 @@ void AudioDevice::addVoiceToGroup(handle aVoiceGroupHandle, handle aVoiceHandle)
         n[i] = mVoiceGroup[c][i];
     }
 
-    n[n[0]]     = aVoiceHandle;
+    n[n[0]]     = voice_handle;
     n[n[0] + 1] = 0;
     n[0] *= 2;
     delete[] mVoiceGroup[c];
@@ -3876,7 +3871,7 @@ void AudioDevice::trimVoiceGroup_internal(handle aVoiceGroupHandle)
         }
 
         unlockAudioMutex_internal();
-        while (!isValidVoiceHandle(
+        while (!is_valid_voice_handle(
             mVoiceGroup[c][i])) // function locks mutex, so we need to unlock it before the call
         {
             lockAudioMutex_internal();
@@ -3926,7 +3921,7 @@ handle* AudioDevice::voiceGroupHandleToArray_internal(handle aVoiceGroupHandle) 
 
 void AudioDevice::setVoiceRelativePlaySpeed_internal(size_t aVoice, float aSpeed)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     assert(aSpeed > 0.0f);
 
@@ -3939,7 +3934,7 @@ void AudioDevice::setVoiceRelativePlaySpeed_internal(size_t aVoice, float aSpeed
 
 void AudioDevice::setVoicePause_internal(size_t aVoice, int aPause)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     mActiveVoiceDirty = true;
 
@@ -3952,7 +3947,7 @@ void AudioDevice::setVoicePause_internal(size_t aVoice, int aPause)
 
 void AudioDevice::setVoicePan_internal(size_t aVoice, float aPan)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     if (mVoice[aVoice])
     {
@@ -3987,7 +3982,7 @@ void AudioDevice::setVoicePan_internal(size_t aVoice, float aPan)
 
 void AudioDevice::setVoiceVolume_internal(size_t aVoice, float aVolume)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     mActiveVoiceDirty = true;
     if (mVoice[aVoice])
@@ -3999,7 +3994,7 @@ void AudioDevice::setVoiceVolume_internal(size_t aVoice, float aVolume)
 
 void AudioDevice::stopVoice_internal(size_t aVoice)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     mActiveVoiceDirty = true;
     if (mVoice[aVoice])
@@ -4020,7 +4015,7 @@ void AudioDevice::stopVoice_internal(size_t aVoice)
 
 void AudioDevice::updateVoiceRelativePlaySpeed_internal(size_t aVoice)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     mVoice[aVoice]->mOverallRelativePlaySpeed =
         m3dData[aVoice].mDopplerValue * mVoice[aVoice]->mSetRelativePlaySpeed;
@@ -4030,7 +4025,7 @@ void AudioDevice::updateVoiceRelativePlaySpeed_internal(size_t aVoice)
 
 void AudioDevice::updateVoiceVolume_internal(size_t aVoice)
 {
-    assert(aVoice < voice_count);
+    assert(aVoice < cer::voice_count);
     assert(mInsideAudioThreadMutex);
     mVoice[aVoice]->mOverallVolume = mVoice[aVoice]->mSetVolume * m3dData[aVoice].m3dVolume;
     if (mVoice[aVoice]->mFlags.Paused)

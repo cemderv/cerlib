@@ -103,9 +103,9 @@ namespace cer
 
 #define FOR_ALL_VOICES_PRE                                                                         \
     handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {aVoiceHandle, 0};                                                            \
+    handle  th_[2] = {voice_handle, 0};                                                            \
     lockAudioMutex_internal();                                                                     \
-    h_ = voiceGroupHandleToArray_internal(aVoiceHandle);                                           \
+    h_ = voiceGroupHandleToArray_internal(voice_handle);                                           \
     if (h_ == nullptr)                                                                             \
         h_ = th_;                                                                                  \
     while (*h_)                                                                                    \
@@ -122,8 +122,8 @@ namespace cer
 
 #define FOR_ALL_VOICES_PRE_3D                                                                      \
     handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {aVoiceHandle, 0};                                                            \
-    h_             = voiceGroupHandleToArray_internal(aVoiceHandle);                               \
+    handle  th_[2] = {voice_handle, 0};                                                            \
+    h_             = voiceGroupHandleToArray_internal(voice_handle);                               \
     if (h_ == nullptr)                                                                             \
         h_ = th_;                                                                                  \
     while (*h_)                                                                                    \
@@ -139,9 +139,9 @@ namespace cer
 
 #define FOR_ALL_VOICES_PRE_EXT                                                                     \
     handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {aVoiceHandle, 0};                                                            \
+    handle  th_[2] = {voice_handle, 0};                                                            \
     engine->lockAudioMutex_internal();                                                             \
-    h_ = engine->voiceGroupHandleToArray_internal(aVoiceHandle);                                   \
+    h_ = engine->voiceGroupHandleToArray_internal(voice_handle);                                   \
     if (h_ == nullptr)                                                                             \
         h_ = th_;                                                                                  \
     while (*h_)                                                                                    \
@@ -158,8 +158,8 @@ namespace cer
 
 #define FOR_ALL_VOICES_PRE_3D_EXT                                                                  \
     handle* h_     = nullptr;                                                                      \
-    handle  th_[2] = {aVoiceHandle, 0};                                                            \
-    h_             = engine->voiceGroupHandleToArray(aVoiceHandle);                                \
+    handle  th_[2] = {voice_handle, 0};                                                            \
+    h_             = engine->voiceGroupHandleToArray(voice_handle);                                \
     if (h_ == nullptr)                                                                             \
         h_ = th_;                                                                                  \
     while (*h_)                                                                                    \
