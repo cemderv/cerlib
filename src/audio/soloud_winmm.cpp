@@ -46,7 +46,7 @@ struct SoLoudWinMMData
     HWAVEOUT             waveOut;
     HANDLE               bufferEndEvent;
     HANDLE               audioProcessingDoneEvent;
-    Engine*              soloud;
+    AudioDevice*              soloud;
     int                  samples;
     Thread::ThreadHandle threadHandle;
     SoLoudWinMMData()
@@ -90,7 +90,7 @@ static void winMMThread(LPVOID aParam)
     }
 }
 
-static void winMMCleanup(Engine* engine)
+static void winMMCleanup(AudioDevice* engine)
 {
     if (0 == engine->mBackendData)
     {
@@ -137,7 +137,7 @@ static void winMMCleanup(Engine* engine)
 }
 
 void winmm_init(
-    Engine* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
 {
     SoLoudWinMMData* data       = new SoLoudWinMMData;
     engine->mBackendData        = data;

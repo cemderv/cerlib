@@ -24,61 +24,63 @@ freely, subject to the following restrictions:
 
 #pragma once
 
-#include "audio/soloud_engine.hpp"
+#include "soloud.hpp"
 
 namespace cer
 {
+    class AudioDevice;
+
     // SDL2 "non-dynamic" back-end initialization call
-    void sdl2static_init(Engine* engine,
+    void sdl2static_init(AudioDevice* engine,
                          EngineFlags aFlags,
                          size_t aSamplerate = 44100,
                          size_t aBuffer = 2048,
                          size_t aChannels = 2);
 
     // Core Audio driver back-end initialization call
-    void coreaudio_init(Engine* engine,
+    void coreaudio_init(AudioDevice* engine,
                         EngineFlags aFlags,
                         size_t aSamplerate = 44100,
                         size_t aBuffer = 2048,
                         size_t aChannels = 2);
 
     // OpenSL ES back-end initialization call
-    void opensles_init(Engine* engine,
+    void opensles_init(AudioDevice* engine,
                        EngineFlags aFlags,
                        size_t aSamplerate = 44100,
                        size_t aBuffer = 2048,
                        size_t aChannels = 2);
 
     // WinMM back-end initialization call
-    void winmm_init(Engine* engine,
+    void winmm_init(AudioDevice* engine,
                     EngineFlags aFlags,
                     size_t aSamplerate = 44100,
                     size_t aBuffer = 4096,
                     size_t aChannels = 2);
 
     // XAudio2 back-end initialization call
-    void xaudio2_init(Engine* engine,
+    void xaudio2_init(AudioDevice* engine,
                       EngineFlags aFlags,
                       size_t aSamplerate = 44100,
                       size_t aBuffer = 2048,
                       size_t aChannels = 2);
 
     // WASAPI back-end initialization call
-    void wasapi_init(Engine* engine,
+    void wasapi_init(AudioDevice* engine,
                      EngineFlags aFlags,
                      size_t aSamplerate = 44100,
                      size_t aBuffer = 4096,
                      size_t aChannels = 2);
 
     // PS Vita homebrew back-end initialization call
-    void vita_homebrew_init(Engine* engine,
+    void vita_homebrew_init(AudioDevice* engine,
                             EngineFlags aFlags,
                             size_t aSamplerate = 44100,
                             size_t aBuffer = 2048,
                             size_t aChannels = 2);
 
     // ALSA back-end initialization call
-    void alsa_init(Engine* engine,
+    void alsa_init(AudioDevice* engine,
                    EngineFlags aFlags,
                    size_t aSamplerate = 44100,
                    size_t aBuffer = 2048,

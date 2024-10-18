@@ -38,18 +38,18 @@ class AudioSourceInstance3dData;
 
 class AudioCollider
 {
-  public:
+public:
     virtual ~AudioCollider() noexcept = default;
 
     // Calculate volume multiplier. Assumed to return value between 0 and 1.
-    virtual float collide(Engine*                    engine,
+    virtual float collide(AudioDevice*                    engine,
                           AudioSourceInstance3dData& aAudioInstance3dData,
                           int                        aUserData) = 0;
 };
 
 class AudioAttenuator
 {
-  public:
+public:
     virtual ~AudioAttenuator() noexcept = default;
 
     virtual float attenuate(float aDistance,
@@ -83,10 +83,10 @@ struct AudioSourceInstanceFlagsData
 
 class AudioSourceInstance3dData
 {
-  public:
+public:
     AudioSourceInstance3dData() = default;
 
-    explicit AudioSourceInstance3dData(AudioSource& aSource);
+    explicit AudioSourceInstance3dData(const AudioSource& source);
 
     // 3d position
     Vector3 m3dPosition;
@@ -125,7 +125,7 @@ class AudioSourceInstance3dData
     float m3dVolume = 0.0f;
 
     // Channel volume
-    std::array<float, MAX_CHANNELS> mChannelVolume{};
+    std::array<float, max_channels> mChannelVolume{};
 
     // Copy of flags
     AudioSourceInstanceFlagsData mFlags;
@@ -137,7 +137,7 @@ class AudioSourceInstance3dData
 // Base class for audio instances
 class AudioSourceInstance
 {
-  public:
+public:
     AudioSourceInstance();
 
     virtual ~AudioSourceInstance() noexcept = default;
@@ -154,7 +154,7 @@ class AudioSourceInstance
     float mPan = 0.0f;
 
     // Volume for each channel (panning)
-    std::array<float, MAX_CHANNELS> mChannelVolume{};
+    std::array<float, max_channels> mChannelVolume{};
 
     // Set volume
     float mSetVolume = 1.0f;
@@ -202,7 +202,7 @@ class AudioSourceInstance
     int mActiveFader = 0;
 
     // Current channel volumes, used to ramp the volume changes to avoid clicks
-    std::array<float, MAX_CHANNELS> mCurrentChannelVolume{};
+    std::array<float, max_channels> mCurrentChannelVolume{};
 
     // ID of the sound source that generated this instance
     size_t mAudioSourceID = 0;
@@ -211,10 +211,10 @@ class AudioSourceInstance
     size_t mBusHandle = ~0u;
 
     // Filter pointer
-    std::array<std::shared_ptr<FilterInstance>, FILTERS_PER_STREAM> mFilter{};
+    std::array<std::shared_ptr<FilterInstance>, filters_per_stream> mFilter{};
 
     // Initialize instance. Mostly internal use.
-    void init(AudioSource& aSource, int aPlayIndex);
+    void init(const AudioSource& source, int aPlayIndex);
 
     // Pointers to buffers for the resampler
     std::array<float*, 2> mResampleData{};
@@ -252,7 +252,7 @@ class Engine;
 // Base class for audio sources
 class AudioSource
 {
-  public:
+public:
     AudioSource() = default;
 
     virtual ~AudioSource() noexcept;
@@ -321,10 +321,10 @@ class AudioSource
     float doppler_factor_3d = 1.0f;
 
     // Filter pointer
-    std::array<Filter*, FILTERS_PER_STREAM> filter{};
+    std::array<Filter*, filters_per_stream> filter{};
 
     // Pointer to the Soloud object. Needed to stop all instances in dtor.
-    Engine* engine = nullptr;
+    AudioDevice* engine = nullptr;
 
     // Pointer to a custom audio collider object
     AudioCollider* collider = nullptr;

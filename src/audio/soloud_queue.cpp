@@ -23,7 +23,7 @@ freely, subject to the following restrictions:
 */
 
 #include "soloud_queue.hpp"
-#include "soloud_engine.hpp"
+#include "audio/AudioDevice.hpp"
 
 namespace cer
 {
@@ -44,8 +44,8 @@ size_t QueueInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBu
     while (copycount && mParent->mCount)
     {
         int readcount = mParent->mSource[mParent->mReadIndex]->getAudio(aBuffer + copyofs,
-                                                                        copycount,
-                                                                        aBufferSize);
+            copycount,
+            aBufferSize);
         copyofs += readcount;
         copycount -= readcount;
         if (mParent->mSource[mParent->mReadIndex]->hasEnded())
@@ -150,7 +150,7 @@ void Queue::setParamsFromAudioSource(const AudioSource& aSound)
 void Queue::setParams(float aSamplerate, size_t aChannels)
 {
     assert(aChannels >= 1);
-    assert(aChannels <= MAX_CHANNELS);
+    assert(aChannels <= max_channels);
 
     channel_count    = aChannels;
     base_sample_rate = aSamplerate;

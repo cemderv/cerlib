@@ -115,14 +115,14 @@ struct BackendData
     SLDataLocator_AndroidSimpleBufferQueue inLocator;
 };
 
-void soloud_opensles_deinit(Engine* engine)
+void soloud_opensles_deinit(AudioDevice* engine)
 {
     BackendData* data = static_cast<BackendData*>(engine->mBackendData);
     delete data;
     engine->mBackendData = nullptr;
 }
 
-static void opensles_iterate(Engine* engine)
+static void opensles_iterate(AudioDevice* engine)
 {
     BackendData* data = static_cast<BackendData*>(engine->mBackendData);
 
@@ -145,7 +145,7 @@ static void opensles_iterate(Engine* engine)
 
 static void opensles_thread(void* aParam)
 {
-    Engine*      soloud = static_cast<Engine*>(aParam);
+    AudioDevice*      soloud = static_cast<AudioDevice*>(aParam);
     BackendData* data   = static_cast<BackendData*>(soloud->mBackendData);
     while (data->threadrun == 0)
     {
@@ -161,7 +161,7 @@ static void SLAPIENTRY soloud_opensles_play_callback(SLPlayItf player,
                                                      void*     context,
                                                      SLuint32  event)
 {
-    Engine*      soloud = static_cast<Engine*>(context);
+    AudioDevice*      soloud = static_cast<AudioDevice*>(context);
     BackendData* data   = static_cast<BackendData*>(soloud->mBackendData);
     if (event & SL_PLAYEVENT_HEADATEND && data->buffersQueued > 0)
     {
@@ -170,7 +170,7 @@ static void SLAPIENTRY soloud_opensles_play_callback(SLPlayItf player,
 }
 
 result opensles_init(
-    Engine* engine, size_t aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+    AudioDevice* engine, size_t aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
 {
     BackendData* data = new BackendData();
 

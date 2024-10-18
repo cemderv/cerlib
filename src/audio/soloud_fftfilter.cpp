@@ -49,7 +49,7 @@ static constexpr auto STFT_WINDOW_TWICE = STFT_WINDOW_SIZE * 2;
 // Needed for subclasses
 FFTFilterInstance::FFTFilterInstance()
 {
-    for (size_t i = 0; i < MAX_CHANNELS; ++i)
+    for (size_t i = 0; i < max_channels; ++i)
     {
         mInputOffset[i] = STFT_WINDOW_SIZE;
         mMixOffset[i]   = STFT_WINDOW_HALF;

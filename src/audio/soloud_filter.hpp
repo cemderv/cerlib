@@ -193,7 +193,7 @@ class DuckFilterInstance final : public FilterInstance
 
   private:
     handle  mListenTo;
-    Engine* mEngine;
+    AudioDevice* mEngine;
     float   mCurrentLevel;
 };
 
@@ -210,7 +210,7 @@ class DuckFilter final : public Filter
 
     std::shared_ptr<FilterInstance> createInstance() override;
 
-    Engine* mEngine   = nullptr;
+    AudioDevice* mEngine   = nullptr;
     float   mOnRamp   = 0.1f;
     float   mOffRamp  = 0.5f;
     float   mLevel    = 0.5f;
@@ -405,9 +405,9 @@ class FFTFilterInstance : public FilterInstance
     std::unique_ptr<float[]> mMixBuffer;
     std::unique_ptr<float[]> mLastPhase;
     std::unique_ptr<float[]> mSumPhase;
-    size_t                   mInputOffset[MAX_CHANNELS];
-    size_t                   mMixOffset[MAX_CHANNELS];
-    size_t                   mReadOffset[MAX_CHANNELS];
+    size_t                   mInputOffset[max_channels];
+    size_t                   mMixOffset[max_channels];
+    size_t                   mReadOffset[max_channels];
     FFTFilter*               mParent;
 };
 

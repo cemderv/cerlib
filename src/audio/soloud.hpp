@@ -38,24 +38,25 @@ freely, subject to the following restrictions:
 // includes depend on them.
 namespace cer
 {
+class AudioDevice;
+
 // Maximum number of filters per stream
-static constexpr size_t FILTERS_PER_STREAM = 8;
+static constexpr size_t filters_per_stream = 8;
 
 // Number of samples to process on one go
-static constexpr size_t SAMPLE_GRANULARITY = 512;
+static constexpr size_t sample_granularity = 512;
 
 // Maximum number of concurrent voices (hard limit is 4095)
-static constexpr size_t VOICE_COUNT = 1024;
+static constexpr size_t voice_count = 1024;
 
 // 1)mono, 2)stereo 4)quad 6)5.1 8)7.1
-static constexpr size_t MAX_CHANNELS = 8;
+static constexpr size_t max_channels = 8;
 
-class Engine;
-typedef void (*mutexCallFunction)(void* aMutexPtr);
-typedef void (*soloudCallFunction)(Engine* engine);
-typedef bool (*soloudResultFunction)(Engine* engine);
-typedef size_t handle;
-typedef double time_t;
+using mutexCallFunction    = void (*)(void*);
+using soloudCallFunction   = void (*)(AudioDevice*);
+using soloudResultFunction = bool (*)(AudioDevice*);
+using handle               = size_t;
+using time_t               = double;
 
 enum class Waveform
 {
@@ -87,6 +88,13 @@ enum class AttenuationModel
     LinearDistance = 2,
     // Exponential distance attenuation model
     ExponentialDistance = 3
+};
+
+struct EngineFlags
+{
+    bool ClipRoundoff : 1        = true;
+    bool EnableVisualization : 1 = false;
+    bool NoFpuRegisterChange : 1 = false;
 };
 
 // Default resampler for both main and bus mixers

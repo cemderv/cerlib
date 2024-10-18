@@ -40,7 +40,7 @@ struct ALSAData
     float*               buffer;
     short*               sampleBuffer;
     snd_pcm_t*           alsaDeviceHandle;
-    Engine*              soloud;
+    AudioDevice*              soloud;
     int                  samples;
     int                  channels;
     bool                 audioProcessingDone;
@@ -65,7 +65,7 @@ static void alsaThread(void* aParam)
     }
 }
 
-static void alsaCleanup(Engine* engine)
+static void alsaCleanup(AudioDevice* engine)
 {
     if (0 == engine->mBackendData)
     {
@@ -93,7 +93,7 @@ static void alsaCleanup(Engine* engine)
 }
 
 void alsa_init(
-    Engine* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
 {
     ALSAData* data = new ALSAData;
     memset(data, 0, sizeof(ALSAData));

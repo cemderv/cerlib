@@ -126,7 +126,7 @@ void Wav::loadwav(const MemoryFile& aReader)
 
     for (size_t i = 0; i < mSampleCount; i += 512)
     {
-        float      tmp[512 * MAX_CHANNELS];
+        float      tmp[512 * max_channels];
         const auto blockSize = (mSampleCount - i) > 512 ? 512 : mSampleCount - i;
         drwav_read_pcm_frames_f32(&decoder, blockSize, tmp);
 
@@ -156,9 +156,9 @@ void Wav::loadogg(const MemoryFile& aReader)
     base_sample_rate = float(info.sample_rate);
     auto samples     = stb_vorbis_stream_length_in_samples(vorbis);
 
-    if (size_t(info.channels) > MAX_CHANNELS)
+    if (size_t(info.channels) > max_channels)
     {
-        channel_count = MAX_CHANNELS;
+        channel_count = max_channels;
     }
     else
     {
@@ -215,7 +215,7 @@ void Wav::loadmp3(const MemoryFile& aReader)
 
     for (size_t i = 0; i < mSampleCount; i += 512)
     {
-        auto         tmp       = std::array<float, 512 * MAX_CHANNELS>{};
+        auto         tmp       = std::array<float, 512 * max_channels>{};
         const size_t blockSize = (mSampleCount - i) > 512 ? 512 : mSampleCount - i;
         drmp3_read_pcm_frames_f32(&decoder, blockSize, tmp.data());
 
@@ -256,7 +256,7 @@ void Wav::loadflac(const MemoryFile& aReader)
 
     for (size_t i = 0; i < mSampleCount; i += 512)
     {
-        auto         tmp       = std::array<float, 512 * MAX_CHANNELS>{};
+        auto         tmp       = std::array<float, 512 * max_channels>{};
         const size_t blockSize = (mSampleCount - i) > 512 ? 512 : mSampleCount - i;
         drflac_read_pcm_frames_f32(decoder, blockSize, tmp.data());
         for (size_t j = 0; j < blockSize; ++j)

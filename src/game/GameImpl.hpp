@@ -30,9 +30,13 @@ namespace cer
 class Window;
 }
 
-namespace cer::details
+namespace cer
 {
 class AudioDevice;
+}
+
+namespace cer::details
+{
 class GraphicsDevice;
 class ContentManager;
 class InputImpl;
@@ -67,7 +71,7 @@ class GameImpl final : public Object
 {
     friend WindowImpl;
 
-  public:
+public:
     using LoadFunc = std::function<void()>;
 
     using UpdateFunc = std::function<bool(const GameTime& time)>;
@@ -136,7 +140,7 @@ class GameImpl final : public Object
 
     auto gamepads() const -> std::vector<Gamepad>;
 
-  private:
+private:
     void open_initial_gamepads();
 
     void initialize_imgui();

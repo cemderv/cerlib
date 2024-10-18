@@ -25,7 +25,7 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#include "soloud_engine.hpp"
+#include "audio/AudioDevice.hpp"
 #include <stdexcept>
 
 #include <AudioToolbox/AudioToolbox.h>
@@ -36,13 +36,13 @@ static AudioQueueRef audioQueue = 0;
 
 namespace cer
 {
-void soloud_coreaudio_deinit(Engine* engine)
+void soloud_coreaudio_deinit(AudioDevice* engine)
 {
     AudioQueueStop(audioQueue, true);
     AudioQueueDispose(audioQueue, false);
 }
 
-bool soloud_coreaudio_pause(Engine* engine)
+bool soloud_coreaudio_pause(AudioDevice* engine)
 {
     if (!audioQueue)
         return false;
@@ -52,7 +52,7 @@ bool soloud_coreaudio_pause(Engine* engine)
     return true;
 }
 
-bool soloud_coreaudio_resume(Engine* engine)
+bool soloud_coreaudio_resume(AudioDevice* engine)
 {
     if (!audioQueue)
         return false;
@@ -64,13 +64,17 @@ bool soloud_coreaudio_resume(Engine* engine)
 
 static void coreaudio_fill_buffer(void* context, AudioQueueRef queue, AudioQueueBufferRef buffer)
 {
-    auto engine = static_cast<Engine*>(context);
+    auto engine = static_cast<AudioDevice*>(context);
     engine->mixSigned16(static_cast<short*>(buffer->mAudioData), buffer->mAudioDataByteSize / 4);
     AudioQueueEnqueueBuffer(queue, buffer, 0, nullptr);
 }
 
 void coreaudio_init(
-    Engine* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+    AudioDevice* engine,
+    EngineFlags  aFlags,
+    size_t       aSamplerate,
+    size_t       aBuffer,
+    size_t       aChannels)
 {
     engine->postinit_internal(aSamplerate, aBuffer, aFlags, 2);
     engine->mBackendCleanupFunc = soloud_coreaudio_deinit;

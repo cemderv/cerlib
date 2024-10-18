@@ -221,7 +221,7 @@ static int getOggData(float** aOggOutputs,
 size_t WavStreamInstance::getAudio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
 {
     size_t                                offset = 0;
-    std::array<float, 512 * MAX_CHANNELS> tmp{};
+    std::array<float, 512 * max_channels> tmp{};
 
 #if 0
     if (mFile == nullptr)
@@ -426,9 +426,9 @@ void WavStream::loadwav(MemoryFile& fp)
     }
 
     channel_count = decoder.channels;
-    if (channel_count > MAX_CHANNELS)
+    if (channel_count > max_channels)
     {
-        channel_count = MAX_CHANNELS;
+        channel_count = max_channels;
     }
 
     base_sample_rate = float(decoder.sampleRate);
@@ -451,9 +451,9 @@ void WavStream::loadogg(MemoryFile& fp)
 
     const auto info = stb_vorbis_get_info(v);
     channel_count   = info.channels;
-    if (size_t(info.channels) > MAX_CHANNELS)
+    if (size_t(info.channels) > max_channels)
     {
-        channel_count = MAX_CHANNELS;
+        channel_count = max_channels;
     }
     base_sample_rate = (float)info.sample_rate;
     int samples      = stb_vorbis_stream_length_in_samples(v);
@@ -474,9 +474,9 @@ void WavStream::loadflac(MemoryFile& fp)
     }
 
     channel_count = decoder->channels;
-    if (channel_count > MAX_CHANNELS)
+    if (channel_count > max_channels)
     {
-        channel_count = MAX_CHANNELS;
+        channel_count = max_channels;
     }
 
     base_sample_rate = float(decoder->sampleRate);
@@ -496,9 +496,9 @@ void WavStream::loadmp3(MemoryFile& fp)
     }
 
     channel_count = decoder.channels;
-    if (channel_count > MAX_CHANNELS)
+    if (channel_count > max_channels)
     {
-        channel_count = MAX_CHANNELS;
+        channel_count = max_channels;
     }
 
     const drmp3_uint64 samples = drmp3_get_pcm_frame_count(&decoder);

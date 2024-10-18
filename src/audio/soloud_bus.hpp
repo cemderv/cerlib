@@ -53,7 +53,7 @@ class BusInstance final : public AudioSourceInstance
     AlignedFloatBuffer mScratch;
 
     // Approximate volume for channels.
-    std::array<float, MAX_CHANNELS> mVisualizationChannelVolume{};
+    std::array<float, max_channels> mVisualizationChannelVolume{};
 
     // Mono-mixed wave data for visualization and for visualization FFT input
     std::array<float, 256> mVisualizationWaveData{};

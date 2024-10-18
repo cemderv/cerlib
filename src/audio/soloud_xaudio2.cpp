@@ -49,7 +49,7 @@ struct XAudio2Data
     HANDLE                  audioProcessingDoneEvent;
     class VoiceCallback*    voiceCb;
     Thread::ThreadHandle    thread;
-    Engine*                 soloud;
+    AudioDevice*                 soloud;
     int                     samples;
     UINT32                  bufferLengthBytes;
 };
@@ -138,7 +138,7 @@ static void xaudio2Thread(LPVOID aParam)
     }
 }
 
-static void xaudio2Cleanup(Engine* engine)
+static void xaudio2Cleanup(AudioDevice* engine)
 {
     if (0 == engine->mBackendData)
     {
@@ -189,7 +189,7 @@ static void xaudio2Cleanup(Engine* engine)
 }
 
 result xaudio2_init(
-    Engine* engine, size_t aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+    AudioDevice* engine, size_t aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
 {
     if (FAILED(CoInitializeEx(0, COINIT_MULTITHREADED)))
     {

@@ -25,6 +25,7 @@ freely, subject to the following restrictions:
 #include "audio/soloud_bus.hpp"
 #include "audio/soloud_fft.hpp"
 #include "audio/soloud_internal.hpp"
+#include "audio/AudioDevice.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -32,8 +33,8 @@ namespace cer
 {
 BusInstance::BusInstance(Bus* aParent)
     : mParent(aParent)
-      , mScratchSize(SAMPLE_GRANULARITY)
-      , mScratch(mScratchSize * MAX_CHANNELS)
+      , mScratchSize(sample_granularity)
+      , mScratch(mScratchSize * max_channels)
 {
     mFlags.Protected     = true;
     mFlags.InaudibleTick = true;
@@ -190,7 +191,7 @@ handle Bus::playClocked(time_t aSoundTime, AudioSource& aSound, float aVolume, f
         return 0;
     }
 
-    return engine->playClocked(aSoundTime, aSound, aVolume, aPan, mChannelHandle);
+    return engine->play_clocked(aSoundTime, aSound, aVolume, aPan, mChannelHandle);
 }
 
 handle Bus::play3d(AudioSource& aSound, Vector3 aPos, Vector3 aVel, float aVolume, bool aPaused)
@@ -240,7 +241,7 @@ void Bus::annexSound(handle aVoiceHandle)
 
 void Bus::setFilter(size_t aFilterId, Filter* aFilter)
 {
-    if (aFilterId >= FILTERS_PER_STREAM)
+    if (aFilterId >= filters_per_stream)
         return;
 
     filter[aFilterId] = aFilter;
@@ -259,7 +260,7 @@ void Bus::setFilter(size_t aFilterId, Filter* aFilter)
 void Bus::setChannels(size_t aChannels)
 {
     assert(aChannels != 0 && aChannels != 3 && aChannels != 5 && aChannels != 7);
-    assert(aChannels <= MAX_CHANNELS);
+    assert(aChannels <= max_channels);
 
     channel_count = aChannels;
 }
@@ -330,7 +331,7 @@ size_t Bus::getActiveVoiceCount()
     size_t count = 0;
     findBusHandle();
     engine->lockAudioMutex_internal();
-    for (size_t i = 0; i < VOICE_COUNT; ++i)
+    for (size_t i = 0; i < voice_count; ++i)
     {
         if (engine->mVoice[i] && engine->mVoice[i]->mBusHandle == mChannelHandle)
         {

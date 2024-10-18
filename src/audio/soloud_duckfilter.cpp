@@ -23,7 +23,7 @@ freely, subject to the following restrictions:
 */
 
 #include "audio/soloud_bus.hpp"
-#include "audio/soloud_engine.hpp"
+#include "audio/AudioDevice.hpp"
 #include "soloud_filter.hpp"
 
 namespace cer

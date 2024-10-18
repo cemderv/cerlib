@@ -8,18 +8,9 @@ set(audio_files
   SoundChannelImpl.hpp
   SoundImpl.cpp
   SoundImpl.hpp
-  soloud.cpp
   soloud_audiosource.cpp
   soloud_bus.cpp
   soloud_biquadresonantfilter.cpp
-  soloud_core_3d.cpp
-  soloud_core_basicops.cpp
-  soloud_core_faderops.cpp
-  soloud_core_filterops.cpp
-  soloud_core_getters.cpp
-  soloud_core_setters.cpp
-  soloud_core_voicegroup.cpp
-  soloud_core_voiceops.cpp
   soloud_duckfilter.cpp
   soloud_echofilter.cpp
   soloud_eqfilter.cpp
@@ -43,6 +34,5 @@ set(audio_files
   dr_impl.cpp
   soloud_audiosource.hpp
   soloud_bus.hpp
-  soloud_engine.hpp
   soloud.hpp
 )
