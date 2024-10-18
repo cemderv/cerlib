@@ -126,12 +126,15 @@ int cer::thread::time_millis()
 }
 
 #else // pthreads
+namespace cer::thread
+{
 struct ThreadHandleData
 {
     pthread_t thread;
 };
+} // namespace cer::thread
 
-auto create_mutex() -> void*
+auto cer::thread::create_mutex() -> void*
 {
     auto* mutex = new pthread_mutex_t();
 
@@ -143,7 +146,7 @@ auto create_mutex() -> void*
     return mutex;
 }
 
-void destroy_mutex(void* handle)
+void cer::thread::destroy_mutex(void* handle)
 {
     if (auto* mutex = static_cast<pthread_mutex_t*>(handle))
     {
@@ -152,7 +155,7 @@ void destroy_mutex(void* handle)
     }
 }
 
-void lock_mutex(void* handle)
+void cer::thread::lock_mutex(void* handle)
 {
     if (auto* mutex = static_cast<pthread_mutex_t*>(handle))
     {
@@ -160,7 +163,7 @@ void lock_mutex(void* handle)
     }
 }
 
-void unlock_mutex(void* aHandle)
+void cer::thread::unlock_mutex(void* aHandle)
 {
     if (auto* mutex = static_cast<pthread_mutex_t*>(aHandle))
     {
@@ -170,8 +173,8 @@ void unlock_mutex(void* aHandle)
 
 struct soloud_thread_data
 {
-    ThreadFunction func  = nullptr;
-    void*          param = nullptr;
+    cer::thread::ThreadFunction func  = nullptr;
+    void*                       param = nullptr;
 };
 
 static void* thread_func(void* d)
@@ -184,7 +187,7 @@ static void* thread_func(void* d)
     return nullptr;
 }
 
-auto create_thread(ThreadFunction aThreadFunction, void* aParameter) -> ThreadHandle
+auto cer::thread::create_thread(ThreadFunction aThreadFunction, void* aParameter) -> ThreadHandle
 {
     auto* d  = new soloud_thread_data();
     d->func  = aThreadFunction;
@@ -196,7 +199,7 @@ auto create_thread(ThreadFunction aThreadFunction, void* aParameter) -> ThreadHa
     return thread_handle;
 }
 
-void sleep(int ms)
+void cer::thread::sleep(int ms)
 {
     // usleep(aMSec * 1000);
     timespec req = {};
@@ -206,17 +209,17 @@ void sleep(int ms)
     nanosleep(&req, nullptr);
 }
 
-void wait(ThreadHandle thread_handle)
+void cer::thread::wait(ThreadHandle thread_handle)
 {
     pthread_join(thread_handle->thread, 0);
 }
 
-void release(ThreadHandle thread_handle)
+void cer::thread::release(ThreadHandle thread_handle)
 {
     delete thread_handle;
 }
 
-auto time_millis() -> int
+auto cer::thread::time_millis() -> int
 {
     timespec spec;
     clock_gettime(CLOCK_REALTIME, &spec);

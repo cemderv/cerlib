@@ -1049,7 +1049,7 @@ static void resample_catmullrom(const float* aSrc,
 {
     auto pos = aSrcOffset;
 
-    for (int i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
+    for (size_t i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
         const auto p = pos >> FIXPOINT_FRAC_BITS;
         const auto f = pos & FIXPOINT_FRAC_MASK;
@@ -1102,7 +1102,7 @@ static void resample_linear(const float* aSrc,
 {
     auto pos = aSrcOffset;
 
-    for (int i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
+    for (size_t i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
         const auto p  = pos >> FIXPOINT_FRAC_BITS;
         const auto f  = pos & FIXPOINT_FRAC_MASK;
@@ -1125,7 +1125,7 @@ static void resample_point(const float* aSrc,
 {
     auto pos = aSrcOffset;
 
-    for (int i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
+    for (size_t i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
         const auto p = pos >> FIXPOINT_FRAC_BITS;
         aDst[i]      = aSrc[p];
@@ -2073,7 +2073,7 @@ void AudioDevice::mapResampleBuffers_internal()
         {
             auto found = size_t(-1);
 
-            for (size_t j = latestfree; found == -1 && j < m_max_active_voices; ++j)
+            for (size_t j = latestfree; found == size_t(-1) && j < m_max_active_voices; ++j)
             {
                 if (m_resample_data_owner[j] == nullptr)
                 {
@@ -2081,7 +2081,8 @@ void AudioDevice::mapResampleBuffers_internal()
                 }
             }
 
-            assert(found != -1);
+            assert(found != size_t(-1));
+
             m_resample_data_owner[found]                   = m_voice[m_active_voice[i]];
             m_resample_data_owner[found]->resample_data[0] = m_resample_data[found * 2 + 0];
             m_resample_data_owner[found]->resample_data[1] = m_resample_data[found * 2 + 1];

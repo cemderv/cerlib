@@ -48,4 +48,6 @@ set(audio_files
   WaveShaperFilter.cpp
   WavStream.cpp
   WavStream.hpp
+  stb_vorbis.hpp
+  stb_vorbis.cpp
 )

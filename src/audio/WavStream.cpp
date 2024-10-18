@@ -28,7 +28,7 @@ freely, subject to the following restrictions:
 
 #include "audio/Common.hpp"
 #include "audio/WavStream.hpp"
-#include "stb_vorbis.h"
+#include "stb_vorbis.hpp"
 #include "util/MemoryReader.hpp"
 #include <cstring>
 
