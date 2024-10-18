@@ -598,8 +598,27 @@ auto AlignedFloatBuffer::operator[](size_t index) const -> const float&
 
 TinyAlignedFloatBuffer::TinyAlignedFloatBuffer()
 {
-    unsigned char* basePtr = &mActualData[0];
-    mData                  = reinterpret_cast<float*>(size_t(basePtr) + 15 & ~15);
+    m_aligned_ptr = reinterpret_cast<float*>(uintptr_t(m_data.data()) + 15 & ~15);
+}
+
+auto TinyAlignedFloatBuffer::data() -> float*
+{
+    return m_aligned_ptr;
+}
+
+auto TinyAlignedFloatBuffer::data() const -> const float*
+{
+    return m_aligned_ptr;
+}
+
+auto TinyAlignedFloatBuffer::operator[](size_t index) -> float&
+{
+    return m_aligned_ptr[index];
+}
+
+auto TinyAlignedFloatBuffer::operator[](size_t index) const -> const float&
+{
+    return m_aligned_ptr[index];
 }
 
 void AudioDevice::pause()

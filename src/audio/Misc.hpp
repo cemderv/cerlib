@@ -68,8 +68,17 @@ class TinyAlignedFloatBuffer
   public:
     TinyAlignedFloatBuffer();
 
-    float*                                               mData = nullptr; // aligned pointer
-    std::array<unsigned char, (sizeof(float) * 16) + 16> mActualData{};
+    auto data() -> float*;
+
+    auto data() const -> const float*;
+
+    auto operator[](size_t index) -> float&;
+
+    auto operator[](size_t index) const -> const float&;
+
+  private:
+    std::array<unsigned char, (sizeof(float) * 16) + 16> m_data{};
+    float*                                               m_aligned_ptr = nullptr;
 };
 
 // Generate a waveform.
