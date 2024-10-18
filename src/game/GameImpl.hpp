@@ -30,9 +30,13 @@ namespace cer
 class Window;
 }
 
-namespace cer::details
+namespace cer
 {
 class AudioDevice;
+}
+
+namespace cer::details
+{
 class GraphicsDevice;
 class ContentManager;
 class InputImpl;

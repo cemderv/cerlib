@@ -23,17 +23,6 @@ CPMAddPackage(
   SYSTEM
 )
 
-# SoLoud
-CPMAddPackage(
-  NAME SoLoud
-  GITHUB_REPOSITORY cemderv/soloud
-  GIT_TAG v0.0.1
-  GIT_SHALLOW
-  SYSTEM
-)
-
-set_target_properties(SoLoud PROPERTIES FOLDER "Dependencies")
-
 # fmt
 CPMAddPackage(
   NAME fmt

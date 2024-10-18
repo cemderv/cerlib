@@ -332,8 +332,8 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> cer::AssetDa
 
     if (asset_handle != nullptr)
     {
-        ifs = MemoryStream{AAsset_getBuffer(asset_handle),
-                           size_t(AAsset_getLength64(asset_handle))};
+        ifs =
+            MemoryStream{AAsset_getBuffer(asset_handle), size_t(AAsset_getLength64(asset_handle))};
     }
 #else
     std::ifstream ifs{filename_str.c_str(), std::ios::binary | std::ios::ate};

@@ -125,8 +125,10 @@ auto ContentManager::lazy_load(std::string_view key,
 
             return asset;
         }
-
-        CER_THROW_RUNTIME_ERROR("Loaded asset '{}', but its creation failed", name);
+        else
+        {
+            CER_THROW_RUNTIME_ERROR("Loaded asset '{}', but its creation failed", name);
+        }
     }
 
     struct Msg

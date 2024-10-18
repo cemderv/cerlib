@@ -157,6 +157,13 @@ auto random_vector3(float min = 0.0f, float max = 1.0f) -> Vector3;
 auto dot(const Vector3& lhs, const Vector3& rhs) -> float;
 
 /**
+ * Calculates the cross product of two 3D vectors.
+ *
+ * @ingroup Math
+ */
+auto cross(const Vector3& lhs, const Vector3& rhs) -> Vector3;
+
+/**
  * Calculates the distance between two 3D vectors.
  *
  * @param lhs The start vector

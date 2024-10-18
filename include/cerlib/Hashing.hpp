@@ -219,17 +219,6 @@ struct hash<cer::SoundChannel>
 };
 
 template <>
-struct hash<cer::SoundTime>
-{
-    auto operator()(const cer::SoundTime& value) const noexcept -> size_t
-    {
-        size_t seed{};
-        cer::details::hash_combine(seed, value.count());
-        return seed;
-    }
-};
-
-template <>
 struct hash<cer::Window>
 {
     auto operator()(const cer::Window& value) const noexcept -> size_t

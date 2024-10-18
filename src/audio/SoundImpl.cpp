@@ -4,15 +4,14 @@
 
 #include "SoundImpl.hpp"
 
-#include "util/InternalError.hpp"
-#include <cstdint>
+#include "audio/AudioDevice.hpp"
 #include <cstring>
 #include <gsl/narrow>
 
 namespace cer::details
 {
-SoundImpl::SoundImpl(gsl::not_null<SoLoud::Soloud*> soloud, std::span<const std::byte> data)
-    : m_soloud(soloud)
+SoundImpl::SoundImpl(gsl::not_null<AudioDevice*> audio_device, std::span<const std::byte> data)
+    : m_audio_device(audio_device)
     , m_data(std::make_unique<std::byte[]>(data.size()))
     , m_data_size(data.size())
 {
@@ -20,10 +19,10 @@ SoundImpl::SoundImpl(gsl::not_null<SoLoud::Soloud*> soloud, std::span<const std:
     init_soloud_audio_source();
 }
 
-SoundImpl::SoundImpl(gsl::not_null<SoLoud::Soloud*> soloud,
-                     std::unique_ptr<std::byte[]>   data,
-                     size_t                         data_size)
-    : m_soloud(soloud)
+SoundImpl::SoundImpl(gsl::not_null<AudioDevice*>  audio_device,
+                     std::unique_ptr<std::byte[]> data,
+                     size_t                       data_size)
+    : m_audio_device(audio_device)
     , m_data(std::move(data))
     , m_data_size(data_size)
 {
@@ -37,35 +36,16 @@ SoundImpl::~SoundImpl() noexcept
 
 void SoundImpl::stop()
 {
-    m_soloud->stopAudioSource(m_soloud_audio_source);
+    m_audio_device->stop_audio_source(*m_soloud_audio_source);
 }
 
-auto SoundImpl::soloud_audio_source() -> SoLoud::Wav&
+auto SoundImpl::audio_source() -> AudioSource&
 {
-    return m_soloud_audio_source;
+    return *m_soloud_audio_source;
 }
 
 void SoundImpl::init_soloud_audio_source()
 {
-    const auto result =
-        m_soloud_audio_source.loadMem(reinterpret_cast<const unsigned char*>(m_data.get()),
-                                      gsl::narrow<unsigned int>(m_data_size),
-                                      /*aCopy:*/ false,
-                                      /*aTakeOwnership:*/ false);
-
-    if (result != SoLoud::SO_NO_ERROR)
-    {
-        CER_THROW_RUNTIME_ERROR("Failed to create the sound ({})", [result]() -> std::string_view {
-            switch (result)
-            {
-                case SoLoud::INVALID_PARAMETER: return "invalid parameter";
-                case SoLoud::FILE_LOAD_FAILED: return "invalid or unknown audio data";
-                case SoLoud::DLL_NOT_FOUND: return "library not found";
-                case SoLoud::OUT_OF_MEMORY: return "out of memory";
-                case SoLoud::NOT_IMPLEMENTED: return "not implemented";
-                default: return "internal error";
-            }
-        }());
-    }
+    m_soloud_audio_source = std::make_unique<Wav>(std::span{m_data.get(), m_data_size});
 }
 } // namespace cer::details

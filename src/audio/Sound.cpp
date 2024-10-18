@@ -16,9 +16,9 @@ CERLIB_IMPLEMENT_OBJECT(Sound);
 Sound::Sound(std::span<const std::byte> data)
     : m_impl(nullptr)
 {
-    details::AudioDevice& audio_device = details::GameImpl::instance().audio_device();
+    auto& audio_device = details::GameImpl::instance().audio_device();
 
-    auto impl = std::make_unique<details::SoundImpl>(audio_device.soloud(), data);
+    auto impl = std::make_unique<details::SoundImpl>(&audio_device, data);
 
     set_impl(*this, impl.release());
 }

@@ -149,17 +149,16 @@ GameImpl::GameImpl(bool enable_audio)
     {
         log_verbose("Audio is enabled, attempting to initialize it");
 
-        auto success   = false;
-        m_audio_device = std::make_unique<AudioDevice>(success);
-
-        if (!success)
+        try
+        {
+            m_audio_device = std::make_unique<AudioDevice>();
+            log_debug("Audio initialized successfully");
+        }
+        catch (const std::exception& ex)
         {
             log_debug("Tried to initialize audio engine but failed; disabling audio");
+            log_debug("Reason: {}", ex.what());
             m_audio_device.reset();
-        }
-        else
-        {
-            log_verbose("Audio initialized successfully");
         }
     }
 
