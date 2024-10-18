@@ -273,7 +273,7 @@ auto AudioDevice::play(AudioSource& sound, float volume, float pan, bool paused,
 
     lockAudioMutex_internal();
     auto ch = findFreeVoice_internal();
-    if (ch < 0)
+    if (ch == size_t(-1))
     {
         unlockAudioMutex_internal();
         return 7; // TODO: this was "UNKNOWN_ERROR"
