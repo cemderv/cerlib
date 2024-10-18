@@ -361,7 +361,7 @@ bool AudioDevice::seek(SoundHandle voice_handle, SoundTime seconds)
     bool res = true;
 
     FOR_ALL_VOICES_PRE
-    const auto singleres = m_voice[ch]->seek(seconds, m_scratch.mData, m_scratch_size);
+    const auto singleres = m_voice[ch]->seek(seconds, m_scratch.data(), m_scratch_size);
     if (!singleres)
         res = singleres;
     FOR_ALL_VOICES_POST
@@ -554,11 +554,11 @@ void AudioDevice::oscillateGlobalVolume(float aFrom, float aTo, SoundTime aTime)
 }
 
 AlignedFloatBuffer::AlignedFloatBuffer(size_t floats)
-    : mFloats(floats)
+    : m_count(floats)
 {
 #ifndef SOLOUD_SSE_INTRINSICS
-    mBasePtr = std::make_unique<unsigned char[]>(mFloats * sizeof(float));
-    mData    = reinterpret_cast<float*>(mBasePtr.get());
+    m_data        = std::make_unique<unsigned char[]>(m_count * sizeof(float));
+    m_aligned_ptr = reinterpret_cast<float*>(m_data.get());
 #else
     mBasePtr = std::make_unique<unsigned char[]>(mFloats * sizeof(float) + 16);
     mData    = (float*)(((size_t)mBasePtr.get() + 15) & ~15);
@@ -567,7 +567,27 @@ AlignedFloatBuffer::AlignedFloatBuffer(size_t floats)
 
 void AlignedFloatBuffer::clear()
 {
-    std::fill_n(mData, mFloats, 0.0f);
+    std::fill_n(m_aligned_ptr, m_count, 0.0f);
+}
+
+auto AlignedFloatBuffer::data() -> float*
+{
+    return m_aligned_ptr;
+}
+
+auto AlignedFloatBuffer::data() const -> const float*
+{
+    return m_aligned_ptr;
+}
+
+auto AlignedFloatBuffer::operator[](size_t index) -> float&
+{
+    return m_aligned_ptr[index];
+}
+
+auto AlignedFloatBuffer::operator[](size_t index) const -> const float&
+{
+    return m_aligned_ptr[index];
 }
 
 TinyAlignedFloatBuffer::TinyAlignedFloatBuffer()
@@ -618,7 +638,8 @@ void AudioDevice::postinit_internal(size_t      sample_rate,
 
     for (size_t i = 0; i < m_max_active_voices * 2; ++i)
     {
-        m_resample_data[i] = m_resample_data_buffer.mData + (sample_granularity * max_channels * i);
+        m_resample_data[i] =
+            m_resample_data_buffer.data() + (sample_granularity * max_channels * i);
     }
 
     m_flags            = flags;
@@ -748,7 +769,7 @@ auto AudioDevice::calcFFT() -> float*
 
 #if defined(SOLOUD_SSE_INTRINSICS)
 void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
-                                const AlignedFloatBuffer& aDestBuffer,
+                                AlignedFloatBuffer&       aDestBuffer,
                                 size_t                    aSamples,
                                 float                     aVolume0,
                                 float                     aVolume1)
@@ -759,7 +780,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
     size_t samplequads = (aSamples + 3) / 4; // rounded up
 
     // Clip
-    if (m_flags.ClipRoundoff)
+    if (m_flags.clip_roundoff)
     {
         float                  nb          = -1.65f;
         __m128                 negbound    = _mm_load_ps1(&nb);
@@ -865,14 +886,14 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
     }
 }
 #else // fallback code
-void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
-                                const AlignedFloatBuffer& aDestBuffer,
-                                size_t                    aSamples,
-                                float                     aVolume0,
-                                float                     aVolume1)
+void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
+                                AlignedFloatBuffer&       dst_buffer,
+                                size_t                    samples,
+                                float                     volume0,
+                                float                     volume1)
 {
-    const float vd          = (aVolume1 - aVolume0) / aSamples;
-    const auto  samplequads = (aSamples + 3) / 4; // rounded up
+    const float vd           = (volume1 - volume0) / samples;
+    const auto  sample_quads = (samples + 3) / 4; // rounded up
 
     // Clip
     if (m_flags.clip_roundoff)
@@ -882,48 +903,49 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
 
         for (size_t j = 0; j < m_channels; ++j)
         {
-            auto v = aVolume0;
-            for (size_t i = 0; i < samplequads; ++i)
+            auto v = volume0;
+
+            for (size_t i = 0; i < sample_quads; ++i)
             {
-                float f1 = aBuffer.mData[c] * v;
+                float f1 = buffer[c] * v;
                 ++c;
                 v += vd;
 
-                float f2 = aBuffer.mData[c] * v;
+                float f2 = buffer[c] * v;
                 ++c;
                 v += vd;
 
-                float f3 = aBuffer.mData[c] * v;
+                float f3 = buffer[c] * v;
                 ++c;
                 v += vd;
 
-                float f4 = aBuffer.mData[c] * v;
+                float f4 = buffer[c] * v;
                 ++c;
                 v += vd;
 
                 f1 = f1 <= -1.65f  ? -0.9862875f
                      : f1 >= 1.65f ? 0.9862875f
-                                   : 0.87f * f1 - 0.1f * f1 * f1 * f1;
+                                   : (0.87f * f1) - 0.1f * f1 * f1 * f1;
                 f2 = f2 <= -1.65f  ? -0.9862875f
                      : f2 >= 1.65f ? 0.9862875f
-                                   : 0.87f * f2 - 0.1f * f2 * f2 * f2;
+                                   : (0.87f * f2) - 0.1f * f2 * f2 * f2;
                 f3 = f3 <= -1.65f  ? -0.9862875f
                      : f3 >= 1.65f ? 0.9862875f
-                                   : 0.87f * f3 - 0.1f * f3 * f3 * f3;
+                                   : (0.87f * f3) - 0.1f * f3 * f3 * f3;
                 f4 = f4 <= -1.65f  ? -0.9862875f
                      : f4 >= 1.65f ? 0.9862875f
-                                   : 0.87f * f4 - 0.1f * f4 * f4 * f4;
+                                   : (0.87f * f4) - 0.1f * f4 * f4 * f4;
 
-                aDestBuffer.mData[d] = f1 * m_post_clip_scaler;
+                dst_buffer[d] = f1 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f2 * m_post_clip_scaler;
+                dst_buffer[d] = f2 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f3 * m_post_clip_scaler;
+                dst_buffer[d] = f3 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f4 * m_post_clip_scaler;
+                dst_buffer[d] = f4 * m_post_clip_scaler;
                 d++;
             }
         }
@@ -935,23 +957,23 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
 
         for (size_t j = 0; j < m_channels; ++j)
         {
-            auto v = aVolume0;
+            auto v = volume0;
 
-            for (size_t i = 0; i < samplequads; ++i)
+            for (size_t i = 0; i < sample_quads; ++i)
             {
-                float f1 = aBuffer.mData[c] * v;
+                float f1 = buffer[c] * v;
                 ++c;
                 v += vd;
 
-                float f2 = aBuffer.mData[c] * v;
+                float f2 = buffer[c] * v;
                 ++c;
                 v += vd;
 
-                float f3 = aBuffer.mData[c] * v;
+                float f3 = buffer[c] * v;
                 ++c;
                 v += vd;
 
-                float f4 = aBuffer.mData[c] * v;
+                float f4 = buffer[c] * v;
                 ++c;
                 v += vd;
 
@@ -960,16 +982,16 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
                 f3 = f3 <= -1 ? -1 : f3 >= 1 ? 1 : f3;
                 f4 = f4 <= -1 ? -1 : f4 >= 1 ? 1 : f4;
 
-                aDestBuffer.mData[d] = f1 * m_post_clip_scaler;
+                dst_buffer[d] = f1 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f2 * m_post_clip_scaler;
+                dst_buffer[d] = f2 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f3 * m_post_clip_scaler;
+                dst_buffer[d] = f3 * m_post_clip_scaler;
                 d++;
 
-                aDestBuffer.mData[d] = f4 * m_post_clip_scaler;
+                dst_buffer[d] = f4 * m_post_clip_scaler;
                 d++;
             }
         }
@@ -1716,9 +1738,10 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                         {
                             if (voice->flags.Looping)
                             {
-                                while (
-                                    read_count < sample_granularity &&
-                                    voice->seek(voice->loop_point, m_scratch.mData, m_scratch_size))
+                                while (read_count < sample_granularity &&
+                                       voice->seek(voice->loop_point,
+                                                   m_scratch.data(),
+                                                   m_scratch_size))
                                 {
                                     voice->loop_count++;
 
@@ -1908,9 +1931,10 @@ void AudioDevice::mixBus_internal(float*    aBuffer,
                         {
                             if (voice->flags.Looping)
                             {
-                                while (
-                                    readcount < sample_granularity &&
-                                    voice->seek(voice->loop_point, m_scratch.mData, m_scratch_size))
+                                while (readcount < sample_granularity &&
+                                       voice->seek(voice->loop_point,
+                                                   m_scratch.data(),
+                                                   m_scratch_size))
                                 {
                                     voice->loop_count++;
                                     readcount += voice->audio(voice->resample_data[0] + readcount,
@@ -2197,7 +2221,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
             // This causes all math to consider really tiny values as zero, which
             // helps performance. I'd rather use constants from the sse headers,
             // but for some reason the DAZ value is not defined there(!)
-            if (!m_flags.NoFpuRegisterChange)
+            if (!m_flags.no_fpu_register_change)
             {
                 _mm_setcsr(_mm_getcsr() | 0x8040);
             }
@@ -2294,10 +2318,10 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
         calcActiveVoices_internal();
     }
 
-    mixBus_internal(m_output_scratch.mData,
+    mixBus_internal(m_output_scratch.data(),
                     aSamples,
                     aStride,
-                    m_scratch.mData,
+                    m_scratch.data(),
                     0,
                     float(m_samplerate),
                     m_channels,
@@ -2311,7 +2335,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
         }
 
         m_filter_instance[i]->filter(FilterArgs{
-            .buffer      = m_output_scratch.mData,
+            .buffer      = m_output_scratch.data(),
             .samples     = aSamples,
             .buffer_size = aStride,
             .channels    = m_channels,
@@ -2341,7 +2365,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
                 m_visualization_wave_data[i] = 0;
                 for (size_t j = 0; j < m_channels; ++j)
                 {
-                    const auto sample = m_scratch.mData[i + (j * aStride)];
+                    const auto sample = m_scratch[i + (j * aStride)];
                     const auto absvol = fabs(sample);
 
                     if (m_visualization_channel_volume[j] < absvol)
@@ -2362,7 +2386,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
 
                 for (size_t j = 0; j < m_channels; ++j)
                 {
-                    const auto sample = m_scratch.mData[(i % aSamples) + (j * aStride)];
+                    const auto sample = m_scratch[(i % aSamples) + (j * aStride)];
                     const auto absvol = fabs(sample);
 
                     if (m_visualization_channel_volume[j] < absvol)
@@ -2412,14 +2436,14 @@ void AudioDevice::mix(float* aBuffer, size_t aSamples)
 {
     size_t stride = (aSamples + 15) & ~0xf;
     mix_internal(aSamples, stride);
-    interlace_samples_float(m_scratch.mData, aBuffer, aSamples, m_channels, stride);
+    interlace_samples_float(m_scratch.data(), aBuffer, aSamples, m_channels, stride);
 }
 
 void AudioDevice::mixSigned16(short* aBuffer, size_t aSamples)
 {
     size_t stride = (aSamples + 15) & ~0xf;
     mix_internal(aSamples, stride);
-    interlace_samples_s16(m_scratch.mData, aBuffer, aSamples, m_channels, stride);
+    interlace_samples_s16(m_scratch.data(), aBuffer, aSamples, m_channels, stride);
 }
 
 void AudioDevice::lockAudioMutex_internal()
@@ -2849,7 +2873,8 @@ void AudioDevice::setMaxActiveVoiceCount(size_t aVoiceCount)
         AlignedFloatBuffer{sample_granularity * max_channels * aVoiceCount * 2};
 
     for (size_t i = 0; i < aVoiceCount * 2; ++i)
-        m_resample_data[i] = m_resample_data_buffer.mData + (sample_granularity * max_channels * i);
+        m_resample_data[i] =
+            m_resample_data_buffer.data() + (sample_granularity * max_channels * i);
 
     for (size_t i = 0; i < aVoiceCount; ++i)
         m_resample_data_owner[i] = nullptr;
@@ -2868,26 +2893,26 @@ void AudioDevice::setPauseAll(bool aPause)
     unlockAudioMutex_internal();
 }
 
-void AudioDevice::setProtectVoice(SoundHandle voice_handle, bool aProtect)
+void AudioDevice::setProtectVoice(SoundHandle voice_handle, bool protect)
 {
     FOR_ALL_VOICES_PRE
-    m_voice[ch]->flags.Protected = aProtect;
+    m_voice[ch]->flags.Protected = protect;
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setPan(SoundHandle voice_handle, float aPan)
+void AudioDevice::setPan(SoundHandle voice_handle, float pan)
 {
     FOR_ALL_VOICES_PRE
-    setVoicePan_internal(ch, aPan);
+    setVoicePan_internal(ch, pan);
     FOR_ALL_VOICES_POST
 }
 
-void AudioDevice::setChannelVolume(SoundHandle voice_handle, size_t aChannel, float aVolume)
+void AudioDevice::setChannelVolume(SoundHandle voice_handle, size_t channel, float volume)
 {
     FOR_ALL_VOICES_PRE
-    if (m_voice[ch]->channel_count > aChannel)
+    if (m_voice[ch]->channel_count > channel)
     {
-        m_voice[ch]->channel_volume[aChannel] = aVolume;
+        m_voice[ch]->channel_volume[channel] = volume;
     }
     FOR_ALL_VOICES_POST
 }

@@ -60,7 +60,7 @@ size_t BusInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferS
     s->mixBus_internal(aBuffer,
                        aSamplesToRead,
                        aBufferSize,
-                       m_scratch.mData,
+                       m_scratch.data(),
                        handle,
                        sample_rate,
                        channel_count,

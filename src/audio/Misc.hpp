@@ -48,9 +48,18 @@ class AlignedFloatBuffer
     // Clear data to zero.
     void clear();
 
-    float*                           mData = nullptr; // aligned pointer
-    std::unique_ptr<unsigned char[]> mBasePtr;
-    size_t                           mFloats = 0; // size of buffer (w/out padding)
+    auto data() -> float*;
+
+    auto data() const -> const float*;
+
+    auto operator[](size_t index) -> float&;
+
+    auto operator[](size_t index) const -> const float&;
+
+  private:
+    float*                           m_aligned_ptr = nullptr; // aligned pointer
+    std::unique_ptr<unsigned char[]> m_data;
+    size_t                           m_count = 0; // size of buffer (w/out padding)
 };
 
 // Lightweight class that handles small aligned buffer to support vectorized operations

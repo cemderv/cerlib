@@ -448,11 +448,11 @@ class AudioDevice
     void update3dVoices_internal(std::span<const size_t> voiceList);
 
     // Clip the samples in the buffer
-    void clip_internal(const AlignedFloatBuffer& aBuffer,
-                       const AlignedFloatBuffer& aDestBuffer,
-                       size_t                    aSamples,
-                       float                     aVolume0,
-                       float                     aVolume1);
+    void clip_internal(const AlignedFloatBuffer& buffer,
+                       AlignedFloatBuffer&       dst_buffer,
+                       size_t                    samples,
+                       float                     volume0,
+                       float                     volume1);
     // Remove all non-active voices from group
     void trimVoiceGroup_internal(SoundHandle aVoiceGroupHandle);
 
