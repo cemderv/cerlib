@@ -107,6 +107,15 @@ auto cer::dot(const Vector3& lhs, const Vector3& rhs) -> float
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
+auto cer::cross(const Vector3& lhs, const Vector3& rhs) -> Vector3
+{
+    return {
+        lhs.y * rhs.z - rhs.y * lhs.z,
+        lhs.z * rhs.x - rhs.z * lhs.x,
+        lhs.x * rhs.y - rhs.x * lhs.y,
+    };
+}
+
 auto cer::distance(const Vector3& lhs, const Vector3& rhs) -> float
 {
     return length(rhs - lhs);
