@@ -22,7 +22,7 @@ misrepresented as being the original software.
 distribution.
 */
 
-#include "audio/MemoryReader.hpp"
+#include "util/MemoryReader.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <cstring>

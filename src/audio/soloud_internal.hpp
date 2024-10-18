@@ -54,18 +54,12 @@ void wasapi_init(const AudioBackendArgs& args);
 void alsa_init(const AudioBackendArgs& args);
 
 // Interlace samples in a buffer. From 11112222 to 12121212
-void interlace_samples_float(const float* src_buffer,
-                             float*       dst_buffer,
-                             size_t       samples,
-                             size_t       channels,
-                             size_t       stride);
+void interlace_samples_float(
+    const float* src_buffer, float* dst_buffer, size_t samples, size_t channels, size_t stride);
 
 // Convert to 16-bit and interlace samples in a buffer. From 11112222 to 12121212
-void interlace_samples_s16(const float* src_buffer,
-                           short*       dst_buffer,
-                           size_t       samples,
-                           size_t       channels,
-                           size_t       stride);
+void interlace_samples_s16(
+    const float* src_buffer, short* dst_buffer, size_t samples, size_t channels, size_t stride);
 }; // namespace cer
 
 #define FOR_ALL_VOICES_PRE                                                                         \

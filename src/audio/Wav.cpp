@@ -24,11 +24,11 @@ freely, subject to the following restrictions:
 
 #include "audio/Wav.hpp"
 #include "audio/Common.hpp"
-#include "audio/MemoryReader.hpp"
 #include "dr_flac.h"
 #include "dr_mp3.h"
 #include "dr_wav.h"
 #include "stb_vorbis.h"
+#include "util/MemoryReader.hpp"
 #include <algorithm>
 #include <cstring>
 

@@ -71,7 +71,7 @@ void EchoFilterInstance::filter(const FilterArgs& args)
             args.buffer[i + bchofs] += (n - args.buffer[i + bchofs]) * m_params[EchoFilter::WET];
         }
 
-        prevofs = m_offset;
+        prevofs  = m_offset;
         m_offset = (m_offset + 1) % m_buffer_size;
     }
 }

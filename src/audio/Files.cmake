@@ -31,8 +31,6 @@ set(audio_files
   FlangerFilter.cpp
   FreeverbFilter.cpp
   LofiFilter.cpp
-  MemoryFile.cpp
-  MemoryFile.hpp
   Misc.cpp
   Misc.hpp
   Noise.cpp

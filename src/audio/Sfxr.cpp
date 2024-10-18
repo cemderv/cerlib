@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 */
 
 #include "audio/Sfxr.hpp"
-#include "audio/MemoryReader.hpp"
+#include "util/MemoryReader.hpp"
 
 namespace cer
 {

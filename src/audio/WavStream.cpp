@@ -27,9 +27,9 @@ freely, subject to the following restrictions:
 #include "dr_wav.h"
 
 #include "audio/Common.hpp"
-#include "audio/MemoryReader.hpp"
 #include "audio/WavStream.hpp"
 #include "stb_vorbis.h"
+#include "util/MemoryReader.hpp"
 #include <cstring>
 
 #define MAKEDWORD(a, b, c, d) (((d) << 24) | ((c) << 16) | ((b) << 8) | (a))

@@ -25,6 +25,7 @@ freely, subject to the following restrictions:
 #pragma once
 
 #include "audio/AudioSource.hpp"
+#include "util/MemoryReader.hpp"
 #include <optional>
 #include <variant>
 
@@ -42,12 +43,11 @@ struct drwav;
 namespace cer
 {
 class WavStream;
-class MemoryReader;
 
 class WavStreamInstance final : public AudioSourceInstance
 {
-    WavStream* mParent = nullptr;
-    size_t     mOffset = 0;
+    WavStream*   mParent = nullptr;
+    size_t       mOffset = 0;
     MemoryReader mFile;
 
     std::variant<stb_vorbis*, drflac*, drmp3*, drwav*> mCodec;
@@ -78,10 +78,10 @@ class WavStream final : public AudioSource
     friend WavStreamInstance;
 
   public:
-    int        mFiletype = WAVSTREAM_WAV;
+    int          mFiletype = WAVSTREAM_WAV;
     MemoryReader mFile;
-    bool       mIsStream    = false;
-    size_t     mSampleCount = 0;
+    bool         mIsStream    = false;
+    size_t       mSampleCount = 0;
 
     explicit WavStream(std::span<const std::byte> data);
 
