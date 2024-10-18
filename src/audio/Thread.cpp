@@ -30,7 +30,7 @@ freely, subject to the following restrictions:
 #include <unistd.h>
 #endif
 
-#include "audio/thread.hpp"
+#include "audio/Thread.hpp"
 
 namespace cer::thread
 {

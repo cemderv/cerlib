@@ -8,7 +8,7 @@
 #include "SoundImpl.hpp"
 #include "audio/FFT.hpp"
 #include "audio/Misc.hpp"
-#include "audio/thread.hpp"
+#include "audio/Thread.hpp"
 #include "cerlib/Logging.hpp"
 #include "cerlib/SoundChannel.hpp"
 #include "soloud_internal.hpp"
