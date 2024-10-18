@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 */
 
 #include "audio/Sfxr.hpp"
-#include "audio/MemoryFile.hpp"
+#include "audio/MemoryReader.hpp"
 
 namespace cer
 {
@@ -529,7 +529,7 @@ Sfxr::Sfxr(SfxrPreset preset, int seed)
 
 Sfxr::Sfxr(std::span<const std::byte> data)
 {
-    auto mf = MemoryFile{data};
+    auto mf = MemoryReader{data};
 
     const auto version = mf.read_s32();
 

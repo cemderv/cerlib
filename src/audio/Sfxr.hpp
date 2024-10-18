@@ -32,7 +32,7 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-class MemoryFile;
+class MemoryReader;
 
 struct SfxrParams
 {

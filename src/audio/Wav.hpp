@@ -32,7 +32,7 @@ struct stb_vorbis;
 namespace cer
 {
 class Wav;
-class MemoryFile;
+class MemoryReader;
 
 class WavInstance final : public AudioSourceInstance
 {
@@ -64,13 +64,13 @@ class Wav final : public AudioSource
     auto length_time() const -> SoundTime;
 
   private:
-    void load_wav(const MemoryFile& reader);
+    void load_wav(const MemoryReader& reader);
 
-    void load_ogg(const MemoryFile& reader);
+    void load_ogg(const MemoryReader& reader);
 
-    void load_mp3(const MemoryFile& reader);
+    void load_mp3(const MemoryReader& reader);
 
-    void load_flac(const MemoryFile& reader);
+    void load_flac(const MemoryReader& reader);
 
     std::unique_ptr<float[]> m_data;
     size_t                   m_sample_count = 0;

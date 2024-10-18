@@ -28,12 +28,12 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-class MemoryFile final
+class MemoryReader final
 {
   public:
-    MemoryFile() = default;
+    MemoryReader() = default;
 
-    explicit MemoryFile(std::span<const std::byte> data);
+    explicit MemoryReader(std::span<const std::byte> data);
 
     auto read_s8() -> int8_t;
     auto read_s16() -> int16_t;
@@ -50,7 +50,7 @@ class MemoryFile final
     auto size() const -> size_t;
 
   private:
-    std::span<const std::byte> mData;
-    size_t                     mOffset = 0;
+    std::span<const std::byte> m_data;
+    size_t                     m_offset = 0;
 };
 }; // namespace cer

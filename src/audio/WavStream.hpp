@@ -42,13 +42,13 @@ struct drwav;
 namespace cer
 {
 class WavStream;
-class MemoryFile;
+class MemoryReader;
 
 class WavStreamInstance final : public AudioSourceInstance
 {
     WavStream* mParent = nullptr;
     size_t     mOffset = 0;
-    MemoryFile mFile;
+    MemoryReader mFile;
 
     std::variant<stb_vorbis*, drflac*, drmp3*, drwav*> mCodec;
 
@@ -79,7 +79,7 @@ class WavStream final : public AudioSource
 
   public:
     int        mFiletype = WAVSTREAM_WAV;
-    MemoryFile mFile;
+    MemoryReader mFile;
     bool       mIsStream    = false;
     size_t     mSampleCount = 0;
 
@@ -91,9 +91,9 @@ class WavStream final : public AudioSource
     SoundTime                            getLength() const;
 
   private:
-    void loadwav(MemoryFile& fp);
-    void loadogg(MemoryFile& fp);
-    void loadflac(MemoryFile& fp);
-    void loadmp3(MemoryFile& fp);
+    void loadwav(MemoryReader& fp);
+    void loadogg(MemoryReader& fp);
+    void loadflac(MemoryReader& fp);
+    void loadmp3(MemoryReader& fp);
 };
 }; // namespace cer

@@ -27,7 +27,7 @@ freely, subject to the following restrictions:
 #include "dr_wav.h"
 
 #include "audio/Common.hpp"
-#include "audio/MemoryFile.hpp"
+#include "audio/MemoryReader.hpp"
 #include "audio/WavStream.hpp"
 #include "stb_vorbis.h"
 #include <cstring>
@@ -38,25 +38,25 @@ namespace cer
 {
 size_t drflac_read_func(void* pUserData, void* pBufferOut, size_t bytesToRead)
 {
-    auto* fp = static_cast<MemoryFile*>(pUserData);
+    auto* fp = static_cast<MemoryReader*>(pUserData);
     return fp->read(static_cast<unsigned char*>(pBufferOut), (size_t)bytesToRead);
 }
 
 size_t drmp3_read_func(void* pUserData, void* pBufferOut, size_t bytesToRead)
 {
-    auto* fp = static_cast<MemoryFile*>(pUserData);
+    auto* fp = static_cast<MemoryReader*>(pUserData);
     return fp->read(static_cast<unsigned char*>(pBufferOut), (size_t)bytesToRead);
 }
 
 size_t drwav_read_func(void* pUserData, void* pBufferOut, size_t bytesToRead)
 {
-    auto* fp = static_cast<MemoryFile*>(pUserData);
+    auto* fp = static_cast<MemoryReader*>(pUserData);
     return fp->read(static_cast<unsigned char*>(pBufferOut), (size_t)bytesToRead);
 }
 
 drflac_bool32 drflac_seek_func(void* pUserData, int offset, drflac_seek_origin origin)
 {
-    auto* fp = static_cast<MemoryFile*>(pUserData);
+    auto* fp = static_cast<MemoryReader*>(pUserData);
     if (origin != drflac_seek_origin_start)
         offset += fp->pos();
     fp->seek(offset);
@@ -65,7 +65,7 @@ drflac_bool32 drflac_seek_func(void* pUserData, int offset, drflac_seek_origin o
 
 drmp3_bool32 drmp3_seek_func(void* pUserData, int offset, drmp3_seek_origin origin)
 {
-    MemoryFile* fp = (MemoryFile*)pUserData;
+    MemoryReader* fp = (MemoryReader*)pUserData;
     if (origin != drmp3_seek_origin_start)
         offset += fp->pos();
     fp->seek(offset);
@@ -74,7 +74,7 @@ drmp3_bool32 drmp3_seek_func(void* pUserData, int offset, drmp3_seek_origin orig
 
 drmp3_bool32 drwav_seek_func(void* pUserData, int offset, drwav_seek_origin origin)
 {
-    MemoryFile* fp = (MemoryFile*)pUserData;
+    MemoryReader* fp = (MemoryReader*)pUserData;
     if (origin != drwav_seek_origin_start)
         offset += fp->pos();
     fp->seek(offset);
@@ -415,7 +415,7 @@ WavStream::~WavStream()
     stop();
 }
 
-void WavStream::loadwav(MemoryFile& fp)
+void WavStream::loadwav(MemoryReader& fp)
 {
     fp.seek(0);
     drwav decoder;
@@ -437,7 +437,7 @@ void WavStream::loadwav(MemoryFile& fp)
     drwav_uninit(&decoder);
 }
 
-void WavStream::loadogg(MemoryFile& fp)
+void WavStream::loadogg(MemoryReader& fp)
 {
     fp.seek(0);
 
@@ -463,7 +463,7 @@ void WavStream::loadogg(MemoryFile& fp)
     mSampleCount = samples;
 }
 
-void WavStream::loadflac(MemoryFile& fp)
+void WavStream::loadflac(MemoryReader& fp)
 {
     fp.seek(0);
     drflac* decoder = drflac_open(drflac_read_func, drflac_seek_func, &fp, nullptr);
@@ -485,7 +485,7 @@ void WavStream::loadflac(MemoryFile& fp)
     drflac_close(decoder);
 }
 
-void WavStream::loadmp3(MemoryFile& fp)
+void WavStream::loadmp3(MemoryReader& fp)
 {
     fp.seek(0);
 

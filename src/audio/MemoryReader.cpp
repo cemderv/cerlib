@@ -22,103 +22,103 @@ misrepresented as being the original software.
 distribution.
 */
 
-#include "audio/MemoryFile.hpp"
+#include "audio/MemoryReader.hpp"
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 
 namespace cer
 {
-auto MemoryFile::read_s8() -> int8_t
+auto MemoryReader::read_s8() -> int8_t
 {
     int8_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read_s16() -> int16_t
+auto MemoryReader::read_s16() -> int16_t
 {
     int16_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read_s32() -> int32_t
+auto MemoryReader::read_s32() -> int32_t
 {
     int32_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read_u8() -> uint8_t
+auto MemoryReader::read_u8() -> uint8_t
 {
     uint8_t d = 0;
     read(&d, sizeof(d));
     return d;
 }
 
-auto MemoryFile::read_u16() -> uint16_t
+auto MemoryReader::read_u16() -> uint16_t
 {
     uint16_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read_u32() -> uint32_t
+auto MemoryReader::read_u32() -> uint32_t
 {
     uint32_t d = 0;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read_f32() -> float
+auto MemoryReader::read_f32() -> float
 {
     float d = 0.0f;
     read(reinterpret_cast<unsigned char*>(&d), sizeof(d));
     return d;
 }
 
-auto MemoryFile::read(unsigned char* dst, size_t bytes) -> size_t
+auto MemoryReader::read(unsigned char* dst, size_t bytes) -> size_t
 {
-    if (mOffset + bytes >= mData.size())
+    if (m_offset + bytes >= m_data.size())
     {
-        bytes = mData.size() - mOffset;
+        bytes = m_data.size() - m_offset;
     }
 
-    std::memcpy(dst, mData.data() + mOffset, bytes);
-    mOffset += bytes;
+    std::memcpy(dst, m_data.data() + m_offset, bytes);
+    m_offset += bytes;
 
     return bytes;
 }
 
-void MemoryFile::seek(int offset)
+void MemoryReader::seek(int offset)
 {
-    mOffset = offset >= 0 ? offset : mData.size() + offset;
-    mOffset = std::min(mOffset, mData.size() - 1);
+    m_offset = offset >= 0 ? offset : m_data.size() + offset;
+    m_offset = std::min(m_offset, m_data.size() - 1);
 }
 
-auto MemoryFile::pos() const -> size_t
+auto MemoryReader::pos() const -> size_t
 {
-    return mOffset;
+    return m_offset;
 }
 
-auto MemoryFile::data() const -> const std::byte*
+auto MemoryReader::data() const -> const std::byte*
 {
-    return mData.data();
+    return m_data.data();
 }
 
-auto MemoryFile::data_uc() const -> const unsigned char*
+auto MemoryReader::data_uc() const -> const unsigned char*
 {
     return reinterpret_cast<const unsigned char*>(data());
 }
 
-auto MemoryFile::size() const -> size_t
+auto MemoryReader::size() const -> size_t
 {
-    return mData.size();
+    return m_data.size();
 }
 
-MemoryFile::MemoryFile(std::span<const std::byte> data)
-    : mData(data)
+MemoryReader::MemoryReader(std::span<const std::byte> data)
+    : m_data(data)
 {
 }
 } // namespace cer

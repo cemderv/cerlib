@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 
 #include "audio/Wav.hpp"
 #include "audio/Common.hpp"
-#include "audio/MemoryFile.hpp"
+#include "audio/MemoryReader.hpp"
 #include "dr_flac.h"
 #include "dr_mp3.h"
 #include "dr_wav.h"
@@ -81,7 +81,7 @@ Wav::Wav(std::span<const std::byte> data)
     assert(data.data() != nullptr);
     assert(!data.empty());
 
-    auto dr = MemoryFile{data};
+    auto dr = MemoryReader{data};
 
     channel_count = 1;
 
@@ -99,7 +99,7 @@ Wav::~Wav()
     stop();
 }
 
-void Wav::load_wav(const MemoryFile& reader)
+void Wav::load_wav(const MemoryReader& reader)
 {
     drwav decoder;
 
@@ -140,7 +140,7 @@ void Wav::load_wav(const MemoryFile& reader)
     drwav_uninit(&decoder);
 }
 
-void Wav::load_ogg(const MemoryFile& reader)
+void Wav::load_ogg(const MemoryReader& reader)
 {
     int   e      = 0;
     auto* vorbis = stb_vorbis_open_memory(reader.data_uc(), reader.size(), &e, nullptr);
@@ -188,7 +188,7 @@ void Wav::load_ogg(const MemoryFile& reader)
     stb_vorbis_close(vorbis);
 }
 
-void Wav::load_mp3(const MemoryFile& reader)
+void Wav::load_mp3(const MemoryReader& reader)
 {
     drmp3 decoder;
 
@@ -229,7 +229,7 @@ void Wav::load_mp3(const MemoryFile& reader)
     drmp3_uninit(&decoder);
 }
 
-void Wav::load_flac(const MemoryFile& reader)
+void Wav::load_flac(const MemoryReader& reader)
 {
     drflac* decoder = drflac_open_memory(reader.data(), reader.size(), nullptr);
 
