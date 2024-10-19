@@ -258,8 +258,8 @@ class SymAccessExpr final : public Expr
 class StructCtorCall final : public Expr
 {
   public:
-    explicit StructCtorCall(const SourceLocation&                             location,
-                            std::unique_ptr<Expr>                             callee,
+    explicit StructCtorCall(const SourceLocation&                                location,
+                            std::unique_ptr<Expr>                                callee,
                             gch::small_vector<std::unique_ptr<StructCtorArg>, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
@@ -271,15 +271,15 @@ class StructCtorCall final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>                             m_callee;
+    std::unique_ptr<Expr>                                m_callee;
     gch::small_vector<std::unique_ptr<StructCtorArg>, 4> m_args;
 };
 
 class FunctionCallExpr final : public Expr
 {
   public:
-    explicit FunctionCallExpr(const SourceLocation&                    location,
-                              std::unique_ptr<Expr>                    callee,
+    explicit FunctionCallExpr(const SourceLocation&                       location,
+                              std::unique_ptr<Expr>                       callee,
                               gch::small_vector<std::unique_ptr<Expr>, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
@@ -293,7 +293,7 @@ class FunctionCallExpr final : public Expr
     auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
   private:
-    std::unique_ptr<Expr>                    m_callee;
+    std::unique_ptr<Expr>                       m_callee;
     gch::small_vector<std::unique_ptr<Expr>, 4> m_args;
 };
 

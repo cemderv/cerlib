@@ -133,6 +133,11 @@ GameImpl::GameImpl(bool enable_audio)
     init_flags |= SDL_INIT_GAMEPAD;
 #endif
 
+    if (enable_audio)
+    {
+        init_flags |= SDL_INIT_AUDIO;
+    }
+
 #ifdef __EMSCRIPTEN__
     if (SDL_Init(init_flags) != 0)
 #else
@@ -149,17 +154,16 @@ GameImpl::GameImpl(bool enable_audio)
     {
         log_verbose("Audio is enabled, attempting to initialize it");
 
-        auto success   = false;
-        m_audio_device = std::make_unique<AudioDevice>(success);
-
-        if (!success)
+        try
+        {
+            m_audio_device = std::make_unique<AudioDevice>(EngineFlags{}, 44100, 4096, 2);
+            log_debug("Audio initialized successfully");
+        }
+        catch (const std::exception& ex)
         {
             log_debug("Tried to initialize audio engine but failed; disabling audio");
+            log_debug("Reason: {}", ex.what());
             m_audio_device.reset();
-        }
-        else
-        {
-            log_verbose("Audio initialized successfully");
         }
     }
 
@@ -504,9 +508,8 @@ void GameImpl::create_graphics_device(WindowImpl& first_window)
         CER_THROW_RUNTIME_ERROR_STR("OpenGL is not available on this system.");
 #endif
     }
-    catch (std::exception& ex)
+    catch ([[maybe_unused]] std::exception& ex)
     {
-        std::ignore = ex;
         log_debug("Device creation failed: {}", ex.what());
         m_graphics_device.reset();
         throw;

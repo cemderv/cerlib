@@ -48,8 +48,8 @@ class OpenGLShaderProgram final
         return gl_handle == other.gl_handle;
     }
 
-    std::string                                   name;
-    GLuint                                        gl_handle;
+    std::string                                      name;
+    GLuint                                           gl_handle;
     gch::small_vector<std::pair<std::string, GLint>> uniform_locations;
 
   private:

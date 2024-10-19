@@ -73,15 +73,17 @@ target_precompile_headers(cerlib PRIVATE
   <any>
   <cassert>
   <chrono>
+  <cmath>
+  <compare>
   <cstddef>
   <cstdint>
-  <compare>
   <exception>
   <fmt/format.h>
   <functional>
   <gsl/narrow>
   <gsl/pointers>
   <gsl/util>
+  <limits>
   <map>
   <memory>
   <optional>
@@ -89,6 +91,7 @@ target_precompile_headers(cerlib PRIVATE
   <ranges>
   <set>
   <span>
+  <stdexcept>
   <string>
   <string_view>
   <thread>
@@ -98,10 +101,6 @@ target_precompile_headers(cerlib PRIVATE
   <utility>
   <variant>
   <vector>
-  <limits>
-  <cmath>
-  <soloud.h>
-  <soloud_wav.h>
   util/InternalError.hpp
   util/Object.hpp
   util/Util.hpp
@@ -246,13 +245,14 @@ if (IOS)
 endif ()
 
 target_link_libraries(cerlib PUBLIC cerlib_SDL)
-target_link_libraries(cerlib PRIVATE SoLoud)
 
 enable_default_cpp_flags(cerlib)
 enable_clang_tidy(cerlib)
 
 if (CERLIB_ENABLE_VERBOSE_LOGGING)
-  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_VERBOSE_LOGGING")
+  target_compile_definitions(cerlib PRIVATE
+    -DCERLIB_ENABLE_VERBOSE_LOGGING
+  )
 endif ()
 
 cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/VeraRegular.ttf)
@@ -262,3 +262,16 @@ cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/GrayscaleShader.s
 cerlib_compile_shader(shaders/SpriteBatchVS.vert)
 cerlib_compile_shader(shaders/SpriteBatchPSDefault.frag)
 cerlib_compile_shader(shaders/SpriteBatchPSMonochromatic.frag)
+
+target_compile_definitions(cerlib PRIVATE
+  -DSTB_VORBIS_NO_STDIO
+)
+
+# Audio
+if (EMSCRIPTEN)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL2)
+  target_sources(cerlib PRIVATE audio/SDL2Backend.cpp)
+else ()
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL3)
+  target_sources(cerlib PRIVATE audio/SDL3Backend.cpp)
+endif ()

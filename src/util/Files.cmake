@@ -19,4 +19,6 @@ set(util_files
   Platform.hpp
   Platform.cpp
   utf8.hpp
+  MemoryReader.hpp
+  MemoryReader.cpp
 )

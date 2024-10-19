@@ -86,7 +86,7 @@ function(enable_default_cpp_flags targetName)
 endfunction()
 
 function(enable_clang_tidy targetName)
-  if (NOT MSVC AND CERLIB_ENABLE_CLANG_TIDY)
+  if (CERLIB_ENABLE_CLANG_TIDY AND NOT MSVC AND NOT APPLE)
     cerlib_log("Enabling clang-tidy checks for the build")
 
     find_program(CLANG_TIDY_EXE NAMES "clang-tidy")

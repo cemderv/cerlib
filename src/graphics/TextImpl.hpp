@@ -27,12 +27,12 @@ struct TextDecorationRect
     std::optional<Color> color;
 };
 
-static void shape_text(std::string_view                     text,
-                       const Font&                          font,
-                       uint32_t                             font_size,
-                       const std::optional<TextDecoration>& decoration,
-                       gch::small_vector<PreshapedGlyph>&      dst_glyphs,
-                       gch::small_vector<TextDecorationRect>&  dst_decoration_rects)
+static void shape_text(std::string_view                       text,
+                       const Font&                            font,
+                       uint32_t                               font_size,
+                       const std::optional<TextDecoration>&   decoration,
+                       gch::small_vector<PreshapedGlyph>&     dst_glyphs,
+                       gch::small_vector<TextDecorationRect>& dst_decoration_rects)
 {
     assert(font);
 
