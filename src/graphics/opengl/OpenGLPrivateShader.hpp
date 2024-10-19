@@ -28,8 +28,8 @@ class OpenGLPrivateShader final
 
     ~OpenGLPrivateShader() noexcept;
 
-    std::string                 name;
-    GLuint                      gl_handle{};
+    std::string                    name;
+    GLuint                         gl_handle{};
     gch::small_vector<std::string> attributes;
 };
 } // namespace cer::details

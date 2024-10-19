@@ -55,7 +55,7 @@
 namespace cer::shadercompiler
 {
 static void add_struct_fields(
-    gch::small_vector<gsl::not_null<Decl*>, 132>&                                     all,
+    gch::small_vector<gsl::not_null<Decl*>, 132>&                                  all,
     std::vector<std::unique_ptr<Decl>>&                                            var,
     std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> fields)
 {

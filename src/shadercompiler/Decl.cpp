@@ -131,12 +131,13 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
 
     scope.add_type(*this);
 
-    m_ctor = std::make_unique<FunctionDecl>(Decl::location(),
-                                            name(),
-                                            gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4>{},
-                                            *this,
-                                            nullptr,
-                                            /*is_struct_ctor:*/ true);
+    m_ctor =
+        std::make_unique<FunctionDecl>(Decl::location(),
+                                       name(),
+                                       gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4>{},
+                                       *this,
+                                       nullptr,
+                                       /*is_struct_ctor:*/ true);
 
     scope.add_symbol(*m_ctor);
 
@@ -195,12 +196,12 @@ auto StructDecl::is_built_in() const -> bool
     return m_is_built_in;
 }
 
-FunctionDecl::FunctionDecl(const SourceLocation&                                 location,
-                           std::string_view                                      name,
+FunctionDecl::FunctionDecl(const SourceLocation&                                    location,
+                           std::string_view                                         name,
                            gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                           const Type&                                           return_type,
-                           std::unique_ptr<CodeBlock>                            body,
-                           bool                                                  is_struct_ctor)
+                           const Type&                                              return_type,
+                           std::unique_ptr<CodeBlock>                               body,
+                           bool                                                     is_struct_ctor)
     : Decl(location, name)
     , m_kind(FunctionKind::Normal)
     , m_parameters(std::move(parameters))

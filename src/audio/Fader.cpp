@@ -28,14 +28,14 @@ namespace cer
 {
 void Fader::set(float aFrom, float aTo, double aTime, double aStartTime)
 {
-    current   = from;
-    from      = aFrom;
-    to        = aTo;
-    time      = aTime;
+    current    = from;
+    from       = aFrom;
+    to         = aTo;
+    time       = aTime;
     start_time = aStartTime;
-    delta     = aTo - aFrom;
+    delta      = aTo - aFrom;
     end_time   = start_time + time;
-    active    = 1;
+    active     = 1;
 }
 
 void Fader::setLFO(float aFrom, float aTo, double aTime, double aStartTime)
@@ -70,10 +70,10 @@ float Fader::get(double aCurrentTime)
         // Time rolled over.
         // Figure out where we were..
         const float p = (current - from) / delta; // 0..1
-        from         = current;
+        from          = current;
         start_time    = aCurrentTime;
-        time         = time * (1 - p); // time left
-        delta        = to - from;
+        time          = time * (1 - p); // time left
+        delta         = to - from;
         end_time      = start_time + time;
     }
     if (aCurrentTime > end_time)

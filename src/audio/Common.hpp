@@ -52,8 +52,8 @@ static constexpr size_t max_voice_count = 1024;
 // 1)mono, 2)stereo 4)quad 6)5.1 8)7.1
 static constexpr size_t max_channels = 8;
 
-using mutexCallFunction    = void    (*)(void*);
-using soloudCallFunction   = void   (*)(AudioDevice*);
+using mutexCallFunction    = void (*)(void*);
+using soloudCallFunction   = void (*)(AudioDevice*);
 using soloudResultFunction = bool (*)(AudioDevice*);
 using SoundHandle          = size_t;
 
