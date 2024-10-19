@@ -16,7 +16,7 @@ void sdl3_audio_mixer(void* userdata, Uint8* stream, int len)
 {
     auto& device = *static_cast<AudioDevice*>(userdata);
 
-    const auto samples = len / (device.m_channels * sizeof(float));
+    const auto samples = len / (device.channels() * sizeof(float));
     device.mix(reinterpret_cast<float*>(stream), samples);
 }
 
@@ -71,8 +71,7 @@ void cer::audio_sdl3_init(const AudioBackendArgs& args)
     const auto audio_device_id = SDL_GetAudioStreamDevice(gAudioStream);
 
     device.postinit_internal(args.sample_rate, args.buffer, args.channel_count);
-
-    device.m_backend_cleanup_func = soloud_sdl3static_deinit;
+    device.set_backend_cleanup_func(soloud_sdl3static_deinit);
 
     SDL_ResumeAudioDevice(audio_device_id);
 }

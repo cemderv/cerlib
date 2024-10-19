@@ -262,8 +262,8 @@ auto AudioDevice::play(AudioSource& sound, float volume, float pan, bool paused,
     return get_handle_from_voice_internal(ch);
 }
 
-SoundHandle AudioDevice::play_clocked(
-    SoundTime sound_time, AudioSource& sound, float volume, float pan, size_t bus)
+auto AudioDevice::play_clocked(
+    SoundTime sound_time, AudioSource& sound, float volume, float pan, size_t bus) -> SoundHandle
 {
     const SoundHandle h = play(sound, volume, pan, 1, bus);
     lock_audio_mutex_internal();
@@ -284,10 +284,8 @@ SoundHandle AudioDevice::play_clocked(
     return h;
 }
 
-SoundHandle AudioDevice::play3d_background(AudioSource& sound,
-                                           float        volume,
-                                           bool         paused,
-                                           size_t       bus)
+auto AudioDevice::play3d_background(AudioSource& sound, float volume, bool paused, size_t bus)
+    -> SoundHandle
 {
     const SoundHandle h = play(sound, volume, 0.0f, paused, bus);
     set_pan_absolute(h, 1.0f, 1.0f);
@@ -707,7 +705,6 @@ auto AudioDevice::get_approximate_volume(size_t channel) -> float
     return vol;
 }
 
-
 auto AudioDevice::calc_fft() -> float*
 {
     lock_audio_mutex_internal();
@@ -964,29 +961,29 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
 }
 #endif
 
-static constexpr auto FIXPOINT_FRAC_BITS = 20;
-static constexpr auto FIXPOINT_FRAC_MUL  = 1 << FIXPOINT_FRAC_BITS;
-static constexpr auto FIXPOINT_FRAC_MASK = (1 << FIXPOINT_FRAC_BITS) - 1;
+static constexpr auto s_fixpoint_frac_bits = 20;
+static constexpr auto s_fixpoint_frac_mul  = 1 << s_fixpoint_frac_bits;
+static constexpr auto s_fixpoint_frac_mask = (1 << s_fixpoint_frac_bits) - 1;
 
-static float catmull_rom(float t, float p0, float p1, float p2, float p3)
+static auto catmull_rom(float t, float p0, float p1, float p2, float p3) -> float
 {
     return 0.5f * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t +
                    (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
 }
 
-static void resample_catmullrom(const float* aSrc,
-                                const float* aSrc1,
-                                float*       aDst,
-                                size_t       aSrcOffset,
-                                size_t       aDstSampleCount,
-                                size_t       aStepFixed)
+static void resample_catmull_rom(const float* aSrc,
+                                 const float* aSrc1,
+                                 float*       aDst,
+                                 size_t       aSrcOffset,
+                                 size_t       aDstSampleCount,
+                                 size_t       aStepFixed)
 {
     auto pos = aSrcOffset;
 
     for (size_t i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
-        const auto p = pos >> FIXPOINT_FRAC_BITS;
-        const auto f = pos & FIXPOINT_FRAC_MASK;
+        const auto p = pos >> s_fixpoint_frac_bits;
+        const auto f = pos & s_fixpoint_frac_mask;
 
         auto s3 = 0.0f;
 
@@ -1023,7 +1020,7 @@ static void resample_catmullrom(const float* aSrc,
 
         const auto s0 = aSrc[p];
 
-        aDst[i] = catmull_rom(f / float(FIXPOINT_FRAC_MUL), s3, s2, s1, s0);
+        aDst[i] = catmull_rom(f / float(s_fixpoint_frac_mul), s3, s2, s1, s0);
     }
 }
 
@@ -1038,40 +1035,40 @@ static void resample_linear(const float* aSrc,
 
     for (size_t i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
     {
-        const auto p  = pos >> FIXPOINT_FRAC_BITS;
-        const auto f  = pos & FIXPOINT_FRAC_MASK;
+        const auto p  = pos >> s_fixpoint_frac_bits;
+        const auto f  = pos & s_fixpoint_frac_mask;
         auto       s1 = aSrc1[sample_granularity - 1];
         const auto s2 = aSrc[p];
         if (p != 0)
         {
             s1 = aSrc[p - 1];
         }
-        aDst[i] = s1 + (s2 - s1) * f * (1 / (float)FIXPOINT_FRAC_MUL);
+        aDst[i] = s1 + (s2 - s1) * f * (1 / (float)s_fixpoint_frac_mul);
     }
 }
 
-static void resample_point(const float* aSrc,
-                           const float* aSrc1,
-                           float*       aDst,
-                           size_t       aSrcOffset,
-                           size_t       aDstSampleCount,
-                           size_t       aStepFixed)
+static void resample_point(const float* src,
+                           const float* src1,
+                           float*       dst,
+                           size_t       src_offset,
+                           size_t       dst_sample_count,
+                           size_t       step_fixed)
 {
-    auto pos = aSrcOffset;
+    auto pos = src_offset;
 
-    for (size_t i = 0; i < aDstSampleCount; ++i, pos += aStepFixed)
+    for (size_t i = 0; i < dst_sample_count; ++i, pos += step_fixed)
     {
-        const auto p = pos >> FIXPOINT_FRAC_BITS;
-        aDst[i]      = aSrc[p];
+        const auto p = pos >> s_fixpoint_frac_bits;
+        dst[i]       = src[p];
     }
 }
 
-void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
-                  float*                                aBuffer,
-                  size_t                                aSamplesToRead,
-                  size_t                                aBufferSize,
-                  float*                                aScratch,
-                  size_t                                aChannels)
+void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
+                  float*                                buffer,
+                  size_t                                samples_to_read,
+                  size_t                                buffer_size,
+                  float*                                scratch,
+                  size_t                                channels)
 {
 #ifdef SOLOUD_SSE_INTRINSICS
     assert(((size_t)aBuffer & 0xf) == 0);
@@ -1079,78 +1076,78 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
     assert(((size_t)aBufferSize & 0xf) == 0);
 #endif
 
-    float                           pan[max_channels]; // current speaker volume
-    std::array<float, max_channels> pand{}; // destination speaker volume
-    std::array<float, max_channels> pani{}; // speaker volume increment per sample
+    auto pan  = std::array<float, max_channels>{}; // current speaker volume
+    auto pand = std::array<float, max_channels>{}; // destination speaker volume
+    auto pani = std::array<float, max_channels>{}; // speaker volume increment per sample
 
-    for (size_t k = 0; k < aChannels; k++)
+    for (size_t k = 0; k < channels; k++)
     {
-        pan[k]  = aVoice->current_channel_volume[k];
-        pand[k] = aVoice->channel_volume[k] * aVoice->overall_volume;
+        pan[k]  = voice->current_channel_volume[k];
+        pand[k] = voice->channel_volume[k] * voice->overall_volume;
         pani[k] =
             (pand[k] - pan[k]) /
-            aSamplesToRead; // TODO: this is a bit inconsistent.. but it's a hack to begin with
+            samples_to_read; // TODO: this is a bit inconsistent.. but it's a hack to begin with
     }
 
-    switch (aChannels)
+    switch (channels)
     {
         case 1: // Target is mono. Sum everything. (1->1, 2->1, 4->1, 6->1, 8->1)
-            for (size_t j = 0, ofs = 0; j < aVoice->channel_count; ++j, ofs += aBufferSize)
+            for (size_t j = 0, ofs = 0; j < voice->channel_count; ++j, ofs += buffer_size)
             {
-                pan[0] = aVoice->current_channel_volume[0];
-                for (size_t k = 0; k < aSamplesToRead; k++)
+                pan[0] = voice->current_channel_volume[0];
+                for (size_t k = 0; k < samples_to_read; k++)
                 {
                     pan[0] += pani[0];
-                    aBuffer[k] += aScratch[ofs + k] * pan[0];
+                    buffer[k] += scratch[ofs + k] * pan[0];
                 }
             }
             break;
         case 2:
-            switch (aVoice->channel_count)
+            switch (voice->channel_count)
             {
                 case 8: // 8->2, just sum lefties and righties, add a bit of center and sub?
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        float s7 = aScratch[aBufferSize * 6 + j];
-                        float s8 = aScratch[aBufferSize * 7 + j];
-                        aBuffer[j + 0] += 0.2f * (s1 + s3 + s4 + s5 + s7) * pan[0];
-                        aBuffer[j + aBufferSize] += 0.2f * (s2 + s3 + s4 + s6 + s8) * pan[1];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        float s7 = scratch[buffer_size * 6 + j];
+                        float s8 = scratch[buffer_size * 7 + j];
+                        buffer[j + 0] += 0.2f * (s1 + s3 + s4 + s5 + s7) * pan[0];
+                        buffer[j + buffer_size] += 0.2f * (s2 + s3 + s4 + s6 + s8) * pan[1];
                     }
                     break;
                 case 6: // 6->2, just sum lefties and righties, add a bit of center and sub?
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        aBuffer[j + 0] += 0.3f * (s1 + s3 + s4 + s5) * pan[0];
-                        aBuffer[j + aBufferSize] += 0.3f * (s2 + s3 + s4 + s6) * pan[1];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        buffer[j + 0] += 0.3f * (s1 + s3 + s4 + s5) * pan[0];
+                        buffer[j + buffer_size] += 0.3f * (s2 + s3 + s4 + s6) * pan[1];
                     }
                     break;
                 case 4: // 4->2, just sum lefties and righties
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        aBuffer[j + 0] += 0.5f * (s1 + s3) * pan[0];
-                        aBuffer[j + aBufferSize] += 0.5f * (s2 + s4) * pan[1];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        buffer[j + 0] += 0.5f * (s1 + s3) * pan[0];
+                        buffer[j + buffer_size] += 0.5f * (s2 + s4) * pan[1];
                     }
                     break;
                 case 2: // 2->2
@@ -1207,14 +1204,14 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                     }
                 }
 #else // fallback
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
                     }
 #endif
                 break;
@@ -1269,116 +1266,116 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                     }
                 }
 #else // fallback
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s = aScratch[j];
-                        aBuffer[j + 0] += s * pan[0];
-                        aBuffer[j + aBufferSize] += s * pan[1];
+                        float s = scratch[j];
+                        buffer[j + 0] += s * pan[0];
+                        buffer[j + buffer_size] += s * pan[1];
                     }
 #endif
                 break;
             }
             break;
         case 4:
-            switch (aVoice->channel_count)
+            switch (voice->channel_count)
             {
                 case 8: // 8->4, add a bit of center, sub?
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
                         pan[2] += pani[2];
                         pan[3] += pani[3];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        float s7 = aScratch[aBufferSize * 6 + j];
-                        float s8 = aScratch[aBufferSize * 7 + j];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        float s7 = scratch[buffer_size * 6 + j];
+                        float s8 = scratch[buffer_size * 7 + j];
                         float c  = (s3 + s4) * 0.7f;
-                        aBuffer[j + 0] += s1 * pan[0] + c;
-                        aBuffer[j + aBufferSize] += s2 * pan[1] + c;
-                        aBuffer[j + aBufferSize * 2] += 0.5f * (s5 + s7) * pan[2];
-                        aBuffer[j + aBufferSize * 3] += 0.5f * (s6 + s8) * pan[3];
+                        buffer[j + 0] += s1 * pan[0] + c;
+                        buffer[j + buffer_size] += s2 * pan[1] + c;
+                        buffer[j + buffer_size * 2] += 0.5f * (s5 + s7) * pan[2];
+                        buffer[j + buffer_size * 3] += 0.5f * (s6 + s8) * pan[3];
                     }
                     break;
                 case 6: // 6->4, add a bit of center, sub?
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
                         pan[2] += pani[2];
                         pan[3] += pani[3];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
                         float c  = (s3 + s4) * 0.7f;
-                        aBuffer[j + 0] += s1 * pan[0] + c;
-                        aBuffer[j + aBufferSize] += s2 * pan[1] + c;
-                        aBuffer[j + aBufferSize * 2] += s5 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s6 * pan[3];
+                        buffer[j + 0] += s1 * pan[0] + c;
+                        buffer[j + buffer_size] += s2 * pan[1] + c;
+                        buffer[j + buffer_size * 2] += s5 * pan[2];
+                        buffer[j + buffer_size * 3] += s6 * pan[3];
                     }
                     break;
                 case 4: // 4->4
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
                         pan[2] += pani[2];
                         pan[3] += pani[3];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s3 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s4 * pan[3];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += s3 * pan[2];
+                        buffer[j + buffer_size * 3] += s4 * pan[3];
                     }
                     break;
                 case 2: // 2->4
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
                         pan[2] += pani[2];
                         pan[3] += pani[3];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s1 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s2 * pan[3];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += s1 * pan[2];
+                        buffer[j + buffer_size * 3] += s2 * pan[3];
                     }
                     break;
                 case 1: // 1->4
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
                         pan[2] += pani[2];
                         pan[3] += pani[3];
-                        float s = aScratch[j];
-                        aBuffer[j + 0] += s * pan[0];
-                        aBuffer[j + aBufferSize] += s * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s * pan[3];
+                        float s = scratch[j];
+                        buffer[j + 0] += s * pan[0];
+                        buffer[j + buffer_size] += s * pan[1];
+                        buffer[j + buffer_size * 2] += s * pan[2];
+                        buffer[j + buffer_size * 3] += s * pan[3];
                     }
                     break;
             }
             break;
         case 6:
-            switch (aVoice->channel_count)
+            switch (voice->channel_count)
             {
                 case 8: // 8->6
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1386,24 +1383,24 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[3] += pani[3];
                         pan[4] += pani[4];
                         pan[5] += pani[5];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        float s7 = aScratch[aBufferSize * 6 + j];
-                        float s8 = aScratch[aBufferSize * 7 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s3 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s4 * pan[3];
-                        aBuffer[j + aBufferSize * 4] += 0.5f * (s5 + s7) * pan[4];
-                        aBuffer[j + aBufferSize * 5] += 0.5f * (s6 + s8) * pan[5];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        float s7 = scratch[buffer_size * 6 + j];
+                        float s8 = scratch[buffer_size * 7 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += s3 * pan[2];
+                        buffer[j + buffer_size * 3] += s4 * pan[3];
+                        buffer[j + buffer_size * 4] += 0.5f * (s5 + s7) * pan[4];
+                        buffer[j + buffer_size * 5] += 0.5f * (s6 + s8) * pan[5];
                     }
                     break;
                 case 6: // 6->6
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1411,22 +1408,22 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[3] += pani[3];
                         pan[4] += pani[4];
                         pan[5] += pani[5];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s3 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s4 * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s5 * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s6 * pan[5];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += s3 * pan[2];
+                        buffer[j + buffer_size * 3] += s4 * pan[3];
+                        buffer[j + buffer_size * 4] += s5 * pan[4];
+                        buffer[j + buffer_size * 5] += s6 * pan[5];
                     }
                     break;
                 case 4: // 4->6
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1434,20 +1431,20 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[3] += pani[3];
                         pan[4] += pani[4];
                         pan[5] += pani[5];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += 0.5f * (s1 + s2) * pan[2];
-                        aBuffer[j + aBufferSize * 3] += 0.25f * (s1 + s2 + s3 + s4) * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s3 * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s4 * pan[5];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += 0.5f * (s1 + s2) * pan[2];
+                        buffer[j + buffer_size * 3] += 0.25f * (s1 + s2 + s3 + s4) * pan[3];
+                        buffer[j + buffer_size * 4] += s3 * pan[4];
+                        buffer[j + buffer_size * 5] += s4 * pan[5];
                     }
                     break;
                 case 2: // 2->6
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1455,18 +1452,18 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[3] += pani[3];
                         pan[4] += pani[4];
                         pan[5] += pani[5];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += 0.5f * (s1 + s2) * pan[2];
-                        aBuffer[j + aBufferSize * 3] += 0.5f * (s1 + s2) * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s1 * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s2 * pan[5];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += 0.5f * (s1 + s2) * pan[2];
+                        buffer[j + buffer_size * 3] += 0.5f * (s1 + s2) * pan[3];
+                        buffer[j + buffer_size * 4] += s1 * pan[4];
+                        buffer[j + buffer_size * 5] += s2 * pan[5];
                     }
                     break;
                 case 1: // 1->6
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1474,22 +1471,22 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[3] += pani[3];
                         pan[4] += pani[4];
                         pan[5] += pani[5];
-                        float s = aScratch[j];
-                        aBuffer[j + 0] += s * pan[0];
-                        aBuffer[j + aBufferSize] += s * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s * pan[5];
+                        float s = scratch[j];
+                        buffer[j + 0] += s * pan[0];
+                        buffer[j + buffer_size] += s * pan[1];
+                        buffer[j + buffer_size * 2] += s * pan[2];
+                        buffer[j + buffer_size * 3] += s * pan[3];
+                        buffer[j + buffer_size * 4] += s * pan[4];
+                        buffer[j + buffer_size * 5] += s * pan[5];
                     }
                     break;
             }
             break;
         case 8:
-            switch (aVoice->channel_count)
+            switch (voice->channel_count)
             {
                 case 8: // 8->8
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1499,26 +1496,26 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[5] += pani[5];
                         pan[6] += pani[6];
                         pan[7] += pani[7];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        float s7 = aScratch[aBufferSize * 6 + j];
-                        float s8 = aScratch[aBufferSize * 7 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s3 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s4 * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s5 * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s6 * pan[5];
-                        aBuffer[j + aBufferSize * 6] += s7 * pan[6];
-                        aBuffer[j + aBufferSize * 7] += s8 * pan[7];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        float s7 = scratch[buffer_size * 6 + j];
+                        float s8 = scratch[buffer_size * 7 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += s3 * pan[2];
+                        buffer[j + buffer_size * 3] += s4 * pan[3];
+                        buffer[j + buffer_size * 4] += s5 * pan[4];
+                        buffer[j + buffer_size * 5] += s6 * pan[5];
+                        buffer[j + buffer_size * 6] += s7 * pan[6];
+                        buffer[j + buffer_size * 7] += s8 * pan[7];
                     }
                     break;
                 case 6: // 6->8
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1528,24 +1525,24 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[5] += pani[5];
                         pan[6] += pani[6];
                         pan[7] += pani[7];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        float s5 = aScratch[aBufferSize * 4 + j];
-                        float s6 = aScratch[aBufferSize * 5 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s3 * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s4 * pan[3];
-                        aBuffer[j + aBufferSize * 4] += 0.5f * (s5 + s1) * pan[4];
-                        aBuffer[j + aBufferSize * 5] += 0.5f * (s6 + s2) * pan[5];
-                        aBuffer[j + aBufferSize * 6] += s5 * pan[6];
-                        aBuffer[j + aBufferSize * 7] += s6 * pan[7];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        float s5 = scratch[buffer_size * 4 + j];
+                        float s6 = scratch[buffer_size * 5 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += s3 * pan[2];
+                        buffer[j + buffer_size * 3] += s4 * pan[3];
+                        buffer[j + buffer_size * 4] += 0.5f * (s5 + s1) * pan[4];
+                        buffer[j + buffer_size * 5] += 0.5f * (s6 + s2) * pan[5];
+                        buffer[j + buffer_size * 6] += s5 * pan[6];
+                        buffer[j + buffer_size * 7] += s6 * pan[7];
                     }
                     break;
                 case 4: // 4->8
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1555,22 +1552,22 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[5] += pani[5];
                         pan[6] += pani[6];
                         pan[7] += pani[7];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        float s3 = aScratch[aBufferSize * 2 + j];
-                        float s4 = aScratch[aBufferSize * 3 + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += 0.5f * (s1 + s2) * pan[2];
-                        aBuffer[j + aBufferSize * 3] += 0.25f * (s1 + s2 + s3 + s4) * pan[3];
-                        aBuffer[j + aBufferSize * 4] += 0.5f * (s1 + s3) * pan[4];
-                        aBuffer[j + aBufferSize * 5] += 0.5f * (s2 + s4) * pan[5];
-                        aBuffer[j + aBufferSize * 6] += s3 * pan[4];
-                        aBuffer[j + aBufferSize * 7] += s4 * pan[5];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        float s3 = scratch[buffer_size * 2 + j];
+                        float s4 = scratch[buffer_size * 3 + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += 0.5f * (s1 + s2) * pan[2];
+                        buffer[j + buffer_size * 3] += 0.25f * (s1 + s2 + s3 + s4) * pan[3];
+                        buffer[j + buffer_size * 4] += 0.5f * (s1 + s3) * pan[4];
+                        buffer[j + buffer_size * 5] += 0.5f * (s2 + s4) * pan[5];
+                        buffer[j + buffer_size * 6] += s3 * pan[4];
+                        buffer[j + buffer_size * 7] += s4 * pan[5];
                     }
                     break;
                 case 2: // 2->8
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1580,20 +1577,20 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[5] += pani[5];
                         pan[6] += pani[6];
                         pan[7] += pani[7];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
-                        aBuffer[j + aBufferSize * 2] += 0.5f * (s1 + s2) * pan[2];
-                        aBuffer[j + aBufferSize * 3] += 0.5f * (s1 + s2) * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s1 * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s2 * pan[5];
-                        aBuffer[j + aBufferSize * 6] += s1 * pan[6];
-                        aBuffer[j + aBufferSize * 7] += s2 * pan[7];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
+                        buffer[j + buffer_size * 2] += 0.5f * (s1 + s2) * pan[2];
+                        buffer[j + buffer_size * 3] += 0.5f * (s1 + s2) * pan[3];
+                        buffer[j + buffer_size * 4] += s1 * pan[4];
+                        buffer[j + buffer_size * 5] += s2 * pan[5];
+                        buffer[j + buffer_size * 6] += s1 * pan[6];
+                        buffer[j + buffer_size * 7] += s2 * pan[7];
                     }
                     break;
                 case 1: // 1->8
-                    for (size_t j = 0; j < aSamplesToRead; ++j)
+                    for (size_t j = 0; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
@@ -1603,42 +1600,42 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& aVoice,
                         pan[5] += pani[5];
                         pan[6] += pani[6];
                         pan[7] += pani[7];
-                        float s = aScratch[j];
-                        aBuffer[j + 0] += s * pan[0];
-                        aBuffer[j + aBufferSize] += s * pan[1];
-                        aBuffer[j + aBufferSize * 2] += s * pan[2];
-                        aBuffer[j + aBufferSize * 3] += s * pan[3];
-                        aBuffer[j + aBufferSize * 4] += s * pan[4];
-                        aBuffer[j + aBufferSize * 5] += s * pan[5];
-                        aBuffer[j + aBufferSize * 6] += s * pan[6];
-                        aBuffer[j + aBufferSize * 7] += s * pan[7];
+                        float s = scratch[j];
+                        buffer[j + 0] += s * pan[0];
+                        buffer[j + buffer_size] += s * pan[1];
+                        buffer[j + buffer_size * 2] += s * pan[2];
+                        buffer[j + buffer_size * 3] += s * pan[3];
+                        buffer[j + buffer_size * 4] += s * pan[4];
+                        buffer[j + buffer_size * 5] += s * pan[5];
+                        buffer[j + buffer_size * 6] += s * pan[6];
+                        buffer[j + buffer_size * 7] += s * pan[7];
                     }
                     break;
             }
             break;
     }
 
-    for (size_t k = 0; k < aChannels; k++)
+    for (size_t k = 0; k < channels; k++)
     {
-        aVoice->current_channel_volume[k] = pand[k];
+        voice->current_channel_volume[k] = pand[k];
     }
 }
 
-void AudioDevice::mix_bus_internal(float*    aBuffer,
-                                   size_t    aSamplesToRead,
-                                   size_t    aBufferSize,
-                                   float*    aScratch,
-                                   size_t    aBus,
-                                   float     aSamplerate,
-                                   size_t    aChannels,
-                                   Resampler aResampler)
+void AudioDevice::mix_bus_internal(float*    buffer,
+                                   size_t    samples_to_read,
+                                   size_t    buffer_size,
+                                   float*    scratch,
+                                   size_t    bus,
+                                   float     sample_rate,
+                                   size_t    channels,
+                                   Resampler resampler)
 {
     // Clear accumulation buffer
-    for (size_t i = 0; i < aSamplesToRead; ++i)
+    for (size_t i = 0; i < samples_to_read; ++i)
     {
-        for (size_t j = 0; j < aChannels; ++j)
+        for (size_t j = 0; j < channels; ++j)
         {
-            aBuffer[i + j * aBufferSize] = 0;
+            buffer[i + j * buffer_size] = 0;
         }
     }
 
@@ -1646,26 +1643,26 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
     for (size_t i = 0; i < m_active_voice_count; ++i)
     {
         if (auto& voice = m_voice[m_active_voice[i]];
-            voice != nullptr && voice->bus_handle == aBus && !voice->flags.is_paused &&
+            voice != nullptr && voice->bus_handle == bus && !voice->flags.is_paused &&
             !voice->flags.inaudible)
         {
-            float step = voice->sample_rate / aSamplerate;
+            float step = voice->sample_rate / sample_rate;
 
             // avoid step overflow
-            if (step > (1 << (32 - FIXPOINT_FRAC_BITS)))
+            if (step > (1 << (32 - s_fixpoint_frac_bits)))
             {
                 step = 0;
             }
 
-            auto step_fixed = int(floor(step * FIXPOINT_FRAC_MUL));
-            auto outofs     = size_t(0);
+            const auto step_fixed = int(floor(step * s_fixpoint_frac_mul));
+            auto       outofs     = size_t(0);
 
             if (voice->delay_samples)
             {
-                if (voice->delay_samples > aSamplesToRead)
+                if (voice->delay_samples > samples_to_read)
                 {
-                    outofs = aSamplesToRead;
-                    voice->delay_samples -= aSamplesToRead;
+                    outofs = samples_to_read;
+                    voice->delay_samples -= samples_to_read;
                 }
                 else
                 {
@@ -1676,11 +1673,11 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                 // Clear scratch where we're skipping
                 for (size_t k = 0; k < voice->channel_count; k++)
                 {
-                    memset(aScratch + k * aBufferSize, 0, sizeof(float) * outofs);
+                    memset(scratch + k * buffer_size, 0, sizeof(float) * outofs);
                 }
             }
 
-            while (step_fixed != 0 && outofs < aSamplesToRead)
+            while (step_fixed != 0 && outofs < samples_to_read)
             {
                 if (voice->leftover_samples == 0)
                 {
@@ -1734,14 +1731,14 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                     }
 
                     // If we go past zero, crop to zero (a bit of a kludge)
-                    if (voice->src_offset < sample_granularity * FIXPOINT_FRAC_MUL)
+                    if (voice->src_offset < sample_granularity * s_fixpoint_frac_mul)
                     {
                         voice->src_offset = 0;
                     }
                     else
                     {
                         // We have new block of data, move pointer backwards
-                        voice->src_offset -= sample_granularity * FIXPOINT_FRAC_MUL;
+                        voice->src_offset -= sample_granularity * s_fixpoint_frac_mul;
                     }
 
 
@@ -1772,37 +1769,38 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
 
                 size_t writesamples = 0;
 
-                if (voice->src_offset < sample_granularity * FIXPOINT_FRAC_MUL)
+                if (voice->src_offset < sample_granularity * s_fixpoint_frac_mul)
                 {
-                    writesamples = ((sample_granularity * FIXPOINT_FRAC_MUL) - voice->src_offset) /
-                                       step_fixed +
-                                   1;
+                    writesamples =
+                        ((sample_granularity * s_fixpoint_frac_mul) - voice->src_offset) /
+                            step_fixed +
+                        1;
 
                     // avoid reading past the current buffer..
-                    if (((writesamples * step_fixed + voice->src_offset) >> FIXPOINT_FRAC_BITS) >=
+                    if (((writesamples * step_fixed + voice->src_offset) >> s_fixpoint_frac_bits) >=
                         sample_granularity)
                         writesamples--;
                 }
 
 
                 // If this is too much for our output buffer, don't write that many:
-                if (writesamples + outofs > aSamplesToRead)
+                if (writesamples + outofs > samples_to_read)
                 {
-                    voice->leftover_samples = (writesamples + outofs) - aSamplesToRead;
-                    writesamples            = aSamplesToRead - outofs;
+                    voice->leftover_samples = (writesamples + outofs) - samples_to_read;
+                    writesamples            = samples_to_read - outofs;
                 }
 
                 // Call resampler to generate the samples, once per channel
-                if (writesamples)
+                if (writesamples != 0u)
                 {
                     for (size_t j = 0; j < voice->channel_count; ++j)
                     {
-                        switch (aResampler)
+                        switch (resampler)
                         {
                             case Resampler::Point:
                                 resample_point(voice->resample_data[0] + sample_granularity * j,
                                                voice->resample_data[1] + sample_granularity * j,
-                                               aScratch + aBufferSize * j + outofs,
+                                               scratch + buffer_size * j + outofs,
                                                voice->src_offset,
                                                writesamples,
                                                /*voice->mSamplerate,
@@ -1810,10 +1808,10 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                                                step_fixed);
                                 break;
                             case Resampler::CatmullRom:
-                                resample_catmullrom(
+                                resample_catmull_rom(
                                     voice->resample_data[0] + sample_granularity * j,
                                     voice->resample_data[1] + sample_granularity * j,
-                                    aScratch + aBufferSize * j + outofs,
+                                    scratch + buffer_size * j + outofs,
                                     voice->src_offset,
                                     writesamples,
                                     /*voice->mSamplerate,
@@ -1824,7 +1822,7 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                                 // case RESAMPLER_LINEAR:
                                 resample_linear(voice->resample_data[0] + sample_granularity * j,
                                                 voice->resample_data[1] + sample_granularity * j,
-                                                aScratch + aBufferSize * j + outofs,
+                                                scratch + buffer_size * j + outofs,
                                                 voice->src_offset,
                                                 writesamples,
                                                 /*voice->mSamplerate,
@@ -1843,7 +1841,7 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
             }
 
             // Handle panning and channel expansion (and/or shrinking)
-            panAndExpand(voice, aBuffer, aSamplesToRead, aBufferSize, aScratch, aChannels);
+            panAndExpand(voice, buffer, samples_to_read, buffer_size, scratch, channels);
 
             // clear voice if the sound is over
             // TODO: check this condition some day
@@ -1852,21 +1850,21 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                 stop_voice_internal(m_active_voice[i]);
             }
         }
-        else if (voice && voice->bus_handle == aBus && !voice->flags.is_paused &&
+        else if (voice && voice->bus_handle == bus && !voice->flags.is_paused &&
                  voice->flags.inaudible && voice->flags.inaudible_tick)
         {
             // Inaudible but needs ticking. Do minimal work (keep counters up to date and ask
             // audiosource for data)
-            auto step       = voice->sample_rate / aSamplerate;
-            auto step_fixed = int(floor(step * FIXPOINT_FRAC_MUL));
+            auto step       = voice->sample_rate / sample_rate;
+            auto step_fixed = int(floor(step * s_fixpoint_frac_mul));
             auto outofs     = size_t(0);
 
-            if (voice->delay_samples)
+            if (voice->delay_samples != 0u)
             {
-                if (voice->delay_samples > aSamplesToRead)
+                if (voice->delay_samples > samples_to_read)
                 {
-                    outofs = aSamplesToRead;
-                    voice->delay_samples -= aSamplesToRead;
+                    outofs = samples_to_read;
+                    voice->delay_samples -= samples_to_read;
                 }
                 else
                 {
@@ -1875,7 +1873,7 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                 }
             }
 
-            while (step_fixed != 0 && outofs < aSamplesToRead)
+            while (step_fixed != 0 && outofs < samples_to_read)
             {
                 if (voice->leftover_samples == 0)
                 {
@@ -1910,14 +1908,14 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
                     }
 
                     // If we go past zero, crop to zero (a bit of a kludge)
-                    if (voice->src_offset < sample_granularity * FIXPOINT_FRAC_MUL)
+                    if (voice->src_offset < sample_granularity * s_fixpoint_frac_mul)
                     {
                         voice->src_offset = 0;
                     }
                     else
                     {
                         // We have new block of data, move pointer backwards
-                        voice->src_offset -= sample_granularity * FIXPOINT_FRAC_MUL;
+                        voice->src_offset -= sample_granularity * s_fixpoint_frac_mul;
                     }
 
                     // Skip filters
@@ -1932,24 +1930,27 @@ void AudioDevice::mix_bus_internal(float*    aBuffer,
 
                 auto writesamples = size_t(0);
 
-                if (voice->src_offset < sample_granularity * FIXPOINT_FRAC_MUL)
+                if (voice->src_offset < sample_granularity * s_fixpoint_frac_mul)
                 {
-                    writesamples = ((sample_granularity * FIXPOINT_FRAC_MUL) - voice->src_offset) /
-                                       step_fixed +
-                                   1;
+                    writesamples =
+                        ((sample_granularity * s_fixpoint_frac_mul) - voice->src_offset) /
+                            step_fixed +
+                        1;
 
                     // avoid reading past the current buffer..
-                    if (((writesamples * step_fixed + voice->src_offset) >> FIXPOINT_FRAC_BITS) >=
+                    if (((writesamples * step_fixed + voice->src_offset) >> s_fixpoint_frac_bits) >=
                         sample_granularity)
-                        writesamples--;
+                    {
+                        --writesamples;
+                    }
                 }
 
 
                 // If this is too much for our output buffer, don't write that many:
-                if (writesamples + outofs > aSamplesToRead)
+                if (writesamples + outofs > samples_to_read)
                 {
-                    voice->leftover_samples = (writesamples + outofs) - aSamplesToRead;
-                    writesamples            = aSamplesToRead - outofs;
+                    voice->leftover_samples = (writesamples + outofs) - samples_to_read;
+                    writesamples            = samples_to_read - outofs;
                 }
 
                 // Skip resampler
@@ -1991,7 +1992,7 @@ void AudioDevice::map_resample_buffers_internal()
 
     for (size_t i = 0; i < m_max_active_voices; ++i)
     {
-        if (!(live[i] & 1) && m_resample_data_owner[i]) // For all dead channels with owners..
+        if (((live[i] & 1) == 0) && m_resample_data_owner[i]) // For all dead channels with owners..
         {
             m_resample_data_owner[i]->resample_data[0] = nullptr;
             m_resample_data_owner[i]->resample_data[1] = nullptr;
@@ -1999,7 +2000,7 @@ void AudioDevice::map_resample_buffers_internal()
         }
     }
 
-    auto latestfree = size_t(0);
+    auto latest_free = size_t(0);
 
     for (size_t i = 0; i < m_active_voice_count; ++i)
     {
@@ -2007,7 +2008,7 @@ void AudioDevice::map_resample_buffers_internal()
         {
             auto found = size_t(-1);
 
-            for (size_t j = latestfree; found == size_t(-1) && j < m_max_active_voices; ++j)
+            for (size_t j = latest_free; found == size_t(-1) && j < m_max_active_voices; ++j)
             {
                 if (m_resample_data_owner[j] == nullptr)
                 {
@@ -2029,7 +2030,7 @@ void AudioDevice::map_resample_buffers_internal()
                    0,
                    sizeof(float) * sample_granularity * max_channels);
 
-            latestfree = found + 1;
+            latest_free = found + 1;
         }
     }
 }
@@ -2044,7 +2045,7 @@ void AudioDevice::calc_active_voices_internal()
 
     // Populate
     size_t candidates = 0;
-    size_t mustlive   = 0;
+    size_t must_live  = 0;
 
     for (size_t i = 0; i < m_highest_voice; ++i)
     {
@@ -2061,9 +2062,9 @@ void AudioDevice::calc_active_voices_internal()
             candidates++;
             if (m_voice[i]->flags.inaudible_tick)
             {
-                m_active_voice[candidates - 1] = m_active_voice[mustlive];
-                m_active_voice[mustlive]       = i;
-                mustlive++;
+                m_active_voice[candidates - 1] = m_active_voice[must_live];
+                m_active_voice[must_live]      = i;
+                ++must_live;
             }
         }
     }
@@ -2079,7 +2080,7 @@ void AudioDevice::calc_active_voices_internal()
 
     m_active_voice_count = m_max_active_voices;
 
-    if (mustlive >= m_max_active_voices)
+    if (must_live >= m_max_active_voices)
     {
         // Oopsie. Well, nothing to sort, since the "must live" voices already
         // ate all our active voice slots.
@@ -2095,8 +2096,8 @@ void AudioDevice::calc_active_voices_internal()
     auto       left  = size_t(0);
     auto       stack = std::array<size_t, 24>{};
     auto       pos   = size_t(0);
-    auto       len   = candidates - mustlive;
-    size_t*    data  = m_active_voice.data() + mustlive;
+    auto       len   = candidates - must_live;
+    size_t*    data  = m_active_voice.data() + must_live;
     const auto k     = m_active_voice_count;
     while (true)
     {
@@ -2433,22 +2434,22 @@ void AudioDevice::unlock_audio_mutex_internal()
     }
 }
 
-float AudioDevice::post_clip_scaler() const
+auto AudioDevice::post_clip_scaler() const -> float
 {
     return m_post_clip_scaler;
 }
 
-Resampler AudioDevice::main_resampler() const
+auto AudioDevice::main_resampler() const -> Resampler
 {
     return m_resampler;
 }
 
-float AudioDevice::global_volume() const
+auto AudioDevice::global_volume() const -> float
 {
     return m_global_volume;
 }
 
-SoundHandle AudioDevice::get_handle_from_voice_internal(size_t aVoice) const
+auto AudioDevice::get_handle_from_voice_internal(size_t aVoice) const -> SoundHandle
 {
     if (m_voice[aVoice] == nullptr)
     {
@@ -2458,7 +2459,7 @@ SoundHandle AudioDevice::get_handle_from_voice_internal(size_t aVoice) const
     return (aVoice + 1) | (m_voice[aVoice]->play_index << 12);
 }
 
-int AudioDevice::get_voice_from_handle_internal(SoundHandle voice_handle) const
+auto AudioDevice::get_voice_from_handle_internal(SoundHandle voice_handle) const -> int
 {
     // If this is a voice group handle, pick the first handle from the group
     if (const auto* h = voice_group_handle_to_array_internal(voice_handle); h != nullptr)
@@ -2482,12 +2483,12 @@ int AudioDevice::get_voice_from_handle_internal(SoundHandle voice_handle) const
     return -1;
 }
 
-size_t AudioDevice::max_active_voice_count() const
+auto AudioDevice::max_active_voice_count() const -> size_t
 {
     return m_max_active_voices;
 }
 
-size_t AudioDevice::active_voice_count()
+auto AudioDevice::active_voice_count() -> size_t
 {
     lock_audio_mutex_internal();
     if (m_active_voice_dirty)
@@ -2500,7 +2501,7 @@ size_t AudioDevice::active_voice_count()
     return c;
 }
 
-size_t AudioDevice::voice_count()
+auto AudioDevice::voice_count() -> size_t
 {
     lock_audio_mutex_internal();
     int c = 0;
@@ -2515,7 +2516,7 @@ size_t AudioDevice::voice_count()
     return c;
 }
 
-bool AudioDevice::is_valid_voice_handle(SoundHandle voice_handle)
+auto AudioDevice::is_valid_voice_handle(SoundHandle voice_handle) -> bool
 {
     // voice groups are not valid voice handles
     if ((voice_handle & 0xfffff000) == 0xfffff000)
@@ -2534,7 +2535,7 @@ bool AudioDevice::is_valid_voice_handle(SoundHandle voice_handle)
 }
 
 
-SoundTime AudioDevice::get_loop_point(SoundHandle voice_handle)
+auto AudioDevice::get_loop_point(SoundHandle voice_handle) -> SoundTime
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2548,7 +2549,7 @@ SoundTime AudioDevice::get_loop_point(SoundHandle voice_handle)
     return v;
 }
 
-bool AudioDevice::is_voice_looping(SoundHandle voice_handle)
+auto AudioDevice::is_voice_looping(SoundHandle voice_handle) -> bool
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2562,7 +2563,7 @@ bool AudioDevice::is_voice_looping(SoundHandle voice_handle)
     return v;
 }
 
-bool AudioDevice::get_auto_stop(SoundHandle voice_handle)
+auto AudioDevice::get_auto_stop(SoundHandle voice_handle) -> bool
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2576,7 +2577,7 @@ bool AudioDevice::get_auto_stop(SoundHandle voice_handle)
     return !v;
 }
 
-float AudioDevice::get_info(SoundHandle voice_handle, size_t mInfoKey)
+auto AudioDevice::get_info(SoundHandle voice_handle, size_t mInfoKey) -> float
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2590,7 +2591,7 @@ float AudioDevice::get_info(SoundHandle voice_handle, size_t mInfoKey)
     return v;
 }
 
-float AudioDevice::volume(SoundHandle voice_handle)
+auto AudioDevice::volume(SoundHandle voice_handle) -> float
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2604,7 +2605,7 @@ float AudioDevice::volume(SoundHandle voice_handle)
     return v;
 }
 
-float AudioDevice::overall_volume(SoundHandle voice_handle)
+auto AudioDevice::overall_volume(SoundHandle voice_handle) -> float
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2618,7 +2619,7 @@ float AudioDevice::overall_volume(SoundHandle voice_handle)
     return v;
 }
 
-float AudioDevice::pan(SoundHandle voice_handle)
+auto AudioDevice::pan(SoundHandle voice_handle) -> float
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2632,7 +2633,7 @@ float AudioDevice::pan(SoundHandle voice_handle)
     return v;
 }
 
-SoundTime AudioDevice::stream_time(SoundHandle voice_handle)
+auto AudioDevice::stream_time(SoundHandle voice_handle) -> SoundTime
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2646,7 +2647,7 @@ SoundTime AudioDevice::stream_time(SoundHandle voice_handle)
     return v;
 }
 
-SoundTime AudioDevice::stream_position(SoundHandle voice_handle)
+auto AudioDevice::stream_position(SoundHandle voice_handle) -> SoundTime
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2660,7 +2661,7 @@ SoundTime AudioDevice::stream_position(SoundHandle voice_handle)
     return v;
 }
 
-float AudioDevice::relative_play_speed(SoundHandle voice_handle)
+auto AudioDevice::relative_play_speed(SoundHandle voice_handle) -> float
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2674,7 +2675,7 @@ float AudioDevice::relative_play_speed(SoundHandle voice_handle)
     return v;
 }
 
-float AudioDevice::sample_rate(SoundHandle voice_handle)
+auto AudioDevice::sample_rate(SoundHandle voice_handle) -> float
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2688,7 +2689,7 @@ float AudioDevice::sample_rate(SoundHandle voice_handle)
     return v;
 }
 
-bool AudioDevice::pause(SoundHandle voice_handle)
+auto AudioDevice::pause(SoundHandle voice_handle) -> bool
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2702,7 +2703,7 @@ bool AudioDevice::pause(SoundHandle voice_handle)
     return v;
 }
 
-bool AudioDevice::is_voice_protected(SoundHandle voice_handle)
+auto AudioDevice::is_voice_protected(SoundHandle voice_handle) -> bool
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2716,7 +2717,7 @@ bool AudioDevice::is_voice_protected(SoundHandle voice_handle)
     return v;
 }
 
-size_t AudioDevice::find_free_voice_internal()
+auto AudioDevice::find_free_voice_internal() -> size_t
 {
     size_t lowest_play_index_value = 0xffffffff;
     size_t lowest_play_index       = size_t(-1);
@@ -2731,10 +2732,7 @@ size_t AudioDevice::find_free_voice_internal()
     {
         if (m_voice[i] == nullptr)
         {
-            if (i + 1 > m_highest_voice)
-            {
-                m_highest_voice = i + 1;
-            }
+            m_highest_voice = std::max(i + 1, m_highest_voice);
             return i;
         }
 
@@ -2748,7 +2746,7 @@ size_t AudioDevice::find_free_voice_internal()
     return lowest_play_index;
 }
 
-size_t AudioDevice::get_loop_count(SoundHandle voice_handle)
+auto AudioDevice::get_loop_count(SoundHandle voice_handle) -> size_t
 {
     lock_audio_mutex_internal();
     const int ch = get_voice_from_handle_internal(voice_handle);
@@ -2989,9 +2987,9 @@ struct mat3 : std::array<Vector3, 3>
 static auto operator*(const mat3& m, const Vector3& a) -> Vector3
 {
     return {
-        m[0].x * a.x + m[0].y * a.y + m[0].z * a.z,
-        m[1].x * a.x + m[1].y * a.y + m[1].z * a.z,
-        m[2].x * a.x + m[2].y * a.y + m[2].z * a.z,
+        (m[0].x * a.x) + m[0].y * a.y + m[0].z * a.z,
+        (m[1].x * a.x) + m[1].y * a.y + m[1].z * a.z,
+        (m[2].x * a.x) + m[2].y * a.y + m[2].z * a.z,
     };
 }
 
@@ -3035,14 +3033,14 @@ auto attenuateInvDistance(float distance,
     return min_distance / (min_distance + rolloff_factor * (distance - min_distance));
 }
 
-auto attenuateLinearDistance(float aDistance,
-                             float aMinDistance,
-                             float aMaxDistance,
-                             float aRolloffFactor) -> float
+auto attenuateLinearDistance(float distance,
+                             float min_distance,
+                             float max_distance,
+                             float rolloff_factor) -> float
 {
-    aDistance = clamp(aDistance, aMinDistance, aMaxDistance);
+    distance = clamp(distance, min_distance, max_distance);
 
-    return 1.0f - aRolloffFactor * (aDistance - aMinDistance) / (aMaxDistance - aMinDistance);
+    return 1.0f - rolloff_factor * (distance - min_distance) / (max_distance - min_distance);
 }
 
 auto attenuate_exponential_distance(float distance,
@@ -3434,10 +3432,10 @@ void AudioDevice::set_3d_source_attenuation(SoundHandle      voice_handle,
 }
 
 
-void AudioDevice::set_3d_source_doppler_factor(SoundHandle voice_handle, float aDopplerFactor)
+void AudioDevice::set_3d_source_doppler_factor(SoundHandle voice_handle, float doppler_factor)
 {
     foreach_voice_3d(voice_handle, [&](int ch) {
-        m_3d_data[ch].doppler_factor_3d = aDopplerFactor;
+        m_3d_data[ch].doppler_factor_3d = doppler_factor;
     });
 }
 
@@ -3599,7 +3597,7 @@ void AudioDevice::oscillate_filter_parameter(SoundHandle voice_handle,
 }
 
 // Create a voice group. Returns 0 if unable (out of voice groups / out of memory)
-SoundHandle AudioDevice::create_voice_group()
+auto AudioDevice::create_voice_group() -> SoundHandle
 {
     lock_audio_mutex_internal();
 
@@ -3822,7 +3820,8 @@ void AudioDevice::trim_voice_group_internal(SoundHandle aVoiceGroupHandle)
     unlock_audio_mutex_internal();
 }
 
-SoundHandle* AudioDevice::voice_group_handle_to_array_internal(SoundHandle aVoiceGroupHandle) const
+auto AudioDevice::voice_group_handle_to_array_internal(SoundHandle aVoiceGroupHandle) const
+    -> SoundHandle*
 {
     if ((aVoiceGroupHandle & 0xfffff000) != 0xfffff000)
     {
@@ -3941,8 +3940,10 @@ void AudioDevice::update_voice_relative_play_speed_internal(size_t aVoice)
 {
     assert(aVoice < cer::max_voice_count);
     assert(m_inside_audio_thread_mutex);
+
     m_voice[aVoice]->overall_relative_play_speed =
         m_3d_data[aVoice].doppler_value * m_voice[aVoice]->set_relative_play_speed;
+
     m_voice[aVoice]->sample_rate =
         m_voice[aVoice]->base_sample_rate * m_voice[aVoice]->overall_relative_play_speed;
 }
@@ -3952,6 +3953,7 @@ void AudioDevice::update_voice_volume_internal(size_t aVoice)
     assert(aVoice < cer::max_voice_count);
     assert(m_inside_audio_thread_mutex);
     m_voice[aVoice]->overall_volume = m_voice[aVoice]->set_volume * m_3d_data[aVoice].volume_3d;
+
     if (m_voice[aVoice]->flags.is_paused)
     {
         for (size_t i = 0; i < max_channels; ++i)

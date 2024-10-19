@@ -25,14 +25,13 @@ freely, subject to the following restrictions:
 #include "audio/Bus.hpp"
 #include "audio/AudioDevice.hpp"
 #include "audio/FFT.hpp"
-#include "audio/soloud_internal.hpp"
 #include <algorithm>
 #include <cassert>
 
 namespace cer
 {
-BusInstance::BusInstance(Bus* aParent)
-    : m_parent(aParent)
+BusInstance::BusInstance(Bus* parent)
+    : m_parent(parent)
     , m_scratch_size(sample_granularity)
     , m_scratch(m_scratch_size * max_channels)
 {
@@ -40,26 +39,26 @@ BusInstance::BusInstance(Bus* aParent)
     flags.inaudible_tick = true;
 }
 
-size_t BusInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize)
+size_t BusInstance::audio(float* buffer, size_t samples_to_read, size_t buffer_size)
 {
     const auto handle = m_parent->m_channel_handle;
 
     if (handle == 0)
     {
         // Avoid reuse of scratch data if this bus hasn't played anything yet
-        for (size_t i = 0; i < aBufferSize * channel_count; ++i)
+        for (size_t i = 0; i < buffer_size * channel_count; ++i)
         {
-            aBuffer[i] = 0;
+            buffer[i] = 0;
         }
 
-        return aSamplesToRead;
+        return samples_to_read;
     }
 
     auto* s = m_parent->engine;
 
-    s->mix_bus_internal(aBuffer,
-                        aSamplesToRead,
-                        aBufferSize,
+    s->mix_bus_internal(buffer,
+                        samples_to_read,
+                        buffer_size,
                         m_scratch.data(),
                         handle,
                         sample_rate,
@@ -70,7 +69,7 @@ size_t BusInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferS
     {
         std::ranges::fill(m_visualization_channel_volume, 0.0f);
 
-        if (aSamplesToRead > 255)
+        if (samples_to_read > 255)
         {
             for (size_t i = 0; i < 256; ++i)
             {
@@ -78,13 +77,10 @@ size_t BusInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferS
 
                 for (size_t j = 0; j < channel_count; ++j)
                 {
-                    const auto sample = aBuffer[i + aBufferSize * j];
+                    const auto sample = buffer[i + buffer_size * j];
 
-                    if (const auto absvol = fabs(sample);
-                        absvol > m_visualization_channel_volume[j])
-                    {
-                        m_visualization_channel_volume[j] = absvol;
-                    }
+                    m_visualization_channel_volume[j] =
+                        max(std::abs(sample), m_visualization_channel_volume[j]);
 
                     m_visualization_wave_data[i] += sample;
                 }
@@ -96,37 +92,38 @@ size_t BusInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferS
             for (size_t i = 0; i < 256; ++i)
             {
                 m_visualization_wave_data[i] = 0;
+
                 for (size_t j = 0; j < channel_count; ++j)
                 {
-                    const float sample = aBuffer[(i % aSamplesToRead) + aBufferSize * j];
+                    const float sample = buffer[(i % samples_to_read) + (buffer_size * j)];
 
-                    if (const float absvol = fabs(sample);
-                        absvol > m_visualization_channel_volume[j])
-                    {
-                        m_visualization_channel_volume[j] = absvol;
-                    }
+                    m_visualization_channel_volume[j] =
+                        max(std::abs(sample), m_visualization_channel_volume[j]);
 
                     m_visualization_wave_data[i] += sample;
                 }
             }
         }
     }
-    return aSamplesToRead;
+    return samples_to_read;
 }
 
-bool BusInstance::has_ended()
+auto BusInstance::has_ended() -> bool
 {
     return false;
 }
 
 BusInstance::~BusInstance() noexcept
 {
-    auto* s = m_parent->engine;
-    for (size_t i = 0; i < s->m_highest_voice; ++i)
+    auto&      s             = *m_parent->engine;
+    const auto highest_voice = s.highest_voice();
+    const auto voices        = s.voices();
+
+    for (size_t i = 0; i < highest_voice; ++i)
     {
-        if (s->m_voice[i] && s->m_voice[i]->bus_handle == m_parent->m_channel_handle)
+        if (voices[i] && voices[i]->bus_handle == m_parent->m_channel_handle)
         {
-            s->stop_voice_internal(i);
+            s.stop_voice_internal(i);
         }
     }
 }
@@ -136,35 +133,41 @@ Bus::Bus()
     channel_count = 2;
 }
 
-std::shared_ptr<AudioSourceInstance> Bus::create_instance()
+auto Bus::create_instance() -> std::shared_ptr<AudioSourceInstance>
 {
-    if (m_channel_handle)
+    if (m_channel_handle != 0u)
     {
         stop();
         m_channel_handle = 0;
     }
+
     m_instance = std::make_shared<BusInstance>(this);
     return m_instance;
 }
 
 void Bus::find_bus_handle()
 {
-    if (m_channel_handle == 0)
+    if (m_channel_handle != 0)
     {
-        // Find the channel the bus is playing on to calculate handle..
-        for (size_t i = 0; m_channel_handle == 0 && i < engine->m_highest_voice; ++i)
+        return;
+    }
+
+    const auto highest_voice = engine->highest_voice();
+    const auto voices        = engine->voices();
+
+    // Find the channel the bus is playing on to calculate handle..
+    for (size_t i = 0; m_channel_handle == 0 && i < highest_voice; ++i)
+    {
+        if (voices[i].get() == m_instance.get())
         {
-            if (engine->m_voice[i].get() == m_instance.get())
-            {
-                m_channel_handle = engine->get_handle_from_voice_internal(i);
-            }
+            m_channel_handle = engine->get_handle_from_voice_internal(i);
         }
     }
 }
 
-SoundHandle Bus::play(AudioSource& aSound, float aVolume, float aPan, bool aPaused)
+auto Bus::play(AudioSource& sound, float volume, float pan, bool paused) -> SoundHandle
 {
-    if (!m_instance || !engine)
+    if (!m_instance || engine == nullptr)
     {
         return 0;
     }
@@ -175,13 +178,14 @@ SoundHandle Bus::play(AudioSource& aSound, float aVolume, float aPan, bool aPaus
     {
         return 0;
     }
-    return engine->play(aSound, aVolume, aPan, aPaused, m_channel_handle);
+
+    return engine->play(sound, volume, pan, paused, m_channel_handle);
 }
 
 
-SoundHandle Bus::play_clocked(SoundTime aSoundTime, AudioSource& aSound, float aVolume, float aPan)
+auto Bus::play_clocked(SoundTime time, AudioSource& sound, float volume, float pan) -> SoundHandle
 {
-    if (!m_instance || !engine)
+    if (!m_instance || engine == nullptr)
     {
         return 0;
     }
@@ -193,13 +197,13 @@ SoundHandle Bus::play_clocked(SoundTime aSoundTime, AudioSource& aSound, float a
         return 0;
     }
 
-    return engine->play_clocked(aSoundTime, aSound, aVolume, aPan, m_channel_handle);
+    return engine->play_clocked(time, sound, volume, pan, m_channel_handle);
 }
 
-SoundHandle Bus::play3d(
-    AudioSource& aSound, Vector3 aPos, Vector3 aVel, float aVolume, bool aPaused)
+auto Bus::play3d(AudioSource& sound, Vector3 pos, Vector3 vel, float volume, bool paused)
+    -> SoundHandle
 {
-    if (!m_instance || !engine)
+    if (!m_instance || engine == nullptr)
     {
         return 0;
     }
@@ -210,13 +214,14 @@ SoundHandle Bus::play3d(
     {
         return 0;
     }
-    return engine->play_3d(aSound, aPos, aVel, aVolume, aPaused, m_channel_handle);
+
+    return engine->play_3d(sound, pos, vel, volume, paused, m_channel_handle);
 }
 
-SoundHandle Bus::play3d_clocked(
-    SoundTime aSoundTime, AudioSource& aSound, Vector3 aPos, Vector3 aVel, float aVolume)
+auto Bus::play3d_clocked(SoundTime time, AudioSource& sound, Vector3 pos, Vector3 vel, float volume)
+    -> SoundHandle
 {
-    if (!m_instance || !engine)
+    if (!m_instance || engine == nullptr)
     {
         return 0;
     }
@@ -227,7 +232,8 @@ SoundHandle Bus::play3d_clocked(
     {
         return 0;
     }
-    return engine->play3d_clocked(aSoundTime, aSound, aPos, aVel, aVolume, m_channel_handle);
+
+    return engine->play3d_clocked(time, sound, pos, vel, volume, m_channel_handle);
 }
 
 void Bus::annex_sound(SoundHandle voice_handle)
@@ -235,23 +241,25 @@ void Bus::annex_sound(SoundHandle voice_handle)
     find_bus_handle();
 
     engine->foreach_voice(voice_handle, [this](int ch) {
-        engine->m_voice[ch]->bus_handle = m_channel_handle;
+        engine->voices()[ch]->bus_handle = m_channel_handle;
     });
 }
 
-void Bus::set_filter(size_t filter_id, Filter* aFilter)
+void Bus::set_filter(size_t filter_id, Filter* filter)
 {
     if (filter_id >= filters_per_stream)
+    {
         return;
+    }
 
-    filter[filter_id] = aFilter;
+    this->filter[filter_id] = filter;
 
-    if (m_instance)
+    if (m_instance != nullptr)
     {
         engine->lock_audio_mutex_internal();
-        if (aFilter)
+        if (filter)
         {
-            m_instance->filter[filter_id] = filter[filter_id]->create_instance();
+            m_instance->filter[filter_id] = this->filter[filter_id]->create_instance();
         }
         engine->unlock_audio_mutex_internal();
     }
@@ -270,9 +278,9 @@ void Bus::set_visualization_enable(bool aEnable)
     visualization_data = aEnable;
 }
 
-float* Bus::calc_fft()
+auto Bus::calc_fft() -> float*
 {
-    if (m_instance && engine)
+    if (m_instance && engine != nullptr)
     {
         engine->lock_audio_mutex_internal();
         auto temp = std::array<float, 1024>{};
@@ -298,57 +306,67 @@ float* Bus::calc_fft()
     return m_fft_data.data();
 }
 
-float* Bus::wave()
+auto Bus::wave() -> float*
 {
-    if (m_instance && engine)
+    if (m_instance && engine != nullptr)
     {
         engine->lock_audio_mutex_internal();
         for (int i = 0; i < 256; ++i)
+        {
             m_wave_data[i] = m_instance->m_visualization_wave_data[i];
+        }
         engine->unlock_audio_mutex_internal();
     }
     return m_wave_data.data();
 }
 
-float Bus::approximate_volume(size_t aChannel)
+auto Bus::approximate_volume(size_t channel) -> float
 {
-    if (aChannel > channel_count)
+    if (channel > channel_count)
     {
         return 0;
     }
+
     auto vol = 0.0f;
-    if (m_instance && engine)
+
+    if (m_instance && engine != nullptr)
     {
         engine->lock_audio_mutex_internal();
-        vol = m_instance->m_visualization_channel_volume[aChannel];
+        vol = m_instance->m_visualization_channel_volume[channel];
         engine->unlock_audio_mutex_internal();
     }
+
     return vol;
 }
 
-size_t Bus::active_voice_count()
+auto Bus::active_voice_count() -> size_t
 {
     size_t count = 0;
     find_bus_handle();
     engine->lock_audio_mutex_internal();
+
+    const auto voices = engine->voices();
+
     for (size_t i = 0; i < max_voice_count; ++i)
     {
-        if (engine->m_voice[i] && engine->m_voice[i]->bus_handle == m_channel_handle)
+        if (voices[i] != nullptr && voices[i]->bus_handle == m_channel_handle)
         {
             count++;
         }
     }
+
     engine->unlock_audio_mutex_internal();
+
     return count;
 }
 
-Resampler Bus::resampler() const
+auto Bus::resampler() const -> Resampler
 {
     return m_resampler;
 }
 
-void Bus::set_resampler(Resampler aResampler)
+void Bus::set_resampler(Resampler resampler)
 {
-    m_resampler = aResampler;
+    m_resampler = resampler;
 }
 }; // namespace cer

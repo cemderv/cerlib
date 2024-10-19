@@ -82,10 +82,13 @@ auto Queue::create_instance() -> std::shared_ptr<AudioSourceInstance>
 
 void Queue::find_queue_handle()
 {
+    const auto highest_voice = engine->highest_voice();
+    const auto voices        = engine->voices();
+
     // Find the channel the queue is playing on to calculate handle..
-    for (size_t i = 0; m_queue_handle == 0 && i < engine->m_highest_voice; ++i)
+    for (size_t i = 0; m_queue_handle == 0 && i < highest_voice; ++i)
     {
-        if (engine->m_voice[i] == m_instance)
+        if (voices[i] == m_instance)
         {
             m_queue_handle = engine->get_handle_from_voice_internal(i);
         }
@@ -103,8 +106,8 @@ void Queue::play(AudioSource& sound)
 
     if (!sound.audio_source_id)
     {
-        sound.audio_source_id = engine->m_audio_source_id;
-        engine->m_audio_source_id++;
+        sound.audio_source_id = engine->audio_source_id();
+        engine->increment_audio_source_id();
     }
 
     auto instance = sound.create_instance();

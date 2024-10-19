@@ -72,7 +72,7 @@ class Bus final : public AudioSource
     void set_filter(size_t filter_id, Filter* filter) override;
 
     // Play sound through the bus
-    auto play(AudioSource& aSound, float aVolume = 1.0f, float aPan = 0.0f, bool aPaused = false)
+    auto play(AudioSource& sound, float volume = 1.0f, float pan = 0.0f, bool paused = false)
         -> SoundHandle;
 
     // Play sound through the bus, delayed in relation to other sounds called via this function.
@@ -112,7 +112,7 @@ class Bus final : public AudioSource
 
     // Get approximate volume for output channel for visualization. Visualization has to be enabled
     // before use.
-    auto approximate_volume(size_t aChannel) -> float;
+    auto approximate_volume(size_t channel) -> float;
 
     // Get number of immediate child voices to this bus
     auto active_voice_count() -> size_t;
@@ -121,7 +121,7 @@ class Bus final : public AudioSource
     auto resampler() const -> Resampler;
 
     // Set the resampler for this bus
-    void set_resampler(Resampler aResampler);
+    void set_resampler(Resampler resampler);
 
   private:
     // Internal: find the bus' channel

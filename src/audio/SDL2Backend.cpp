@@ -102,7 +102,7 @@ void cer::audio_sdl2_init(const AudioBackendArgs& args)
                               s_active_audio_spec.samples,
                               s_active_audio_spec.channels);
 
-    engine->m_backend_cleanup_func = cerlib_sdl2_deinit;
+    engine->set_backend_cleanup_func(cerlib_sdl2_deinit);
 
     SDL_PauseAudioDevice(s_audio_device_id, 0);
 }

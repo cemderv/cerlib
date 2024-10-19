@@ -16,7 +16,7 @@
 
 #define forbid_copy(class_name)                                                                    \
     class_name(const class_name&)     = delete;                                                    \
-    void operator=(const class_name&) = delete;
+    void operator=(const class_name&) = delete
 
 #define default_move(class_name)                                                                   \
     class_name(class_name&&) noexcept                    = default;                                \
