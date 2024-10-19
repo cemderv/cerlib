@@ -156,7 +156,7 @@ GameImpl::GameImpl(bool enable_audio)
 
         try
         {
-            m_audio_device = std::make_unique<AudioDevice>();
+            m_audio_device = std::make_unique<AudioDevice>(EngineFlags{}, 44100, 4096, 2);
             log_debug("Audio initialized successfully");
         }
         catch (const std::exception& ex)
