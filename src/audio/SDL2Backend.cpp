@@ -22,12 +22,9 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#include "soloud.hpp"
-#include "soloud_engine.hpp"
-#include <cstdlib>
-
-#include "SDL.h"
-#include <math.h>
+#include "audio/AudioDevice.hpp"
+#include "audio/soloud_internal.hpp"
+#include <SDL2/SDL.h>
 
 namespace cer
 {
@@ -50,29 +47,27 @@ void soloud_sdl2static_audiomixer(void* userdata, Uint8* stream, int len)
     }
 }
 
-static void soloud_sdl2static_deinit(AudioDevice* engine)
+static void soloud_sdl2static_deinit([[maybe_unused]] AudioDevice* engine)
 {
     SDL_CloseAudioDevice(gAudioDeviceID);
 }
+} // namespace cer
 
-void sdl2static_init(
-    AudioDevice* engine, EngineFlags aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+void cer::sdl2static_init(const AudioBackendArgs& args)
 {
-    if (!SDL_WasInit(SDL_INIT_AUDIO))
-    {
-        if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0)
-        {
-            throw std::runtime_error{"Failed to initialize the SDL audio backend"};
-        }
-    }
+    auto* engine = args.engine;
 
-    SDL_AudioSpec as;
-    as.freq     = aSamplerate;
-    as.format   = AUDIO_F32;
-    as.channels = aChannels;
-    as.samples  = aBuffer;
-    as.callback = soloud_sdl2static_audiomixer;
-    as.userdata = engine;
+    auto as = SDL_AudioSpec{
+        .freq     = gsl::narrow<int>(args.sample_rate),
+        .format   = AUDIO_F32,
+        .channels = gsl::narrow<Uint8>(args.channel_count),
+        .silence  = 0,
+        .samples  = gsl::narrow<Uint16>(args.buffer),
+        .padding  = 0,
+        .size     = 0,
+        .callback = soloud_sdl2static_audiomixer,
+        .userdata = engine,
+    };
 
     gAudioDeviceID =
         SDL_OpenAudioDevice(nullptr,
@@ -84,6 +79,7 @@ void sdl2static_init(
     if (gAudioDeviceID == 0)
     {
         as.format = AUDIO_S16;
+
         gAudioDeviceID =
             SDL_OpenAudioDevice(nullptr,
                                 0,
@@ -91,19 +87,23 @@ void sdl2static_init(
                                 &gActiveAudioSpec,
                                 SDL_AUDIO_ALLOW_ANY_CHANGE & ~(SDL_AUDIO_ALLOW_FORMAT_CHANGE |
                                                                SDL_AUDIO_ALLOW_CHANNELS_CHANGE));
-        if (gAudioDeviceID == 0)
-        {
-            throw std::runtime_error{"Failed to initialize the SDL audio backend"};
-        }
+    }
+
+    if (gAudioDeviceID == 0)
+    {
+        const auto* msg = SDL_GetError();
+
+        throw std::runtime_error{
+            cer_fmt::format("Failed to initialize the SDL audio device. Reason: {}",
+                            msg != nullptr ? msg : "Unknown")};
     }
 
     engine->postinit_internal(gActiveAudioSpec.freq,
                               gActiveAudioSpec.samples,
-                              aFlags,
+                              args.flags,
                               gActiveAudioSpec.channels);
 
-    engine->mBackendCleanupFunc = soloud_sdl2static_deinit;
+    engine->m_backend_cleanup_func = soloud_sdl2static_deinit;
 
     SDL_PauseAudioDevice(gAudioDeviceID, 0);
 }
-}; // namespace cer
