@@ -6,7 +6,7 @@
 
 #include "shadercompiler/SourceLocation.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <any>
 #include <memory>
 #include <span>
@@ -260,7 +260,7 @@ class StructCtorCall final : public Expr
   public:
     explicit StructCtorCall(const SourceLocation&                             location,
                             std::unique_ptr<Expr>                             callee,
-                            inplace_vector<std::unique_ptr<StructCtorArg>, 4> args);
+                            gch::small_vector<std::unique_ptr<StructCtorArg>, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -272,7 +272,7 @@ class StructCtorCall final : public Expr
 
   private:
     std::unique_ptr<Expr>                             m_callee;
-    inplace_vector<std::unique_ptr<StructCtorArg>, 4> m_args;
+    gch::small_vector<std::unique_ptr<StructCtorArg>, 4> m_args;
 };
 
 class FunctionCallExpr final : public Expr
@@ -280,7 +280,7 @@ class FunctionCallExpr final : public Expr
   public:
     explicit FunctionCallExpr(const SourceLocation&                    location,
                               std::unique_ptr<Expr>                    callee,
-                              inplace_vector<std::unique_ptr<Expr>, 4> args);
+                              gch::small_vector<std::unique_ptr<Expr>, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -294,7 +294,7 @@ class FunctionCallExpr final : public Expr
 
   private:
     std::unique_ptr<Expr>                    m_callee;
-    inplace_vector<std::unique_ptr<Expr>, 4> m_args;
+    gch::small_vector<std::unique_ptr<Expr>, 4> m_args;
 };
 
 class SubscriptExpr final : public Expr

@@ -109,6 +109,7 @@ target_precompile_headers(cerlib PRIVATE
   util/MultiStringHash.hpp
   util/StringUtil.hpp
   util/StringViewUnorderedSet.hpp
+  util/small_vector.hpp
   shadercompiler/Decl.hpp
   shadercompiler/Expr.hpp
   shadercompiler/Lexer.hpp
@@ -179,7 +180,6 @@ target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
 # Link out-of-source dependencies
 target_link_libraries(cerlib PRIVATE
   GSL
-  utf8cpp
   stblib
 )
 

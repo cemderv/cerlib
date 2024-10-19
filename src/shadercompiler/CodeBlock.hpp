@@ -6,7 +6,7 @@
 
 #include "shadercompiler/SourceLocation.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <gsl/pointers>
 #include <span>
 
@@ -23,7 +23,7 @@ class TempVarNameGen;
 class CodeBlock final
 {
   public:
-    using StmtsType = inplace_vector<std::unique_ptr<Stmt>, 16>;
+    using StmtsType = gch::small_vector<std::unique_ptr<Stmt>, 16>;
 
     explicit CodeBlock(const SourceLocation& location, StmtsType stmts);
 
@@ -35,7 +35,7 @@ class CodeBlock final
                 Scope&                                      scope,
                 std::span<const gsl::not_null<const Decl*>> extra_symbols) const;
 
-    auto variables() const -> inplace_vector<gsl::not_null<VarStmt*>, 8>;
+    auto variables() const -> gch::small_vector<gsl::not_null<VarStmt*>, 8>;
 
     auto location() const -> const SourceLocation&;
 

@@ -7,7 +7,7 @@
 #include "GraphicsResourceImpl.hpp"
 #include "ShaderParameter.hpp"
 #include "util/InternalError.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <span>
 #include <unordered_set>
 
@@ -25,8 +25,8 @@ class ShaderImpl : public GraphicsResourceImpl
     friend GraphicsDevice;
 
   public:
-    using ParameterList     = inplace_vector<ShaderParameter, 8>;
-    using ParameterPtrsList = inplace_vector<ShaderParameter*, 8>;
+    using ParameterList     = gch::small_vector<ShaderParameter, 8>;
+    using ParameterPtrsList = gch::small_vector<ShaderParameter*, 8>;
 
   protected:
     explicit ShaderImpl(gsl::not_null<GraphicsDevice*> parent_device, ParameterList parameters);
@@ -153,7 +153,7 @@ class ShaderImpl : public GraphicsResourceImpl
 
     void set_default_parameter_values();
 
-    inplace_vector<uint8_t, 512>               m_cbuffer_data;
+    gch::small_vector<uint8_t, 512>               m_cbuffer_data;
     uint32_t                                   m_c_buffer_size{};
     ParameterList                              m_parameters;
     ParameterPtrsList                          m_image_parameters;

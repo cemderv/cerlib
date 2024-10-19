@@ -6,7 +6,7 @@
 
 #include "util/NonCopyable.hpp"
 #include "util/StringViewUnorderedSet.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <gsl/pointers>
 #include <string>
 
@@ -22,8 +22,8 @@ class ShaderParamDecl;
 class AccessedParams
 {
   public:
-    inplace_vector<gsl::not_null<const ShaderParamDecl*>, 8> scalars{};
-    inplace_vector<gsl::not_null<const ShaderParamDecl*>, 8> resources{};
+    gch::small_vector<gsl::not_null<const ShaderParamDecl*>, 8> scalars{};
+    gch::small_vector<gsl::not_null<const ShaderParamDecl*>, 8> resources{};
 
     explicit operator bool() const
     {
@@ -34,7 +34,7 @@ class AccessedParams
 class AST final
 {
   public:
-    using DeclsType = inplace_vector<std::unique_ptr<Decl>, 8>;
+    using DeclsType = gch::small_vector<std::unique_ptr<Decl>, 8>;
 
     explicit AST(std::string_view              filename,
                  DeclsType                     decls,
@@ -68,7 +68,7 @@ class AST final
 
   private:
     std::string                              m_filename;
-    inplace_vector<std::unique_ptr<Decl>, 8> m_decls;
+    gch::small_vector<std::unique_ptr<Decl>, 8> m_decls;
     const StringViewUnorderedSet*            m_user_specified_defines;
     bool                                     m_is_verified{};
 };

@@ -118,12 +118,12 @@ TEST_CASE("Shader parser", "[shaderc]")
         std::vector<Token> tokens;
         do_lexing(basic_expressions, "SomeFile", true, tokens);
 
-        const inplace_vector<std::unique_ptr<Decl>, 8> decls = parser.parse(tokens);
+        const gch::small_vector<std::unique_ptr<Decl>, 8> decls = parser.parse(tokens);
 
         REQUIRE(decls.size() == 1u);
         REQUIRE(isa<FunctionDecl>(*decls.front()));
         FunctionDecl* const func = asa<FunctionDecl>(decls.front().get());
-        const inplace_vector<std::unique_ptr<Stmt>, 16>& stmts = func->body()->stmts();
+        const gch::small_vector<std::unique_ptr<Stmt>, 16>& stmts = func->body()->stmts();
         REQUIRE(stmts.size() == 14u);
 
         // 1 + 2 * 3

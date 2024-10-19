@@ -6,7 +6,7 @@
 
 #include "shadercompiler/TempVarNameGen.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <gsl/pointers>
 #include <optional>
 #include <string>
@@ -44,7 +44,7 @@ class TernaryExpr;
 class ShaderGenerationResult
 {
   public:
-    using ParameterList = inplace_vector<const ShaderParamDecl*, 8>;
+    using ParameterList = gch::small_vector<const ShaderParamDecl*, 8>;
 
     explicit ShaderGenerationResult(std::string                        glsl_code,
                                     gsl::not_null<const FunctionDecl*> entry_point,
@@ -84,7 +84,7 @@ class ShaderGenerator
 
     virtual auto do_generation(const SemaContext&                    context,
                                const FunctionDecl&                   entry_point,
-                               const inplace_vector<const Decl*, 8>& decls_to_generate)
+                               const gch::small_vector<const Decl*, 8>& decls_to_generate)
         -> std::string = 0;
 
     virtual void generate_stmt(Writer& w, const Stmt& stmt, const SemaContext& context);
@@ -161,7 +161,7 @@ class ShaderGenerator
     auto gather_ast_decls_to_generate(const AST&         ast,
                                       std::string_view   entry_point,
                                       const SemaContext& context) const
-        -> inplace_vector<const Decl*, 8>;
+        -> gch::small_vector<const Decl*, 8>;
 
     bool     m_is_swapping_matrix_vector_multiplications{};
     uint32_t m_uniform_buffer_alignment{};
@@ -169,8 +169,8 @@ class ShaderGenerator
 
     const AST*                                   m_ast{};
     const FunctionDecl*                          m_currently_generated_shader_function{};
-    inplace_vector<const FunctionDecl*, 8>       m_call_stack;
-    inplace_vector<TempVarNameGen, 4>            m_temp_var_name_gen_stack;
+    gch::small_vector<const FunctionDecl*, 8>       m_call_stack;
+    gch::small_vector<TempVarNameGen, 4>            m_temp_var_name_gen_stack;
     std::unordered_map<const Expr*, std::string> m_temporary_vars;
     std::optional<std::string>                   m_current_sym_access_override;
     bool                                         m_needs_float_literal_suffix{};

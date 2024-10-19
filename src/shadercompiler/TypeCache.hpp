@@ -5,7 +5,7 @@
 #pragma once
 
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <gsl/pointers>
 #include <memory>
 
@@ -39,7 +39,7 @@ class TypeCache final
     void clear();
 
   private:
-    inplace_vector<std::unique_ptr<ArrayType>, 32>      m_array_types;
-    inplace_vector<std::unique_ptr<UnresolvedType>, 32> m_unresolved_types;
+    gch::small_vector<std::unique_ptr<ArrayType>, 32>      m_array_types;
+    gch::small_vector<std::unique_ptr<UnresolvedType>, 32> m_unresolved_types;
 };
 } // namespace cer::shadercompiler

@@ -8,7 +8,7 @@
 #include "OpenGLPrivateShader.hpp"
 #include "graphics/ShaderParameter.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 
 #include <string>
 
@@ -50,7 +50,7 @@ class OpenGLShaderProgram final
 
     std::string                                   name;
     GLuint                                        gl_handle;
-    inplace_vector<std::pair<std::string, GLint>> uniform_locations;
+    gch::small_vector<std::pair<std::string, GLint>> uniform_locations;
 
   private:
     void destroy();
