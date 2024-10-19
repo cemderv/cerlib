@@ -58,8 +58,8 @@ void cer::sdl3static_init(const AudioBackendArgs& args)
     // Open audio device.
     const auto as = SDL_AudioSpec{
         .format   = SDL_AUDIO_F32LE,
-        .freq     = gsl::narrow<int>(args.sample_rate),
         .channels = gsl::narrow<Uint8>(args.channel_count),
+        .freq     = gsl::narrow<int>(args.sample_rate),
     };
 
     gAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
