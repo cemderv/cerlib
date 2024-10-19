@@ -49,7 +49,7 @@ void Fader::setLFO(float aFrom, float aTo, double aTime, double aStartTime)
     if (delta < 0)
         delta = -delta;
     start_time = aStartTime;
-    end_time   = float(M_PI) * 2 / time;
+    end_time   = cer::two_pi / time;
 }
 
 float Fader::get(double aCurrentTime)
