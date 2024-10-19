@@ -7,7 +7,7 @@
 #include "shadercompiler/SourceLocation.hpp"
 #include "shadercompiler/Type.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <any>
 #include <span>
 #include <string>
@@ -74,7 +74,7 @@ class StructFieldDecl final : public Decl
 class StructDecl final : public Decl, public Type
 {
   public:
-    using FieldList = inplace_vector<std::unique_ptr<StructFieldDecl>, 8>;
+    using FieldList = gch::small_vector<std::unique_ptr<StructFieldDecl>, 8>;
 
     explicit StructDecl(const SourceLocation& location,
                         std::string_view      name,
@@ -171,7 +171,7 @@ class FunctionDecl final : public Decl
   public:
     explicit FunctionDecl(const SourceLocation&                                 location,
                           std::string_view                                      name,
-                          inplace_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
+                          gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
                           const Type&                                           return_type,
                           std::unique_ptr<CodeBlock>                            body,
                           bool is_struct_ctor = false);
@@ -204,7 +204,7 @@ class FunctionDecl final : public Decl
 
   private:
     FunctionKind                                          m_kind;
-    inplace_vector<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
+    gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
     std::unique_ptr<CodeBlock>                            m_body;
     bool                                                  m_is_struct_ctor;
 };

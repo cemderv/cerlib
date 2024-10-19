@@ -6,7 +6,7 @@
 
 #include "OpenGLPrerequisites.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <span>
 #include <string>
 #include <string_view>
@@ -30,6 +30,6 @@ class OpenGLPrivateShader final
 
     std::string                 name;
     GLuint                      gl_handle{};
-    inplace_vector<std::string> attributes;
+    gch::small_vector<std::string> attributes;
 };
 } // namespace cer::details

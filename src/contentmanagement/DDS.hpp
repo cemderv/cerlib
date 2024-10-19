@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cerlib/Image.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <cstdint>
 #include <optional>
 #include <span>
@@ -24,7 +24,7 @@ struct DDSMipmap
 
 struct DDSFace
 {
-    inplace_vector<DDSMipmap, 8> mipmaps;
+    gch::small_vector<DDSMipmap, 8> mipmaps;
 };
 
 struct DDSImage
@@ -33,7 +33,7 @@ struct DDSImage
     uint32_t                   height{};
     uint32_t                   depth{};
     ImageFormat                format{};
-    inplace_vector<DDSFace, 2> faces{};
+    gch::small_vector<DDSFace, 2> faces{};
 };
 
 auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>;

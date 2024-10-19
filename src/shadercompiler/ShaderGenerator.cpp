@@ -120,7 +120,7 @@ auto ShaderGenerator::generate(const SemaContext& context,
 
     const auto accessed_params = params_accessed_by_function(*entry_point);
 
-    auto parameters = inplace_vector<const ShaderParamDecl*, 8>{};
+    auto parameters = gch::small_vector<const ShaderParamDecl*, 8>{};
     parameters.reserve(accessed_params.scalars.size() + accessed_params.resources.size());
 
     for (const gsl::not_null<const ShaderParamDecl*>& param : accessed_params.scalars)
@@ -613,7 +613,7 @@ auto ShaderGenerator::translate_array_type(const ArrayType& type,
 auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
                                                    std::string_view   entry_point,
                                                    const SemaContext& context) const
-    -> inplace_vector<const Decl*, 8>
+    -> gch::small_vector<const Decl*, 8>
 {
     const auto& decls = ast.decls();
 
@@ -634,7 +634,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
     }
 
     // See what the main function depends on.
-    auto accessed_symbols = inplace_vector<const Decl*, 16>{};
+    auto accessed_symbols = gch::small_vector<const Decl*, 16>{};
 
     for (const auto& decl : ast.decls())
     {
@@ -661,7 +661,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
 
     remove_duplicates_but_keep_order(accessed_symbols);
 
-    auto decls_to_generate = inplace_vector<const Decl*, 8>{};
+    auto decls_to_generate = gch::small_vector<const Decl*, 8>{};
     decls_to_generate.reserve(accessed_symbols.size() + 1);
 
     for (const auto* symbol : accessed_symbols)

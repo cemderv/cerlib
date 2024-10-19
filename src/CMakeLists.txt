@@ -110,6 +110,7 @@ target_precompile_headers(cerlib PRIVATE
   util/MultiStringHash.hpp
   util/StringUtil.hpp
   util/StringViewUnorderedSet.hpp
+  util/small_vector.hpp
   shadercompiler/Decl.hpp
   shadercompiler/Expr.hpp
   shadercompiler/Lexer.hpp

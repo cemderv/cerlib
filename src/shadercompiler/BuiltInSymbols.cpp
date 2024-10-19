@@ -55,7 +55,7 @@
 namespace cer::shadercompiler
 {
 static void add_struct_fields(
-    inplace_vector<gsl::not_null<Decl*>, 132>&                                     all,
+    gch::small_vector<gsl::not_null<Decl*>, 132>&                                     all,
     std::vector<std::unique_ptr<Decl>>&                                            var,
     std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> fields)
 {
@@ -419,7 +419,7 @@ void BuiltInSymbols::add_func(
     // The variable must not be initialized yet.
     assert(!var);
 
-    inplace_vector<std::unique_ptr<FunctionParamDecl>, 4> params;
+    gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> params;
 
     for (const auto& [param_name, param_type] : param_descs)
     {

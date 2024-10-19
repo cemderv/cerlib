@@ -46,7 +46,7 @@ GLSLShaderGenerator::GLSLShaderGenerator(bool is_gles)
 
 auto GLSLShaderGenerator::do_generation(const SemaContext&                    context,
                                         const FunctionDecl&                   entry_point,
-                                        const inplace_vector<const Decl*, 8>& decls_to_generate)
+                                        const gch::small_vector<const Decl*, 8>& decls_to_generate)
     -> std::string
 {
     const auto shader_name = filesystem::filename_without_extension(m_ast->filename());

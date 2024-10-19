@@ -6,7 +6,7 @@
 
 #include "shadercompiler/Type.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 
 namespace cer::shadercompiler
 {
@@ -42,6 +42,6 @@ class BinOpTable final
         gsl::not_null<const Type*> result;
     };
 
-    inplace_vector<Entry, 128> m_entries;
+    gch::small_vector<Entry, 128> m_entries;
 };
 } // namespace cer::shadercompiler

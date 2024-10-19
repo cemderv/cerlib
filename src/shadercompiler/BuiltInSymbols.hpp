@@ -6,7 +6,7 @@
 
 #include "shadercompiler/Decl.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <gsl/pointers>
 #include <memory>
 #include <span>
@@ -196,6 +196,6 @@ class BuiltInSymbols final
 
     void add_system_value(std::unique_ptr<Decl>& var, std::string_view name, const Type& type);
 
-    inplace_vector<gsl::not_null<Decl*>, 132> m_all;
+    gch::small_vector<gsl::not_null<Decl*>, 132> m_all;
 };
 } // namespace cer::shadercompiler

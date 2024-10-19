@@ -16,7 +16,7 @@
 #include "cerlib/Vector4.hpp"
 #include "graphics/TextImpl.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 
 #include <gsl/pointers>
 
@@ -178,7 +178,7 @@ class SpriteBatch
     Sampler                        m_sampler;
 
     // Used in draw_string() as temporary buffers for text shaping results.
-    inplace_vector<PreshapedGlyph>     m_tmp_glyphs;
-    inplace_vector<TextDecorationRect> m_tmp_decoration_rects;
+    gch::small_vector<PreshapedGlyph>     m_tmp_glyphs;
+    gch::small_vector<TextDecorationRect> m_tmp_decoration_rects;
 };
 } // namespace cer::details

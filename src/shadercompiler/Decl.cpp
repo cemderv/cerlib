@@ -133,7 +133,7 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
 
     m_ctor = std::make_unique<FunctionDecl>(Decl::location(),
                                             name(),
-                                            inplace_vector<std::unique_ptr<FunctionParamDecl>, 4>{},
+                                            gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4>{},
                                             *this,
                                             nullptr,
                                             /*is_struct_ctor:*/ true);
@@ -197,7 +197,7 @@ auto StructDecl::is_built_in() const -> bool
 
 FunctionDecl::FunctionDecl(const SourceLocation&                                 location,
                            std::string_view                                      name,
-                           inplace_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
+                           gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
                            const Type&                                           return_type,
                            std::unique_ptr<CodeBlock>                            body,
                            bool                                                  is_struct_ctor)

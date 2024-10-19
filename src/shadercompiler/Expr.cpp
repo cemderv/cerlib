@@ -444,7 +444,7 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
 
 StructCtorCall::StructCtorCall(const SourceLocation&                             location,
                                std::unique_ptr<Expr>                             callee,
-                               inplace_vector<std::unique_ptr<StructCtorArg>, 4> args)
+                               gch::small_vector<std::unique_ptr<StructCtorArg>, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
     , m_args(std::move(args))
@@ -623,7 +623,7 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
         // depending on the currently passed argument types.
         const auto& args                      = scope.function_call_args();
         auto        was_function_found_at_all = false;
-        auto        all_functions_that_match  = inplace_vector<const FunctionDecl*, 8>{};
+        auto        all_functions_that_match  = gch::small_vector<const FunctionDecl*, 8>{};
 
         for (const auto& symbol : scope.find_symbols(m_name, true))
         {
@@ -750,7 +750,7 @@ auto SymAccessExpr::name() const -> std::string_view
 
 void FunctionCallExpr::on_verify(SemaContext& context, Scope& scope)
 {
-    auto args = inplace_vector<gsl::not_null<const Expr*>, 4>{};
+    auto args = gch::small_vector<gsl::not_null<const Expr*>, 4>{};
     args.reserve(m_args.size());
 
     for (const auto& arg : m_args)
@@ -823,7 +823,7 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
     const auto& symbol    = *this->callee().symbol();
 
     const auto get_arg_constant_values = [this, &context, &scope] {
-        auto arg_values = inplace_vector<std::any, 4>{};
+        auto arg_values = gch::small_vector<std::any, 4>{};
         arg_values.reserve(m_args.size());
 
         for (const auto& arg : m_args)
@@ -984,7 +984,7 @@ auto FunctionCallExpr::callee() const -> const Expr&
 
 FunctionCallExpr::FunctionCallExpr(const SourceLocation&                    location,
                                    std::unique_ptr<Expr>                    callee,
-                                   inplace_vector<std::unique_ptr<Expr>, 4> args)
+                                   gch::small_vector<std::unique_ptr<Expr>, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
     , m_args(std::move(args))

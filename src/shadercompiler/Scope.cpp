@@ -100,7 +100,7 @@ static auto get_levenstein_distance(std::string_view s1, std::string_view s2) ->
     const auto s1_len = s1.size();
     const auto s2_len = s2.size();
 
-    auto distances = inplace_vector<size_t, 4>(s2_len + 1);
+    auto distances = gch::small_vector<size_t, 4>(s2_len + 1);
     std::iota(distances.begin(), distances.end(), size_t(0));
 
     for (size_t i = 0; i < s1_len; ++i)
@@ -163,11 +163,11 @@ auto Scope::find_symbol_with_similar_name(std::string_view name, bool fall_back_
 }
 
 auto Scope::find_symbols(std::string_view name, bool fall_back_to_parent) const
-    -> inplace_vector<gsl::not_null<const Decl*>, 4>
+    -> gch::small_vector<gsl::not_null<const Decl*>, 4>
 {
     assert(!name.empty());
 
-    auto found_symbols = inplace_vector<gsl::not_null<const Decl*>, 4>{};
+    auto found_symbols = gch::small_vector<gsl::not_null<const Decl*>, 4>{};
 
     for (const auto& sym : m_symbols)
     {
@@ -315,12 +315,12 @@ void Scope::set_current_function(const FunctionDecl* value)
     m_current_function = value;
 }
 
-auto Scope::function_call_args() const -> const inplace_vector<gsl::not_null<const Expr*>, 4>&
+auto Scope::function_call_args() const -> const gch::small_vector<gsl::not_null<const Expr*>, 4>&
 {
     return m_function_call_args;
 }
 
-void Scope::set_function_call_args(inplace_vector<gsl::not_null<const Expr*>, 4> args)
+void Scope::set_function_call_args(gch::small_vector<gsl::not_null<const Expr*>, 4> args)
 {
     m_function_call_args = std::move(args);
 }

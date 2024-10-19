@@ -7,7 +7,7 @@
 #include "shadercompiler/AST.hpp"
 #include "shadercompiler/Lexer.hpp"
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <span>
 
 namespace cer::shadercompiler
@@ -150,7 +150,7 @@ class Parser final
     {
       public:
         using TokenIterator = std::span<const Token>::iterator;
-        using StackType     = inplace_vector<TokenIterator, 4>;
+        using StackType     = gch::small_vector<TokenIterator, 4>;
 
         explicit TokenPusher(StackType& stack, TokenIterator tk);
 
