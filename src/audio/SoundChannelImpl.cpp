@@ -27,7 +27,7 @@ auto SoundChannelImpl::is_paused() const -> bool
 
 void SoundChannelImpl::set_is_paused(bool value)
 {
-    m_soloud->setPause(m_soloud_handle, value);
+    m_soloud->set_pause(m_soloud_handle, value);
 }
 
 auto SoundChannelImpl::relative_play_speed() const -> float
@@ -37,7 +37,7 @@ auto SoundChannelImpl::relative_play_speed() const -> float
 
 void SoundChannelImpl::set_relative_play_speed(float value)
 {
-    m_soloud->setRelativePlaySpeed(m_soloud_handle, value);
+    m_soloud->set_relative_play_speed(m_soloud_handle, value);
 }
 
 void SoundChannelImpl::seek(SoundTime seconds)
@@ -57,7 +57,7 @@ auto SoundChannelImpl::volume() const -> float
 
 void SoundChannelImpl::set_volume(float value)
 {
-    m_soloud->setVolume(m_soloud_handle, value);
+    m_soloud->set_volume(m_soloud_handle, value);
 }
 
 auto SoundChannelImpl::pan() const -> float
@@ -67,12 +67,12 @@ auto SoundChannelImpl::pan() const -> float
 
 void SoundChannelImpl::set_pan(float value)
 {
-    m_soloud->setPan(m_soloud_handle, value);
+    m_soloud->set_pan(m_soloud_handle, value);
 }
 
 void SoundChannelImpl::set_is_protected(bool value)
 {
-    m_soloud->setProtectVoice(m_soloud_handle, value);
+    m_soloud->set_protect_voice(m_soloud_handle, value);
 }
 
 auto SoundChannelImpl::is_looping() const -> bool
@@ -82,17 +82,17 @@ auto SoundChannelImpl::is_looping() const -> bool
 
 void SoundChannelImpl::set_is_looping(bool value)
 {
-    m_soloud->setLooping(m_soloud_handle, value);
+    m_soloud->set_looping(m_soloud_handle, value);
 }
 
 auto SoundChannelImpl::loop_point() const -> SoundTime
 {
-    return SoundTime(m_soloud->getLoopPoint(m_soloud_handle));
+    return SoundTime(m_soloud->get_loop_point(m_soloud_handle));
 }
 
 void SoundChannelImpl::set_loop_point(SoundTime value)
 {
-    m_soloud->setLoopPoint(m_soloud_handle, value);
+    m_soloud->set_loop_point(m_soloud_handle, value);
 }
 
 void SoundChannelImpl::set_inaudible_behavior(SoundInaudibleBehavior value)
@@ -107,32 +107,32 @@ void SoundChannelImpl::set_inaudible_behavior(SoundInaudibleBehavior value)
         return std::pair{false, false};
     }();
 
-    m_soloud->setInaudibleBehavior(m_soloud_handle, b1, b2);
+    m_soloud->set_inaudible_behavior(m_soloud_handle, b1, b2);
 }
 
 void SoundChannelImpl::fade_volume(float to_volume, SoundTime fade_duration)
 {
-    m_soloud->fadeVolume(m_soloud_handle, to_volume, fade_duration);
+    m_soloud->fade_volume(m_soloud_handle, to_volume, fade_duration);
 }
 
 void SoundChannelImpl::fade_pan(float to_pan, SoundTime fade_duration)
 {
-    m_soloud->fadePan(m_soloud_handle, to_pan, fade_duration);
+    m_soloud->fade_pan(m_soloud_handle, to_pan, fade_duration);
 }
 
 void SoundChannelImpl::fade_relative_play_speed(float to_speed, SoundTime fade_duration)
 {
-    m_soloud->fadeRelativePlaySpeed(m_soloud_handle, to_speed, fade_duration);
+    m_soloud->fade_relative_play_speed(m_soloud_handle, to_speed, fade_duration);
 }
 
 void SoundChannelImpl::stop_after(SoundTime after)
 {
-    m_soloud->scheduleStop(m_soloud_handle, after);
+    m_soloud->schedule_stop(m_soloud_handle, after);
 }
 
 void SoundChannelImpl::pause_after(SoundTime after)
 {
-    m_soloud->schedulePause(m_soloud_handle, after);
+    m_soloud->schedule_pause(m_soloud_handle, after);
 }
 
 auto SoundChannelImpl::stream_position() const -> SoundTime

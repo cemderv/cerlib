@@ -42,27 +42,27 @@ class Fader
     float get(SoundTime aCurrentTime);
 
     // Value to fade from
-    float mFrom = 0.0f;
+    float from = 0.0f;
 
     // Value to fade to
-    float mTo = 0.0f;
+    float to = 0.0f;
 
     // Delta between from and to
-    float mDelta = 0.0f;
+    float delta = 0.0f;
 
     // Total time to fade
-    SoundTime mTime = 0;
+    SoundTime time = 0;
 
     // Time fading started
-    SoundTime mStartTime = 0;
+    SoundTime start_time = 0;
 
     // Time fading will end
-    SoundTime mEndTime = 0;
+    SoundTime end_time = 0;
 
     // Current value. Used in case time rolls over.
-    float mCurrent = 0.0f;
+    float current = 0.0f;
 
     // Active flag; 0 means disabled, 1 is active, 2 is LFO, -1 means was active, but stopped
-    int mActive = 0;
+    int active = 0;
 };
 }; // namespace cer

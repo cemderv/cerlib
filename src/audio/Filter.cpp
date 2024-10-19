@@ -40,7 +40,7 @@ void FilterInstance::update_params(double time)
 {
     for (size_t i = 0; i < m_param_count; ++i)
     {
-        if (m_param_faders[i].mActive > 0)
+        if (m_param_faders[i].active > 0)
         {
             m_params_changed |= size_t(1) << i;
             m_params[i] = m_param_faders[i].get(time);
@@ -55,7 +55,7 @@ void FilterInstance::set_filter_parameter(size_t attribute_id, float value)
         return;
     }
 
-    m_param_faders[attribute_id].mActive = 0;
+    m_param_faders[attribute_id].active = 0;
     m_params[attribute_id]               = value;
     m_params_changed |= size_t(1) << attribute_id;
 }

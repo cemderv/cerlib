@@ -61,7 +61,7 @@ void DuckFilterInstance::filter(const FilterArgs& args)
 
     if (m_engine != nullptr)
     {
-        const auto voice_num = m_engine->getVoiceFromHandle_internal(m_listen_to);
+        const auto voice_num = m_engine->get_voice_from_handle_internal(m_listen_to);
         if (voice_num != -1)
         {
             const auto bi = std::static_pointer_cast<BusInstance>(m_engine->m_voice[voice_num]);

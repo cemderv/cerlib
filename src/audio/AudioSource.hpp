@@ -60,25 +60,25 @@ class AudioAttenuator
 
 struct AudioSourceInstanceFlagsData
 {
-    bool None : 1 = false;
+    bool none : 1 = false;
     // This audio instance loops (if supported)
-    bool Looping : 1 = false;
+    bool loops : 1 = false;
     // This audio instance is protected - won't get stopped if we run out of voices
-    bool Protected : 1 = false;
+    bool is_protected : 1 = false;
     // This audio instance is paused
-    bool Paused : 1 = false;
+    bool is_paused : 1 = false;
     // This audio instance is affected by 3d processing
-    bool Process3D : 1 = false;
+    bool process_3d : 1 = false;
     // This audio instance has listener-relative 3d coordinates
-    bool ListenerRelative : 1 = false;
+    bool listener_relative : 1 = false;
     // Currently inaudible
-    bool Inaudible : 1 = false;
+    bool inaudible : 1 = false;
     // If inaudible, should be killed (default = don't kill kill)
-    bool InaudibleKill : 1 = false;
+    bool inaudible_kill : 1 = false;
     // If inaudible, should still be ticked (default = pause)
-    bool InaudibleTick : 1 = false;
+    bool inaudible_tick : 1 = false;
     // Don't auto-stop sound
-    bool DisableAutostop : 1 = false;
+    bool disable_autostop : 1 = false;
 };
 
 class AudioSourceInstance3dData

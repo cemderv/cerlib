@@ -28,60 +28,60 @@ namespace cer
 {
 void Fader::set(float aFrom, float aTo, double aTime, double aStartTime)
 {
-    mCurrent   = mFrom;
-    mFrom      = aFrom;
-    mTo        = aTo;
-    mTime      = aTime;
-    mStartTime = aStartTime;
-    mDelta     = aTo - aFrom;
-    mEndTime   = mStartTime + mTime;
-    mActive    = 1;
+    current   = from;
+    from      = aFrom;
+    to        = aTo;
+    time      = aTime;
+    start_time = aStartTime;
+    delta     = aTo - aFrom;
+    end_time   = start_time + time;
+    active    = 1;
 }
 
 void Fader::setLFO(float aFrom, float aTo, double aTime, double aStartTime)
 {
-    mActive  = 2;
-    mCurrent = 0;
-    mFrom    = aFrom;
-    mTo      = aTo;
-    mTime    = aTime;
-    mDelta   = (aTo - aFrom) / 2;
-    if (mDelta < 0)
-        mDelta = -mDelta;
-    mStartTime = aStartTime;
-    mEndTime   = float(M_PI) * 2 / mTime;
+    active  = 2;
+    current = 0;
+    from    = aFrom;
+    to      = aTo;
+    time    = aTime;
+    delta   = (aTo - aFrom) / 2;
+    if (delta < 0)
+        delta = -delta;
+    start_time = aStartTime;
+    end_time   = float(M_PI) * 2 / time;
 }
 
 float Fader::get(double aCurrentTime)
 {
-    if (mActive == 2)
+    if (active == 2)
     {
         // LFO mode
-        if (mStartTime > aCurrentTime)
+        if (start_time > aCurrentTime)
         {
             // Time rolled over.
-            mStartTime = aCurrentTime;
+            start_time = aCurrentTime;
         }
-        const auto t = aCurrentTime - mStartTime;
-        return float(sin(t * mEndTime) * mDelta + (mFrom + mDelta));
+        const auto t = aCurrentTime - start_time;
+        return float(sin(t * end_time) * delta + (from + delta));
     }
-    if (mStartTime > aCurrentTime)
+    if (start_time > aCurrentTime)
     {
         // Time rolled over.
         // Figure out where we were..
-        const float p = (mCurrent - mFrom) / mDelta; // 0..1
-        mFrom         = mCurrent;
-        mStartTime    = aCurrentTime;
-        mTime         = mTime * (1 - p); // time left
-        mDelta        = mTo - mFrom;
-        mEndTime      = mStartTime + mTime;
+        const float p = (current - from) / delta; // 0..1
+        from         = current;
+        start_time    = aCurrentTime;
+        time         = time * (1 - p); // time left
+        delta        = to - from;
+        end_time      = start_time + time;
     }
-    if (aCurrentTime > mEndTime)
+    if (aCurrentTime > end_time)
     {
-        mActive = -1;
-        return mTo;
+        active = -1;
+        return to;
     }
-    mCurrent = float(mFrom + mDelta * ((aCurrentTime - mStartTime) / mTime));
-    return mCurrent;
+    current = float(from + delta * ((aCurrentTime - start_time) / time));
+    return current;
 }
 }; // namespace cer

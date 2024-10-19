@@ -13,3 +13,11 @@
     void operator=(const class_name&)     = delete;                                                \
     class_name(class_name&&) noexcept     = delete;                                                \
     void operator=(class_name&&) noexcept = delete
+
+#define forbid_copy(class_name)                                                                    \
+    class_name(const class_name&)     = delete;                                                    \
+    void operator=(const class_name&) = delete;
+
+#define default_move(class_name)                                                                   \
+    class_name(class_name&&) noexcept                    = default;                                \
+    auto operator=(class_name&&) noexcept -> class_name& = default

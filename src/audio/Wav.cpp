@@ -73,7 +73,7 @@ auto WavInstance::rewind() -> bool
 
 auto WavInstance::has_ended() -> bool
 {
-    return !flags.Looping && m_offset >= m_parent->m_sample_count;
+    return !flags.loops && m_offset >= m_parent->m_sample_count;
 }
 
 Wav::Wav(std::span<const std::byte> data)

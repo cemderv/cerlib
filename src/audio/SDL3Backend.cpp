@@ -9,35 +9,27 @@
 
 namespace cer
 {
-static SDL_AudioSpec    gActiveAudioSpec;
+// static SDL_AudioSpec    gActiveAudioSpec;
 static SDL_AudioStream* gAudioStream = nullptr;
 
-void soloud_sdl3static_audiomixer(void* userdata, Uint8* stream, int len)
+void sdl3_audio_mixer(void* userdata, Uint8* stream, int len)
 {
-    auto* soloud = static_cast<AudioDevice*>(userdata);
+    auto& device = *static_cast<AudioDevice*>(userdata);
 
-    if (gActiveAudioSpec.format == SDL_AUDIO_F32)
-    {
-        const auto samples = len / (gActiveAudioSpec.channels * sizeof(float));
-        soloud->mix(reinterpret_cast<float*>(stream), samples);
-    }
-    else // assume s16 if not float
-    {
-        const auto samples = len / (gActiveAudioSpec.channels * sizeof(short));
-        soloud->mixSigned16(reinterpret_cast<int16_t*>(stream), samples);
-    }
+    const auto samples = len / (device.m_channels * sizeof(float));
+    device.mix(reinterpret_cast<float*>(stream), samples);
 }
 
-void soloud_sdl3static_audiomixer_new(void*                userdata,
-                                      SDL_AudioStream*     stream,
-                                      int                  additional_amount,
-                                      [[maybe_unused]] int total_amount)
+void sdl3_audio_mixer_new(void*                userdata,
+                          SDL_AudioStream*     stream,
+                          int                  additional_amount,
+                          [[maybe_unused]] int total_amount)
 {
     if (additional_amount > 0)
     {
         if (auto* data = SDL_stack_alloc(Uint8, additional_amount))
         {
-            soloud_sdl3static_audiomixer(userdata, data, additional_amount);
+            sdl3_audio_mixer(userdata, data, additional_amount);
             SDL_PutAudioStreamData(stream, data, additional_amount);
             SDL_stack_free(data);
         }
@@ -51,9 +43,9 @@ static void soloud_sdl3static_deinit([[maybe_unused]] AudioDevice* engine)
 }
 } // namespace cer
 
-void cer::sdl3static_init(const AudioBackendArgs& args)
+void cer::audio_sdl3_init(const AudioBackendArgs& args)
 {
-    auto* engine = args.engine;
+    auto& device = *args.device;
 
     // Open audio device.
     const auto as = SDL_AudioSpec{
@@ -64,8 +56,8 @@ void cer::sdl3static_init(const AudioBackendArgs& args)
 
     gAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
                                              &as,
-                                             soloud_sdl3static_audiomixer_new,
-                                             engine);
+                                             sdl3_audio_mixer_new,
+                                             &device);
 
     if (gAudioStream == nullptr)
     {
@@ -78,15 +70,9 @@ void cer::sdl3static_init(const AudioBackendArgs& args)
 
     const auto audio_device_id = SDL_GetAudioStreamDevice(gAudioStream);
 
-    int active_sample_count = 0;
-    SDL_GetAudioDeviceFormat(audio_device_id, &gActiveAudioSpec, &active_sample_count);
+    device.postinit_internal(args.sample_rate, args.buffer, args.channel_count);
 
-    engine->postinit_internal(gActiveAudioSpec.freq,
-                              active_sample_count,
-                              args.flags,
-                              gActiveAudioSpec.channels);
-
-    engine->m_backend_cleanup_func = soloud_sdl3static_deinit;
+    device.m_backend_cleanup_func = soloud_sdl3static_deinit;
 
     SDL_ResumeAudioDevice(audio_device_id);
 }

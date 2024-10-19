@@ -269,9 +269,9 @@ target_compile_definitions(cerlib PRIVATE
 
 # Audio
 if (EMSCRIPTEN)
-  target_compile_definitions(cerlib PRIVATE -DWITH_SDL2_STATIC)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL2)
   target_sources(cerlib PRIVATE audio/SDL2Backend.cpp)
 else ()
-  target_compile_definitions(cerlib PRIVATE -DWITH_SDL3_STATIC)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL3)
   target_sources(cerlib PRIVATE audio/SDL3Backend.cpp)
 endif ()

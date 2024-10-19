@@ -30,7 +30,7 @@ namespace cer
 QueueInstance::QueueInstance(Queue* parent)
     : m_parent(parent)
 {
-    flags.Protected = true;
+    flags.is_protected = true;
 }
 
 auto QueueInstance::audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t
@@ -87,7 +87,7 @@ void Queue::find_queue_handle()
     {
         if (engine->m_voice[i] == m_instance)
         {
-            m_queue_handle = engine->getHandleFromVoice_internal(i);
+            m_queue_handle = engine->get_handle_from_voice_internal(i);
         }
     }
 }
@@ -112,11 +112,11 @@ void Queue::play(AudioSource& sound)
     instance->init(sound, 0);
     instance->audio_source_id = sound.audio_source_id;
 
-    engine->lockAudioMutex_internal();
+    engine->lock_audio_mutex_internal();
     m_source[m_write_index] = std::move(instance);
     m_write_index           = (m_write_index + 1) % queue_max;
     m_count++;
-    engine->unlockAudioMutex_internal();
+    engine->unlock_audio_mutex_internal();
 }
 
 
@@ -127,9 +127,9 @@ auto Queue::queue_count() const -> size_t
         return 0;
     }
 
-    engine->lockAudioMutex_internal();
+    engine->lock_audio_mutex_internal();
     const auto count = m_count;
-    engine->unlockAudioMutex_internal();
+    engine->unlock_audio_mutex_internal();
 
     return count;
 }
@@ -141,9 +141,9 @@ auto Queue::is_currently_playing(const AudioSource& sound) const -> bool
         return false;
     }
 
-    engine->lockAudioMutex_internal();
+    engine->lock_audio_mutex_internal();
     const auto res = m_source[m_read_index]->audio_source_id == sound.audio_source_id;
-    engine->unlockAudioMutex_internal();
+    engine->unlock_audio_mutex_internal();
 
     return res;
 }

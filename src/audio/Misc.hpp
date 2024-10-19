@@ -24,6 +24,8 @@ freely, subject to the following restrictions:
 
 #pragma once
 
+#include "util/NonCopyable.hpp"
+
 namespace cer
 {
 enum class Waveform;
@@ -37,16 +39,9 @@ class AlignedFloatBuffer
     // Allocate and align buffer
     explicit AlignedFloatBuffer(size_t floats);
 
-    AlignedFloatBuffer(const AlignedFloatBuffer&) = delete;
+    forbid_copy(AlignedFloatBuffer);
 
-    AlignedFloatBuffer& operator=(const AlignedFloatBuffer&) = delete;
-
-    AlignedFloatBuffer(AlignedFloatBuffer&&) noexcept = default;
-
-    AlignedFloatBuffer& operator=(AlignedFloatBuffer&&) noexcept = default;
-
-    // Clear data to zero.
-    void clear();
+    default_move(AlignedFloatBuffer);
 
     auto data() -> float*;
 

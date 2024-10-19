@@ -61,27 +61,27 @@ void AudioSourceInstance::init(const AudioSource& source, size_t play_index)
 
     if (source.should_loop)
     {
-        flags.Looping = true;
+        flags.loops = true;
     }
     if (source.process_3d)
     {
-        flags.Process3D = true;
+        flags.process_3d = true;
     }
     if (source.listener_relative)
     {
-        flags.ListenerRelative = true;
+        flags.listener_relative = true;
     }
     if (source.inaudible_kill)
     {
-        flags.InaudibleKill = true;
+        flags.inaudible_kill = true;
     }
     if (source.inaudible_tick)
     {
-        flags.InaudibleTick = true;
+        flags.inaudible_tick = true;
     }
     if (source.disable_autostop)
     {
-        flags.DisableAutostop = true;
+        flags.disable_autostop = true;
     }
 }
 

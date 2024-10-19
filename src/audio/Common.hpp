@@ -47,13 +47,13 @@ static constexpr size_t filters_per_stream = 8;
 static constexpr size_t sample_granularity = 512;
 
 // Maximum number of concurrent voices (hard limit is 4095)
-static constexpr size_t voice_count = 1024;
+static constexpr size_t max_voice_count = 1024;
 
 // 1)mono, 2)stereo 4)quad 6)5.1 8)7.1
 static constexpr size_t max_channels = 8;
 
-using mutexCallFunction    = void (*)(void*);
-using soloudCallFunction   = void (*)(AudioDevice*);
+using mutexCallFunction    = void    (*)(void*);
+using soloudCallFunction   = void   (*)(AudioDevice*);
 using soloudResultFunction = bool (*)(AudioDevice*);
 using SoundHandle          = size_t;
 

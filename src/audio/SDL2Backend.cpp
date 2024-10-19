@@ -28,34 +28,34 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-static SDL_AudioSpec     gActiveAudioSpec;
-static SDL_AudioDeviceID gAudioDeviceID;
+static SDL_AudioSpec     s_active_audio_spec;
+static SDL_AudioDeviceID s_audio_device_id;
 
-void soloud_sdl2static_audiomixer(void* userdata, Uint8* stream, int len)
+void cerlib_sdl2_audio_mixer(void* userdata, Uint8* stream, int len)
 {
-    short*       buf    = (short*)stream;
-    AudioDevice* soloud = (AudioDevice*)userdata;
-    if (gActiveAudioSpec.format == AUDIO_F32)
+    auto soloud = static_cast<AudioDevice*>(userdata);
+
+    if (s_active_audio_spec.format == AUDIO_F32)
     {
-        int samples = len / (gActiveAudioSpec.channels * sizeof(float));
-        soloud->mix((float*)buf, samples);
+        const auto samples = len / (s_active_audio_spec.channels * sizeof(float));
+        soloud->mix(reinterpret_cast<float*>(stream), samples);
     }
     else // assume s16 if not float
     {
-        int samples = len / (gActiveAudioSpec.channels * sizeof(short));
-        soloud->mixSigned16(buf, samples);
+        const auto samples = len / (s_active_audio_spec.channels * sizeof(short));
+        soloud->mix_signed16(reinterpret_cast<int16_t*>(stream), samples);
     }
 }
 
-static void soloud_sdl2static_deinit([[maybe_unused]] AudioDevice* engine)
+static void cerlib_sdl2_deinit([[maybe_unused]] AudioDevice* engine)
 {
-    SDL_CloseAudioDevice(gAudioDeviceID);
+    SDL_CloseAudioDevice(s_audio_device_id);
 }
 } // namespace cer
 
-void cer::sdl2static_init(const AudioBackendArgs& args)
+void cer::audio_sdl2_init(const AudioBackendArgs& args)
 {
-    auto* engine = args.engine;
+    auto* engine = args.device;
 
     auto as = SDL_AudioSpec{
         .freq     = gsl::narrow<int>(args.sample_rate),
@@ -65,31 +65,31 @@ void cer::sdl2static_init(const AudioBackendArgs& args)
         .samples  = gsl::narrow<Uint16>(args.buffer),
         .padding  = 0,
         .size     = 0,
-        .callback = soloud_sdl2static_audiomixer,
+        .callback = cerlib_sdl2_audio_mixer,
         .userdata = engine,
     };
 
-    gAudioDeviceID =
+    s_audio_device_id =
         SDL_OpenAudioDevice(nullptr,
                             0,
                             &as,
-                            &gActiveAudioSpec,
+                            &s_active_audio_spec,
                             SDL_AUDIO_ALLOW_ANY_CHANGE &
                                 ~(SDL_AUDIO_ALLOW_FORMAT_CHANGE | SDL_AUDIO_ALLOW_CHANNELS_CHANGE));
-    if (gAudioDeviceID == 0)
+    if (s_audio_device_id == 0)
     {
         as.format = AUDIO_S16;
 
-        gAudioDeviceID =
+        s_audio_device_id =
             SDL_OpenAudioDevice(nullptr,
                                 0,
                                 &as,
-                                &gActiveAudioSpec,
+                                &s_active_audio_spec,
                                 SDL_AUDIO_ALLOW_ANY_CHANGE & ~(SDL_AUDIO_ALLOW_FORMAT_CHANGE |
                                                                SDL_AUDIO_ALLOW_CHANNELS_CHANGE));
     }
 
-    if (gAudioDeviceID == 0)
+    if (s_audio_device_id == 0)
     {
         const auto* msg = SDL_GetError();
 
@@ -98,12 +98,11 @@ void cer::sdl2static_init(const AudioBackendArgs& args)
                             msg != nullptr ? msg : "Unknown")};
     }
 
-    engine->postinit_internal(gActiveAudioSpec.freq,
-                              gActiveAudioSpec.samples,
-                              args.flags,
-                              gActiveAudioSpec.channels);
+    engine->postinit_internal(s_active_audio_spec.freq,
+                              s_active_audio_spec.samples,
+                              s_active_audio_spec.channels);
 
-    engine->m_backend_cleanup_func = soloud_sdl2static_deinit;
+    engine->m_backend_cleanup_func = cerlib_sdl2_deinit;
 
-    SDL_PauseAudioDevice(gAudioDeviceID, 0);
+    SDL_PauseAudioDevice(s_audio_device_id, 0);
 }

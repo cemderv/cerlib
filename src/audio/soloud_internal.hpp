@@ -32,16 +32,16 @@ class AudioDevice;
 
 struct AudioBackendArgs
 {
-    AudioDevice* engine;
+    AudioDevice* device;
     EngineFlags  flags;
     size_t       sample_rate   = 44100;
     size_t       buffer        = 2048;
     size_t       channel_count = 2;
 };
 
-void sdl2static_init(const AudioBackendArgs& args);
+void audio_sdl2_init(const AudioBackendArgs& args);
 
-void sdl3static_init(const AudioBackendArgs& args);
+void audio_sdl3_init(const AudioBackendArgs& args);
 
 void coreaudio_init(const AudioBackendArgs& args);
 
@@ -63,75 +63,3 @@ void interlace_samples_float(
 void interlace_samples_s16(
     const float* src_buffer, short* dst_buffer, size_t samples, size_t channels, size_t stride);
 }; // namespace cer
-
-#define FOR_ALL_VOICES_PRE                                                                         \
-    SoundHandle* h_     = nullptr;                                                                 \
-    SoundHandle  th_[2] = {voice_handle, 0};                                                       \
-    lockAudioMutex_internal();                                                                     \
-    h_ = voiceGroupHandleToArray_internal(voice_handle);                                           \
-    if (h_ == nullptr)                                                                             \
-        h_ = th_;                                                                                  \
-    while (*h_)                                                                                    \
-    {                                                                                              \
-        int ch = getVoiceFromHandle_internal(*h_);                                                 \
-        if (ch != -1)                                                                              \
-        {
-
-#define FOR_ALL_VOICES_POST                                                                        \
-    }                                                                                              \
-    h_++;                                                                                          \
-    }                                                                                              \
-    unlockAudioMutex_internal();
-
-#define FOR_ALL_VOICES_PRE_3D                                                                      \
-    SoundHandle*               h_  = nullptr;                                                      \
-    std::array<SoundHandle, 2> th_ = {voice_handle, 0};                                            \
-    h_                             = voiceGroupHandleToArray_internal(voice_handle);               \
-    if (h_ == nullptr)                                                                             \
-        h_ = th_.data();                                                                           \
-    while (*h_)                                                                                    \
-    {                                                                                              \
-        int ch = (*h_ & 0xfff) - 1;                                                                \
-        if (ch != -1 && m_3d_data[ch].handle == *h_)                                               \
-        {
-
-#define FOR_ALL_VOICES_POST_3D                                                                     \
-    }                                                                                              \
-    h_++;                                                                                          \
-    }
-
-#define FOR_ALL_VOICES_PRE_EXT                                                                     \
-    SoundHandle* h_     = nullptr;                                                                 \
-    SoundHandle  th_[2] = {voice_handle, 0};                                                       \
-    engine->lockAudioMutex_internal();                                                             \
-    h_ = engine->voiceGroupHandleToArray_internal(voice_handle);                                   \
-    if (h_ == nullptr)                                                                             \
-        h_ = th_;                                                                                  \
-    while (*h_)                                                                                    \
-    {                                                                                              \
-        int ch = engine->getVoiceFromHandle_internal(*h_);                                         \
-        if (ch != -1)                                                                              \
-        {
-
-#define FOR_ALL_VOICES_POST_EXT                                                                    \
-    }                                                                                              \
-    h_++;                                                                                          \
-    }                                                                                              \
-    engine->unlockAudioMutex_internal();
-
-#define FOR_ALL_VOICES_PRE_3D_EXT                                                                  \
-    SoundHandle* h_     = nullptr;                                                                 \
-    SoundHandle  th_[2] = {voice_handle, 0};                                                       \
-    h_                  = engine->voiceGroupHandleToArray(voice_handle);                           \
-    if (h_ == nullptr)                                                                             \
-        h_ = th_;                                                                                  \
-    while (*h_)                                                                                    \
-    {                                                                                              \
-        int ch = (*h_ & 0xfff) - 1;                                                                \
-        if (ch != -1 && engine->m_3d_data[ch].handle == *h_)                                       \
-        {
-
-#define FOR_ALL_VOICES_POST_3D_EXT                                                                 \
-    }                                                                                              \
-    h_++;                                                                                          \
-    }
