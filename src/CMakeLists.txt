@@ -270,47 +270,8 @@ target_compile_definitions(cerlib PRIVATE
 # Audio
 if (EMSCRIPTEN)
   target_compile_definitions(cerlib PRIVATE -DWITH_SDL2_STATIC)
-  target_sources(cerlib PRIVATE audio/soloud_sdl2_static.cpp)
-
-  set(LinkFlags "SHELL:-s USE_SDL=2")
-  target_compile_options(cerlib PRIVATE ${LinkFlags})
-  target_link_options(cerlib PRIVATE ${LinkFlags})
-  target_link_libraries(cerlib PRIVATE SDL2)
-elseif (WIN32)
-  if (MSVC)
-    target_compile_options(cerlib PRIVATE /wd4700)
-  endif ()
-
-  target_compile_definitions(cerlib PRIVATE
-    -DWITH_WINMM
-    -D_USE_MATH_DEFINES
-  )
-
-  target_sources(cerlib PRIVATE audio/WinMMBackend.cpp)
-elseif (APPLE)
-  find_library(COREAUDIO_FRAMEWORK CoreAudio REQUIRED)
-  find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox REQUIRED)
-
-  target_compile_definitions(cerlib PRIVATE -DWITH_COREAUDIO)
-  target_sources(cerlib PRIVATE audio/CoreAudioBackend.cpp)
-
-  target_link_libraries(cerlib PUBLIC
-    ${COREAUDIO_FRAMEWORK}
-    ${AUDIOTOOLBOX_FRAMEWORK}
-  )
-elseif (ANDROID)
-  target_compile_definitions(cerlib PRIVATE -DWITH_OPENSLES)
-  target_sources(cerlib PRIVATE audio/OpenSLESBackend.cpp)
-
-  find_library(OPENSLES_LIBRARY OpenSLES)
-  target_link_libraries(cerlib PUBLIC ${OPENSLES_LIBRARY})
-elseif (UNIX)
-  target_compile_definitions(cerlib PRIVATE -DWITH_ALSA)
-  target_sources(cerlib PRIVATE audio/ALSABackend.cpp)
-
-  find_library(ALSA_LIBRARY asound REQUIRED)
-
-  target_link_libraries(cerlib PUBLIC ${ALSA_LIBRARY})
+  target_sources(cerlib PRIVATE audio/SDL2Backend.cpp)
 else ()
-  message(FATAL_ERROR "Could not detect a proper audio backend!")
+  target_compile_definitions(cerlib PRIVATE -DWITH_SDL3_STATIC)
+  target_sources(cerlib PRIVATE audio/SDL3Backend.cpp)
 endif ()
