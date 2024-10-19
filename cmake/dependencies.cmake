@@ -48,15 +48,6 @@ CPMAddPackage(
 
 set_target_properties(fmt PROPERTIES FOLDER "Dependencies")
 
-# utfcpp
-CPMAddPackage(
-  NAME utfcpp
-  GITHUB_REPOSITORY nemtrif/utfcpp
-  VERSION 4.0.5
-  GIT_SHALLOW
-  SYSTEM
-)
-
 # stb
 CPMAddPackage(
   NAME stb

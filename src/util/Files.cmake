@@ -18,4 +18,5 @@ set(util_files
   Util.cpp
   Platform.hpp
   Platform.cpp
+  utf8.hpp
 )
