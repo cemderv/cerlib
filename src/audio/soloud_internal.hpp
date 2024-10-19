@@ -41,6 +41,8 @@ struct AudioBackendArgs
 
 void sdl2static_init(const AudioBackendArgs& args);
 
+void sdl3static_init(const AudioBackendArgs& args);
+
 void coreaudio_init(const AudioBackendArgs& args);
 
 void opensles_init(const AudioBackendArgs& args);

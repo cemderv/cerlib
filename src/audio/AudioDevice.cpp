@@ -43,10 +43,35 @@ AudioDevice::AudioDevice(EngineFlags           flags,
 
 #if defined(WITH_SDL2_STATIC)
     {
-        if (!aBufferSize.has_value())
-            buffersize = 2048;
+        if (!buffer_size.has_value())
+        {
+            buffer_size = 2048;
+        }
 
-        sdl2static_init(this, flags, samplerate, buffersize, channels);
+        sdl2static_init(AudioBackendArgs{
+            .engine        = this,
+            .flags         = flags,
+            .sample_rate   = *sample_rate,
+            .buffer        = *buffer_size,
+            .channel_count = channels,
+        });
+    }
+#endif
+
+#if defined(WITH_SDL3_STATIC)
+    {
+        if (!buffer_size.has_value())
+        {
+            buffer_size = 2048;
+        }
+
+        sdl3static_init(AudioBackendArgs{
+            .engine        = this,
+            .flags         = flags,
+            .sample_rate   = *sample_rate,
+            .buffer        = *buffer_size,
+            .channel_count = channels,
+        });
     }
 #endif
 
@@ -962,18 +987,15 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
                 ++c;
                 v += vd;
 
-                f1 = f1 <= -1.65f  ? -0.9862875f
-                     : f1 >= 1.65f ? 0.9862875f
-                                   : (0.87f * f1) - 0.1f * f1 * f1 * f1;
-                f2 = f2 <= -1.65f  ? -0.9862875f
-                     : f2 >= 1.65f ? 0.9862875f
-                                   : (0.87f * f2) - 0.1f * f2 * f2 * f2;
-                f3 = f3 <= -1.65f  ? -0.9862875f
-                     : f3 >= 1.65f ? 0.9862875f
-                                   : (0.87f * f3) - 0.1f * f3 * f3 * f3;
-                f4 = f4 <= -1.65f  ? -0.9862875f
-                     : f4 >= 1.65f ? 0.9862875f
-                                   : (0.87f * f4) - 0.1f * f4 * f4 * f4;
+                constexpr auto mn1 = 0.9862875f;
+                constexpr auto mn2 = 1.65f;
+                constexpr auto mn3 = 0.87f;
+                constexpr auto mn4 = 0.1f;
+
+                f1 = f1 <= -mn2 ? -mn1 : f1 >= mn2 ? mn1 : (mn3 * f1) - mn4 * f1 * f1 * f1;
+                f2 = f2 <= -mn2 ? -mn1 : f2 >= mn2 ? mn1 : (mn3 * f2) - mn4 * f2 * f2 * f2;
+                f3 = f3 <= -mn2 ? -mn1 : f3 >= mn2 ? mn1 : (mn3 * f3) - mn4 * f3 * f3 * f3;
+                f4 = f4 <= -mn2 ? -mn1 : f4 >= mn2 ? mn1 : (mn3 * f4) - mn4 * f4 * f4 * f4;
 
                 dst_buffer[d] = f1 * m_post_clip_scaler;
                 d++;
