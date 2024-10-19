@@ -180,7 +180,6 @@ target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
 # Link out-of-source dependencies
 target_link_libraries(cerlib PRIVATE
   GSL
-  utf8cpp
   stblib
 )
 

@@ -9,11 +9,11 @@
 #include "util/BinPack.hpp"
 #include "util/Object.hpp"
 
+#include "util/utf8.hpp"
 #include <gsl/pointers>
 #include <stb_truetype.h>
 #include <unordered_map>
 #include <unordered_set>
-#include <utf8.h>
 
 namespace cer::details
 {
@@ -75,7 +75,7 @@ class FontImpl final : public Object, public Asset
         auto it     = utf8::iterator(text.begin(), text.begin(), text.end());
         auto it_end = utf8::iterator(text.end(), text.begin(), text.end());
 
-        auto codepoint = utf8::utfchar32_t(0);
+        auto codepoint = char32_t(0);
         if (it != it_end)
         {
             codepoint = *it;
@@ -92,7 +92,7 @@ class FontImpl final : public Object, public Asset
             extras.descent        = float(descent);
         }
 
-        constexpr auto newline = utf8::utfchar32_t('\n');
+        constexpr auto newline = char32_t('\n');
 
         while (it != it_end)
         {
