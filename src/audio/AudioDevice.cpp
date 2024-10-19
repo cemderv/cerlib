@@ -733,16 +733,16 @@ auto AudioDevice::calc_fft() -> float*
 }
 
 #if defined(SOLOUD_SSE_INTRINSICS)
-void AudioDevice::clip_internal(const AlignedFloatBuffer& aBuffer,
-                                AlignedFloatBuffer&       aDestBuffer,
-                                size_t                    aSamples,
-                                float                     aVolume0,
-                                float                     aVolume1)
+void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
+                                AlignedFloatBuffer&       dst_buffer,
+                                size_t                    samples,
+                                float                     volume0,
+                                float                     volume1)
 {
-    float  vd = (aVolume1 - aVolume0) / aSamples;
-    float  v  = aVolume0;
+    float  vd = (volume1 - volume0) / samples;
+    float  v  = volume0;
     size_t i, c, d;
-    size_t samplequads = (aSamples + 3) / 4; // rounded up
+    size_t samplequads = (samples + 3) / 4; // rounded up
 
     // Clip
     if (m_flags.clip_roundoff)
@@ -1071,9 +1071,9 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                   size_t                                channels)
 {
 #ifdef SOLOUD_SSE_INTRINSICS
-    assert(((size_t)aBuffer & 0xf) == 0);
-    assert(((size_t)aScratch & 0xf) == 0);
-    assert(((size_t)aBufferSize & 0xf) == 0);
+    assert(((size_t)buffer & 0xf) == 0);
+    assert(((size_t)scratch & 0xf) == 0);
+    assert(((size_t)buffer_size & 0xf) == 0);
 #endif
 
     auto pan  = std::array<float, max_channels>{}; // current speaker volume
@@ -1154,9 +1154,9 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
 #if defined(SOLOUD_SSE_INTRINSICS)
                 {
                     int c = 0;
-                    // if ((aBufferSize & 3) == 0)
+                    // if ((buffer_size & 3) == 0)
                     {
-                        size_t                 samplequads = aSamplesToRead / 4; // rounded down
+                        size_t                 samplequads = samples_to_read / 4; // rounded down
                         TinyAlignedFloatBuffer pan0;
                         pan0[0] = pan[0] + pani[0];
                         pan0[1] = pan[0] + pani[0] * 2;
@@ -1178,14 +1178,14 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                         {
                             __m128 f0 = _mm_load_ps(aScratch + c);
                             __m128 c0 = _mm_mul_ps(f0, p0);
-                            __m128 f1 = _mm_load_ps(aScratch + c + aBufferSize);
+                            __m128 f1 = _mm_load_ps(aScratch + c + buffer_size);
                             __m128 c1 = _mm_mul_ps(f1, p1);
                             __m128 o0 = _mm_load_ps(aBuffer + c);
-                            __m128 o1 = _mm_load_ps(aBuffer + c + aBufferSize);
+                            __m128 o1 = _mm_load_ps(aBuffer + c + buffer_size);
                             c0        = _mm_add_ps(c0, o0);
                             c1        = _mm_add_ps(c1, o1);
-                            _mm_store_ps(aBuffer + c, c0);
-                            _mm_store_ps(aBuffer + c + aBufferSize, c1);
+                            _mm_store_ps(buffer + c, c0);
+                            _mm_store_ps(buffer + c + buffer_size, c1);
                             p0 = _mm_add_ps(p0, pan0delta);
                             p1 = _mm_add_ps(p1, pan1delta);
                             c += 4;
@@ -1193,14 +1193,14 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                     }
 
                     // If buffer size or samples to read are not divisible by 4, handle leftovers
-                    for (size_t j = c; j < aSamplesToRead; ++j)
+                    for (size_t j = c; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s1 = aScratch[j];
-                        float s2 = aScratch[aBufferSize + j];
-                        aBuffer[j + 0] += s1 * pan[0];
-                        aBuffer[j + aBufferSize] += s2 * pan[1];
+                        float s1 = scratch[j];
+                        float s2 = scratch[buffer_size + j];
+                        buffer[j + 0] += s1 * pan[0];
+                        buffer[j + buffer_size] += s2 * pan[1];
                     }
                 }
 #else // fallback
@@ -1219,7 +1219,7 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
 #if defined(SOLOUD_SSE_INTRINSICS)
                 {
                     int c = 0;
-                    // if ((aBufferSize & 3) == 0)
+                    // if ((buffer_size & 3) == 0)
                     {
                         size_t                 samplequads = samples_to_read / 4; // rounded down
                         TinyAlignedFloatBuffer pan0;
@@ -1248,8 +1248,8 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                             __m128 o1 = _mm_load_ps(buffer + c + buffer_size);
                             c0        = _mm_add_ps(c0, o0);
                             c1        = _mm_add_ps(c1, o1);
-                            _mm_store_ps(aBuffer + c, c0);
-                            _mm_store_ps(aBuffer + c + buffer_size, c1);
+                            _mm_store_ps(buffer + c, c0);
+                            _mm_store_ps(buffer + c + buffer_size, c1);
                             p0 = _mm_add_ps(p0, pan0delta);
                             p1 = _mm_add_ps(p1, pan1delta);
                             c += 4;
@@ -1261,8 +1261,8 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                         pan[0] += pani[0];
                         pan[1] += pani[1];
                         float s = scratch[j];
-                        aBuffer[j + 0] += s * pan[0];
-                        aBuffer[j + buffer_size] += s * pan[1];
+                        buffer[j + 0] += s * pan[0];
+                        buffer[j + buffer_size] += s * pan[1];
                     }
                 }
 #else // fallback
