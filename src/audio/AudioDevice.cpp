@@ -776,7 +776,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
             for (i = 0; i < samplequads; ++i)
             {
                 // float f1 = origdata[c] * v;	++c; v += vd;
-                __m128 f = _mm_load_ps(&aBuffer[c]);
+                __m128 f = _mm_load_ps(&buffer[c]);
                 c += 4;
                 f   = _mm_mul_ps(f, vol);
                 vol = _mm_add_ps(vol, vdelta);
@@ -806,7 +806,7 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
 
                 // outdata[d] = f1 * postclip; d++;
                 f = _mm_mul_ps(f, postscale);
-                _mm_store_ps(&aDestBuffer[d], f);
+                _mm_store_ps(&dst_buffer[d], f);
                 d += 4;
             }
         }
@@ -832,8 +832,8 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
             __m128 vol = _mm_load_ps(volumes.data());
             for (i = 0; i < samplequads; ++i)
             {
-                // float f1 = aBuffer[c] * v; ++c; v += vd;
-                __m128 f = _mm_load_ps(&aBuffer[c]);
+                // float f1 = buffer[c] * v; ++c; v += vd;
+                __m128 f = _mm_load_ps(&buffer[c]);
                 c += 4;
                 f   = _mm_mul_ps(f, vol);
                 vol = _mm_add_ps(vol, vdelta);
@@ -842,9 +842,9 @@ void AudioDevice::clip_internal(const AlignedFloatBuffer& buffer,
                 f = _mm_max_ps(f, negbound);
                 f = _mm_min_ps(f, posbound);
 
-                // aDestBuffer[d] = f1 * mPostClipScaler; d++;
+                // dst_buffer[d] = f1 * mPostClipScaler; d++;
                 f = _mm_mul_ps(f, postscale);
-                _mm_store_ps(&aDestBuffer[d], f);
+                _mm_store_ps(&dst_buffer[d], f);
                 d += 4;
             }
         }
@@ -1176,12 +1176,12 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
 
                         for (size_t j = 0; j < samplequads; ++j)
                         {
-                            __m128 f0 = _mm_load_ps(aScratch + c);
+                            __m128 f0 = _mm_load_ps(scratch + c);
                             __m128 c0 = _mm_mul_ps(f0, p0);
-                            __m128 f1 = _mm_load_ps(aScratch + c + buffer_size);
+                            __m128 f1 = _mm_load_ps(scratch + c + buffer_size);
                             __m128 c1 = _mm_mul_ps(f1, p1);
-                            __m128 o0 = _mm_load_ps(aBuffer + c);
-                            __m128 o1 = _mm_load_ps(aBuffer + c + buffer_size);
+                            __m128 o0 = _mm_load_ps(buffer + c);
+                            __m128 o1 = _mm_load_ps(buffer + c + buffer_size);
                             c0        = _mm_add_ps(c0, o0);
                             c1        = _mm_add_ps(c1, o1);
                             _mm_store_ps(buffer + c, c0);
@@ -1241,7 +1241,7 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
 
                         for (size_t j = 0; j < samplequads; ++j)
                         {
-                            __m128 f  = _mm_load_ps(aScratch + c);
+                            __m128 f  = _mm_load_ps(scratch + c);
                             __m128 c0 = _mm_mul_ps(f, p0);
                             __m128 c1 = _mm_mul_ps(f, p1);
                             __m128 o0 = _mm_load_ps(buffer + c);
