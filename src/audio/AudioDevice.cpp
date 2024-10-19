@@ -1221,7 +1221,7 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                     int c = 0;
                     // if ((aBufferSize & 3) == 0)
                     {
-                        size_t                 samplequads = aSamplesToRead / 4; // rounded down
+                        size_t                 samplequads = samples_to_read / 4; // rounded down
                         TinyAlignedFloatBuffer pan0;
                         pan0[0] = pan[0] + pani[0];
                         pan0[1] = pan[0] + pani[0] * 2;
@@ -1244,25 +1244,25 @@ void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
                             __m128 f  = _mm_load_ps(aScratch + c);
                             __m128 c0 = _mm_mul_ps(f, p0);
                             __m128 c1 = _mm_mul_ps(f, p1);
-                            __m128 o0 = _mm_load_ps(aBuffer + c);
-                            __m128 o1 = _mm_load_ps(aBuffer + c + aBufferSize);
+                            __m128 o0 = _mm_load_ps(buffer + c);
+                            __m128 o1 = _mm_load_ps(buffer + c + buffer_size);
                             c0        = _mm_add_ps(c0, o0);
                             c1        = _mm_add_ps(c1, o1);
                             _mm_store_ps(aBuffer + c, c0);
-                            _mm_store_ps(aBuffer + c + aBufferSize, c1);
+                            _mm_store_ps(aBuffer + c + buffer_size, c1);
                             p0 = _mm_add_ps(p0, pan0delta);
                             p1 = _mm_add_ps(p1, pan1delta);
                             c += 4;
                         }
                     }
                     // If buffer size or samples to read are not divisible by 4, handle leftovers
-                    for (size_t j = c; j < aSamplesToRead; ++j)
+                    for (size_t j = c; j < samples_to_read; ++j)
                     {
                         pan[0] += pani[0];
                         pan[1] += pani[1];
-                        float s = aScratch[j];
+                        float s = scratch[j];
                         aBuffer[j + 0] += s * pan[0];
-                        aBuffer[j + aBufferSize] += s * pan[1];
+                        aBuffer[j + buffer_size] += s * pan[1];
                     }
                 }
 #else // fallback
@@ -2151,7 +2151,7 @@ void AudioDevice::calc_active_voices_internal()
     map_resample_buffers_internal();
 }
 
-void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
+void AudioDevice::mix_internal(size_t samples, size_t stride)
 {
 #ifdef __arm__
     // flush to zero (FTZ) for ARM
@@ -2197,7 +2197,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
     }
 #endif
 
-    const auto buffertime   = aSamples / float(m_sample_rate);
+    const auto buffertime   = samples / float(m_sample_rate);
     auto       globalVolume = std::array<float, 2>{};
 
     m_stream_time += buffertime;
@@ -2205,7 +2205,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
 
     globalVolume[0] = m_global_volume;
 
-    if (m_global_volume_fader.active)
+    if (m_global_volume_fader.active != 0)
     {
         m_global_volume = m_global_volume_fader.get(m_stream_time);
     }
@@ -2287,8 +2287,8 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
     }
 
     mix_bus_internal(m_output_scratch.data(),
-                     aSamples,
-                     aStride,
+                     samples,
+                     stride,
                      m_scratch.data(),
                      0,
                      float(m_sample_rate),
@@ -2304,8 +2304,8 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
 
         m_filter_instance[i]->filter(FilterArgs{
             .buffer      = m_output_scratch.data(),
-            .samples     = aSamples,
-            .buffer_size = aStride,
+            .samples     = samples,
+            .buffer_size = stride,
             .channels    = m_channels,
             .sample_rate = float(m_sample_rate),
             .time        = m_stream_time,
@@ -2317,7 +2317,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
     // Note: clipping channels*aStride, not channels*aSamples, so we're possibly clipping some
     // unused data. The buffers should be large enough for it, we just may do a few bytes of
     // unnecessary work.
-    clip_internal(m_output_scratch, m_scratch, aStride, globalVolume[0], globalVolume[1]);
+    clip_internal(m_output_scratch, m_scratch, stride, globalVolume[0], globalVolume[1]);
 
     if (m_flags.enable_visualization)
     {
@@ -2326,14 +2326,14 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
             m_visualization_channel_volume[i] = 0;
         }
 
-        if (aSamples > 255)
+        if (samples > 255)
         {
             for (size_t i = 0; i < 256; ++i)
             {
                 m_visualization_wave_data[i] = 0;
                 for (size_t j = 0; j < m_channels; ++j)
                 {
-                    const auto sample = m_scratch[i + (j * aStride)];
+                    const auto sample = m_scratch[i + (j * stride)];
                     const auto absvol = fabs(sample);
 
                     if (m_visualization_channel_volume[j] < absvol)
@@ -2354,7 +2354,7 @@ void AudioDevice::mix_internal(size_t aSamples, size_t aStride)
 
                 for (size_t j = 0; j < m_channels; ++j)
                 {
-                    const auto sample = m_scratch[(i % aSamples) + (j * aStride)];
+                    const auto sample = m_scratch[(i % samples) + (j * stride)];
                     const auto absvol = fabs(sample);
 
                     if (m_visualization_channel_volume[j] < absvol)
@@ -2400,23 +2400,23 @@ void interlace_samples_s16(
     }
 }
 
-void AudioDevice::mix(float* aBuffer, size_t aSamples)
+void AudioDevice::mix(float* buffer, size_t samples)
 {
-    size_t stride = (aSamples + 15) & ~0xf;
-    mix_internal(aSamples, stride);
-    interlace_samples_float(m_scratch.data(), aBuffer, aSamples, m_channels, stride);
+    size_t stride = (samples + 15) & ~0xf;
+    mix_internal(samples, stride);
+    interlace_samples_float(m_scratch.data(), buffer, samples, m_channels, stride);
 }
 
-void AudioDevice::mix_signed16(short* aBuffer, size_t aSamples)
+void AudioDevice::mix_signed16(short* buffer, size_t samples)
 {
-    size_t stride = (aSamples + 15) & ~0xf;
-    mix_internal(aSamples, stride);
-    interlace_samples_s16(m_scratch.data(), aBuffer, aSamples, m_channels, stride);
+    size_t stride = (samples + 15) & ~0xf;
+    mix_internal(samples, stride);
+    interlace_samples_s16(m_scratch.data(), buffer, samples, m_channels, stride);
 }
 
 void AudioDevice::lock_audio_mutex_internal()
 {
-    if (m_audio_thread_mutex)
+    if (m_audio_thread_mutex != nullptr)
     {
         thread::lock_mutex(m_audio_thread_mutex);
     }
@@ -3724,14 +3724,14 @@ void AudioDevice::add_voice_to_group(SoundHandle aVoiceGroupHandle, SoundHandle 
 }
 
 // Is this handle a valid voice group?
-bool AudioDevice::is_voice_group(SoundHandle aVoiceGroupHandle)
+bool AudioDevice::is_voice_group(SoundHandle voice_group_handle)
 {
-    if ((aVoiceGroupHandle & 0xfffff000) != 0xfffff000)
+    if ((voice_group_handle & 0xfffff000) != 0xfffff000)
     {
         return false;
     }
 
-    const size_t c = aVoiceGroupHandle & 0xfff;
+    const size_t c = voice_group_handle & 0xfff;
     if (c >= m_voice_group_count)
     {
         return false;
@@ -3745,16 +3745,16 @@ bool AudioDevice::is_voice_group(SoundHandle aVoiceGroupHandle)
 }
 
 // Is this voice group empty?
-bool AudioDevice::is_voice_group_empty(SoundHandle aVoiceGroupHandle)
+bool AudioDevice::is_voice_group_empty(SoundHandle voice_group_handle)
 {
     // If not a voice group, yeah, we're empty alright..
-    if (!is_voice_group(aVoiceGroupHandle))
+    if (!is_voice_group(voice_group_handle))
     {
         return true;
     }
 
-    trim_voice_group_internal(aVoiceGroupHandle);
-    const int c = aVoiceGroupHandle & 0xfff;
+    trim_voice_group_internal(voice_group_handle);
+    const int c = voice_group_handle & 0xfff;
 
     lock_audio_mutex_internal();
     const bool res = m_voice_group[c][1] == 0;
@@ -3764,14 +3764,14 @@ bool AudioDevice::is_voice_group_empty(SoundHandle aVoiceGroupHandle)
 }
 
 // Remove all non-active voices from group
-void AudioDevice::trim_voice_group_internal(SoundHandle aVoiceGroupHandle)
+void AudioDevice::trim_voice_group_internal(SoundHandle voice_group_handle)
 {
-    if (!is_voice_group(aVoiceGroupHandle))
+    if (!is_voice_group(voice_group_handle))
     {
         return;
     }
 
-    const int c = aVoiceGroupHandle & 0xfff;
+    const int c = voice_group_handle & 0xfff;
 
     lock_audio_mutex_internal();
 
