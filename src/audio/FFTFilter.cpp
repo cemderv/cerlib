@@ -177,7 +177,7 @@ void FFTFilterInstance::magPhase2MagFreq(float* fft_buffer,
                                          size_t channel)
 {
     const auto stepsize   = samples / sample_rate;
-    const auto expct      = (stepsize / samples) * 2.0f * (float)M_PI;
+    const auto expct      = (stepsize / samples) * 2.0f * cer::pi;
     const auto freqPerBin = sample_rate / samples;
 
     for (size_t i = 0; i < samples; ++i)
@@ -193,15 +193,15 @@ void FFTFilterInstance::magPhase2MagFreq(float* fft_buffer,
         freq -= float(i) * expct;
 
         /* map delta phase into +/- Pi interval */
-        int qpd = int(floor(freq / M_PI));
+        int qpd = int(floor(freq / cer::pi));
         if (qpd >= 0)
             qpd += qpd & 1;
         else
             qpd -= qpd & 1;
-        freq -= float(M_PI) * float(qpd);
+        freq -= cer::pi * float(qpd);
 
         /* get deviation from bin frequency from the +/- Pi interval */
-        freq = samples * freq / (2.0f * float(M_PI));
+        freq = samples * freq / cer::two_pi;
 
         /* compute the k-th partials' true frequency */
         freq = float(i) * freqPerBin + freq * freqPerBin;
@@ -217,7 +217,7 @@ void FFTFilterInstance::magFreq2MagPhase(float* fft_buffer,
                                          size_t channel)
 {
     const float stepsize   = samples / sample_rate;
-    const float expct      = (stepsize / samples) * 2.0f * float(M_PI);
+    const float expct      = (stepsize / samples) * 2.0f * cer::pi;
     const float freqPerBin = sample_rate / samples;
 
     for (size_t i = 0; i < samples; ++i)

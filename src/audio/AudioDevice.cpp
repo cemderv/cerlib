@@ -3875,8 +3875,8 @@ void AudioDevice::set_voice_pan_internal(size_t aVoice, float aPan)
     if (m_voice[aVoice])
     {
         m_voice[aVoice]->pan               = aPan;
-        const auto l                       = float(std::cos((aPan + 1) * M_PI / 4));
-        const auto r                       = float(std::sin((aPan + 1) * M_PI / 4));
+        const auto l                       = float(std::cos((aPan + 1) * cer::pi / 4));
+        const auto r                       = float(std::sin((aPan + 1) * cer::pi / 4));
         m_voice[aVoice]->channel_volume[0] = l;
         m_voice[aVoice]->channel_volume[1] = r;
         if (m_voice[aVoice]->channel_count == 4)

@@ -50,7 +50,7 @@ void FlangerFilterInstance::filter(const FilterArgs& args)
     }
 
     const int    maxsamples = int(ceil(m_params[FlangerFilter::DELAY] * args.sample_rate));
-    const double inc        = m_params[FlangerFilter::FREQ] * M_PI * 2 / args.sample_rate;
+    const double inc        = m_params[FlangerFilter::FREQ] * cer::two_pi / args.sample_rate;
     for (size_t i = 0; i < args.channels; ++i)
     {
         const auto mbofs = i * m_buffer_size;

@@ -190,7 +190,7 @@ size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBuff
                     sample = 1.0f - fp * 2;
                     break;
                 case 2: // sine
-                    sample = float(sin(fp * 2 * M_PI));
+                    sample = float(sin(fp * cer::two_pi));
                     break;
                 case 3: // noise
                     sample = noise_buffer[phase * 32 / period];

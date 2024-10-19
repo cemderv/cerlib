@@ -36,7 +36,7 @@ void BiquadResonantFilterInstance::calc_bqr_params()
 {
     m_dirty = 0;
 
-    const auto omega     = float(2.0f * M_PI * m_params[Frequency] / m_sample_rate);
+    const auto omega     = float(2.0f * cer::pi * m_params[Frequency] / m_sample_rate);
     const auto sin_omega = sin(omega);
     const auto cos_omega = cos(omega);
     const auto alpha     = sin_omega / (2.0f * m_params[Resonance]);
