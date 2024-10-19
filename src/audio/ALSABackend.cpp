@@ -22,9 +22,9 @@ freely, subject to the following restrictions:
    distribution.
 */
 
-#include "audio/soloud_internal.hpp"
 #include "audio/AudioDevice.hpp"
 #include "audio/Thread.hpp"
+#include "audio/soloud_internal.hpp"
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #include <alsa/asoundlib.h>
@@ -91,7 +91,7 @@ static void alsaCleanup(AudioDevice* engine)
     delete data;
     engine->m_backend_data = 0;
 }
-}
+} // namespace cer
 
 void cer::alsa_init(const AudioBackendArgs& args)
 {
@@ -99,11 +99,11 @@ void cer::alsa_init(const AudioBackendArgs& args)
 
     ALSAData* data = new ALSAData;
     memset(data, 0, sizeof(ALSAData));
-    engine->m_backend_data        = data;
+    engine->m_backend_data         = data;
     engine->m_backend_cleanup_func = alsaCleanup;
-    data->samples               = args.buffer;
-    data->channels              = 2;
-    data->soloud                = engine;
+    data->samples                  = args.buffer;
+    data->channels                 = 2;
+    data->soloud                   = engine;
 
     int        rc;
     snd_pcm_t* handle;

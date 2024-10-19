@@ -120,10 +120,18 @@ AudioDevice::AudioDevice(EngineFlags           flags,
 
 #if defined(WITH_OPENSLES)
     {
-        if (!aBufferSize.has_value())
-            buffersize = 4096;
+        if (!buffer_size.has_value())
+        {
+            buffer_size = 4096;
+        }
 
-        opensles_init(this, flags, samplerate, buffersize, channels);
+        opensles_init(AudioBackendArgs{
+            .engine        = this,
+            .flags         = flags,
+            .sample_rate   = *sample_rate,
+            .buffer        = *buffer_size,
+            .channel_count = channels,
+        });
     }
 #endif
 }

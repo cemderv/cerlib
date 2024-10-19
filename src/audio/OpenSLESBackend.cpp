@@ -21,13 +21,16 @@ freely, subject to the following restrictions:
    3. This notice may not be removed or altered from any source
    distribution.
 */
-#include <math.h>
-#include <memory.h>
-#include <stdlib.h>
 
-#include "soloud.hpp"
-#include "soloud_engine.hpp"
-#include "soloud_thread.hpp"
+#include "audio/AudioDevice.hpp"
+#include "audio/Thread.hpp"
+#include "audio/soloud_internal.hpp"
+#include "cerlib/Logging.hpp"
+
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <stdexcept>
 
 #include "SLES/OpenSLES.h"
 #include "SLES/OpenSLES_Platform.h"
@@ -36,20 +39,14 @@ freely, subject to the following restrictions:
 #include "SLES/OpenSLES_Android.h"
 #endif
 
-// Error logging.
-#if defined(__ANDROID__)
-#include <android/log.h>
-#define LOG_ERROR(...) __android_log_print(ANDROID_LOG_ERROR, "SoLoud", __VA_ARGS__)
-#define LOG_INFO(...)  __android_log_print(ANDROID_LOG_INFO, "SoLoud", __VA_ARGS__)
-
-#else
-printf(_msg)
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wdeprecated-volatile"
 #endif
-
-#define NUM_BUFFERS 2
 
 namespace cer
 {
+static constexpr auto NUM_BUFFERS = size_t(2);
+
 struct BackendData
 {
     BackendData()
@@ -63,7 +60,7 @@ struct BackendData
         threadrun++;
         while (threadrun == 1)
         {
-            Thread::sleep(10);
+            thread::sleep(10);
         }
 
         if (playerObj)
@@ -81,7 +78,7 @@ struct BackendData
             (*engineObj)->Destroy(engineObj);
         }
 
-        for (int idx = 0; idx < NUM_BUFFERS; ++idx)
+        for (size_t idx = 0; idx < NUM_BUFFERS; ++idx)
         {
             delete[] outputBuffers[idx];
         }
@@ -117,14 +114,14 @@ struct BackendData
 
 void soloud_opensles_deinit(AudioDevice* engine)
 {
-    BackendData* data = static_cast<BackendData*>(engine->mBackendData);
+    BackendData* data = static_cast<BackendData*>(engine->m_backend_data);
     delete data;
-    engine->mBackendData = nullptr;
+    engine->m_backend_data = nullptr;
 }
 
 static void opensles_iterate(AudioDevice* engine)
 {
-    BackendData* data = static_cast<BackendData*>(engine->mBackendData);
+    BackendData* data = static_cast<BackendData*>(engine->m_backend_data);
 
     // If we have no buffered queued, queue one up for playback.
     if (data->buffersQueued == 0)
@@ -146,13 +143,13 @@ static void opensles_iterate(AudioDevice* engine)
 static void opensles_thread(void* aParam)
 {
     AudioDevice* soloud = static_cast<AudioDevice*>(aParam);
-    BackendData* data   = static_cast<BackendData*>(soloud->mBackendData);
+    BackendData* data   = static_cast<BackendData*>(soloud->m_backend_data);
     while (data->threadrun == 0)
     {
         opensles_iterate(soloud);
 
         // TODO: Condition var?
-        Thread::sleep(1);
+        thread::sleep(1);
     }
     data->threadrun++;
 }
@@ -162,43 +159,46 @@ static void SLAPIENTRY soloud_opensles_play_callback(SLPlayItf player,
                                                      SLuint32  event)
 {
     AudioDevice* soloud = static_cast<AudioDevice*>(context);
-    BackendData* data   = static_cast<BackendData*>(soloud->mBackendData);
+    BackendData* data   = static_cast<BackendData*>(soloud->m_backend_data);
     if (event & SL_PLAYEVENT_HEADATEND && data->buffersQueued > 0)
     {
         data->buffersQueued--;
     }
 }
+} // namespace cer
 
-result opensles_init(
-    AudioDevice* engine, size_t aFlags, size_t aSamplerate, size_t aBuffer, size_t aChannels)
+void cer::opensles_init(const AudioBackendArgs& args)
 {
-    BackendData* data = new BackendData();
+    auto* engine = args.engine;
+
+    auto* data = new BackendData();
 
     // Allocate output buffer to mix into.
-    data->bufferSize          = aBuffer;
-    data->channels            = aChannels;
-    const int bufferSizeBytes = data->bufferSize * data->channels * sizeof(short);
-    for (int idx = 0; idx < NUM_BUFFERS; ++idx)
+    data->bufferSize               = args.buffer;
+    data->channels                 = args.channel_count;
+    const int buffer_size_in_bytes = data->bufferSize * data->channels * sizeof(short);
+    for (size_t idx = 0; idx < NUM_BUFFERS; ++idx)
     {
         data->outputBuffers[idx] = new short[data->bufferSize * data->channels];
-        memset(data->outputBuffers[idx], 0, bufferSizeBytes);
+        memset(data->outputBuffers[idx], 0, buffer_size_in_bytes);
     }
 
     // Create engine.
-    const SLEngineOption opts[] = {SL_ENGINEOPTION_THREADSAFE, SL_BOOLEAN_TRUE};
+    const SLEngineOption opts[] = {
+        {(SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE},
+    };
+
     if (slCreateEngine(&data->engineObj, 1, opts, 0, nullptr, nullptr) != SL_RESULT_SUCCESS)
     {
-        LOG_ERROR("Failed to create engine.");
-        return UNKNOWN_ERROR;
+        throw std::runtime_error{"Failed to create OpenSLES audio engine."};
     }
 
-    // Realize and get engine interfaxce.
+    // Realize and get engine interface.
     (*data->engineObj)->Realize(data->engineObj, SL_BOOLEAN_FALSE);
     if ((*data->engineObj)->GetInterface(data->engineObj, SL_IID_ENGINE, &data->engine) !=
         SL_RESULT_SUCCESS)
     {
-        LOG_ERROR("Failed to get engine interface.");
-        return UNKNOWN_ERROR;
+        throw std::runtime_error{"Failed to obtain OpenSLES audio engine interface."};
     }
 
     // Create output mix.
@@ -208,8 +208,7 @@ result opensles_init(
     if ((*data->engine)->CreateOutputMix(data->engine, &data->outputMixObj, 1, ids, req) !=
         SL_RESULT_SUCCESS)
     {
-        LOG_ERROR("Failed to create output mix object.");
-        return UNKNOWN_ERROR;
+        throw std::runtime_error{"Failed to create OpenSLES output mix object."};
     }
     (*data->outputMixObj)->Realize(data->outputMixObj, SL_BOOLEAN_FALSE);
 
@@ -217,7 +216,7 @@ result opensles_init(
             ->GetInterface(data->outputMixObj, SL_IID_VOLUME, &data->outputMixVol) !=
         SL_RESULT_SUCCESS)
     {
-        LOG_INFO("Failed to get output mix volume interface.");
+        log_info("Failed to get OpenSLES output mix volume interface");
     }
 
     // Create android buffer queue.
@@ -228,7 +227,7 @@ result opensles_init(
     SLDataFormat_PCM format;
     format.formatType    = SL_DATAFORMAT_PCM;
     format.numChannels   = data->channels;
-    format.samplesPerSec = aSamplerate * 1000; // mHz
+    format.samplesPerSec = args.sample_rate * 1000; // mHz
     format.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
     format.containerSize = 16;
     format.endianness    = SL_BYTEORDER_LITTLEENDIAN;
@@ -279,7 +278,7 @@ result opensles_init(
                            &data->playerBufferQueue);
     }
 
-    engine->mBackendData = data; // Must be set before callback
+    engine->m_backend_data = data; // Must be set before callback
 
     // Register callback
     (*data->player)->RegisterCallback(data->player, soloud_opensles_play_callback, engine);
@@ -287,13 +286,10 @@ result opensles_init(
     (*data->player)->SetPlayState(data->player, SL_PLAYSTATE_PLAYING);
 
     //
-    engine->postinit_internal(aSamplerate, data->bufferSize, aFlags, 2);
-    engine->mBackendCleanupFunc = soloud_opensles_deinit;
+    engine->postinit_internal(args.sample_rate, data->bufferSize, args.flags, 2);
+    engine->m_backend_cleanup_func = soloud_opensles_deinit;
 
-    LOG_INFO("Creating audio thread.");
-    Thread::createThread(opensles_thread, (void*)engine);
+    log_info("Creating OpenSLES audio thread");
 
-    engine->mBackendString = "OpenSL ES";
-    return SO_NO_ERROR;
+    thread::create_thread(opensles_thread, engine);
 }
-}; // namespace cer
