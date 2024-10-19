@@ -103,7 +103,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
         GLint max_name_length = 0;
         GL_CALL(glGetProgramiv(gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length));
 
-        auto name_buffer = inplace_vector<GLchar, 32>{};
+        auto name_buffer = gch::small_vector<GLchar, 32>{};
         name_buffer.resize(max_name_length);
 
         for (GLint i = 0; i < uniform_count; ++i)

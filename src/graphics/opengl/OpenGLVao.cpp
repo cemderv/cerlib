@@ -4,7 +4,7 @@
 
 #include "OpenGLVao.hpp"
 #include "util/InternalError.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <cassert>
 #include <gsl/narrow>
 
@@ -32,7 +32,7 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
         auto index                  = GLuint{};
         auto vertex_stride          = GLsizei{};
-        auto element_sizes_in_bytes = inplace_vector<GLsizei, 6>{};
+        auto element_sizes_in_bytes = gch::small_vector<GLsizei, 6>{};
 
         for (const auto& element : vertex_elements)
         {

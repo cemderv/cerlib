@@ -19,7 +19,7 @@ class GLSLShaderGenerator final : public ShaderGenerator
 
     auto do_generation(const SemaContext&                    context,
                        const FunctionDecl&                   entry_point,
-                       const inplace_vector<const Decl*, 8>& decls_to_generate)
+                       const gch::small_vector<const Decl*, 8>& decls_to_generate)
         -> std::string override;
 
   private:

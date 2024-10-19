@@ -448,7 +448,7 @@ auto Parser::parse_function(std::string_view      name,
 
     consume(TokenType::LeftParen, true);
 
-    auto params = inplace_vector<std::unique_ptr<FunctionParamDecl>, 4>{};
+    auto params = gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {
@@ -484,7 +484,7 @@ auto Parser::parse_struct() -> std::unique_ptr<StructDecl>
 
     consume(TokenType::LeftBrace, true);
 
-    auto fields = inplace_vector<std::unique_ptr<StructFieldDecl>, 8>{};
+    auto fields = gch::small_vector<std::unique_ptr<StructFieldDecl>, 8>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -905,7 +905,7 @@ auto Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique
     PUSH_TK;
     consume(TokenType::LeftBrace, true);
 
-    auto args = inplace_vector<std::unique_ptr<StructCtorArg>, 4>{};
+    auto args = gch::small_vector<std::unique_ptr<StructCtorArg>, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -938,7 +938,7 @@ auto Parser::parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_pt
     PUSH_TK;
     consume(TokenType::LeftParen, true);
 
-    auto args = inplace_vector<std::unique_ptr<Expr>, 4>{};
+    auto args = gch::small_vector<std::unique_ptr<Expr>, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {

@@ -128,7 +128,7 @@ auto ASTOptimizer::optimize_block(CodeBlock* block) -> bool
 
 auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
 {
-    auto var_stmts = inplace_vector<VarStmt*, 4>{};
+    auto var_stmts = gch::small_vector<VarStmt*, 4>{};
 
     for (const auto& stmt : block->stmts())
     {
@@ -138,7 +138,7 @@ auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
         }
     }
 
-    inplace_vector<gsl::not_null<VarStmt*>, 4> var_stmts_to_remove;
+    gch::small_vector<gsl::not_null<VarStmt*>, 4> var_stmts_to_remove;
 
     for (VarStmt* var_stmt : var_stmts)
     {

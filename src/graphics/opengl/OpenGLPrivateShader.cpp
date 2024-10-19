@@ -56,7 +56,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
         CER_THROW_RUNTIME_ERROR_STR("Failed to create the OpenGL shader handle.");
     }
 
-    auto code_strings = inplace_vector<std::string_view>{};
+    auto code_strings = gch::small_vector<std::string_view>{};
 
     // https://en.wikipedia.org/wiki/OpenGL_Shading_Language#Versions
 #ifdef CERLIB_GFX_IS_GLES
@@ -73,8 +73,8 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
     code_strings.push_back(glsl_code);
 
-    auto code_strings_gl        = inplace_vector<const GLchar*>{};
-    auto code_string_lengths_gl = inplace_vector<GLint>{};
+    auto code_strings_gl        = gch::small_vector<const GLchar*>{};
+    auto code_string_lengths_gl = gch::small_vector<GLint>{};
 
     code_strings_gl.reserve(code_strings.size());
     code_string_lengths_gl.reserve(code_strings.size());

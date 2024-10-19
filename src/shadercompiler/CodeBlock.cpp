@@ -37,9 +37,9 @@ void CodeBlock::verify(SemaContext&                                context,
     scope.pop_child();
 }
 
-auto CodeBlock::variables() const -> inplace_vector<gsl::not_null<VarStmt*>, 8>
+auto CodeBlock::variables() const -> gch::small_vector<gsl::not_null<VarStmt*>, 8>
 {
-    inplace_vector<gsl::not_null<VarStmt*>, 8> vars;
+    gch::small_vector<gsl::not_null<VarStmt*>, 8> vars;
     vars.reserve(m_stmts.size());
 
     for (const std::unique_ptr<Stmt>& stmt : m_stmts)

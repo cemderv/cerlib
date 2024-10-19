@@ -5,7 +5,7 @@
 #pragma once
 
 #include "util/NonCopyable.hpp"
-#include "util/inplace_vector.hpp"
+#include "util/small_vector.hpp"
 #include <gsl/pointers>
 #include <span>
 #include <string_view>
@@ -50,7 +50,7 @@ class Scope final
         -> const Decl*;
 
     auto find_symbols(std::string_view name, bool fall_back_to_parent = true) const
-        -> inplace_vector<gsl::not_null<const Decl*>, 4>;
+        -> gch::small_vector<gsl::not_null<const Decl*>, 4>;
 
     auto contains_symbol_only_here(std::string_view name) const -> bool;
 
@@ -88,17 +88,17 @@ class Scope final
 
     void set_current_function(const FunctionDecl* value);
 
-    auto function_call_args() const -> const inplace_vector<gsl::not_null<const Expr*>, 4>&;
+    auto function_call_args() const -> const gch::small_vector<gsl::not_null<const Expr*>, 4>&;
 
-    void set_function_call_args(inplace_vector<gsl::not_null<const Expr*>, 4> args);
+    void set_function_call_args(gch::small_vector<gsl::not_null<const Expr*>, 4> args);
 
   private:
-    inplace_vector<gsl::not_null<const Decl*>, 8> m_symbols;
-    inplace_vector<gsl::not_null<const Type*>, 8> m_types;
+    gch::small_vector<gsl::not_null<const Decl*>, 8> m_symbols;
+    gch::small_vector<gsl::not_null<const Type*>, 8> m_types;
     Scope*                                        m_parent{};
-    inplace_vector<std::unique_ptr<Scope>, 4>     m_children;
-    inplace_vector<ScopeContext, 4>               m_context_stack;
+    gch::small_vector<std::unique_ptr<Scope>, 4>     m_children;
+    gch::small_vector<ScopeContext, 4>               m_context_stack;
     const FunctionDecl*                           m_current_function{};
-    inplace_vector<gsl::not_null<const Expr*>, 4> m_function_call_args;
+    gch::small_vector<gsl::not_null<const Expr*>, 4> m_function_call_args;
 };
 } // namespace cer::shadercompiler
