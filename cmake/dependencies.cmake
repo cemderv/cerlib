@@ -37,15 +37,6 @@ CPMAddPackage(
 
 set_target_properties(fmt PROPERTIES FOLDER "Dependencies")
 
-# cerlib's OpenGL loader
-CPMAddPackage(
-  NAME opengl_loader
-  GITHUB_REPOSITORY cemderv/opengl-loader
-  GIT_TAG v0.0.2
-  GIT_SHALLOW
-  SYSTEM
-)
-
 # ImGui
 if (CERLIB_ENABLE_IMGUI)
   CPMAddPackage(
