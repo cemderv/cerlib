@@ -128,7 +128,7 @@ auto ASTOptimizer::optimize_block(CodeBlock* block) -> bool
 
 auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
 {
-    auto var_stmts = small_vector<VarStmt*, 4>{};
+    auto var_stmts = List<VarStmt*, 4>{};
 
     for (const auto& stmt : block->stmts())
     {
@@ -138,7 +138,7 @@ auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
         }
     }
 
-    auto var_stmts_to_remove = small_vector_of_refs<VarStmt, 4>{};
+    auto var_stmts_to_remove = RefList<VarStmt, 4>{};
 
     for (auto* var_stmt : var_stmts)
     {

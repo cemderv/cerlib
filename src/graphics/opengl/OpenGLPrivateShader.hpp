@@ -30,6 +30,6 @@ class OpenGLPrivateShader final
 
     std::string               name;
     GLuint                    gl_handle{};
-    small_vector<std::string> attributes;
+    List<std::string> attributes;
 };
 } // namespace cer::details

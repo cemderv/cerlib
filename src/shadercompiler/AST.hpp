@@ -21,8 +21,8 @@ class ShaderParamDecl;
 class AccessedParams
 {
   public:
-    small_vector_of_refs<const ShaderParamDecl, 8> scalars{};
-    small_vector_of_refs<const ShaderParamDecl, 8> resources{};
+    RefList<const ShaderParamDecl, 8> scalars{};
+    RefList<const ShaderParamDecl, 8> resources{};
 
     explicit operator bool() const
     {
@@ -33,7 +33,7 @@ class AccessedParams
 class AST final
 {
   public:
-    using DeclsType = small_vector_of_uniques<Decl, 8>;
+    using DeclsType = UniquePtrList<Decl, 8>;
 
     explicit AST(std::string_view              filename,
                  DeclsType                     decls,
@@ -67,7 +67,7 @@ class AST final
 
   private:
     std::string                      m_filename;
-    small_vector_of_uniques<Decl, 8> m_decls;
+    UniquePtrList<Decl, 8> m_decls;
     const StringViewUnorderedSet*    m_user_specified_defines;
     bool                             m_is_verified{};
 };

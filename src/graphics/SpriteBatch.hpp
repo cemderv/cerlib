@@ -180,7 +180,7 @@ class SpriteBatch
     Sampler                     m_sampler;
 
     // Used in draw_string() as temporary buffers for text shaping results.
-    small_vector<PreshapedGlyph>     m_tmp_glyphs;
-    small_vector<TextDecorationRect> m_tmp_decoration_rects;
+    List<PreshapedGlyph>     m_tmp_glyphs;
+    List<TextDecorationRect> m_tmp_decoration_rects;
 };
 } // namespace cer::details

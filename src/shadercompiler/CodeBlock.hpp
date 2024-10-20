@@ -22,7 +22,7 @@ class TempVarNameGen;
 class CodeBlock final
 {
   public:
-    using StmtsType = small_vector_of_uniques<Stmt, 16>;
+    using StmtsType = UniquePtrList<Stmt, 16>;
 
     explicit CodeBlock(const SourceLocation& location, StmtsType stmts);
 
@@ -34,7 +34,7 @@ class CodeBlock final
                 Scope&                                              scope,
                 std::span<const std::reference_wrapper<const Decl>> extra_symbols) const;
 
-    auto variables() const -> small_vector_of_refs<VarStmt, 8>;
+    auto variables() const -> RefList<VarStmt, 8>;
 
     auto location() const -> const SourceLocation&;
 

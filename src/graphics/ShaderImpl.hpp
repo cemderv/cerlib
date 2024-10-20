@@ -25,8 +25,8 @@ class ShaderImpl : public GraphicsResourceImpl
     friend GraphicsDevice;
 
   public:
-    using ParameterList     = small_vector<ShaderParameter, 8>;
-    using ParameterPtrsList = small_vector<ShaderParameter*, 8>;
+    using ParameterList     = List<ShaderParameter, 8>;
+    using ParameterPtrsList = List<ShaderParameter*, 8>;
 
   protected:
     explicit ShaderImpl(GraphicsDevice& parent_device, ParameterList parameters);
@@ -153,7 +153,7 @@ class ShaderImpl : public GraphicsResourceImpl
 
     void set_default_parameter_values();
 
-    small_vector<uint8_t, 512>                 m_cbuffer_data;
+    List<uint8_t, 512>                 m_cbuffer_data;
     uint32_t                                   m_c_buffer_size{};
     ParameterList                              m_parameters;
     ParameterPtrsList                          m_image_parameters;

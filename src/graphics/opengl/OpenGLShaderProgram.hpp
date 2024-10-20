@@ -49,7 +49,7 @@ class OpenGLShaderProgram final
 
     std::string                               name;
     GLuint                                    gl_handle;
-    small_vector_of_pairs<std::string, GLint> uniform_locations;
+    PairList<std::string, GLint> uniform_locations;
 
   private:
     void destroy();

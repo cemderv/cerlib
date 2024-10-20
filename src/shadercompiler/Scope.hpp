@@ -49,7 +49,7 @@ class Scope final
         -> const Decl*;
 
     auto find_symbols(std::string_view name, bool fall_back_to_parent = true) const
-        -> small_vector_of_refs<const Decl, 4>;
+        -> RefList<const Decl, 4>;
 
     auto contains_symbol_only_here(std::string_view name) const -> bool;
 
@@ -87,17 +87,17 @@ class Scope final
 
     void set_current_function(const FunctionDecl* value);
 
-    auto function_call_args() const -> const small_vector_of_refs<const Expr, 4>&;
+    auto function_call_args() const -> const RefList<const Expr, 4>&;
 
-    void set_function_call_args(small_vector_of_refs<const Expr, 4> args);
+    void set_function_call_args(RefList<const Expr, 4> args);
 
   private:
-    small_vector_of_refs<const Decl, 8> m_symbols;
-    small_vector_of_refs<const Type, 8> m_types;
+    RefList<const Decl, 8> m_symbols;
+    RefList<const Type, 8> m_types;
     Scope*                              m_parent{};
-    small_vector_of_uniques<Scope, 4>   m_children;
-    small_vector<ScopeContext, 4>       m_context_stack;
+    UniquePtrList<Scope, 4>   m_children;
+    List<ScopeContext, 4>       m_context_stack;
     const FunctionDecl*                 m_current_function{};
-    small_vector_of_refs<const Expr, 4> m_function_call_args;
+    RefList<const Expr, 4> m_function_call_args;
 };
 } // namespace cer::shadercompiler

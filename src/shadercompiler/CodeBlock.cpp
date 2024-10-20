@@ -37,9 +37,9 @@ void CodeBlock::verify(SemaContext&                                        conte
     scope.pop_child();
 }
 
-auto CodeBlock::variables() const -> small_vector_of_refs<VarStmt, 8>
+auto CodeBlock::variables() const -> RefList<VarStmt, 8>
 {
-    auto vars = small_vector_of_refs<VarStmt, 8>{};
+    auto vars = RefList<VarStmt, 8>{};
     vars.reserve(m_stmts.size());
 
     for (const std::unique_ptr<Stmt>& stmt : m_stmts)

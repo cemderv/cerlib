@@ -327,7 +327,7 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
     return shader;
 }
 
-auto GraphicsDevice::all_resources() const -> const small_vector_of_refs<GraphicsResourceImpl>&
+auto GraphicsDevice::all_resources() const -> const RefList<GraphicsResourceImpl>&
 {
     return m_resources;
 }

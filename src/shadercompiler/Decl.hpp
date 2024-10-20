@@ -74,7 +74,7 @@ class StructFieldDecl final : public Decl
 class StructDecl final : public Decl, public Type
 {
   public:
-    using FieldList = small_vector<std::unique_ptr<StructFieldDecl>, 8>;
+    using FieldList = List<std::unique_ptr<StructFieldDecl>, 8>;
 
     explicit StructDecl(const SourceLocation& location,
                         std::string_view      name,
@@ -171,7 +171,7 @@ class FunctionDecl final : public Decl
   public:
     explicit FunctionDecl(const SourceLocation&                               location,
                           std::string_view                                    name,
-                          small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
+                          List<std::unique_ptr<FunctionParamDecl>, 4> parameters,
                           const Type&                                         return_type,
                           std::unique_ptr<CodeBlock>                          body,
                           bool is_struct_ctor = false);
@@ -204,7 +204,7 @@ class FunctionDecl final : public Decl
 
   private:
     FunctionKind                                        m_kind;
-    small_vector<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
+    List<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
     std::unique_ptr<CodeBlock>                          m_body;
     bool                                                m_is_struct_ctor;
 };

@@ -32,7 +32,7 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
         auto index                  = GLuint{};
         auto vertex_stride          = GLsizei{};
-        auto element_sizes_in_bytes = small_vector<GLsizei, 6>{};
+        auto element_sizes_in_bytes = List<GLsizei, 6>{};
 
         for (const auto& element : vertex_elements)
         {

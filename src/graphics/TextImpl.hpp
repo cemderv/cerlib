@@ -31,8 +31,8 @@ static void shape_text(std::string_view                     text,
                        const Font&                          font,
                        uint32_t                             font_size,
                        const std::optional<TextDecoration>& decoration,
-                       small_vector<PreshapedGlyph>&        dst_glyphs,
-                       small_vector<TextDecorationRect>&    dst_decoration_rects)
+                       List<PreshapedGlyph>&        dst_glyphs,
+                       List<TextDecorationRect>&    dst_decoration_rects)
 {
     assert(font);
 
@@ -127,7 +127,7 @@ class TextImpl final : public Object
     auto decoration_rects() const -> std::span<const TextDecorationRect>;
 
   private:
-    small_vector<PreshapedGlyph>     m_glyphs;
-    small_vector<TextDecorationRect> m_decoration_rects;
+    List<PreshapedGlyph>     m_glyphs;
+    List<TextDecorationRect> m_decoration_rects;
 };
 } // namespace cer::details

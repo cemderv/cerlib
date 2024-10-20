@@ -259,7 +259,7 @@ class StructCtorCall final : public Expr
   public:
     explicit StructCtorCall(const SourceLocation&                     location,
                             std::unique_ptr<Expr>                     callee,
-                            small_vector_of_uniques<StructCtorArg, 4> args);
+                            UniquePtrList<StructCtorArg, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -271,7 +271,7 @@ class StructCtorCall final : public Expr
 
   private:
     std::unique_ptr<Expr>                     m_callee;
-    small_vector_of_uniques<StructCtorArg, 4> m_args;
+    UniquePtrList<StructCtorArg, 4> m_args;
 };
 
 class FunctionCallExpr final : public Expr
@@ -279,7 +279,7 @@ class FunctionCallExpr final : public Expr
   public:
     explicit FunctionCallExpr(const SourceLocation&            location,
                               std::unique_ptr<Expr>            callee,
-                              small_vector_of_uniques<Expr, 4> args);
+                              UniquePtrList<Expr, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -293,7 +293,7 @@ class FunctionCallExpr final : public Expr
 
   private:
     std::unique_ptr<Expr>            m_callee;
-    small_vector_of_uniques<Expr, 4> m_args;
+    UniquePtrList<Expr, 4> m_args;
 };
 
 class SubscriptExpr final : public Expr

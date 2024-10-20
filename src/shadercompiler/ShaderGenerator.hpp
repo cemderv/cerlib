@@ -44,7 +44,7 @@ class TernaryExpr;
 class ShaderGenerationResult
 {
   public:
-    using ParameterList = small_vector_of_refs<const ShaderParamDecl, 8>;
+    using ParameterList = RefList<const ShaderParamDecl, 8>;
 
     explicit ShaderGenerationResult(std::string         glsl_code,
                                     const FunctionDecl& entry_point,
@@ -84,7 +84,7 @@ class ShaderGenerator
 
     virtual auto do_generation(const SemaContext&                  context,
                                const FunctionDecl&                 entry_point,
-                               const small_vector<const Decl*, 8>& decls_to_generate)
+                               const List<const Decl*, 8>& decls_to_generate)
         -> std::string = 0;
 
     virtual void generate_stmt(Writer& w, const Stmt& stmt, const SemaContext& context);
@@ -161,7 +161,7 @@ class ShaderGenerator
     auto gather_ast_decls_to_generate(const AST&         ast,
                                       std::string_view   entry_point,
                                       const SemaContext& context) const
-        -> small_vector<const Decl*, 8>;
+        -> List<const Decl*, 8>;
 
     struct TypeHash
     {
@@ -186,8 +186,8 @@ class ShaderGenerator
 
     const AST*                                   m_ast{};
     const FunctionDecl*                          m_currently_generated_shader_function{};
-    small_vector<const FunctionDecl*, 8>         m_call_stack;
-    small_vector<TempVarNameGen, 4>              m_temp_var_name_gen_stack;
+    List<const FunctionDecl*, 8>         m_call_stack;
+    List<TempVarNameGen, 4>              m_temp_var_name_gen_stack;
     std::unordered_map<const Expr*, std::string> m_temporary_vars;
     std::optional<std::string>                   m_current_sym_access_override;
     bool                                         m_needs_float_literal_suffix{};

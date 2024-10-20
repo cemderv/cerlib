@@ -150,7 +150,7 @@ class Parser final
     {
       public:
         using TokenIterator = std::span<const Token>::iterator;
-        using StackType     = small_vector<TokenIterator, 4>;
+        using StackType     = List<TokenIterator, 4>;
 
         explicit TokenPusher(StackType& stack, TokenIterator tk);
 

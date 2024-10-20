@@ -66,7 +66,7 @@ class GraphicsDevice
 
     virtual void notify_user_shader_destroyed(ShaderImpl& resource);
 
-    auto all_resources() const -> const small_vector_of_refs<GraphicsResourceImpl>&;
+    auto all_resources() const -> const RefList<GraphicsResourceImpl>&;
 
     auto current_canvas() const -> const Image&;
 
@@ -154,7 +154,7 @@ class GraphicsDevice
 
     void compute_combined_transformation();
 
-    small_vector_of_refs<GraphicsResourceImpl> m_resources;
+    RefList<GraphicsResourceImpl> m_resources;
     std::unique_ptr<SpriteBatch>               m_sprite_batch;
     Window                                     m_current_window;
     bool                                       m_must_flush_draw_calls;

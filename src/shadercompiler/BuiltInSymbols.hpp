@@ -200,6 +200,6 @@ class BuiltInSymbols final
 
     void add_system_value(std::unique_ptr<Decl>& var, std::string_view name, const Type& type);
 
-    small_vector_of_refs<Decl, 132> m_all;
+    RefList<Decl, 132> m_all;
 };
 } // namespace cer::shadercompiler

@@ -24,7 +24,7 @@ struct DDSMipmap
 
 struct DDSFace
 {
-    small_vector<DDSMipmap, 8> mipmaps;
+    List<DDSMipmap, 8> mipmaps;
 };
 
 struct DDSImage
@@ -33,7 +33,7 @@ struct DDSImage
     uint32_t                 height{};
     uint32_t                 depth{};
     ImageFormat              format{};
-    small_vector<DDSFace, 2> faces{};
+    List<DDSFace, 2> faces{};
 };
 
 auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>;

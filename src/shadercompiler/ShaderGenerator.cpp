@@ -119,7 +119,7 @@ auto ShaderGenerator::generate(const SemaContext&    context,
 
     const auto accessed_params = params_accessed_by_function(entry_point);
 
-    auto parameters = small_vector_of_refs<const ShaderParamDecl, 8>{};
+    auto parameters = RefList<const ShaderParamDecl, 8>{};
     parameters.reserve(accessed_params.scalars.size() + accessed_params.resources.size());
 
     for (const auto& param : accessed_params.scalars)
@@ -603,7 +603,7 @@ auto ShaderGenerator::translate_array_type(const ArrayType& type,
 auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
                                                    std::string_view   entry_point,
                                                    const SemaContext& context) const
-    -> small_vector<const Decl*, 8>
+    -> List<const Decl*, 8>
 {
     const auto& decls = ast.decls();
 
@@ -624,7 +624,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
     }
 
     // See what the main function depends on.
-    auto accessed_symbols = small_vector<const Decl*, 16>{};
+    auto accessed_symbols = List<const Decl*, 16>{};
 
     for (const auto& decl : ast.decls())
     {
@@ -651,7 +651,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
 
     remove_duplicates_but_keep_order(accessed_symbols);
 
-    auto decls_to_generate = small_vector<const Decl*, 8>{};
+    auto decls_to_generate = List<const Decl*, 8>{};
     decls_to_generate.reserve(accessed_symbols.size() + 1);
 
     for (const auto* symbol : accessed_symbols)

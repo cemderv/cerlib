@@ -188,7 +188,7 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
     }
 #endif
 
-    auto scissor_rects_gl = small_vector<GLint, 8>{};
+    auto scissor_rects_gl = List<GLint, 8>{};
     scissor_rects_gl.reserve(scissor_rects.size());
 
     for (const auto& rect : scissor_rects)

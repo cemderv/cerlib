@@ -39,6 +39,6 @@ class BinOpTable final
         std::reference_wrapper<const Type> result;
     };
 
-    small_vector<Entry, 128> m_entries;
+    List<Entry, 128> m_entries;
 };
 } // namespace cer::shadercompiler

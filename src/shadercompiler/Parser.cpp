@@ -447,7 +447,7 @@ auto Parser::parse_function(std::string_view      name,
 
     consume(TokenType::LeftParen, true);
 
-    auto params = small_vector_of_uniques<FunctionParamDecl, 4>{};
+    auto params = UniquePtrList<FunctionParamDecl, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {
@@ -483,7 +483,7 @@ auto Parser::parse_struct() -> std::unique_ptr<StructDecl>
 
     consume(TokenType::LeftBrace, true);
 
-    auto fields = small_vector_of_uniques<StructFieldDecl, 8>{};
+    auto fields = UniquePtrList<StructFieldDecl, 8>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -904,7 +904,7 @@ auto Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique
     PUSH_TK;
     consume(TokenType::LeftBrace, true);
 
-    auto args = small_vector_of_uniques<StructCtorArg, 4>{};
+    auto args = UniquePtrList<StructCtorArg, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -937,7 +937,7 @@ auto Parser::parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_pt
     PUSH_TK;
     consume(TokenType::LeftParen, true);
 
-    auto args = small_vector_of_uniques<Expr, 4>{};
+    auto args = UniquePtrList<Expr, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {

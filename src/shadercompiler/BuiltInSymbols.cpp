@@ -57,7 +57,7 @@ using namespace std::string_view_literals;
 namespace cer::shadercompiler
 {
 static void add_struct_fields(
-    small_vector_of_refs<Decl, 132>&                                                       all,
+    RefList<Decl, 132>&                                                       all,
     std::vector<std::unique_ptr<Decl>>&                                                    var,
     std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>> fields)
 {
@@ -434,7 +434,7 @@ void BuiltInSymbols::add_func(
     // The variable must not be initialized yet.
     assert(!var);
 
-    auto params = small_vector_of_uniques<FunctionParamDecl, 4>{};
+    auto params = UniquePtrList<FunctionParamDecl, 4>{};
 
     for (const auto& [param_name, param_type] : param_descs)
     {

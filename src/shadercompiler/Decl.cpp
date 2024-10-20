@@ -130,7 +130,7 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
 
     m_ctor = std::make_unique<FunctionDecl>(Decl::location(),
                                             name(),
-                                            small_vector_of_uniques<FunctionParamDecl, 4>{},
+                                            UniquePtrList<FunctionParamDecl, 4>{},
                                             *this,
                                             nullptr,
                                             /*is_struct_ctor:*/ true);
@@ -190,7 +190,7 @@ auto StructDecl::is_built_in() const -> bool
 
 FunctionDecl::FunctionDecl(const SourceLocation&                         location,
                            std::string_view                              name,
-                           small_vector_of_uniques<FunctionParamDecl, 4> parameters,
+                           UniquePtrList<FunctionParamDecl, 4> parameters,
                            const Type&                                   return_type,
                            std::unique_ptr<CodeBlock>                    body,
                            bool                                          is_struct_ctor)
@@ -246,7 +246,7 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
                     "struct type"};
     }
 
-    auto extra_symbols = small_vector_of_refs<const Decl>{};
+    auto extra_symbols = RefList<const Decl>{};
 
     if (is_shader())
     {
