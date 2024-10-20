@@ -11,7 +11,6 @@
 
 #include "stb_truetype.hpp"
 #include "util/utf8.hpp"
-#include <stb_truetype.h>
 #include <unordered_map>
 #include <unordered_set>
 
