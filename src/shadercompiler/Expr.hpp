@@ -9,7 +9,6 @@
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
 #include <span>
-#include <vector>
 
 namespace cer::shadercompiler
 {
@@ -257,8 +256,8 @@ class SymAccessExpr final : public Expr
 class StructCtorCall final : public Expr
 {
   public:
-    explicit StructCtorCall(const SourceLocation&                     location,
-                            std::unique_ptr<Expr>                     callee,
+    explicit StructCtorCall(const SourceLocation&           location,
+                            std::unique_ptr<Expr>           callee,
                             UniquePtrList<StructCtorArg, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
@@ -270,15 +269,15 @@ class StructCtorCall final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>                     m_callee;
+    std::unique_ptr<Expr>           m_callee;
     UniquePtrList<StructCtorArg, 4> m_args;
 };
 
 class FunctionCallExpr final : public Expr
 {
   public:
-    explicit FunctionCallExpr(const SourceLocation&            location,
-                              std::unique_ptr<Expr>            callee,
+    explicit FunctionCallExpr(const SourceLocation&  location,
+                              std::unique_ptr<Expr>  callee,
                               UniquePtrList<Expr, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
@@ -292,7 +291,7 @@ class FunctionCallExpr final : public Expr
     auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
   private:
-    std::unique_ptr<Expr>            m_callee;
+    std::unique_ptr<Expr>  m_callee;
     UniquePtrList<Expr, 4> m_args;
 };
 
@@ -388,7 +387,7 @@ class TernaryExpr final : public Expr
 class ArrayExpr final : public Expr
 {
   public:
-    explicit ArrayExpr(const SourceLocation& location, std::vector<std::unique_ptr<Expr>> elements);
+    explicit ArrayExpr(const SourceLocation& location, List<std::unique_ptr<Expr>> elements);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -399,6 +398,6 @@ class ArrayExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::vector<std::unique_ptr<Expr>> m_elements;
+    List<std::unique_ptr<Expr>> m_elements;
 };
 } // namespace cer::shadercompiler

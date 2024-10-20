@@ -58,7 +58,7 @@ namespace cer::shadercompiler
 {
 static void add_struct_fields(
     RefList<Decl, 132>&                                                       all,
-    std::vector<std::unique_ptr<Decl>>&                                                    var,
+    List<std::unique_ptr<Decl>>&                                                    var,
     std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>> fields)
 {
     var.reserve(fields.size());

@@ -4628,7 +4628,7 @@ class List : detail::ListBase<Allocator, InlineCapacity>
         return iterator(base::insert_copies(base::ptr_cast(pos), count, value));
     }
 
-    // Note: Unlike std::vector, this does not require MoveConstructible because we
+    // Note: Unlike List, this does not require MoveConstructible because we
     //       don't use std::rotate (as was the reason for the change in C++17).
     //       Relevant: https://cplusplus.github.io/LWG/issue2266).
     template <std::input_iterator InputIt>

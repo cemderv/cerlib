@@ -8,10 +8,10 @@
 #include "cerlib/Vector2.hpp"
 #include "util/Object.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <map>
 #include <span>
 #include <variant>
-#include <vector>
 
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
@@ -116,7 +116,7 @@ class GameImpl final : public Object
 
     auto current_display_mode(uint32_t display_index) const -> std::optional<DisplayMode>;
 
-    auto display_modes(uint32_t display_index) const -> std::vector<DisplayMode>;
+    auto display_modes(uint32_t display_index) const -> List<DisplayMode>;
 
     auto display_content_scale(uint32_t display_index) const -> float;
 
@@ -136,7 +136,7 @@ class GameImpl final : public Object
 
     auto windows() const -> std::span<WindowImpl* const>;
 
-    auto gamepads() const -> std::vector<Gamepad>;
+    auto gamepads() const -> List<Gamepad>;
 
   private:
     void open_initial_gamepads();
@@ -168,7 +168,7 @@ class GameImpl final : public Object
     void raise_event(const Event& event);
 
     auto find_gamepad_by_sdl_joystick_id(SDL_JoystickID sdl_joystick_id) const
-        -> std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&>;
+        -> std::ranges::borrowed_iterator_t<const List<Gamepad>&>;
 
     bool       m_is_running{};
     bool       m_is_first_tick{true};
@@ -197,8 +197,8 @@ class GameImpl final : public Object
     std::unique_ptr<GraphicsDevice> m_graphics_device;
     std::unique_ptr<AudioDevice>    m_audio_device;
     std::unique_ptr<ContentManager> m_content_manager;
-    std::vector<WindowImpl*>        m_windows;
+    List<WindowImpl*>        m_windows;
     Vector2                         m_previous_mouse_position;
-    std::vector<Gamepad>            m_connected_gamepads;
+    List<Gamepad>            m_connected_gamepads;
 };
 } // namespace cer::details

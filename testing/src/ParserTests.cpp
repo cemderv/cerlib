@@ -11,6 +11,7 @@
 #include "shadercompiler/SemaContext.hpp"
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/TypeCache.hpp"
+#include <cerlib/List.hpp>
 #include <snitch/snitch.hpp>
 
 using cer::shadercompiler::ArrayType;
@@ -115,7 +116,7 @@ TEST_CASE("Shader parser", "[shaderc]")
         auto type_cache = TypeCache{};
         auto parser     = Parser{type_cache};
 
-        std::vector<Token> tokens;
+        cer::List<Token> tokens;
         do_lexing(basic_expressions, "SomeFile", true, tokens);
 
         const auto decls = parser.parse(tokens);
@@ -287,7 +288,7 @@ TEST_CASE("Shader parser", "[shaderc]")
         auto type_cache = TypeCache();
         auto parser     = Parser(type_cache);
 
-        auto tokens = std::vector<Token>();
+        auto tokens = cer::List<Token>();
         do_lexing(simple_if_stmt, "SomeFile", true, tokens);
 
         const auto decls = parser.parse(tokens);
@@ -330,7 +331,7 @@ TEST_CASE("Shader parser", "[shaderc]")
         auto type_cache = TypeCache();
         auto parser     = Parser(type_cache);
 
-        auto tokens = std::vector<Token>();
+        auto tokens = cer::List<Token>();
         do_lexing(simple_if_stmt2, "SomeFile", true, tokens);
 
         const auto decls = parser.parse(tokens);
@@ -395,7 +396,7 @@ TEST_CASE("Shader parser", "[shaderc]")
         auto type_cache = TypeCache();
         auto parser     = Parser(type_cache);
 
-        auto tokens = std::vector<Token>();
+        auto tokens = cer::List<Token>();
         do_lexing(simple_shader_code, "SomeFile", true, tokens);
 
         const auto decls = parser.parse(tokens);

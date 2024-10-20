@@ -5,9 +5,9 @@
 #pragma once
 
 #include "cerlib/Content.hpp"
+#include <cerlib/List.hpp>
 #include <string>
 #include <string_view>
-#include <vector>
 
 auto set_android_asset_manager(void* asset_manager) -> void;
 
@@ -40,12 +40,12 @@ auto combine_paths(std::string_view path1, std::string_view path2) -> std::strin
  * Loads a binary file from disk, meaning the disk on desktop platforms.
  * On non-desktop platforms, calling this will throw an exception.
  */
-auto load_file_data_from_disk(std::string_view filename) -> std::vector<std::byte>;
+auto load_file_data_from_disk(std::string_view filename) -> List<std::byte>;
 
 void write_text_to_file_on_disk(std::string_view filename, std::string_view contents);
 
 #ifdef CERLIB_ENABLE_TESTS
-auto decode_image_data_from_file_on_disk(std::string_view filename) -> std::vector<std::byte>;
+auto decode_image_data_from_file_on_disk(std::string_view filename) -> List<std::byte>;
 
 void encode_image_data_to_file_on_disk(std::string_view           filename,
                                        std::span<const std::byte> raw_image_data,

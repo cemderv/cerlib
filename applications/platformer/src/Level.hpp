@@ -6,7 +6,6 @@
 #include "Tile.hpp"
 #include <array>
 #include <cerlib.hpp>
-#include <vector>
 
 class Level : public cer::Asset
 {
@@ -70,11 +69,11 @@ class Level : public cer::Asset
     std::string               m_name;
     int                       m_width  = 0;
     int                       m_height = 0;
-    std::vector<Tile>         m_tiles;
+    cer::List<Tile>           m_tiles;
     std::array<cer::Image, 3> m_layers;
     Player                    m_player;
-    std::vector<Gem>          m_gems;
-    std::vector<Enemy>        m_enemies;
+    cer::List<Gem>            m_gems;
+    cer::List<Enemy>          m_enemies;
     cer::Vector2              m_start;
     cer::Vector2              m_exit            = invalid_position;
     int*                      m_score           = nullptr;

@@ -6,7 +6,7 @@
 
 #include "shadercompiler/Token.hpp"
 #include <array>
-#include <vector>
+#include <cerlib/List.hpp>
 
 namespace cer::shadercompiler
 {
@@ -39,12 +39,12 @@ static constexpr auto list = std::array{
 };
 } // namespace keyword
 
-void do_lexing(std::string_view    code,
-               std::string_view    filename_hint,
-               bool                do_post_processing,
-               std::vector<Token>& tokens);
+void do_lexing(std::string_view code,
+               std::string_view filename_hint,
+               bool             do_post_processing,
+               List<Token>&     tokens);
 
-void assemble_tokens(std::string_view code, std::vector<Token>& tokens);
+void assemble_tokens(std::string_view code, List<Token>& tokens);
 
-void remove_unnecessary_tokens(std::vector<Token>& tokens);
+void remove_unnecessary_tokens(List<Token>& tokens);
 } // namespace cer::shadercompiler

@@ -6,8 +6,8 @@
 
 #include "cerlib/Rectangle.hpp"
 
+#include <cerlib/List.hpp>
 #include <optional>
-#include <vector>
 
 namespace cer
 {
@@ -45,11 +45,9 @@ class BinPack final
 
     BinPack(int32_t width, int32_t height);
 
-    void insert(std::vector<Size>& rects, std::vector<Rect>& dst);
+    void insert(List<Size>& rects, List<Rect>& dst);
 
     auto insert(int32_t width, int32_t height) -> std::optional<Rect>;
-
-    auto occupancy() const -> double;
 
   private:
     auto score_rect(int width, int height, int& score1, int& score2) const -> std::optional<Rect>;
@@ -70,10 +68,10 @@ class BinPack final
     int32_t m_bin_width{};
     int32_t m_bin_height{};
 
-    size_t            m_new_free_rectangles_last_size{};
-    std::vector<Rect> m_new_free_rectangles;
+    size_t     m_new_free_rectangles_last_size{};
+    List<Rect> m_new_free_rectangles;
 
-    std::vector<Rect> m_used_rectangles;
-    std::vector<Rect> m_free_rectangles;
+    List<Rect> m_used_rectangles;
+    List<Rect> m_free_rectangles;
 };
 } // namespace cer

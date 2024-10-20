@@ -44,7 +44,7 @@ auto BinPack::insert(int32_t width, int32_t height) -> std::optional<BinPack::Re
     return new_node;
 }
 
-void BinPack::insert(std::vector<Size>& rects, std::vector<Rect>& dst)
+void BinPack::insert(List<Size>& rects, List<Rect>& dst)
 {
     dst.clear();
 
@@ -118,19 +118,6 @@ auto BinPack::score_rect(int width, int height, int& score1, int& score2) const
     }
 
     return new_node;
-}
-
-/// Computes the ratio of used surface area.
-auto BinPack::occupancy() const -> double
-{
-    auto used_surface_area = uint64_t(0);
-
-    for (const auto& used_rectangle : m_used_rectangles)
-    {
-        used_surface_area += uint64_t(used_rectangle.width) * uint64_t(used_rectangle.height);
-    }
-
-    return double(used_surface_area) / (double(m_bin_width) * double(m_bin_height));
 }
 
 auto BinPack::find_position_for_new_node(int  width,

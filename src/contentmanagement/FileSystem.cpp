@@ -358,7 +358,7 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> AssetData
 }
 
 auto cer::filesystem::load_file_data_from_disk([[maybe_unused]] std::string_view filename)
-    -> std::vector<std::byte>
+    -> List<std::byte>
 {
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__) || TARGET_OS_IPHONE
     CER_THROW_RUNTIME_ERROR_STR("Loading files from disk is not supported on the current system.");
@@ -373,7 +373,7 @@ auto cer::filesystem::load_file_data_from_disk([[maybe_unused]] std::string_view
     const auto file_size = ifs.tellg();
     ifs.seekg(0, std::ios::beg);
 
-    std::vector<std::byte> data;
+    List<std::byte> data;
     data.resize(file_size);
     ifs.read(reinterpret_cast<char*>(data.data()), static_cast<std::streamsize>(file_size));
 
@@ -396,7 +396,7 @@ auto cer::filesystem::write_text_to_file_on_disk(std::string_view filename,
 
 #ifdef CERLIB_ENABLE_TESTS
 auto cer::filesystem::decode_image_data_from_file_on_disk(std::string_view filename)
-    -> std::vector<std::byte>
+    -> List<std::byte>
 {
     auto       file_data    = load_file_data_from_disk(filename);
     const auto filename_str = std::string{filename};
@@ -421,7 +421,7 @@ auto cer::filesystem::decode_image_data_from_file_on_disk(std::string_view filen
 
     const auto src_span = std::span{reinterpret_cast<const std::byte*>(data), data_size};
 
-    auto result = std::vector<std::byte>{src_span.size_bytes()};
+    auto result = List<std::byte>{src_span.size_bytes()};
 
     std::ranges::copy(src_span, result.begin());
 

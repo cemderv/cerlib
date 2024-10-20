@@ -188,7 +188,7 @@ auto cer::read_canvas_data(const Image& canvas,
                            uint32_t     x,
                            uint32_t     y,
                            uint32_t     width,
-                           uint32_t     height) -> std::vector<std::byte>
+                           uint32_t     height) -> List<std::byte>
 {
     if (!canvas)
     {
@@ -207,7 +207,7 @@ auto cer::read_canvas_data(const Image& canvas,
         CER_THROW_INVALID_ARG_STR("Invalid canvas specified; failed to determine pixel data size");
     }
 
-    auto data = std::vector<std::byte>{size_in_bytes};
+    auto data = List<std::byte>{size_in_bytes};
     read_canvas_data_into(canvas, x, y, width, height, data.data());
 
     return data;
@@ -268,7 +268,7 @@ void cer::save_canvas_to_file(const Image&     canvas,
 }
 
 auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format)
-    -> std::vector<std::byte>
+    -> List<std::byte>
 {
     if (!canvas)
     {
@@ -287,7 +287,7 @@ auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format)
 
     struct Context
     {
-        std::vector<std::byte> saved_data;
+        List<std::byte> saved_data;
     };
 
     const auto write_func = [](void* context, void* data, int size) {

@@ -265,17 +265,17 @@ void Bus::set_filter(size_t filter_id, Filter* filter)
     }
 }
 
-void Bus::set_channels(size_t aChannels)
+void Bus::set_channels(size_t channels)
 {
-    assert(aChannels != 0 && aChannels != 3 && aChannels != 5 && aChannels != 7);
-    assert(aChannels <= max_channels);
+    assert(channels != 0 && channels != 3 && channels != 5 && channels != 7);
+    assert(channels <= max_channels);
 
-    channel_count = aChannels;
+    channel_count = channels;
 }
 
-void Bus::set_visualization_enable(bool aEnable)
+void Bus::set_visualization_enable(bool enable)
 {
-    visualization_data = aEnable;
+    visualization_data = enable;
 }
 
 auto Bus::calc_fft() -> float*

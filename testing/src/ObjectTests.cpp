@@ -5,13 +5,13 @@
 #include "cerlib/details/ObjectMacros.hpp"
 #include "util/Object.hpp"
 #include <cerlib/Formatters.hpp>
+#include <cerlib/List.hpp>
 #include <cerlib/Util2.hpp>
 #include <memory>
 #include <snitch/snitch.hpp>
 #include <string>
-#include <vector>
 
-static auto s_info_list = std::vector<std::string>{};
+static auto s_info_list = cer::List<std::string>{};
 
 namespace details
 {

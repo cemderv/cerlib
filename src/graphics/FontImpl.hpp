@@ -241,8 +241,8 @@ class FontImpl final : public Object, public Asset
     int                             m_descent{};
     int                             m_line_gap{};
     RasterizedGlyphsMap             m_rasterized_glyphs;
-    std::vector<FontPage>           m_pages;
-    std::vector<FontPage>::iterator m_current_page_iterator;
+    List<FontPage>           m_pages;
+    List<FontPage>::iterator m_current_page_iterator;
     std::unordered_set<uint32_t>    m_initialized_sizes;
     std::unordered_set<size_t>      m_page_images_to_update;
 };
