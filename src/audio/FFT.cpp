@@ -1125,7 +1125,7 @@ void cftb1st(int n, float* a)
         wk3i = wk1i - wk3i * wk1r;
         i    = i0;
     }
-    wd1r      = wr5000;
+    wd1r      = float(wr5000);
     j0        = mh;
     j1        = j0 + m;
     j2        = j1 + m;
@@ -1355,7 +1355,7 @@ void cftmdl1(int n, float* a)
         wk3i = wk1i - wk3i * wk1r;
         i    = i0;
     }
-    wd1r      = wr5000;
+    wd1r      = float(wr5000);
     j0        = mh;
     j1        = j0 + m;
     j2        = j1 + m;
@@ -1432,7 +1432,7 @@ void cftmdl2(int n, float* a)
 
     mh        = n >> 3;
     m         = 2 * mh;
-    wn4r      = wr5000;
+    wn4r      = float(wr5000);
     j1        = m;
     j2        = j1 + m;
     j3        = j2 + m;
@@ -1632,8 +1632,8 @@ void cftmdl2(int n, float* a)
         wd3i = -wn4r * (wk3i + wk3r);
         i    = i0;
     }
-    wl1r      = wr2500;
-    wl1i      = wi2500;
+    wl1r      = float(wr2500);
+    wl1i      = float(wi2500);
     j0        = mh;
     j1        = j0 + m;
     j2        = j1 + m;
@@ -1718,9 +1718,9 @@ void cftf161(float* a)
         y3r, y3i, y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i, y8r, y8i, y9r, y9i, y10r, y10i, y11r,
         y11i, y12r, y12i, y13r, y13i, y14r, y14i, y15r, y15i;
 
-    wn4r  = wr5000;
-    wk1r  = wr2500;
-    wk1i  = wi2500;
+    wn4r  = float(wr5000);
+    wk1r  = float(wr2500);
+    wk1i  = float(wi2500);
     x0r   = a[0] + a[16];
     x0i   = a[1] + a[17];
     x1r   = a[0] - a[16];
@@ -1874,13 +1874,13 @@ void cftf162(float* a)
         y1i, y2r, y2i, y3r, y3i, y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i, y8r, y8i, y9r, y9i, y10r,
         y10i, y11r, y11i, y12r, y12i, y13r, y13i, y14r, y14i, y15r, y15i;
 
-    wn4r  = wr5000;
-    wk1r  = wr1250;
-    wk1i  = wi1250;
-    wk2r  = wr2500;
-    wk2i  = wi2500;
-    wk3r  = wr3750;
-    wk3i  = wi3750;
+    wn4r  = float(wr5000);
+    wk1r  = float(wr1250);
+    wk1i  = float(wi1250);
+    wk2r  = float(wr2500);
+    wk2i  = float(wi2500);
+    wk3r  = float(wr3750);
+    wk3i  = float(wi3750);
     x1r   = a[0] - a[17];
     x1i   = a[1] + a[16];
     x0r   = a[8] - a[25];
@@ -2053,7 +2053,7 @@ void cftf081(float* a)
     float wn4r, x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i, y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i, y4r,
         y4i, y5r, y5i, y6r, y6i, y7r, y7i;
 
-    wn4r  = wr5000;
+    wn4r  = float(wr5000);
     x0r   = a[0] + a[8];
     x0i   = a[1] + a[9];
     x1r   = a[0] - a[8];
@@ -2114,9 +2114,9 @@ void cftf082(float* a)
     float wn4r, wk1r, wk1i, x0r, x0i, x1r, x1i, y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i, y4r, y4i,
         y5r, y5i, y6r, y6i, y7r, y7i;
 
-    wn4r  = wr5000;
-    wk1r  = wr2500;
-    wk1i  = wi2500;
+    wn4r  = float(wr5000);
+    wk1r  = float(wr2500);
+    wk1i  = float(wi2500);
     y0r   = a[0] - a[9];
     y0i   = a[1] + a[8];
     y1r   = a[0] + a[9];
