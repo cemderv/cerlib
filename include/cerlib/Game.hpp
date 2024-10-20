@@ -146,13 +146,13 @@ class Game
      * @param display_index The index of the display for which to obtain the display
      * modes.
      */
-    auto display_modes(uint32_t display_index) -> std::vector<DisplayMode>;
+    auto display_modes(uint32_t display_index) -> List<DisplayMode>;
 
     auto display_content_scale(uint32_t display_index) -> float;
 
     auto display_orientation(uint32_t display_index) -> DisplayOrientation;
 
-    auto gamepads() -> std::vector<Gamepad>;
+    auto gamepads() -> List<Gamepad>;
 
   protected:
     virtual void load_content();

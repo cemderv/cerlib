@@ -211,7 +211,7 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
                                           std::span<const std::string_view> defines)
     -> std::unique_ptr<ShaderImpl>
 {
-    auto tokens = std::vector<shadercompiler::Token>{};
+    auto tokens = List<shadercompiler::Token>{};
     do_lexing(source_code, name, true, tokens);
 
     auto type_cache       = shadercompiler::TypeCache{};

@@ -10,10 +10,10 @@
 #include "cerlib/Sound.hpp"
 #include "cerlib/SoundTypes.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <optional>
 #include <span>
 #include <unordered_set>
-#include <vector>
 
 namespace cer
 {
@@ -586,13 +586,13 @@ class AudioDevice
     AlignedFloatBuffer m_output_scratch;
 
     // Pointers to resampler buffers, two per active voice.
-    std::vector<float*> m_resample_data;
+    List<float*> m_resample_data;
 
     // Actual allocated memory for resampler buffers
     AlignedFloatBuffer m_resample_data_buffer;
 
     // Owners of the resample data
-    std::vector<std::shared_ptr<AudioSourceInstance>> m_resample_data_owner;
+    List<std::shared_ptr<AudioSourceInstance>> m_resample_data_owner;
 
     // Audio voices.
     std::array<std::shared_ptr<AudioSourceInstance>, cer::max_voice_count> m_voice;

@@ -392,7 +392,7 @@ void ParticleSystem::trigger_emitter_from_to(EmitterData& data, Vector2 from, Ve
 
 ParticleSystem::ParticleSystem() = default;
 
-ParticleSystem::ParticleSystem(std::vector<ParticleEmitter> emitters)
+ParticleSystem::ParticleSystem(List<ParticleEmitter> emitters)
 {
     m_emitters.reserve(emitters.size());
 

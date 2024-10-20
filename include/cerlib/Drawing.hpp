@@ -5,12 +5,12 @@
 #pragma once
 
 #include <cerlib/Image.hpp>
+#include <cerlib/List.hpp>
 #include <cerlib/Matrix.hpp>
 #include <cerlib/Rectangle.hpp>
 #include <cerlib/Vector2.hpp>
 #include <optional>
 #include <variant>
-#include <vector>
 
 namespace cer
 {
@@ -340,12 +340,12 @@ void read_canvas_data_into(const Image& canvas,
  * @param width The width of the area within the canvas to read, in pixels.
  * @param height The height of the area within the canvas to read, in pixels.
  *
- * @return An std::vector that contains the pixel data of the canvas.
+ * @return A buffer that contains the pixel data of the canvas.
  *
  * @ingroup Graphics
  */
 auto read_canvas_data(const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-    -> std::vector<std::byte>;
+    -> List<std::byte>;
 
 /**
  * Saves the pixel data of a canvas to a file.
@@ -371,5 +371,5 @@ void save_canvas_to_file(const Image&     canvas,
  * @ingroup Graphics
  */
 auto save_canvas_to_memory(const Image& canvas, ImageFileFormat format = ImageFileFormat::Png)
-    -> std::vector<std::byte>;
+    -> List<std::byte>;
 } // namespace cer

@@ -27,8 +27,8 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
     std::stringstream stream;
     stream << contents;
 
-    std::vector<std::string> lines;
-    std::string              line;
+    cer::List<std::string> lines;
+    std::string            line;
 
     while (getline(stream, line))
     {
@@ -64,7 +64,8 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
     {
         // Choose a random segment if each background layer for level variety.
         const int         segment_index = cer::random_int(0, 2);
-        const std::string image_name = cer_fmt::format("backgrounds/layer{}_{}.png", i, segment_index);
+        const std::string image_name =
+            cer_fmt::format("backgrounds/layer{}_{}.png", i, segment_index);
 
         m_layers[i] = cer::load_image(image_name);
     }
@@ -215,9 +216,7 @@ void Level::draw_tiles()
             if (auto image = m_tiles[y * m_width + x].image)
             {
                 // Draw it in screen space.
-                cer::draw_sprite(image,
-                                 cer::Vector2{float(x), float(y)} *
-                                     Tile::size);
+                cer::draw_sprite(image, cer::Vector2{float(x), float(y)} * Tile::size);
             }
         }
     }
@@ -313,10 +312,7 @@ void Level::draw()
 
 cer::Rectangle Level::bounds(int x, int y) const
 {
-    return {float(x) * Tile::width,
-            float(y) * Tile::height,
-            Tile::width,
-            Tile::height};
+    return {float(x) * Tile::width, float(y) * Tile::height, Tile::width, Tile::height};
 }
 
 bool Level::is_exit_reached() const

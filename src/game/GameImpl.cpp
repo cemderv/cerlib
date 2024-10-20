@@ -24,7 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
-#include <vector>
+#include <cerlib/List.hpp>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -319,9 +319,9 @@ auto GameImpl::current_display_mode(uint32_t display_index) const -> std::option
 #endif
 }
 
-auto GameImpl::display_modes(uint32_t display_index) const -> std::vector<DisplayMode>
+auto GameImpl::display_modes(uint32_t display_index) const -> List<DisplayMode>
 {
-    auto list = std::vector<DisplayMode>{};
+    auto list = List<DisplayMode>{};
 
 #ifdef __EMSCRIPTEN__
 
@@ -454,7 +454,7 @@ auto GameImpl::windows() const -> std::span<WindowImpl* const>
     return m_windows;
 }
 
-auto GameImpl::gamepads() const -> std::vector<Gamepad>
+auto GameImpl::gamepads() const -> List<Gamepad>
 {
     return m_connected_gamepads;
 }
@@ -1074,7 +1074,7 @@ void GameImpl::raise_event(const Event& event)
 }
 
 auto GameImpl::find_gamepad_by_sdl_joystick_id(SDL_JoystickID sdl_joystick_id) const
-    -> std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&>
+    -> std::ranges::borrowed_iterator_t<const List<Gamepad>&>
 {
     return std::ranges::find_if(m_connected_gamepads, [sdl_joystick_id](const auto& e) {
         return e.impl()->joystick_id() == sdl_joystick_id;

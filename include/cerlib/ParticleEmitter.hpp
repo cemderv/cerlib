@@ -7,6 +7,7 @@
 #include <cerlib/BlendState.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Interval.hpp>
+#include <cerlib/List.hpp>
 #include <cerlib/Math.hpp>
 #include <cerlib/Particle.hpp>
 #include <cerlib/ParticleEmitterShape.hpp>
@@ -15,7 +16,7 @@
 #include <chrono>
 #include <memory>
 #include <span>
-#include <vector>
+
 
 namespace cer
 {
@@ -71,7 +72,7 @@ struct ParticleEmitter
     ParticleEmitterShape shape = ParticlePointShape{};
 
     /** A list of all modifiers that affect this emitter. */
-    std::vector<ParticleModifier> modifiers;
+    List<ParticleModifier> modifiers;
 
     /** Emission parameters of this emitter. */
     ParticleEmissionParams emission;

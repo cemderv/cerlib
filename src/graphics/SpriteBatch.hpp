@@ -171,7 +171,7 @@ class SpriteBatch
     bool                        m_is_in_begin_end_pair{};
     GraphicsDevice&             m_parent_device;
     FrameStats&                 m_frame_stats;
-    std::vector<InternalSprite> m_sprite_queue;
+    List<InternalSprite> m_sprite_queue;
     uint32_t                    m_vertex_buffer_position;
     Image                       m_white_image;
     Matrix                      m_transformation;

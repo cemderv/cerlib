@@ -12,7 +12,7 @@
 
 namespace cer::shadercompiler
 {
-using TokenIterator = std::vector<Token>::iterator;
+using TokenIterator = List<Token>::iterator;
 
 enum class CharClassification
 {
@@ -186,10 +186,10 @@ static auto determine_token_type(const SourceLocation& location, std::string_vie
     return *type;
 }
 
-void do_lexing(std::string_view    code,
-               std::string_view    filename_hint,
-               bool                do_post_processing,
-               std::vector<Token>& tokens)
+void do_lexing(std::string_view code,
+               std::string_view filename_hint,
+               bool             do_post_processing,
+               List<Token>&     tokens)
 {
     if (code.empty())
     {
@@ -333,11 +333,11 @@ static auto is_hex_suffix(std::string_view str) -> bool
     return true;
 }
 
-static auto merge_tokens(std::string_view    code,
-                         std::vector<Token>& tokens,
-                         TokenIterator       first,
-                         TokenIterator       last,
-                         TokenType           result_type) -> TokenIterator
+static auto merge_tokens(std::string_view code,
+                         List<Token>&     tokens,
+                         TokenIterator    first,
+                         TokenIterator    last,
+                         TokenType        result_type) -> TokenIterator
 {
     assert(first < last);
 
@@ -356,7 +356,7 @@ static auto merge_tokens(std::string_view    code,
     return tokens.erase(first + 1, last + 1);
 }
 
-static void assemble_int_literals(std::string_view code, std::vector<Token>& tokens)
+static void assemble_int_literals(std::string_view code, List<Token>& tokens)
 {
     for (auto tk0 = tokens.begin(); tokens.size() >= 3 && tk0 < tokens.end() - 2; ++tk0)
     {
@@ -392,7 +392,7 @@ static void assemble_int_literals(std::string_view code, std::vector<Token>& tok
     }
 }
 
-static void assemble_uint_literals(std::string_view code, std::vector<Token>& tokens)
+static void assemble_uint_literals(std::string_view code, List<Token>& tokens)
 {
     for (auto tk0 = tokens.begin(); tokens.size() >= 2 && tk0 < tokens.end() - 2; ++tk0)
     {
@@ -410,7 +410,7 @@ static void assemble_uint_literals(std::string_view code, std::vector<Token>& to
     }
 }
 
-static void assemble_scientific_numbers(std::string_view code, std::vector<Token>& tokens)
+static void assemble_scientific_numbers(std::string_view code, List<Token>& tokens)
 {
     // format: (<float>|<int>)'e'('+'|'-')<int>
 
@@ -434,7 +434,7 @@ static void assemble_scientific_numbers(std::string_view code, std::vector<Token
     }
 }
 
-static void assemble_hex_numbers(std::string_view code, std::vector<Token>& tokens)
+static void assemble_hex_numbers(std::string_view code, List<Token>& tokens)
 {
     for (auto tk0 = tokens.begin(); tokens.size() >= 2 && tk0 < tokens.end() - 2; ++tk0)
     {
@@ -462,7 +462,7 @@ static void assemble_hex_numbers(std::string_view code, std::vector<Token>& toke
  * \brief Assembles single-char tokens to multi-char tokens, e.g. '<' and '=' become
  * '<=' (less_than_or_equal).
  */
-static void assemble_multi_char_tokens(std::string_view code, std::vector<Token>& tokens)
+static void assemble_multi_char_tokens(std::string_view code, List<Token>& tokens)
 {
     struct TokenTransform
     {
@@ -541,7 +541,7 @@ static void assemble_multi_char_tokens(std::string_view code, std::vector<Token>
     }
 }
 
-void assemble_tokens(std::string_view code, std::vector<Token>& tokens)
+void assemble_tokens(std::string_view code, List<Token>& tokens)
 {
     assemble_multi_char_tokens(code, tokens);
     assemble_int_literals(code, tokens);
@@ -550,7 +550,7 @@ void assemble_tokens(std::string_view code, std::vector<Token>& tokens)
     assemble_hex_numbers(code, tokens);
 }
 
-void remove_unnecessary_tokens(std::vector<Token>& tokens)
+void remove_unnecessary_tokens(List<Token>& tokens)
 {
     if (tokens.empty())
     {

@@ -8,7 +8,6 @@
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
 #include <span>
-#include <vector>
 
 #define DECLARE_FUNC_FOR_ALL_VECTORS(name)                                                         \
     bool is_##name##_function(const Decl& symbol) const                                            \
@@ -170,9 +169,9 @@ class BuiltInSymbols final
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(trunc);
 
-    std::vector<std::unique_ptr<Decl>> vector2_fields;
-    std::vector<std::unique_ptr<Decl>> vector3_fields;
-    std::vector<std::unique_ptr<Decl>> vector4_fields;
+    List<std::unique_ptr<Decl>> vector2_fields;
+    List<std::unique_ptr<Decl>> vector3_fields;
+    List<std::unique_ptr<Decl>> vector4_fields;
 
     std::unique_ptr<Decl> sprite_image;
     std::unique_ptr<Decl> sprite_color;

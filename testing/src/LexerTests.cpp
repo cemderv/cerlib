@@ -27,7 +27,7 @@ SV_Position() -> <- {
 } 1.23 4.56 2.3283e-10 1.23e+10 0x5555 0x0F0F 0xAA 0x0 0xA 0xa 12u 34u
 )";
 
-static void check_tokens1(std::vector<Token>& tokens)
+static void check_tokens1(List<Token>& tokens)
 {
     REQUIRE(tokens.size() == 106u);
     REQUIRE(tokens.at(0).value == "Id1_");
@@ -51,7 +51,7 @@ static void check_tokens1(std::vector<Token>& tokens)
     }
 }
 
-static void check_tokens2(std::vector<Token>& tokens)
+static void check_tokens2(List<Token>& tokens)
 {
     REQUIRE(tokens.at(13).value == "<");
     REQUIRE(tokens.at(14).value == ">");
@@ -78,7 +78,7 @@ static void check_tokens2(std::vector<Token>& tokens)
     }
 }
 
-static void check_tokens3(std::vector<Token>& tokens)
+static void check_tokens3(List<Token>& tokens)
 {
     REQUIRE(tokens.at(30).value == "0123");
     REQUIRE(tokens.at(31).value == "abcd");
@@ -103,7 +103,7 @@ static void check_tokens3(std::vector<Token>& tokens)
     REQUIRE(tokens.at(43).value == "{");
 }
 
-static void check_tokens4(std::vector<Token>& tokens)
+static void check_tokens4(List<Token>& tokens)
 {
     for (auto i = 36u; i <= 43; ++i)
     {
@@ -139,7 +139,7 @@ static void check_tokens4(std::vector<Token>& tokens)
     REQUIRE(tokens.at(69).value == "=");
 }
 
-static void check_tokens5(std::vector<Token>& tokens)
+static void check_tokens5(List<Token>& tokens)
 {
     for (auto i = 44u; i <= 69; ++i)
     {
@@ -181,7 +181,7 @@ static void check_tokens5(std::vector<Token>& tokens)
     REQUIRE(tokens.at(104).value == "u");
 }
 
-static void check_tokens6(std::vector<Token>& tokens)
+static void check_tokens6(List<Token>& tokens)
 {
     REQUIRE(tokens.back().type == TokenType::EndOfFile);
     REQUIRE(tokens.back().value.empty());
@@ -263,7 +263,7 @@ static void check_tokens6(std::vector<Token>& tokens)
     REQUIRE(tokens.at(70).location.start_index == 123);
 }
 
-static void check_tokens7(std::vector<Token>& tokens)
+static void check_tokens7(List<Token>& tokens)
 {
     // Now assemble the single tokens into special token types.
     // E.g. tokens '-' and '>' become '->' (ArrowRight).
@@ -325,7 +325,7 @@ static void check_tokens7(std::vector<Token>& tokens)
     REQUIRE(tokens.at(64).location.start_index == 130);
 }
 
-static void check_tokens8(std::vector<Token>& tokens)
+static void check_tokens8(List<Token>& tokens)
 {
     REQUIRE(tokens.at(65).type == TokenType::ScientificNumber);
     REQUIRE(tokens.at(65).value == "2.3283e-10");
@@ -358,7 +358,7 @@ static void check_tokens8(std::vector<Token>& tokens)
     REQUIRE(tokens.at(74).value == "34u");
 }
 
-static void check_tokens9(std::vector<Token>& tokens)
+static void check_tokens9(List<Token>& tokens)
 {
     // Remove unnecessary tokens such as comments.
     remove_unnecessary_tokens(tokens);
@@ -374,7 +374,7 @@ static void check_tokens9(std::vector<Token>& tokens)
 
 TEST_CASE("Shader lexer", "[shaderc]")
 {
-    auto tokens = std::vector<Token>{};
+    auto tokens = List<Token>{};
 
     REQUIRE_THROWS_AS(do_lexing("", "", false, tokens), std::invalid_argument);
 

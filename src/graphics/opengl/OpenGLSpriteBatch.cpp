@@ -60,7 +60,7 @@ OpenGLSpriteBatch::OpenGLSpriteBatch(GraphicsDevice& device_impl, FrameStats& dr
     {
         constexpr auto how_many_indices = max_batch_size * indices_per_sprite;
 
-        auto indices = std::vector<uint16_t>{};
+        auto indices = List<uint16_t>{};
         indices.reserve(how_many_indices);
 
         for (uint32_t j = 0; j < max_batch_size * vertices_per_sprite; j += vertices_per_sprite)

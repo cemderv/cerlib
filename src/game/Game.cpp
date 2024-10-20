@@ -127,7 +127,7 @@ auto Game::current_display_mode(uint32_t display_index) -> std::optional<Display
     return impl.current_display_mode(display_index);
 }
 
-auto Game::display_modes(uint32_t display_index) -> std::vector<DisplayMode>
+auto Game::display_modes(uint32_t display_index) -> List<DisplayMode>
 {
     LOAD_GAME_IMPL;
     return impl.display_modes(display_index);
@@ -145,7 +145,7 @@ auto Game::display_orientation(uint32_t display_index) -> DisplayOrientation
     return impl.display_orientation(display_index);
 }
 
-auto Game::gamepads() -> std::vector<Gamepad>
+auto Game::gamepads() -> List<Gamepad>
 {
     LOAD_GAME_IMPL;
     return impl.gamepads();

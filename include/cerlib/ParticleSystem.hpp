@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <cerlib/List.hpp>
 #include <cerlib/ParticleEmitter.hpp>
 #include <span>
-#include <vector>
 
 namespace cer
 {
@@ -46,7 +46,7 @@ class ParticleSystem
      *
      * @param emitters The emitters that should make up the system
      */
-    explicit ParticleSystem(std::vector<ParticleEmitter> emitters);
+    explicit ParticleSystem(List<ParticleEmitter> emitters);
 
     ParticleSystem(const ParticleSystem&) = delete;
 
@@ -121,7 +121,7 @@ class ParticleSystem
     {
         ParticleEmitter       emitter;
         float                 timer = 0.0f;
-        std::vector<Particle> particle_buffer;
+        List<Particle> particle_buffer;
         size_t                active_particle_count   = 0;
         float                 time_since_last_reclaim = 0.0f;
     } s_;
@@ -136,6 +136,6 @@ class ParticleSystem
 
     void trigger_emitter_from_to(EmitterData& emitter, Vector2 from, Vector2 to);
 
-    std::vector<EmitterData> m_emitters;
+    List<EmitterData> m_emitters;
 };
 } // namespace cer
