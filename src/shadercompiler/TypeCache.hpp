@@ -38,7 +38,7 @@ class TypeCache final
     void clear();
 
   private:
-    small_vector_of_uniques<ArrayType, 32>      m_array_types;
-    small_vector_of_uniques<UnresolvedType, 32> m_unresolved_types;
+    UniquePtrList<ArrayType, 32>      m_array_types;
+    UniquePtrList<UnresolvedType, 32> m_unresolved_types;
 };
 } // namespace cer::shadercompiler
