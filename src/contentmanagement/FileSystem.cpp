@@ -317,12 +317,12 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> AssetData
     const auto   asset_handle =
         AAssetManager_open(asset_manager, filename_str.c_str(), AASSET_MODE_BUFFER);
 
-    const auto _ = gsl::finally([&] {
+    defer {
         if (asset_handle != nullptr)
         {
             AAsset_close(asset_handle);
         }
-    });
+    };
 
     if (asset_handle != nullptr)
     {
