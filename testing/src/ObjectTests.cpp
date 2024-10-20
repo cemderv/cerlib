@@ -5,7 +5,6 @@
 #include "cerlib/details/ObjectMacros.hpp"
 #include "util/Object.hpp"
 #include "util/Util.hpp"
-#include <gsl/pointers>
 #include <memory>
 #include <snitch/snitch.hpp>
 #include <string>

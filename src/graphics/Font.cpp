@@ -6,9 +6,8 @@
 
 #include "FontImpl.hpp"
 #include "cerlib/Vector2.hpp"
-#include "util/Util.hpp"
-
 #include <cassert>
+#include <cerlib/Util2.hpp>
 
 namespace cer
 {
@@ -22,7 +21,7 @@ Font::Font(std::span<const std::byte> data)
 
 auto Font::built_in(bool bold) -> Font
 {
-    return Font{details::FontImpl::built_in(bold)};
+    return Font{&details::FontImpl::built_in(bold)};
 }
 
 auto Font::measure(std::string_view text, uint32_t size) const -> Vector2

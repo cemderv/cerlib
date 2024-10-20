@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "NonCopyable.hpp"
+#include "cerlib/CopyMoveMacros.hpp"
 
 #ifdef CERLIB_ATOMIC_REFCOUNTING
 #include <atomic>
@@ -20,7 +20,7 @@ class Object
   public:
     explicit Object();
 
-    NON_COPYABLE_NON_MOVABLE(Object);
+    forbid_copy_and_move(Object);
 
     virtual ~Object() noexcept;
 

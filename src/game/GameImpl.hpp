@@ -6,11 +6,9 @@
 
 #include "cerlib/Game.hpp"
 #include "cerlib/Vector2.hpp"
-#include "util/NonCopyable.hpp"
 #include "util/Object.hpp"
-#include "util/Util.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 #include <map>
-#include <memory>
 #include <span>
 #include <variant>
 #include <vector>
@@ -86,7 +84,7 @@ class GameImpl final : public Object
 
     explicit GameImpl(bool enable_audio);
 
-    NON_COPYABLE_NON_MOVABLE(GameImpl);
+    forbid_copy_and_move(GameImpl);
 
     ~GameImpl() noexcept override;
 

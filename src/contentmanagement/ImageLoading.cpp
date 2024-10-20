@@ -7,12 +7,12 @@
 #include "DDS.hpp"
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
-#include "cerlib/Math.hpp"
 #include "contentmanagement/FileSystem.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include "util/InternalError.hpp"
+#include "graphics/ImageImpl.hpp"
+#include "util/narrow_cast.hpp"
+#include <cerlib/InternalError.hpp>
 #include <cstddef>
-#include <gsl/narrow>
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -34,8 +34,8 @@
 #pragma GCC diagnostic pop
 #endif
 
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/util>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -44,10 +44,10 @@
 namespace cer::details
 {
 static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> memory)
-    -> gsl::owner<ImageImpl*>
+    -> std::unique_ptr<ImageImpl>
 {
     const auto is_hdr = stbi_is_hdr_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
-                                                gsl::narrow<int>(memory.size())) != 0;
+                                                narrow<int>(memory.size())) != 0;
 
     int   width      = 0;
     int   height     = 0;
@@ -57,7 +57,7 @@ static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> mem
     if (is_hdr)
     {
         image_data = stbi_loadf_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
-                                            gsl::narrow<int>(memory.size()),
+                                            narrow<int>(memory.size()),
                                             &width,
                                             &height,
                                             &comp,
@@ -66,7 +66,7 @@ static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> mem
     else
     {
         image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
-                                           gsl::narrow<int>(memory.size()),
+                                           narrow<int>(memory.size()),
                                            &width,
                                            &height,
                                            &comp,
@@ -83,9 +83,10 @@ static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> mem
         CER_THROW_RUNTIME_ERROR_STR("Failed to load the image (invalid extents/channels).");
     }
 
-    const auto _ = gsl::finally([&] {
+    defer
+    {
         stbi_image_free(image_data);
-    });
+    };
 
     const auto format = is_hdr ? ImageFormat::R32G32B32A32_Float : ImageFormat::R8G8B8A8_UNorm;
 
@@ -94,15 +95,15 @@ static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> mem
 } // namespace cer::details
 
 auto cer::details::load_image(GraphicsDevice& device_impl, std::span<const std::byte> memory)
-    -> gsl::not_null<cer::details::ImageImpl*>
+    -> std::unique_ptr<ImageImpl>
 {
     log_verbose("Loading image from memory. Span is {} bytes", memory.size());
 
     // Try loading misc image first
 
-    if (const gsl::owner<ImageImpl*> image = try_load_misc(device_impl, memory))
+    if (auto image = try_load_misc(device_impl, memory))
     {
-        return image; // NOLINT
+        return image;
     }
 
     if (const auto maybe_dds_image = dds::load(memory))
@@ -120,7 +121,7 @@ auto cer::details::load_image(GraphicsDevice& device_impl, std::span<const std::
 }
 
 auto cer::details::load_image(GraphicsDevice& device_impl, std::string_view filename)
-    -> gsl::not_null<ImageImpl*>
+    -> std::unique_ptr<ImageImpl>
 {
     return load_image(device_impl, filesystem::load_file_data_from_disk(filename));
 }

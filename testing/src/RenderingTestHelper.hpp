@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cerlib/Image.hpp"
-#include "util/NonCopyable.hpp"
+#include "util/CopyMoveMacros.hpp"
 #include <functional>
 #include <string>
 
@@ -16,7 +16,7 @@ class RenderingTestHelper
 
     RenderingTestHelper(uint32_t width, uint32_t height, const cer::Window& window);
 
-    NON_COPYABLE_NON_MOVABLE(RenderingTestHelper);
+    forbid_copy_and_move(RenderingTestHelper);
 
     ~RenderingTestHelper() noexcept = default;
 

@@ -128,7 +128,7 @@ auto ASTOptimizer::optimize_block(CodeBlock* block) -> bool
 
 auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
 {
-    auto var_stmts = gch::small_vector<VarStmt*, 4>{};
+    auto var_stmts = small_vector<VarStmt*, 4>{};
 
     for (const auto& stmt : block->stmts())
     {
@@ -138,21 +138,21 @@ auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
         }
     }
 
-    gch::small_vector<gsl::not_null<VarStmt*>, 4> var_stmts_to_remove;
+    auto var_stmts_to_remove = small_vector_of_refs<VarStmt, 4>{};
 
-    for (VarStmt* var_stmt : var_stmts)
+    for (auto* var_stmt : var_stmts)
     {
         if (!block->accesses_symbol(var_stmt->variable(), false))
         {
-            var_stmts_to_remove.emplace_back(var_stmt);
+            var_stmts_to_remove.emplace_back(*var_stmt);
         }
     }
 
     const bool has_removed_any = !var_stmts_to_remove.empty();
 
-    for (const gsl::not_null<VarStmt*>& lbe : var_stmts_to_remove)
+    for (const auto& lbe : var_stmts_to_remove)
     {
-        block->remove_stmt(*lbe);
+        block->remove_stmt(lbe.get());
     }
 
     return has_removed_any;

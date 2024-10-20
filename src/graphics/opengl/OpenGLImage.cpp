@@ -3,16 +3,15 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "OpenGLImage.hpp"
-#include "util/InternalError.hpp"
-#include <gsl/util>
+#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {
-OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
-                         uint32_t                       width,
-                         uint32_t                       height,
-                         ImageFormat                    format,
-                         const void*                    data)
+OpenGLImage::OpenGLImage(GraphicsDevice& parent_device,
+                         uint32_t        width,
+                         uint32_t        height,
+                         ImageFormat     format,
+                         const void*     data)
     : ImageImpl(parent_device, false, nullptr, width, height, format)
 {
     const auto format_gl = convert_to_opengl_pixel_format(format);
@@ -60,11 +59,11 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     verify_opengl_state();
 }
 
-OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
-                         WindowImpl*                    window_for_canvas,
-                         uint32_t                       width,
-                         uint32_t                       height,
-                         ImageFormat                    format)
+OpenGLImage::OpenGLImage(GraphicsDevice& parent_device,
+                         WindowImpl*     window_for_canvas,
+                         uint32_t        width,
+                         uint32_t        height,
+                         ImageFormat     format)
     : ImageImpl(parent_device, true, window_for_canvas, width, height, format)
 {
     gl_format_triplet = convert_to_opengl_pixel_format(format);
@@ -74,9 +73,10 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     GLuint previous_texture = 0;
     GL_CALL(glGetIntegerv(GL_TEXTURE_BINDING_2D, reinterpret_cast<GLint*>(&previous_texture)));
 
-    auto defer1 = gsl::finally([&] {
+    defer
+    {
         glBindTexture(GL_TEXTURE_2D, previous_texture);
-    });
+    };
 
     GL_CALL(glGenTextures(1, &gl_handle));
 
@@ -121,9 +121,10 @@ OpenGLImage::OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
     GLuint previous_fbo = 0;
     GL_CALL(glGetIntegerv(GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&previous_fbo)));
 
-    auto defer2 = gsl::finally([&] {
+    defer
+    {
         glBindFramebuffer(GL_FRAMEBUFFER, previous_fbo);
-    });
+    };
 
     GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, gl_framebuffer_handle));
     GL_CALL(

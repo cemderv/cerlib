@@ -6,8 +6,8 @@
 
 #include "shadercompiler/AST.hpp"
 #include "shadercompiler/Lexer.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 
 namespace cer::shadercompiler
@@ -54,7 +54,7 @@ class Parser final
   public:
     explicit Parser(TypeCache& type_cache);
 
-    NON_COPYABLE_NON_MOVABLE(Parser);
+    forbid_copy_and_move(Parser);
 
     ~Parser() noexcept = default;
 
@@ -150,11 +150,11 @@ class Parser final
     {
       public:
         using TokenIterator = std::span<const Token>::iterator;
-        using StackType     = gch::small_vector<TokenIterator, 4>;
+        using StackType     = small_vector<TokenIterator, 4>;
 
         explicit TokenPusher(StackType& stack, TokenIterator tk);
 
-        NON_COPYABLE_NON_MOVABLE(TokenPusher);
+        forbid_copy_and_move(TokenPusher);
 
         ~TokenPusher() noexcept;
 

@@ -4,7 +4,7 @@
 
 #include "cerlib/Text.hpp"
 #include "graphics/TextImpl.hpp"
-#include "util/Util.hpp"
+#include <cerlib/Util2.hpp>
 
 namespace cer
 {

@@ -6,8 +6,8 @@
 #include "OpenGLPrerequisites.hpp"
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
 #include "util/Platform.hpp"
+#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {

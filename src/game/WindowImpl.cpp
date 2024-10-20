@@ -7,9 +7,9 @@
 #include "cerlib/Logging.hpp"
 #include "cerlib/Version.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
 #include "util/Platform.hpp"
-#include <gsl/narrow>
+#include "util/narrow_cast.hpp"
+#include <cerlib/InternalError.hpp>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -328,12 +328,12 @@ void WindowImpl::hide()
 
 void WindowImpl::set_minimum_size(uint32_t width, uint32_t height)
 {
-    SDL_SetWindowMinimumSize(m_sdl_window, gsl::narrow<int>(width), gsl::narrow<int>(height));
+    SDL_SetWindowMinimumSize(m_sdl_window, narrow<int>(width), narrow<int>(height));
 }
 
 void WindowImpl::set_maximum_size(uint32_t width, uint32_t height)
 {
-    SDL_SetWindowMaximumSize(m_sdl_window, gsl::narrow<int>(width), gsl::narrow<int>(height));
+    SDL_SetWindowMaximumSize(m_sdl_window, narrow<int>(width), narrow<int>(height));
 }
 
 void WindowImpl::set_mouse_grab(bool value)
@@ -347,12 +347,12 @@ void WindowImpl::set_mouse_grab(bool value)
 
 void WindowImpl::set_position(int32_t x, int32_t y)
 {
-    SDL_SetWindowPosition(m_sdl_window, gsl::narrow<int>(x), gsl::narrow<int>(y));
+    SDL_SetWindowPosition(m_sdl_window, narrow<int>(x), narrow<int>(y));
 }
 
 void WindowImpl::set_size(uint32_t width, uint32_t height)
 {
-    SDL_SetWindowSize(m_sdl_window, gsl::narrow<int>(width), gsl::narrow<int>(height));
+    SDL_SetWindowSize(m_sdl_window, narrow<int>(width), narrow<int>(height));
 }
 
 void WindowImpl::set_resize_callback(const Window::ResizeCallback& value)

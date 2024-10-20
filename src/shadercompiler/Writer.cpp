@@ -5,7 +5,7 @@
 #include "shadercompiler/Writer.hpp"
 
 #include <cassert>
-#include <gsl/narrow>
+#include "util/narrow_cast.hpp"
 
 namespace cer::shadercompiler
 {
@@ -83,7 +83,7 @@ auto Writer::current_column() const -> int
     // TODO: optimize this, this is ugly
     int column = 0;
 
-    const auto end = gsl::narrow_cast<int>(m_buffer.size()) - 1;
+    const auto end = narrow_cast<int>(m_buffer.size()) - 1;
 
     for (int i = end; i >= 0; --i)
     {

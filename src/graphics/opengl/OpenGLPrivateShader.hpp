@@ -5,8 +5,8 @@
 #pragma once
 
 #include "OpenGLPrerequisites.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <string>
 #include <string_view>
@@ -20,7 +20,7 @@ class OpenGLPrivateShader final
 
     explicit OpenGLPrivateShader(std::string_view name, GLenum type, std::string_view glsl_code);
 
-    NON_COPYABLE(OpenGLPrivateShader);
+    forbid_copy(OpenGLPrivateShader);
 
     OpenGLPrivateShader(OpenGLPrivateShader&& other) noexcept;
 
@@ -28,8 +28,8 @@ class OpenGLPrivateShader final
 
     ~OpenGLPrivateShader() noexcept;
 
-    std::string                    name;
-    GLuint                         gl_handle{};
-    gch::small_vector<std::string> attributes;
+    std::string               name;
+    GLuint                    gl_handle{};
+    small_vector<std::string> attributes;
 };
 } // namespace cer::details

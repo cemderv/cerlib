@@ -7,7 +7,7 @@
 #include "audio/Wav.hpp"
 #include "cerlib/Content.hpp"
 #include "util/Object.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
 #include <span>
 
 namespace cer::details
@@ -16,9 +16,9 @@ class SoundImpl final : public Object, public Asset
 {
   public:
     // Creates copy of data.
-    explicit SoundImpl(gsl::not_null<AudioDevice*> audio_device, std::span<const std::byte> data);
+    explicit SoundImpl(AudioDevice& audio_device, std::span<const std::byte> data);
 
-    explicit SoundImpl(gsl::not_null<AudioDevice*>  audio_device,
+    explicit SoundImpl(AudioDevice&                 audio_device,
                        std::unique_ptr<std::byte[]> data,
                        size_t                       data_size);
 
@@ -31,7 +31,7 @@ class SoundImpl final : public Object, public Asset
   private:
     void init_soloud_audio_source();
 
-    gsl::not_null<AudioDevice*>  m_audio_device;
+    AudioDevice*                 m_audio_device = nullptr;
     std::unique_ptr<std::byte[]> m_data;
     size_t                       m_data_size{};
     std::unique_ptr<AudioSource> m_soloud_audio_source;

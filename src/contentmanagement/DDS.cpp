@@ -6,11 +6,10 @@
 
 #include "DxgiFormatConversion.hpp"
 #include "cerlib/Math.hpp"
-#include "util/InternalError.hpp"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cerlib/InternalError.hpp>
 #include <cstddef>
 #include <cstdint>
 

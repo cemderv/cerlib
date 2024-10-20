@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "util/NonCopyable.hpp"
 #include "util/StringViewUnorderedSet.hpp"
-#include "util/small_vector.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <string>
 
 namespace cer::shadercompiler
@@ -22,8 +21,8 @@ class ShaderParamDecl;
 class AccessedParams
 {
   public:
-    gch::small_vector<gsl::not_null<const ShaderParamDecl*>, 8> scalars{};
-    gch::small_vector<gsl::not_null<const ShaderParamDecl*>, 8> resources{};
+    small_vector_of_refs<const ShaderParamDecl, 8> scalars{};
+    small_vector_of_refs<const ShaderParamDecl, 8> resources{};
 
     explicit operator bool() const
     {
@@ -34,13 +33,13 @@ class AccessedParams
 class AST final
 {
   public:
-    using DeclsType = gch::small_vector<std::unique_ptr<Decl>, 8>;
+    using DeclsType = small_vector_of_uniques<Decl, 8>;
 
     explicit AST(std::string_view              filename,
                  DeclsType                     decls,
                  const StringViewUnorderedSet* user_specified_defines);
 
-    NON_COPYABLE(AST);
+    forbid_copy(AST);
 
     AST(AST&&) noexcept = default;
 
@@ -67,9 +66,9 @@ class AST final
     auto is_verified() const -> bool;
 
   private:
-    std::string                                 m_filename;
-    gch::small_vector<std::unique_ptr<Decl>, 8> m_decls;
-    const StringViewUnorderedSet*               m_user_specified_defines;
-    bool                                        m_is_verified{};
+    std::string                      m_filename;
+    small_vector_of_uniques<Decl, 8> m_decls;
+    const StringViewUnorderedSet*    m_user_specified_defines;
+    bool                             m_is_verified{};
 };
 } // namespace cer::shadercompiler

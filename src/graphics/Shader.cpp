@@ -4,8 +4,8 @@
 
 #include "GraphicsDevice.hpp"
 #include "game/GameImpl.hpp"
-#include "util/Util.hpp"
 #include <cerlib/Shader.hpp>
+#include <cerlib/Util2.hpp>
 
 #include "GrayscaleShader.shd.hpp"
 

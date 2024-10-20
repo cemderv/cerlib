@@ -7,7 +7,7 @@
 #include "AudioDevice.hpp"
 #include "SoundImpl.hpp"
 #include "game/GameImpl.hpp"
-#include "util/Util.hpp"
+#include <cerlib/Util2.hpp>
 
 namespace cer
 {
@@ -18,7 +18,7 @@ Sound::Sound(std::span<const std::byte> data)
 {
     auto& audio_device = details::GameImpl::instance().audio_device();
 
-    auto impl = std::make_unique<details::SoundImpl>(&audio_device, data);
+    auto impl = std::make_unique<details::SoundImpl>(audio_device, data);
 
     set_impl(*this, impl.release());
 }

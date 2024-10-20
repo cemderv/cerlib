@@ -5,10 +5,9 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
 #include <any>
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <vector>
 
@@ -34,7 +33,7 @@ class Expr
     auto is_verified() const -> bool;
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Expr);
+    forbid_copy_and_move(Expr);
 
     virtual ~Expr() noexcept;
 
@@ -258,9 +257,9 @@ class SymAccessExpr final : public Expr
 class StructCtorCall final : public Expr
 {
   public:
-    explicit StructCtorCall(const SourceLocation&                                location,
-                            std::unique_ptr<Expr>                                callee,
-                            gch::small_vector<std::unique_ptr<StructCtorArg>, 4> args);
+    explicit StructCtorCall(const SourceLocation&                     location,
+                            std::unique_ptr<Expr>                     callee,
+                            small_vector_of_uniques<StructCtorArg, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -271,16 +270,16 @@ class StructCtorCall final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>                                m_callee;
-    gch::small_vector<std::unique_ptr<StructCtorArg>, 4> m_args;
+    std::unique_ptr<Expr>                     m_callee;
+    small_vector_of_uniques<StructCtorArg, 4> m_args;
 };
 
 class FunctionCallExpr final : public Expr
 {
   public:
-    explicit FunctionCallExpr(const SourceLocation&                       location,
-                              std::unique_ptr<Expr>                       callee,
-                              gch::small_vector<std::unique_ptr<Expr>, 4> args);
+    explicit FunctionCallExpr(const SourceLocation&            location,
+                              std::unique_ptr<Expr>            callee,
+                              small_vector_of_uniques<Expr, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -293,8 +292,8 @@ class FunctionCallExpr final : public Expr
     auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
   private:
-    std::unique_ptr<Expr>                       m_callee;
-    gch::small_vector<std::unique_ptr<Expr>, 4> m_args;
+    std::unique_ptr<Expr>            m_callee;
+    small_vector_of_uniques<Expr, 4> m_args;
 };
 
 class SubscriptExpr final : public Expr

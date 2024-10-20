@@ -6,10 +6,9 @@
 
 #include "ShaderImpl.hpp"
 #include "cerlib/Math.hpp"
-#include "util/InternalError.hpp"
-
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/util>
+#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {
@@ -58,7 +57,7 @@ auto CBufferPacker::pack_parameters(ShaderImpl::ParameterList& parameters,
         auto       param_size_in_bytes = param.size_in_bytes;
         const auto base_alignment      = get_base_alignment(param);
         const auto offset =
-            gsl::narrow_cast<uint16_t>(next_aligned_number(current_offset, base_alignment));
+            narrow_cast<uint16_t>(next_aligned_number(current_offset, base_alignment));
 
         param.offset = offset;
 

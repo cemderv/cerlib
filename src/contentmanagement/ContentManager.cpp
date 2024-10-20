@@ -134,10 +134,10 @@ auto ContentManager::asset_loading_prefix() const -> std::string_view
 
 auto ContentManager::load_image(std::string_view name) -> Image
 {
-    auto key = std::string{name};
+    const auto key = std::string{name};
 
     return lazy_load<Image, ImageImpl>(key, name, [](std::string_view name) {
-        const auto data  = AssetData{filesystem::load_asset_data(name)};
+        const auto data  = filesystem::load_asset_data(name);
         auto       image = Image{data.as_span()};
         image.set_name(name);
         return image;
@@ -193,7 +193,7 @@ auto ContentManager::load_sound(std::string_view name) -> Sound
         auto  data         = filesystem::load_asset_data(full_name);
 
         auto sound_impl =
-            std::make_unique<SoundImpl>(&audio_device, std::move(data.data), data.size);
+            std::make_unique<SoundImpl>(audio_device, std::move(data.data), data.size);
 
         return Sound{sound_impl.release()};
     });

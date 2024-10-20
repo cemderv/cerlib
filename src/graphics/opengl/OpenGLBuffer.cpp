@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "OpenGLBuffer.hpp"
-#include "util/InternalError.hpp"
+#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {

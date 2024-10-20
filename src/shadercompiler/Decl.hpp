@@ -6,9 +6,9 @@
 
 #include "shadercompiler/SourceLocation.hpp"
 #include "shadercompiler/Type.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
 #include <any>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <string>
 
@@ -34,7 +34,7 @@ class Decl
     }
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Decl);
+    forbid_copy_and_move(Decl);
 
     virtual ~Decl() noexcept;
 
@@ -64,7 +64,7 @@ class StructFieldDecl final : public Decl
                              std::string_view      name,
                              const Type&           type);
 
-    NON_COPYABLE_NON_MOVABLE(StructFieldDecl);
+    forbid_copy_and_move(StructFieldDecl);
 
     ~StructFieldDecl() noexcept override;
 
@@ -74,14 +74,14 @@ class StructFieldDecl final : public Decl
 class StructDecl final : public Decl, public Type
 {
   public:
-    using FieldList = gch::small_vector<std::unique_ptr<StructFieldDecl>, 8>;
+    using FieldList = small_vector<std::unique_ptr<StructFieldDecl>, 8>;
 
     explicit StructDecl(const SourceLocation& location,
                         std::string_view      name,
                         FieldList             fields,
                         bool                  is_built_in);
 
-    NON_COPYABLE_NON_MOVABLE(StructDecl);
+    forbid_copy_and_move(StructDecl);
 
     ~StructDecl() noexcept override;
 
@@ -130,7 +130,7 @@ class FunctionParamDecl final : public Decl
                                FunctionParamKind     kind,
                                const Type&           type);
 
-    NON_COPYABLE_NON_MOVABLE(FunctionParamDecl);
+    forbid_copy_and_move(FunctionParamDecl);
 
     ~FunctionParamDecl() noexcept override;
 
@@ -155,7 +155,7 @@ class ForLoopVariableDecl final : public Decl
   public:
     explicit ForLoopVariableDecl(const SourceLocation& location, std::string_view name);
 
-    NON_COPYABLE_NON_MOVABLE(ForLoopVariableDecl);
+    forbid_copy_and_move(ForLoopVariableDecl);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -169,14 +169,14 @@ class ForLoopVariableDecl final : public Decl
 class FunctionDecl final : public Decl
 {
   public:
-    explicit FunctionDecl(const SourceLocation&                                    location,
-                          std::string_view                                         name,
-                          gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                          const Type&                                              return_type,
-                          std::unique_ptr<CodeBlock>                               body,
+    explicit FunctionDecl(const SourceLocation&                               location,
+                          std::string_view                                    name,
+                          small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
+                          const Type&                                         return_type,
+                          std::unique_ptr<CodeBlock>                          body,
                           bool is_struct_ctor = false);
 
-    NON_COPYABLE_NON_MOVABLE(FunctionDecl);
+    forbid_copy_and_move(FunctionDecl);
 
     ~FunctionDecl() noexcept override;
 
@@ -203,10 +203,10 @@ class FunctionDecl final : public Decl
     auto is_struct_ctor() const -> bool;
 
   private:
-    FunctionKind                                             m_kind;
-    gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
-    std::unique_ptr<CodeBlock>                               m_body;
-    bool                                                     m_is_struct_ctor;
+    FunctionKind                                        m_kind;
+    small_vector<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
+    std::unique_ptr<CodeBlock>                          m_body;
+    bool                                                m_is_struct_ctor;
 };
 
 /**
@@ -220,7 +220,7 @@ class ShaderParamDecl final : public Decl
                              const Type&           type,
                              std::unique_ptr<Expr> default_value_expr);
 
-    NON_COPYABLE_NON_MOVABLE(ShaderParamDecl);
+    forbid_copy_and_move(ShaderParamDecl);
 
     ~ShaderParamDecl() noexcept override;
 
@@ -250,7 +250,7 @@ class VarDecl final : public Decl
     // Overload for system values
     explicit VarDecl(std::string_view name, const Type& type);
 
-    NON_COPYABLE_NON_MOVABLE(VarDecl);
+    forbid_copy_and_move(VarDecl);
 
     ~VarDecl() noexcept override;
 

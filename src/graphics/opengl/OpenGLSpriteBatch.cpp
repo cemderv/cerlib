@@ -15,8 +15,7 @@
 
 namespace cer::details
 {
-OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
-                                     gsl::not_null<FrameStats*>     draw_stats)
+OpenGLSpriteBatch::OpenGLSpriteBatch(GraphicsDevice& device_impl, FrameStats& draw_stats)
     : SpriteBatch(device_impl, draw_stats)
 {
     log_verbose("Initializing OpenGLSpriteBatch, but verifying OpenGL state first");
@@ -101,16 +100,16 @@ OpenGLSpriteBatch::~OpenGLSpriteBatch() noexcept = default;
 
 void OpenGLSpriteBatch::prepare_for_rendering()
 {
-    auto* opengl_device = static_cast<OpenGLGraphicsDevice*>(parent_device().get());
+    auto& opengl_device = static_cast<OpenGLGraphicsDevice&>(parent_device());
 
     set_default_render_state();
     apply_blend_state_to_gl_context(current_blend_state());
 
-    opengl_device->bind_vao(m_vao);
+    opengl_device.bind_vao(m_vao);
 
-    const auto* sprite_shader = static_cast<const OpenGLUserShader*>(this->sprite_shader().impl());
-
-    if (sprite_shader != nullptr)
+    if (const auto* sprite_shader =
+            static_cast<const OpenGLUserShader*>(this->sprite_shader().impl());
+        sprite_shader != nullptr)
     {
         auto it = m_custom_shader_programs.find(sprite_shader);
 
@@ -138,7 +137,7 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
                                      [[maybe_unused]] uint32_t start,
                                      [[maybe_unused]] uint32_t count)
 {
-    auto* opengl_device = static_cast<OpenGLGraphicsDevice*>(parent_device().get());
+    auto& opengl_device = static_cast<OpenGLGraphicsDevice&>(parent_device());
 
     const OpenGLShaderProgram* shader_program   = nullptr;
     GLint                      u_transformation = -1;
@@ -168,7 +167,7 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
 
     assert(shader_program != nullptr);
 
-    opengl_device->use_program(shader_program->gl_handle);
+    opengl_device.use_program(shader_program->gl_handle);
 
     if (shader_program == m_current_custom_shader_program)
     {
@@ -505,14 +504,14 @@ void OpenGLSpriteBatch::apply_blend_state_to_gl_context(const BlendState& blend_
     m_last_applied_blend_state = blend_state;
 }
 
-auto OpenGLSpriteBatch::on_shader_destroyed(gsl::not_null<ShaderImpl*> shader) -> void
+void OpenGLSpriteBatch::on_shader_destroyed(ShaderImpl& shader)
 {
-    const auto* opengl_shader = static_cast<const OpenGLUserShader*>(shader.get());
+    const auto& opengl_shader = static_cast<const OpenGLUserShader&>(shader);
 
-    if (const auto it = m_custom_shader_programs.find(opengl_shader);
+    if (const auto it = m_custom_shader_programs.find(&opengl_shader);
         it != m_custom_shader_programs.cend())
     {
-        log_verbose("Erasing OpenGLShaderProgram with user-origin '{}'", shader->name());
+        log_verbose("Erasing OpenGLShaderProgram with user-origin '{}'", shader.name());
         m_custom_shader_programs.erase(it);
     }
 

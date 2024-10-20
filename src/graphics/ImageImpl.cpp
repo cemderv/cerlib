@@ -8,12 +8,12 @@
 
 namespace cer::details
 {
-ImageImpl::ImageImpl(gsl::not_null<GraphicsDevice*> parent_device,
-                     bool                           is_canvas,
-                     WindowImpl*                    window_for_canvas,
-                     uint32_t                       width,
-                     uint32_t                       height,
-                     ImageFormat                    format)
+ImageImpl::ImageImpl(GraphicsDevice& parent_device,
+                     bool            is_canvas,
+                     WindowImpl*     window_for_canvas,
+                     uint32_t        width,
+                     uint32_t        height,
+                     ImageFormat     format)
     : GraphicsResourceImpl(parent_device, GraphicsResourceType::Image)
     , m_is_canvas(is_canvas)
     , m_window_for_canvas(window_for_canvas)

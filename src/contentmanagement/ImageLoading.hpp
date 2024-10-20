@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <gsl/pointers>
 #include <span>
 
 namespace cer::details
@@ -13,8 +12,8 @@ class GraphicsDevice;
 class ImageImpl;
 
 auto load_image(GraphicsDevice& device_impl, std::span<const std::byte> memory)
-    -> gsl::not_null<ImageImpl*>;
+    -> std::unique_ptr<ImageImpl>;
 
 auto load_image(GraphicsDevice& device_impl, std::string_view filename)
-    -> gsl::not_null<ImageImpl*>;
+    -> std::unique_ptr<ImageImpl>;
 } // namespace cer::details

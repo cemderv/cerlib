@@ -104,7 +104,7 @@ auto AudioDevice::play_sound(const Sound&             sound,
               : play(sound.impl()->audio_source(), volume, pan, start_paused);
 
     // TODO: Use pool allocation for SoundChannelImpl objects
-    auto channel_impl = std::make_unique<details::SoundChannelImpl>(this, channel_handle);
+    auto channel_impl = std::make_unique<details::SoundChannelImpl>(*this, channel_handle);
 
     m_playing_sounds.insert(sound);
 

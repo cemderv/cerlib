@@ -34,7 +34,7 @@ Scope& Scope::operator=(Scope&& rhs) noexcept = default; // NOLINT
 
 Scope::~Scope() noexcept = default;
 
-auto Scope::symbols() const -> std::span<const gsl::not_null<const Decl*>>
+auto Scope::symbols() const -> std::span<const std::reference_wrapper<const Decl>>
 {
     return m_symbols;
 }
@@ -42,10 +42,10 @@ auto Scope::symbols() const -> std::span<const gsl::not_null<const Decl*>>
 void Scope::add_symbol(const Decl& symbol)
 {
     assert(std::ranges::find_if(m_symbols, [&symbol](const auto& e) {
-               return e.get() == &symbol;
+               return &e.get() == &symbol;
            }) == m_symbols.cend());
 
-    m_symbols.emplace_back(&symbol);
+    m_symbols.emplace_back(symbol);
 }
 
 void Scope::remove_symbol(std::string_view name)
@@ -53,14 +53,14 @@ void Scope::remove_symbol(std::string_view name)
     assert(!name.empty());
 
     m_symbols.erase(std::ranges::find_if(std::as_const(m_symbols), [name](const auto& e) {
-        return e->name() == name;
+        return e.get().name() == name;
     }));
 }
 
 void Scope::remove_symbol(const Decl& symbol)
 {
     const auto it = std::ranges::find_if(std::as_const(m_symbols), [&symbol](const auto& e) {
-        return e.get() == &symbol;
+        return &e.get() == &symbol;
     });
 
     assert(it != m_symbols.cend());
@@ -73,11 +73,13 @@ auto Scope::find_symbol(std::string_view name, bool fall_back_to_parent) const -
 
     const Decl* decl = nullptr;
 
-    for (const auto& symbol : std::views::reverse(m_symbols))
+    for (const auto& symbol_ref : std::views::reverse(m_symbols))
     {
-        if (const auto* e = symbol.get(); e->name() == name)
+        const auto& symbol = symbol_ref.get();
+
+        if (symbol.name() == name)
         {
-            decl = e;
+            decl = &symbol;
             break;
         }
     }
@@ -100,7 +102,7 @@ static auto get_levenstein_distance(std::string_view s1, std::string_view s2) ->
     const auto s1_len = s1.size();
     const auto s2_len = s2.size();
 
-    auto distances = gch::small_vector<size_t, 4>(s2_len + 1);
+    auto distances = small_vector<size_t, 4>{s2_len + 1};
     std::iota(distances.begin(), distances.end(), size_t(0));
 
     for (size_t i = 0; i < s1_len; ++i)
@@ -129,10 +131,11 @@ auto Scope::find_symbol_with_similar_name(std::string_view name, bool fall_back_
     auto symbol_with_min_distance = static_cast<const Decl*>(nullptr);
     auto min_distance             = std::numeric_limits<double>::max();
 
-    for (const gsl::not_null<const Decl*>& symbol : std::ranges::reverse_view(m_symbols))
+    for (const auto& symbol_ref : std::ranges::reverse_view(m_symbols))
     {
-        const auto s1 = symbol->name();
-        const auto s2 = name;
+        const auto& symbol = symbol_ref.get();
+        const auto  s1     = symbol.name();
+        const auto  s2     = name;
 
         if (s1 == s2)
         {
@@ -144,7 +147,7 @@ auto Scope::find_symbol_with_similar_name(std::string_view name, bool fall_back_
 
         if (d <= threshold && d < min_distance)
         {
-            symbol_with_min_distance = symbol;
+            symbol_with_min_distance = &symbol;
             min_distance             = d;
         }
     }
@@ -163,17 +166,17 @@ auto Scope::find_symbol_with_similar_name(std::string_view name, bool fall_back_
 }
 
 auto Scope::find_symbols(std::string_view name, bool fall_back_to_parent) const
-    -> gch::small_vector<gsl::not_null<const Decl*>, 4>
+    -> small_vector_of_refs<const Decl, 4>
 {
     assert(!name.empty());
 
-    auto found_symbols = gch::small_vector<gsl::not_null<const Decl*>, 4>{};
+    auto found_symbols = small_vector_of_refs<const Decl, 4>{};
 
-    for (const auto& sym : m_symbols)
+    for (const auto& symbol_ref : m_symbols)
     {
-        if (sym->name() == name)
+        if (const auto& symbol = symbol_ref.get(); symbol.name() == name)
         {
-            found_symbols.push_back(sym);
+            found_symbols.emplace_back(symbol);
         }
     }
 
@@ -196,7 +199,7 @@ auto Scope::contains_symbol_here_or_up(std::string_view name) const -> bool
     return find_symbol(name, true) != nullptr;
 }
 
-auto Scope::types() const -> std::span<const gsl::not_null<const Type*>>
+auto Scope::types() const -> std::span<const std::reference_wrapper<const Type>>
 {
     return m_types;
 }
@@ -204,10 +207,10 @@ auto Scope::types() const -> std::span<const gsl::not_null<const Type*>>
 void Scope::add_type(const Type& type)
 {
     assert(std::ranges::find_if(m_types, [&type](const auto& e) {
-               return e.get() == &type;
+               return &e.get() == &type;
            }) == m_types.cend());
 
-    m_types.emplace_back(&type);
+    m_types.emplace_back(type);
 }
 
 void Scope::remove_type(std::string_view name)
@@ -216,7 +219,7 @@ void Scope::remove_type(std::string_view name)
 
     if (const auto it = std::ranges::find_if(std::as_const(m_types),
                                              [name](const auto& e) {
-                                                 return e->type_name() == name;
+                                                 return e.get().type_name() == name;
                                              });
         it != m_types.cend())
     {
@@ -228,7 +231,7 @@ void Scope::remove_type(const Type& type)
 {
     if (const auto it = std::ranges::find_if(std::as_const(m_types),
                                              [&type](const auto& e) {
-                                                 return e.get() == &type;
+                                                 return &e.get() == &type;
                                              });
         it != m_types.cend())
     {
@@ -242,11 +245,11 @@ auto Scope::find_type(std::string_view name, bool fall_back_to_parent) const -> 
 
     if (const auto it = std::ranges::find_if(m_types,
                                              [name](const auto& e) {
-                                                 return e->type_name() == name;
+                                                 return e.get().type_name() == name;
                                              });
         it != m_types.cend())
     {
-        return *it;
+        return &it->get();
     }
 
     if (fall_back_to_parent && m_parent != nullptr)
@@ -315,12 +318,12 @@ void Scope::set_current_function(const FunctionDecl* value)
     m_current_function = value;
 }
 
-auto Scope::function_call_args() const -> const gch::small_vector<gsl::not_null<const Expr*>, 4>&
+auto Scope::function_call_args() const -> const small_vector_of_refs<const Expr, 4>&
 {
     return m_function_call_args;
 }
 
-void Scope::set_function_call_args(gch::small_vector<gsl::not_null<const Expr*>, 4> args)
+void Scope::set_function_call_args(small_vector_of_refs<const Expr, 4> args)
 {
     m_function_call_args = std::move(args);
 }

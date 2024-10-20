@@ -6,13 +6,13 @@
 
 #pragma once
 
-#include "InternalError.hpp"
-#include "util/Util.hpp"
-
+#include <cerlib/Util2.hpp>
 #include <cstdint>
 #include <string>
 
-#define CERLIB_UNUSED(x) (void)x
+#define CONCAT_INNER(a, b) a##b
+#define CONCAT(a, b)       CONCAT_INNER(a, b)
+#define UNIQUE_NAME(base)  CONCAT(base, __COUNTER__)
 
 #define CERLIB_IMPLEMENT_OBJECT_FUNCS(class_name)                                                  \
     class_name::class_name(impl_t* impl)                                                           \

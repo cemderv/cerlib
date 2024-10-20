@@ -2,23 +2,19 @@ set(util_files
   BinPack.cpp
   BinPack.hpp
   Logging.cpp
-  InternalError.hpp
   MultiStringHash.hpp
-  NonCopyable.hpp
   Object.cpp
   Object.hpp
   OStreamCompat.cpp
-  small_vector.hpp
   StringUnorderedMap.hpp
-  StringUtil.hpp
   StringUtil.cpp
   StringViewUnorderedSet.hpp
   ToString.cpp
-  Util.hpp
   Util.cpp
   Platform.hpp
   Platform.cpp
   utf8.hpp
   MemoryReader.hpp
   MemoryReader.cpp
+  narrow_cast.hpp
 )

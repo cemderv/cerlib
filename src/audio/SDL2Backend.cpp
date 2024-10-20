@@ -58,11 +58,11 @@ void cer::audio_sdl2_init(const AudioBackendArgs& args)
     auto* engine = args.device;
 
     auto as = SDL_AudioSpec{
-        .freq     = gsl::narrow<int>(args.sample_rate),
+        .freq     = narrow<int>(args.sample_rate),
         .format   = AUDIO_F32,
-        .channels = gsl::narrow<Uint8>(args.channel_count),
+        .channels = narrow<Uint8>(args.channel_count),
         .silence  = 0,
-        .samples  = gsl::narrow<Uint16>(args.buffer),
+        .samples  = narrow<Uint16>(args.buffer),
         .padding  = 0,
         .size     = 0,
         .callback = cerlib_sdl2_audio_mixer,

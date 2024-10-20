@@ -5,16 +5,14 @@
 #include "FileSystem.hpp"
 
 #include "cerlib/Logging.hpp"
-#include "util/InternalError.hpp"
-#include "util/StringUtil.hpp"
-#include "util/Util.hpp"
-
+#include "util/narrow_cast.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cerlib/InternalError.hpp>
+#include <cerlib/StringUtil.hpp>
+#include <cerlib/Util2.hpp>
 #include <cstring>
 #include <fstream>
-#include <gsl/narrow>
-#include <gsl/util>
 #include <optional>
 #include <string_view>
 
@@ -34,7 +32,7 @@ static AAssetManager* s_cerlib_android_asset_manager;
 
 namespace cer::details
 {
-void set_android_asset_manager(void* asset_manager)
+void set_android_asset_manager([[maybe_unused]] void* asset_manager)
 {
     if (asset_manager == nullptr)
     {
@@ -43,8 +41,6 @@ void set_android_asset_manager(void* asset_manager)
 
 #ifdef __ANDROID__
     s_cerlib_android_asset_manager = static_cast<AAssetManager*>(asset_manager);
-#else
-    CERLIB_UNUSED(asset_manager);
 #endif
 }
 } // namespace cer::details
@@ -231,7 +227,7 @@ auto cer::filesystem::combine_paths(std::string_view path1, std::string_view pat
     return first + second;
 }
 
-auto cer::filesystem::load_asset_data(std::string_view filename) -> cer::AssetData
+auto cer::filesystem::load_asset_data(std::string_view filename) -> AssetData
 {
     log_verbose("Loading binary file '{}'", filename);
 
@@ -251,22 +247,17 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> cer::AssetDa
     CFStringRef resource_type_ref{};
     CFURLRef    asset_url{};
 
-    const auto _ = gsl::finally([&] {
-        if (resource_type_ref != nullptr)
-        {
-            CFRelease(resource_type_ref);
-        }
+    defer
+    {
+        const auto cf_release = [](const auto* obj) {
+            if (obj != nullptr)
+                CFRelease(obj);
+        };
 
-        if (resource_name_ref != nullptr)
-        {
-            CFRelease(resource_name_ref);
-        }
-
-        if (asset_url != nullptr)
-        {
-            CFRelease(asset_url);
-        }
-    });
+        cf_release(resource_type_ref);
+        cf_release(resource_name_ref);
+        cf_release(asset_url);
+    };
 
     resource_name_ref = CFStringCreateWithCString(kCFAllocatorDefault,
                                                   resource_name.c_str(),
@@ -420,12 +411,13 @@ auto cer::filesystem::decode_image_data_from_file_on_disk(std::string_view filen
         CER_THROW_RUNTIME_ERROR_STR("Failed to load the image file.");
     }
 
-    const auto _ = gsl::finally([data] {
+    defer
+    {
         stbi_image_free(data);
-    });
+    };
 
     const auto data_size =
-        gsl::narrow<size_t>(width) * gsl::narrow<size_t>(height) * gsl::narrow<size_t>(channels);
+        narrow<size_t>(width) * narrow<size_t>(height) * narrow<size_t>(channels);
 
     const auto src_span = std::span{reinterpret_cast<const std::byte*>(data), data_size};
 
@@ -444,11 +436,11 @@ auto cer::filesystem::encode_image_data_to_file_on_disk(std::string_view        
     const auto filename_str = std::string{filename};
 
     if (const auto result = stbi_write_png(filename_str.c_str(),
-                                           gsl::narrow<int>(width),
-                                           gsl::narrow<int>(height),
+                                           narrow<int>(width),
+                                           narrow<int>(height),
                                            4,
                                            raw_image_data.data(),
-                                           gsl::narrow<int>(width * 4));
+                                           narrow<int>(width * 4));
         result == 0)
     {
         CER_THROW_RUNTIME_ERROR_STR("Failed to write the image data to disk.");

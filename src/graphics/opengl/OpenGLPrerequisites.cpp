@@ -4,7 +4,7 @@
 
 #include "OpenGLPrerequisites.hpp"
 #include "cerlib/Image.hpp"
-#include "util/InternalError.hpp"
+#include <cerlib/InternalError.hpp>
 
 void cer::details::verify_opengl_state_x()
 {

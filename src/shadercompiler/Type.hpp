@@ -5,8 +5,7 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/NonCopyable.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
 #include <string>
 
 namespace cer::shadercompiler
@@ -22,7 +21,10 @@ class Type
     explicit Type(const SourceLocation& location);
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Type);
+    using Ref      = std::reference_wrapper<Type>;
+    using ConstRef = std::reference_wrapper<const Type>;
+
+    forbid_copy_and_move(Type);
 
     virtual ~Type() noexcept = default;
 
@@ -82,7 +84,7 @@ class BoolType final : public Type
 
     auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::basic_string_view<char> type_name() const override;
+    auto type_name() const -> std::basic_string_view<char> override;
 };
 
 class FloatType final : public Type
@@ -94,7 +96,7 @@ class FloatType final : public Type
 
     auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::basic_string_view<char> type_name() const override;
+    auto type_name() const -> std::basic_string_view<char> override;
 
     auto is_scalar_type() const -> bool override;
 };
@@ -182,7 +184,7 @@ class ArrayType final : public Type
     static constexpr uint32_t max_size = 255;
 
     explicit ArrayType(const SourceLocation& location,
-                       gsl::not_null<Type*>  element_type,
+                       Type&                 element_type,
                        std::unique_ptr<Expr> size_expr);
 
     ~ArrayType() noexcept override;
@@ -193,17 +195,17 @@ class ArrayType final : public Type
 
     auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    auto size() const -> uint32_t;
+    auto size() const -> size_t;
 
     auto type_name() const -> std::string_view override;
 
     auto can_be_shader_parameter() const -> bool override;
 
   private:
-    mutable gsl::not_null<const Type*> m_element_type;
-    std::unique_ptr<Expr>              m_size_expr;
-    mutable uint32_t                   m_size{};
-    mutable std::string                m_name;
+    mutable std::reference_wrapper<const Type> m_element_type_ref;
+    std::unique_ptr<Expr>                      m_size_expr;
+    mutable size_t                             m_size{};
+    mutable std::string                        m_name;
 };
 
 class UnresolvedType final : public Type

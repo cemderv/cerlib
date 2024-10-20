@@ -30,7 +30,7 @@ class WindowImpl : public Object
                         std::optional<uint32_t> height,
                         bool                    allow_high_dpi);
 
-    NON_COPYABLE_NON_MOVABLE(WindowImpl);
+    forbid_copy_and_move(WindowImpl);
 
     ~WindowImpl() noexcept override;
 

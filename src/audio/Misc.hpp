@@ -24,7 +24,7 @@ freely, subject to the following restrictions:
 
 #pragma once
 
-#include "util/NonCopyable.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 
 namespace cer
 {

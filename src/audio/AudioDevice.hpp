@@ -9,8 +9,7 @@
 #include "audio/Misc.hpp"
 #include "cerlib/Sound.hpp"
 #include "cerlib/SoundTypes.hpp"
-#include "util/NonCopyable.hpp"
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
 #include <optional>
 #include <span>
 #include <unordered_set>
@@ -29,7 +28,7 @@ class AudioDevice
                          size_t      buffer_size,
                          size_t      channels);
 
-    NON_COPYABLE_NON_MOVABLE(AudioDevice);
+    forbid_copy_and_move(AudioDevice);
 
     ~AudioDevice() noexcept;
 

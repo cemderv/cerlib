@@ -14,20 +14,20 @@ namespace cer::details
 class OpenGLImage final : public ImageImpl
 {
   public:
-    explicit OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
-                         uint32_t                       width,
-                         uint32_t                       height,
-                         ImageFormat                    format,
-                         const void*                    data);
+    explicit OpenGLImage(GraphicsDevice& parent_device,
+                         uint32_t        width,
+                         uint32_t        height,
+                         ImageFormat     format,
+                         const void*     data);
 
     // Canvas overload
-    explicit OpenGLImage(gsl::not_null<GraphicsDevice*> parent_device,
-                         WindowImpl*                    window_for_canvas,
-                         uint32_t                       width,
-                         uint32_t                       height,
-                         ImageFormat                    format);
+    explicit OpenGLImage(GraphicsDevice& parent_device,
+                         WindowImpl*     window_for_canvas,
+                         uint32_t        width,
+                         uint32_t        height,
+                         ImageFormat     format);
 
-    NON_COPYABLE_NON_MOVABLE(OpenGLImage);
+    forbid_copy_and_move(OpenGLImage);
 
     ~OpenGLImage() noexcept override;
 

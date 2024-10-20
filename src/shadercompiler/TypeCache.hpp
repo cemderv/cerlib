@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <memory>
 
 namespace cer::shadercompiler
@@ -21,7 +20,7 @@ class TypeCache final
   public:
     TypeCache();
 
-    NON_COPYABLE(TypeCache);
+    forbid_copy(TypeCache);
 
     TypeCache(TypeCache&&) noexcept;
 
@@ -31,15 +30,15 @@ class TypeCache final
 
     auto create_array_type(const SourceLocation& location,
                            std::string_view      element_type_name,
-                           std::unique_ptr<Expr> size_expr) -> gsl::not_null<ArrayType*>;
+                           std::unique_ptr<Expr> size_expr) -> ArrayType&;
 
     auto create_unresolved_type(const SourceLocation& location, std::string_view name)
-        -> gsl::not_null<UnresolvedType*>;
+        -> UnresolvedType&;
 
     void clear();
 
   private:
-    gch::small_vector<std::unique_ptr<ArrayType>, 32>      m_array_types;
-    gch::small_vector<std::unique_ptr<UnresolvedType>, 32> m_unresolved_types;
+    small_vector_of_uniques<ArrayType, 32>      m_array_types;
+    small_vector_of_uniques<UnresolvedType, 32> m_unresolved_types;
 };
 } // namespace cer::shadercompiler

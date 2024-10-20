@@ -19,7 +19,7 @@ class OpenGLWindow final : public WindowImpl
                           std::optional<uint32_t> height,
                           bool                    allow_high_dpi);
 
-    NON_COPYABLE_NON_MOVABLE(OpenGLWindow);
+    forbid_copy_and_move(OpenGLWindow);
 
     ~OpenGLWindow() noexcept override;
 

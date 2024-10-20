@@ -18,18 +18,18 @@ CodeBlock::CodeBlock(const SourceLocation& location, StmtsType stmts)
 
 CodeBlock::~CodeBlock() noexcept = default;
 
-void CodeBlock::verify(SemaContext&                                context,
-                       Scope&                                      scope,
-                       std::span<const gsl::not_null<const Decl*>> extra_symbols) const
+void CodeBlock::verify(SemaContext&                                        context,
+                       Scope&                                              scope,
+                       std::span<const std::reference_wrapper<const Decl>> extra_symbols) const
 {
     Scope& child_scope = scope.push_child();
 
-    for (const gsl::not_null<const Decl*>& symbol : extra_symbols)
+    for (const auto& symbol : extra_symbols)
     {
-        child_scope.add_symbol(*symbol);
+        child_scope.add_symbol(symbol.get());
     }
 
-    for (const std::unique_ptr<Stmt>& stmt : m_stmts)
+    for (const auto& stmt : m_stmts)
     {
         stmt->verify(context, child_scope);
     }
@@ -37,16 +37,16 @@ void CodeBlock::verify(SemaContext&                                context,
     scope.pop_child();
 }
 
-auto CodeBlock::variables() const -> gch::small_vector<gsl::not_null<VarStmt*>, 8>
+auto CodeBlock::variables() const -> small_vector_of_refs<VarStmt, 8>
 {
-    gch::small_vector<gsl::not_null<VarStmt*>, 8> vars;
+    auto vars = small_vector_of_refs<VarStmt, 8>{};
     vars.reserve(m_stmts.size());
 
     for (const std::unique_ptr<Stmt>& stmt : m_stmts)
     {
-        if (VarStmt* var = asa<VarStmt>(stmt.get()))
+        if (auto* var = asa<VarStmt>(stmt.get()))
         {
-            vars.emplace_back(var);
+            vars.emplace_back(*var);
         }
     }
 

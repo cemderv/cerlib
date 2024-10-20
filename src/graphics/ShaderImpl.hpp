@@ -6,8 +6,8 @@
 
 #include "GraphicsResourceImpl.hpp"
 #include "ShaderParameter.hpp"
-#include "util/InternalError.hpp"
-#include "util/small_vector.hpp"
+#include <cerlib/InternalError.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <unordered_set>
 
@@ -25,14 +25,14 @@ class ShaderImpl : public GraphicsResourceImpl
     friend GraphicsDevice;
 
   public:
-    using ParameterList     = gch::small_vector<ShaderParameter, 8>;
-    using ParameterPtrsList = gch::small_vector<ShaderParameter*, 8>;
+    using ParameterList     = small_vector<ShaderParameter, 8>;
+    using ParameterPtrsList = small_vector<ShaderParameter*, 8>;
 
   protected:
-    explicit ShaderImpl(gsl::not_null<GraphicsDevice*> parent_device, ParameterList parameters);
+    explicit ShaderImpl(GraphicsDevice& parent_device, ParameterList parameters);
 
   public:
-    NON_COPYABLE_NON_MOVABLE(ShaderImpl);
+    forbid_copy_and_move(ShaderImpl);
 
     ~ShaderImpl() noexcept override;
 
@@ -153,7 +153,7 @@ class ShaderImpl : public GraphicsResourceImpl
 
     void set_default_parameter_values();
 
-    gch::small_vector<uint8_t, 512>            m_cbuffer_data;
+    small_vector<uint8_t, 512>                 m_cbuffer_data;
     uint32_t                                   m_c_buffer_size{};
     ParameterList                              m_parameters;
     ParameterPtrsList                          m_image_parameters;

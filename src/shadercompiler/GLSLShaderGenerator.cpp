@@ -16,9 +16,11 @@
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
-#include "util/InternalError.hpp"
-#include "util/StringUtil.hpp"
 #include <cassert>
+#include <cerlib/InternalError.hpp>
+#include <cerlib/StringUtil.hpp>
+
+using namespace std::string_literals;
 
 namespace cer::shadercompiler
 {
@@ -32,21 +34,21 @@ GLSLShaderGenerator::GLSLShaderGenerator(bool is_gles)
     m_v2f_prefix = cer_fmt::format("{}v2f_", naming::forbidden_identifier_prefix);
 
     m_built_in_type_dictionary = {
-        {&IntType::instance(), "int"},
-        {&BoolType::instance(), "bool"},
-        {&FloatType::instance(), "float"},
-        {&Vector2Type::instance(), "vec2"},
-        {&Vector3Type::instance(), "vec3"},
-        {&Vector4Type::instance(), "vec4"},
-        {&MatrixType::instance(), "mat4"},
+        {IntType::instance(), "int"s},
+        {BoolType::instance(), "bool"s},
+        {FloatType::instance(), "float"s},
+        {Vector2Type::instance(), "vec2"s},
+        {Vector3Type::instance(), "vec3"s},
+        {Vector4Type::instance(), "vec4"s},
+        {MatrixType::instance(), "mat4"s},
     };
 
     m_needs_float_literal_suffix = false;
 }
 
-auto GLSLShaderGenerator::do_generation(const SemaContext&                       context,
-                                        const FunctionDecl&                      entry_point,
-                                        const gch::small_vector<const Decl*, 8>& decls_to_generate)
+auto GLSLShaderGenerator::do_generation(const SemaContext&                  context,
+                                        const FunctionDecl&                 entry_point,
+                                        const small_vector<const Decl*, 8>& decls_to_generate)
     -> std::string
 {
     const auto shader_name = filesystem::filename_without_extension(m_ast->filename());
@@ -356,10 +358,11 @@ void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
       w.CloseBrace(true);
       w << WNewline;
 #else
-        for (const auto& param : params.scalars)
+        for (const auto& param_ref : params.scalars)
         {
-            const auto  name = param->name();
-            const auto& type = param->type();
+            const auto& param = param_ref.get();
+            const auto  name  = param.name();
+            const auto& type  = param.type();
 
             w << "uniform ";
 
@@ -380,14 +383,16 @@ void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
     // Image parameters
     {
         // int i = 0;
-        for (const auto param : params.resources)
+        for (const auto param_ref : params.resources)
         {
+            const auto& param = param_ref.get();
+
             // Not always supported. Have to check support first before using
             // layout(binding=...). w << "layout(binding = " << i << ") ";
 
             w << "uniform ";
 
-            if (&param->type() == &ImageType::instance())
+            if (&param.type() == &ImageType::instance())
             {
                 w << "sampler2D";
             }
@@ -396,7 +401,7 @@ void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
                 CER_THROW_INTERNAL_ERROR_STR("image type not implemented");
             }
 
-            w << " " << param->name() << ";" << WNewline;
+            w << " " << param.name() << ";" << WNewline;
             // ++i;
         }
     }

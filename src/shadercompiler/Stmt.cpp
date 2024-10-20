@@ -10,9 +10,8 @@
 #include "shadercompiler/Expr.hpp"
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/SemaContext.hpp"
-#include "util/Util.hpp"
-
 #include <cassert>
+#include <cerlib/Util2.hpp>
 
 namespace cer::shadercompiler
 {
@@ -65,10 +64,8 @@ auto VarStmt::steal_variable() -> std::unique_ptr<VarDecl>
     return std::move(m_variable);
 }
 
-auto VarStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
+auto VarStmt::accesses_symbol(const Decl& symbol, [[maybe_unused]] bool transitive) const -> bool
 {
-    CERLIB_UNUSED(transitive);
-
     return m_variable->expr().accesses_symbol(symbol, true);
 }
 

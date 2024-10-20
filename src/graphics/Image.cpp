@@ -9,8 +9,8 @@
 #include "cerlib/Window.hpp"
 #include "contentmanagement/ImageLoading.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
-#include "util/Util.hpp"
+#include <cerlib/InternalError.hpp>
+#include <cerlib/Util2.hpp>
 
 // NOLINTBEGIN
 #define DECLARE_IMAGE_IMPL                                                                         \

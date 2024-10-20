@@ -12,162 +12,164 @@
 #include "shadercompiler/Type.hpp"
 #include <cassert>
 
+using namespace std::string_view_literals;
+
 // NOLINTBEGIN
 
 #define ADD_FUNC_FOR_FLOAT_TO_VECTOR4(name)                                                        \
-    add_func(name##_Float, #name, {{"value", float_t}}, *float_t);                                 \
-    add_func(name##_Vector2, #name, {{"value", vector2_t}}, *vector2_t);                           \
-    add_func(name##_Vector3, #name, {{"value", vector3_t}}, *vector3_t);                           \
-    add_func(name##_Vector4, #name, {{"value", vector4_t}}, *vector4_t)
+    add_func(name##_Float, #name, {{"value", float_t}}, float_t);                                  \
+    add_func(name##_Vector2, #name, {{"value", vector2_t}}, vector2_t);                            \
+    add_func(name##_Vector3, #name, {{"value", vector3_t}}, vector3_t);                            \
+    add_func(name##_Vector4, #name, {{"value", vector4_t}}, vector4_t)
 
 #define ADD_FUNC_FOR_FLOAT_TO_VECTOR4_TWO_ARGS(name, argname1, argname2)                           \
-    add_func(name##_Float, #name, {{argname1, float_t}, {argname2, float_t}}, *float_t);           \
-    add_func(name##_Vector2, #name, {{argname1, vector2_t}, {argname2, vector2_t}}, *vector2_t);   \
-    add_func(name##_Vector3, #name, {{argname1, vector3_t}, {argname2, vector3_t}}, *vector3_t);   \
-    add_func(name##_Vector4, #name, {{argname1, vector4_t}, {argname2, vector4_t}}, *vector4_t)
+    add_func(name##_Float, #name, {{argname1, float_t}, {argname2, float_t}}, float_t);            \
+    add_func(name##_Vector2, #name, {{argname1, vector2_t}, {argname2, vector2_t}}, vector2_t);    \
+    add_func(name##_Vector3, #name, {{argname1, vector3_t}, {argname2, vector3_t}}, vector3_t);    \
+    add_func(name##_Vector4, #name, {{argname1, vector4_t}, {argname2, vector4_t}}, vector4_t)
 
 #define ADD_FUNC_FOR_ALL_VECTORS(name)                                                             \
-    add_func(name##_Vector2, #name, {{"value", vector2_t}}, *vector2_t);                           \
-    add_func(name##_Vector3, #name, {{"value", vector3_t}}, *vector3_t);                           \
-    add_func(name##_Vector4, #name, {{"value", vector4_t}}, *vector4_t)
+    add_func(name##_Vector2, #name, {{"value", vector2_t}}, vector2_t);                            \
+    add_func(name##_Vector3, #name, {{"value", vector3_t}}, vector3_t);                            \
+    add_func(name##_Vector4, #name, {{"value", vector4_t}}, vector4_t)
 
 #define ADD_FUNC_FOR_ALL_VECTORS_TWO_ARGS(name, argname1, argname2)                                \
-    add_func(name##_Vector2, #name, {{argname1, vector2_t}, {argname2, vector2_t}}, *vector2_t);   \
-    add_func(name##_Vector3, #name, {{argname1, vector3_t}, {argname2, vector3_t}}, *vector3_t);   \
-    add_func(name##_Vector4, #name, {{argname1, vector4_t}, {argname2, vector4_t}}, *vector4_t)
+    add_func(name##_Vector2, #name, {{argname1, vector2_t}, {argname2, vector2_t}}, vector2_t);    \
+    add_func(name##_Vector3, #name, {{argname1, vector3_t}, {argname2, vector3_t}}, vector3_t);    \
+    add_func(name##_Vector4, #name, {{argname1, vector4_t}, {argname2, vector4_t}}, vector4_t)
 
 #define ADD_FUNC_FOR_FLOAT_TO_MATRIX(name)                                                         \
-    add_func(name##_Float, #name, {{"value", float_t}}, *float_t);                                 \
-    add_func(name##_Vector2, #name, {{"value", vector2_t}}, *vector2_t);                           \
-    add_func(name##_Vector3, #name, {{"value", vector3_t}}, *vector3_t);                           \
-    add_func(name##_Vector4, #name, {{"value", vector4_t}}, *vector4_t);                           \
-    add_func(name##_Matrix4x4, #name, {{"value", matrix_t}}, *matrix_t)
+    add_func(name##_Float, #name, {{"value", float_t}}, float_t);                                  \
+    add_func(name##_Vector2, #name, {{"value", vector2_t}}, vector2_t);                            \
+    add_func(name##_Vector3, #name, {{"value", vector3_t}}, vector3_t);                            \
+    add_func(name##_Vector4, #name, {{"value", vector4_t}}, vector4_t);                            \
+    add_func(name##_Matrix4x4, #name, {{"value", matrix_t}}, matrix_t)
 
 #define ADD_FUNC_FOR_FLOAT_TO_MATRIX_BOOL(name)                                                    \
-    add_func(name##_Float, #name, {{"value", float_t}}, *bool_t);                                  \
-    add_func(name##_Vector2, #name, {{"value", vector2_t}}, *bool_t);                              \
-    add_func(name##_Vector3, #name, {{"value", vector3_t}}, *bool_t);                              \
-    add_func(name##_Vector4, #name, {{"value", vector4_t}}, *bool_t);                              \
-    add_func(name##_Matrix4x4, #name, {{"value", matrix_t}}, *bool_t)
+    add_func(name##_Float, #name, {{"value", float_t}}, bool_t);                                   \
+    add_func(name##_Vector2, #name, {{"value", vector2_t}}, bool_t);                               \
+    add_func(name##_Vector3, #name, {{"value", vector3_t}}, bool_t);                               \
+    add_func(name##_Vector4, #name, {{"value", vector4_t}}, bool_t);                               \
+    add_func(name##_Matrix4x4, #name, {{"value", matrix_t}}, bool_t)
 
 // NOLINTEND
 
 namespace cer::shadercompiler
 {
 static void add_struct_fields(
-    gch::small_vector<gsl::not_null<Decl*>, 132>&                                  all,
-    std::vector<std::unique_ptr<Decl>>&                                            var,
-    std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> fields)
+    small_vector_of_refs<Decl, 132>&                                                       all,
+    std::vector<std::unique_ptr<Decl>>&                                                    var,
+    std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>> fields)
 {
     var.reserve(fields.size());
 
     for (const auto& [field_name, field_type] : fields)
     {
         var.push_back(
-            std::make_unique<StructFieldDecl>(SourceLocation::std, field_name, *field_type));
+            std::make_unique<StructFieldDecl>(SourceLocation::std, field_name, field_type));
 
-        all.emplace_back(var.back().get());
+        all.emplace_back(*var.back());
     }
 }
 
 BuiltInSymbols::BuiltInSymbols()
 {
-    const auto* int_t     = &IntType::instance();
-    const auto* float_t   = &FloatType::instance();
-    const auto* vector2_t = &Vector2Type::instance();
-    const auto* vector3_t = &Vector3Type::instance();
-    const auto* vector4_t = &Vector4Type::instance();
-    const auto* matrix_t  = &MatrixType::instance();
-    const auto* image_t   = &ImageType::instance();
-    const auto* bool_t    = &BoolType::instance();
+    const auto& int_t     = IntType::instance();
+    const auto& float_t   = FloatType::instance();
+    const auto& vector2_t = Vector2Type::instance();
+    const auto& vector3_t = Vector3Type::instance();
+    const auto& vector4_t = Vector4Type::instance();
+    const auto& matrix_t  = MatrixType::instance();
+    const auto& image_t   = ImageType::instance();
+    const auto& bool_t    = BoolType::instance();
 
-    add_func(float_ctor_int, float_t->type_name(), {{"value", int_t}}, *float_t);
-    add_func(int_ctor_float, int_t->type_name(), {{"value", float_t}}, *int_t);
-    add_func(int_ctor_uint, int_t->type_name(), {{"value", float_t}}, *int_t);
+    add_func(float_ctor_int, float_t.type_name(), {{"value", int_t}}, float_t);
+    add_func(int_ctor_float, int_t.type_name(), {{"value", float_t}}, int_t);
+    add_func(int_ctor_uint, int_t.type_name(), {{"value", float_t}}, int_t);
 
     // Vector2 ctors
     add_func(vector2_ctor_xy,
-             vector2_t->type_name(),
+             vector2_t.type_name(),
              {
                  {"xy", float_t},
              },
-             *vector2_t);
+             vector2_t);
 
     add_func(vector2_ctor_x_y,
-             vector2_t->type_name(),
+             vector2_t.type_name(),
              {
                  {"x", float_t},
                  {"y", float_t},
              },
-             *vector2_t);
+             vector2_t);
 
     // Vector3 ctors
     add_func(vector3_ctor_x_y_z,
-             vector3_t->type_name(),
+             vector3_t.type_name(),
              {
                  {"x", float_t},
                  {"y", float_t},
                  {"z", float_t},
              },
-             *vector3_t);
+             vector3_t);
 
     add_func(vector3_ctor_xy_z,
-             vector3_t->type_name(),
+             vector3_t.type_name(),
              {
                  {"xy", vector2_t},
                  {"z", float_t},
              },
-             *vector3_t);
+             vector3_t);
 
     add_func(vector3_ctor_xyz,
-             vector3_t->type_name(),
+             vector3_t.type_name(),
              {
                  {"xyz", float_t},
              },
-             *vector3_t);
+             vector3_t);
 
     // Vector4 ctors
     add_func(vector4_ctor_x_y_z_w,
-             vector4_t->type_name(),
+             vector4_t.type_name(),
              {
                  {"x", float_t},
                  {"y", float_t},
                  {"z", float_t},
                  {"w", float_t},
              },
-             *vector4_t);
+             vector4_t);
 
     add_func(vector4_ctor_xy_zw,
-             vector4_t->type_name(),
+             vector4_t.type_name(),
              {
                  {"xy", vector2_t},
                  {"zw", vector2_t},
              },
-             *vector4_t);
+             vector4_t);
 
     add_func(vector4_ctor_xy_z_w,
-             vector4_t->type_name(),
+             vector4_t.type_name(),
              {
                  {"xy", vector2_t},
                  {"z", float_t},
                  {"w", float_t},
              },
-             *vector4_t);
+             vector4_t);
 
     add_func(vector4_ctor_xyz_w,
-             vector4_t->type_name(),
+             vector4_t.type_name(),
              {
                  {"xyz", vector3_t},
                  {"w", float_t},
              },
-             *vector4_t);
+             vector4_t);
 
     add_func(vector4_ctor_xyzw,
-             vector4_t->type_name(),
+             vector4_t.type_name(),
              {
                  {"xyzw", float_t},
              },
-             *vector4_t);
+             vector4_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(abs);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(acos);
@@ -182,58 +184,58 @@ BuiltInSymbols::BuiltInSymbols()
     add_func(clamp_Float,
              "clamp",
              {{"value", float_t}, {"start", float_t}, {"end", float_t}},
-             *float_t);
+             float_t);
 
     add_func(clamp_Vector2,
              "clamp",
              {{"value", vector2_t}, {"start", vector2_t}, {"end", vector2_t}},
-             *vector2_t);
+             vector2_t);
 
     add_func(clamp_Vector3,
              "clamp",
              {{"value", vector3_t}, {"start", vector3_t}, {"end", vector3_t}},
-             *vector3_t);
+             vector3_t);
 
     add_func(clamp_Vector4,
              "clamp",
              {{"value", vector4_t}, {"start", vector4_t}, {"end", vector4_t}},
-             *vector4_t);
+             vector4_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(cos);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(degrees);
 
-    add_func(determinant_matrix, "determinant", {{"value", matrix_t}}, *float_t);
+    add_func(determinant_matrix, "determinant", {{"value", matrix_t}}, float_t);
 
-    add_func(distance_Vector2, "distance", {{"lhs", vector2_t}, {"rhs", vector2_t}}, *float_t);
-    add_func(distance_Vector3, "distance", {{"lhs", vector3_t}, {"rhs", vector3_t}}, *float_t);
-    add_func(distance_Vector4, "distance", {{"lhs", vector4_t}, {"rhs", vector4_t}}, *float_t);
+    add_func(distance_Vector2, "distance", {{"lhs", vector2_t}, {"rhs", vector2_t}}, float_t);
+    add_func(distance_Vector3, "distance", {{"lhs", vector3_t}, {"rhs", vector3_t}}, float_t);
+    add_func(distance_Vector4, "distance", {{"lhs", vector4_t}, {"rhs", vector4_t}}, float_t);
 
-    add_func(dot_Vector2, "dot", {{"lhs", vector2_t}, {"rhs", vector2_t}}, *float_t);
-    add_func(dot_Vector3, "dot", {{"lhs", vector3_t}, {"rhs", vector3_t}}, *float_t);
-    add_func(dot_Vector4, "dot", {{"lhs", vector4_t}, {"rhs", vector4_t}}, *float_t);
+    add_func(dot_Vector2, "dot", {{"lhs", vector2_t}, {"rhs", vector2_t}}, float_t);
+    add_func(dot_Vector3, "dot", {{"lhs", vector3_t}, {"rhs", vector3_t}}, float_t);
+    add_func(dot_Vector4, "dot", {{"lhs", vector4_t}, {"rhs", vector4_t}}, float_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(exp);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(exp2);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(floor);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4_TWO_ARGS(fmod, "x", "y");
 
-    add_func(length_Vector2, "length", {{"value", vector2_t}}, *float_t);
-    add_func(length_Vector3, "length", {{"value", vector3_t}}, *float_t);
-    add_func(length_Vector4, "length", {{"value", vector4_t}}, *float_t);
+    add_func(length_Vector2, "length", {{"value", vector2_t}}, float_t);
+    add_func(length_Vector3, "length", {{"value", vector3_t}}, float_t);
+    add_func(length_Vector4, "length", {{"value", vector4_t}}, float_t);
 
-    add_func(lerp_Float, "lerp", {{"start", float_t}, {"stop", float_t}, {"t", float_t}}, *float_t);
+    add_func(lerp_Float, "lerp", {{"start", float_t}, {"stop", float_t}, {"t", float_t}}, float_t);
     add_func(lerp_Vector2,
              "lerp",
              {{"start", vector2_t}, {"stop", vector2_t}, {"t", float_t}},
-             *vector2_t);
+             vector2_t);
     add_func(lerp_Vector3,
              "lerp",
              {{"start", vector3_t}, {"stop", vector3_t}, {"t", float_t}},
-             *vector3_t);
+             vector3_t);
     add_func(lerp_Vector4,
              "lerp",
              {{"start", vector4_t}, {"stop", vector4_t}, {"t", float_t}},
-             *vector4_t);
+             vector4_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(log);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(log2);
@@ -247,7 +249,7 @@ BuiltInSymbols::BuiltInSymbols()
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(radians);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(round);
 
-    add_func(sample_image, "sample", {{"image", image_t}, {"coords", vector2_t}}, *vector4_t);
+    add_func(sample_image, "sample", {{"image", image_t}, {"coords", vector2_t}}, vector4_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(saturate);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(sign);
@@ -256,27 +258,27 @@ BuiltInSymbols::BuiltInSymbols()
     add_func(smoothstep_Float,
              "smoothstep",
              {{"min", float_t}, {"max", float_t}, {"value", float_t}},
-             *float_t);
+             float_t);
 
     add_func(smoothstep_Vector2,
              "smoothstep",
              {{"min", vector2_t}, {"max", vector2_t}, {"value", vector2_t}},
-             *vector2_t);
+             vector2_t);
 
     add_func(smoothstep_Vector3,
              "smoothstep",
              {{"min", vector3_t}, {"max", vector3_t}, {"value", vector3_t}},
-             *vector3_t);
+             vector3_t);
 
     add_func(smoothstep_Vector4,
              "smoothstep",
              {{"min", vector4_t}, {"max", vector4_t}, {"value", vector4_t}},
-             *vector4_t);
+             vector4_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(sqrt);
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(tan);
 
-    add_func(transpose_matrix, "transpose", {{"matrix", matrix_t}}, *matrix_t);
+    add_func(transpose_matrix, "transpose", {{"matrix", matrix_t}}, matrix_t);
 
     ADD_FUNC_FOR_FLOAT_TO_VECTOR4(trunc);
 
@@ -284,52 +286,52 @@ BuiltInSymbols::BuiltInSymbols()
                       vector2_fields,
                       {
                           // XY accessors
-                          std::make_pair("x", float_t),
-                          std::make_pair("y", float_t),
-                          std::make_pair("xx", vector2_t),
-                          std::make_pair("yy", vector2_t),
+                          {"x"sv, float_t},
+                          {"y"sv, float_t},
+                          {"xx"sv, vector2_t},
+                          {"yy"sv, vector2_t},
                       });
 
     add_struct_fields(m_all,
                       vector3_fields,
                       {
                           // XYZ accessors
-                          std::make_pair("x", float_t),
-                          std::make_pair("y", float_t),
-                          std::make_pair("z", float_t),
-                          std::make_pair("xx", vector2_t),
-                          std::make_pair("yy", vector2_t),
-                          std::make_pair("zz", vector2_t),
-                          std::make_pair("xy", vector2_t),
-                          std::make_pair("yx", vector2_t),
-                          std::make_pair("yz", vector2_t),
-                          std::make_pair("zy", vector2_t),
-                          std::make_pair("xz", vector2_t),
-                          std::make_pair("zx", vector2_t),
-                          std::make_pair("xxx", vector3_t),
-                          std::make_pair("yyy", vector3_t),
-                          std::make_pair("zzz", vector3_t),
+                          {"x"sv, float_t},
+                          {"y"sv, float_t},
+                          {"z"sv, float_t},
+                          {"xx"sv, vector2_t},
+                          {"yy"sv, vector2_t},
+                          {"zz"sv, vector2_t},
+                          {"xy"sv, vector2_t},
+                          {"yx"sv, vector2_t},
+                          {"yz"sv, vector2_t},
+                          {"zy"sv, vector2_t},
+                          {"xz"sv, vector2_t},
+                          {"zx"sv, vector2_t},
+                          {"xxx"sv, vector3_t},
+                          {"yyy"sv, vector3_t},
+                          {"zzz"sv, vector3_t},
                       });
 
     add_struct_fields(m_all,
                       vector4_fields,
                       {
                           // XYZW accessors
-                          std::make_pair("x", float_t),
-                          std::make_pair("y", float_t),
-                          std::make_pair("z", float_t),
-                          std::make_pair("w", float_t),
-                          std::make_pair("xy", vector2_t),
-                          std::make_pair("xyz", vector3_t),
-                          std::make_pair("xxxx", vector4_t),
-                          std::make_pair("yyyy", vector4_t),
-                          std::make_pair("zzzz", vector4_t),
-                          std::make_pair("wwww", vector4_t),
+                          {"x"sv, float_t},
+                          {"y"sv, float_t},
+                          {"z"sv, float_t},
+                          {"w"sv, float_t},
+                          {"xy"sv, vector2_t},
+                          {"xyz"sv, vector3_t},
+                          {"xxxx"sv, vector4_t},
+                          {"yyyy"sv, vector4_t},
+                          {"zzzz"sv, vector4_t},
+                          {"wwww"sv, vector4_t},
                       });
 
-    add_system_value(sprite_image, naming::sprite_batch_image_param, *image_t);
-    add_system_value(sprite_color, naming::sprite_batch_color_attrib, *vector4_t);
-    add_system_value(sprite_uv, naming::sprite_batch_uv_attrib, *vector2_t);
+    add_system_value(sprite_image, naming::sprite_batch_image_param, image_t);
+    add_system_value(sprite_color, naming::sprite_batch_color_attrib, vector4_t);
+    add_system_value(sprite_uv, naming::sprite_batch_uv_attrib, vector2_t);
 }
 
 BuiltInSymbols::BuiltInSymbols(BuiltInSymbols&&) noexcept = default;
@@ -340,7 +342,11 @@ BuiltInSymbols::~BuiltInSymbols() noexcept = default;
 
 auto BuiltInSymbols::contains(const Decl& symbol) const -> bool
 {
-    return std::ranges::find(m_all, &symbol) != m_all.cend();
+    const auto it = std::ranges::find_if(m_all, [&symbol](const auto& e) {
+        return &e.get() == &symbol;
+    });
+
+    return it != m_all.cend();
 }
 
 auto BuiltInSymbols::is_image_sampling_function(const Decl& symbol) const -> bool
@@ -393,8 +399,16 @@ auto BuiltInSymbols::is_vector4_ctor(const Decl& symbol) const -> bool
 
 auto BuiltInSymbols::is_some_intrinsic_function(const Decl& symbol) const -> bool
 {
-    return isa<FunctionDecl>(symbol) && !is_some_vector_ctor(symbol) &&
-           std::ranges::find(m_all, &symbol) != m_all.cend();
+    if (!isa<FunctionDecl>(symbol) || is_some_vector_ctor(symbol))
+    {
+        return false;
+    }
+
+    const auto it = std::ranges::find_if(m_all, [&symbol](const auto& e) {
+        return &e.get() == &symbol;
+    });
+
+    return it != m_all.cend();
 }
 
 auto BuiltInSymbols::is_vector_field_access(const Decl& symbol) const -> bool
@@ -411,20 +425,21 @@ auto BuiltInSymbols::is_vector_field_access(const Decl& symbol) const -> bool
 }
 
 void BuiltInSymbols::add_func(
-    std::unique_ptr<FunctionDecl>&                                                 var,
-    std::string_view                                                               func_name,
-    std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> param_descs,
-    const Type&                                                                    return_type)
+    std::unique_ptr<FunctionDecl>& var,
+    std::string_view               func_name,
+    std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>>
+                param_descs,
+    const Type& return_type)
 {
     // The variable must not be initialized yet.
     assert(!var);
 
-    gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> params;
+    auto params = small_vector_of_uniques<FunctionParamDecl, 4>{};
 
     for (const auto& [param_name, param_type] : param_descs)
     {
         params.push_back(
-            std::make_unique<FunctionParamDecl>(SourceLocation::std, param_name, *param_type));
+            std::make_unique<FunctionParamDecl>(SourceLocation::std, param_name, param_type));
     }
 
     var = std::make_unique<FunctionDecl>(SourceLocation::std,
@@ -433,7 +448,7 @@ void BuiltInSymbols::add_func(
                                          std::move(return_type),
                                          nullptr);
 
-    m_all.emplace_back(var.get());
+    m_all.emplace_back(*var);
 }
 
 void BuiltInSymbols::add_system_value(std::unique_ptr<Decl>& var,
@@ -441,6 +456,6 @@ void BuiltInSymbols::add_system_value(std::unique_ptr<Decl>& var,
                                       const Type&            type)
 {
     var = std::make_unique<VarDecl>(name, type);
-    m_all.emplace_back(var.get());
+    m_all.emplace_back(*var);
 }
 } // namespace cer::shadercompiler

@@ -6,7 +6,7 @@
 
 #include "GameImpl.hpp"
 #include "WindowImpl.hpp"
-#include "util/Util.hpp"
+#include <cerlib/Util2.hpp>
 
 #ifdef CERLIB_HAVE_OPENGL
 #include "graphics/opengl/OpenGLWindow.hpp"

@@ -8,8 +8,8 @@
 #include "cerlib/Font.hpp"
 #include "graphics/FontImpl.hpp"
 #include "util/Object.hpp"
-#include "util/small_vector.hpp"
 #include <cassert>
+#include <cerlib/List.hpp>
 #include <span>
 
 namespace cer::details
@@ -27,12 +27,12 @@ struct TextDecorationRect
     std::optional<Color> color;
 };
 
-static void shape_text(std::string_view                       text,
-                       const Font&                            font,
-                       uint32_t                               font_size,
-                       const std::optional<TextDecoration>&   decoration,
-                       gch::small_vector<PreshapedGlyph>&     dst_glyphs,
-                       gch::small_vector<TextDecorationRect>& dst_decoration_rects)
+static void shape_text(std::string_view                     text,
+                       const Font&                          font,
+                       uint32_t                             font_size,
+                       const std::optional<TextDecoration>& decoration,
+                       small_vector<PreshapedGlyph>&        dst_glyphs,
+                       small_vector<TextDecorationRect>&    dst_decoration_rects)
 {
     assert(font);
 
@@ -127,7 +127,7 @@ class TextImpl final : public Object
     auto decoration_rects() const -> std::span<const TextDecorationRect>;
 
   private:
-    gch::small_vector<PreshapedGlyph>     m_glyphs;
-    gch::small_vector<TextDecorationRect> m_decoration_rects;
+    small_vector<PreshapedGlyph>     m_glyphs;
+    small_vector<TextDecorationRect> m_decoration_rects;
 };
 } // namespace cer::details

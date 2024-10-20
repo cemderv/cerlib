@@ -15,8 +15,7 @@
 #include "graphics/GraphicsDevice.hpp"
 #include "input/GamepadImpl.hpp"
 #include "input/InputImpl.hpp"
-#include "util/InternalError.hpp"
-#include <gsl/util>
+#include <cerlib/InternalError.hpp>
 
 #ifndef __EMSCRIPTEN__
 #define SDL_MAIN_NOIMPL
@@ -981,7 +980,8 @@ void GameImpl::do_draw()
             m_graphics_device->start_frame(window);
 
             // Ensure that the frame ends even if an exception is thrown during this frame.
-            const auto end_frame_guard = gsl::finally([this, &window] {
+            defer_named(end_frame_guard)
+            {
 #ifdef CERLIB_ENABLE_IMGUI
                 const auto post_draw_callback = [this, &window] {
                     do_imgui_draw(window);
@@ -992,7 +992,7 @@ void GameImpl::do_draw()
 #endif
 
                 m_graphics_device->end_frame(window, post_draw_callback);
-            });
+            };
 
             m_draw_func(window);
         }
@@ -1008,9 +1008,10 @@ void GameImpl::do_imgui_draw(const Window& window)
 
         // Ensure that the ImGui frame ends even if an exception is thrown during this
         // frame.
-        const auto end_imgui_frame_guard = gsl::finally([this, &window] {
+        defer_named(end_imgui_frame_guard)
+        {
             m_graphics_device->end_imgui_frame(window);
-        });
+        };
 
 #ifdef __EMSCRIPTEN__
         ImGui_ImplSDL2_NewFrame();
