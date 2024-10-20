@@ -102,7 +102,7 @@ static auto get_levenstein_distance(std::string_view s1, std::string_view s2) ->
     const auto s1_len = s1.size();
     const auto s2_len = s2.size();
 
-    auto distances = List<size_t, 4>{s2_len + 1};
+    auto distances = List<size_t, 4>(s2_len + 1);
     std::iota(distances.begin(), distances.end(), size_t(0));
 
     for (size_t i = 0; i < s1_len; ++i)
