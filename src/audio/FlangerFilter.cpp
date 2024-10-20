@@ -22,14 +22,13 @@ freely, subject to the following restrictions:
    distribution.
 */
 #include "audio/Filter.hpp"
-#include <cstring>
 
 namespace cer
 {
-FlangerFilterInstance::FlangerFilterInstance(FlangerFilter* aParent)
+FlangerFilterInstance::FlangerFilterInstance(FlangerFilter* parent)
 {
-    m_parent      = aParent;
-    m_buffer      = 0;
+    m_parent      = parent;
+    m_buffer      = nullptr;
     m_buffer_size = 0;
     m_offset      = 0;
     m_index       = 0;
@@ -43,7 +42,7 @@ void FlangerFilterInstance::filter(const FilterArgs& args)
 {
     update_params(args.time);
 
-    if (m_buffer_size < m_params[FlangerFilter::DELAY] * args.sample_rate)
+    if (float(m_buffer_size) < m_params[FlangerFilter::DELAY] * args.sample_rate)
     {
         m_buffer_size = int(ceil(m_params[FlangerFilter::DELAY] * args.sample_rate));
         m_buffer      = std::make_unique<float[]>(m_buffer_size * args.channels);
@@ -78,7 +77,7 @@ FlangerFilter::FlangerFilter()
     m_freq  = 10;
 }
 
-std::shared_ptr<FilterInstance> FlangerFilter::create_instance()
+auto FlangerFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<FlangerFilterInstance>(this);
 }

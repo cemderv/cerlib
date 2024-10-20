@@ -366,10 +366,10 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> cer::AssetDa
     };
 }
 
-auto cer::filesystem::load_file_data_from_disk(std::string_view filename) -> std::vector<std::byte>
+auto cer::filesystem::load_file_data_from_disk([[maybe_unused]] std::string_view filename)
+    -> std::vector<std::byte>
 {
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__) || TARGET_OS_IPHONE
-    CERLIB_UNUSED(filename);
     CER_THROW_RUNTIME_ERROR_STR("Loading files from disk is not supported on the current system.");
 #else
     auto ifs = std::ifstream{std::string{filename}, std::ios::binary | std::ios::ate};

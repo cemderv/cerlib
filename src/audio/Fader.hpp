@@ -33,13 +33,13 @@ class Fader
 {
   public:
     // Set up LFO
-    void setLFO(float aFrom, float aTo, SoundTime aTime, SoundTime aStartTime);
+    void setLFO(float from, float to, SoundTime time, SoundTime start_time);
 
     // Set up fader
-    void set(float aFrom, float aTo, SoundTime aTime, SoundTime aStartTime);
+    void set(float from, float to, SoundTime time, SoundTime start_time);
 
     // Get the current fading value
-    float get(SoundTime aCurrentTime);
+    auto get(SoundTime current_time) -> float;
 
     // Value to fade from
     float from = 0.0f;

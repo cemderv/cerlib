@@ -42,17 +42,17 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-static constexpr size_t STFT_WINDOW_SIZE  = 256; // must be power of two
-static constexpr size_t STFT_WINDOW_HALF  = STFT_WINDOW_SIZE / 2;
-static constexpr size_t STFT_WINDOW_TWICE = STFT_WINDOW_SIZE * 2;
+static constexpr size_t stft_window_size  = 256; // must be power of two
+static constexpr size_t stft_window_half  = stft_window_size / 2;
+static constexpr size_t stft_window_twice = stft_window_size * 2;
 
 // Needed for subclasses
 FFTFilterInstance::FFTFilterInstance()
 {
     for (size_t i = 0; i < max_channels; ++i)
     {
-        m_input_offset[i] = STFT_WINDOW_SIZE;
-        m_mix_offset[i]   = STFT_WINDOW_HALF;
+        m_input_offset[i] = stft_window_size;
+        m_mix_offset[i]   = stft_window_half;
         m_read_offset[i]  = 0;
     }
 }
@@ -75,22 +75,22 @@ void FFTFilterInstance::filter_channel(const FilterChannelArgs& args)
     // Could allocate max_channels but that would potentially waste a lot of memory.
     if (m_input_buffer == nullptr)
     {
-        m_input_buffer = std::make_unique<float[]>(STFT_WINDOW_TWICE * args.channel_count);
-        m_mix_buffer   = std::make_unique<float[]>(STFT_WINDOW_TWICE * args.channel_count);
-        m_temp         = std::make_unique<float[]>(STFT_WINDOW_SIZE);
-        m_last_phase   = std::make_unique<float[]>(STFT_WINDOW_SIZE * args.channel_count);
-        m_sum_phase    = std::make_unique<float[]>(STFT_WINDOW_SIZE * args.channel_count);
+        m_input_buffer = std::make_unique<float[]>(stft_window_twice * args.channel_count);
+        m_mix_buffer   = std::make_unique<float[]>(stft_window_twice * args.channel_count);
+        m_temp         = std::make_unique<float[]>(stft_window_size);
+        m_last_phase   = std::make_unique<float[]>(stft_window_size * args.channel_count);
+        m_sum_phase    = std::make_unique<float[]>(stft_window_size * args.channel_count);
     }
 
     size_t ofs      = 0;
-    size_t chofs    = STFT_WINDOW_TWICE * args.channel;
+    size_t chofs    = stft_window_twice * args.channel;
     size_t inputofs = m_input_offset[args.channel];
     size_t mixofs   = m_mix_offset[args.channel];
     size_t readofs  = m_read_offset[args.channel];
 
     while (ofs < args.samples)
     {
-        size_t samples = STFT_WINDOW_HALF - (inputofs & (STFT_WINDOW_HALF - 1));
+        size_t samples = stft_window_half - (inputofs & (stft_window_half - 1));
 
         if (ofs + samples > args.samples)
         {
@@ -100,52 +100,52 @@ void FFTFilterInstance::filter_channel(const FilterChannelArgs& args)
 
         for (size_t i = 0; i < samples; ++i)
         {
-            m_input_buffer[chofs + ((inputofs + STFT_WINDOW_HALF) & (STFT_WINDOW_TWICE - 1))] =
+            m_input_buffer[chofs + ((inputofs + stft_window_half) & (stft_window_twice - 1))] =
                 args.buffer[ofs + i];
-            m_mix_buffer[chofs + ((inputofs + STFT_WINDOW_HALF) & (STFT_WINDOW_TWICE - 1))] = 0;
+            m_mix_buffer[chofs + ((inputofs + stft_window_half) & (stft_window_twice - 1))] = 0;
             inputofs++;
         }
 
-        if ((inputofs & (STFT_WINDOW_HALF - 1)) == 0)
+        if ((inputofs & (stft_window_half - 1)) == 0)
         {
-            for (size_t i = 0; i < STFT_WINDOW_SIZE; ++i)
+            for (size_t i = 0; i < stft_window_size; ++i)
             {
                 m_temp[i] =
-                    m_input_buffer[chofs + ((inputofs + STFT_WINDOW_TWICE - STFT_WINDOW_HALF + i) &
-                                            (STFT_WINDOW_TWICE - 1))];
+                    m_input_buffer[chofs + ((inputofs + stft_window_twice - stft_window_half + i) &
+                                            (stft_window_twice - 1))];
             }
 
-            FFT::fft(m_temp.get(), STFT_WINDOW_SIZE);
+            FFT::fft(m_temp.get(), stft_window_size);
 
             // do magic
             fft_filter_channel(FilterChannelArgs{
                 .buffer        = m_temp.get(),
-                .samples       = STFT_WINDOW_HALF,
+                .samples       = stft_window_half,
                 .sample_rate   = args.sample_rate,
                 .time          = args.time,
                 .channel       = args.channel,
                 .channel_count = args.channel_count,
             });
 
-            FFT::ifft(m_temp.get(), STFT_WINDOW_SIZE);
+            FFT::ifft(m_temp.get(), stft_window_size);
 
-            for (size_t i = 0; i < STFT_WINDOW_SIZE; ++i)
+            for (size_t i = 0; i < stft_window_size; ++i)
             {
                 // mMixBuffer[chofs + (mixofs & (STFT_WINDOW_TWICE - 1))] = mTemp[i];
-                m_mix_buffer[chofs + (mixofs & (STFT_WINDOW_TWICE - 1))] +=
-                    m_temp[i] * (float(STFT_WINDOW_HALF) - std::abs(float(STFT_WINDOW_HALF - i))) *
-                    (1.0f / float(STFT_WINDOW_HALF));
+                m_mix_buffer[chofs + (mixofs & (stft_window_twice - 1))] +=
+                    m_temp[i] * (float(stft_window_half) - std::abs(float(stft_window_half - i))) *
+                    (1.0f / float(stft_window_half));
 
                 mixofs++;
             }
 
-            mixofs -= STFT_WINDOW_HALF;
+            mixofs -= stft_window_half;
         }
 
         for (size_t i = 0; i < samples; ++i)
         {
             args.buffer[ofs + i] +=
-                (m_mix_buffer[chofs + (readofs & (STFT_WINDOW_TWICE - 1))] - args.buffer[ofs + i]) *
+                (m_mix_buffer[chofs + (readofs & (stft_window_twice - 1))] - args.buffer[ofs + i]) *
                 m_params[0];
 
             readofs++;
@@ -176,18 +176,18 @@ void FFTFilterInstance::magPhase2MagFreq(float* fft_buffer,
                                          float  sample_rate,
                                          size_t channel)
 {
-    const auto stepsize   = samples / sample_rate;
-    const auto expct      = (stepsize / samples) * 2.0f * cer::pi;
-    const auto freqPerBin = sample_rate / samples;
+    const auto stepsize     = float(double(samples) / sample_rate);
+    const auto expct        = (stepsize / samples) * 2.0f * pi;
+    const auto freq_per_bin = sample_rate / samples;
 
     for (size_t i = 0; i < samples; ++i)
     {
         const auto pha = fft_buffer[i * 2 + 1];
 
         /* compute phase difference */
-        auto freq = pha - m_last_phase[i + channel * STFT_WINDOW_SIZE];
+        auto freq = pha - m_last_phase[i + channel * stft_window_size];
 
-        m_last_phase[i + channel * STFT_WINDOW_SIZE] = pha;
+        m_last_phase[i + channel * stft_window_size] = pha;
 
         /* subtract expected phase difference */
         freq -= float(i) * expct;
@@ -204,7 +204,7 @@ void FFTFilterInstance::magPhase2MagFreq(float* fft_buffer,
         freq = samples * freq / cer::two_pi;
 
         /* compute the k-th partials' true frequency */
-        freq = float(i) * freqPerBin + freq * freqPerBin;
+        freq = float(i) * freq_per_bin + freq * freq_per_bin;
 
         /* store magnitude and true frequency in analysis arrays */
         fft_buffer[i * 2 + 1] = freq;
@@ -239,8 +239,8 @@ void FFTFilterInstance::magFreq2MagPhase(float* fft_buffer,
 
         /* accumulate delta phase to get bin phase */
 
-        m_sum_phase[i + channel * STFT_WINDOW_SIZE] += freq;
-        fft_buffer[i * 2 + 1] = m_sum_phase[i + channel * STFT_WINDOW_SIZE];
+        m_sum_phase[i + channel * stft_window_size] += freq;
+        fft_buffer[i * 2 + 1] = m_sum_phase[i + channel * stft_window_size];
     }
 }
 
@@ -261,7 +261,7 @@ void FFTFilterInstance::fft_filter_channel(const FilterChannelArgs& args)
     comp2MagPhase(args.buffer, args.samples);
     magPhase2MagFreq(args.buffer, args.samples, args.sample_rate, args.channel);
 
-    auto t = std::array<float, STFT_WINDOW_TWICE>{};
+    auto t = std::array<float, stft_window_twice>{};
 
     memcpy(t.data(), args.buffer, sizeof(float) * args.samples);
     memset(args.buffer, 0, sizeof(float) * args.samples * 2);

@@ -9,8 +9,7 @@
 
 namespace cer
 {
-// static SDL_AudioSpec    gActiveAudioSpec;
-static SDL_AudioStream* gAudioStream = nullptr;
+static SDL_AudioStream* s_audio_stream = nullptr;
 
 void sdl3_audio_mixer(void* userdata, Uint8* stream, int len)
 {
@@ -37,9 +36,9 @@ void sdl3_audio_mixer_new(void*                userdata,
 }
 
 
-static void soloud_sdl3static_deinit([[maybe_unused]] AudioDevice* engine)
+static void sdl3_audio_deinit([[maybe_unused]] AudioDevice* engine)
 {
-    SDL_DestroyAudioStream(gAudioStream);
+    SDL_DestroyAudioStream(s_audio_stream);
 }
 } // namespace cer
 
@@ -50,16 +49,16 @@ void cer::audio_sdl3_init(const AudioBackendArgs& args)
     // Open audio device.
     const auto as = SDL_AudioSpec{
         .format   = SDL_AUDIO_F32LE,
-        .channels = gsl::narrow<Uint8>(args.channel_count),
-        .freq     = gsl::narrow<int>(args.sample_rate),
+        .channels = narrow<int>(args.channel_count),
+        .freq     = narrow<int>(args.sample_rate),
     };
 
-    gAudioStream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
-                                             &as,
-                                             sdl3_audio_mixer_new,
-                                             &device);
+    s_audio_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,
+                                               &as,
+                                               sdl3_audio_mixer_new,
+                                               &device);
 
-    if (gAudioStream == nullptr)
+    if (s_audio_stream == nullptr)
     {
         const auto* msg = SDL_GetError();
 
@@ -68,10 +67,10 @@ void cer::audio_sdl3_init(const AudioBackendArgs& args)
                             msg != nullptr ? msg : "Unknown")};
     }
 
-    const auto audio_device_id = SDL_GetAudioStreamDevice(gAudioStream);
+    const auto audio_device_id = SDL_GetAudioStreamDevice(s_audio_stream);
 
     device.postinit_internal(args.sample_rate, args.buffer, args.channel_count);
-    device.set_backend_cleanup_func(soloud_sdl3static_deinit);
+    device.set_backend_cleanup_func(sdl3_audio_deinit);
 
     SDL_ResumeAudioDevice(audio_device_id);
 }

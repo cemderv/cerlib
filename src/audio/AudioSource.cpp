@@ -109,7 +109,9 @@ auto AudioSourceInstance::seek(double seconds, float* scratch, size_t scratch_si
     {
         auto samples = scratch_size / channel_count;
         if (samples > samples_to_discard)
+        {
             samples = samples_to_discard;
+        }
         audio(scratch, samples, samples);
         samples_to_discard -= samples;
     }
@@ -127,20 +129,22 @@ AudioSource::~AudioSource() noexcept
 void AudioSource::set_filter(size_t filter_id, Filter* filter)
 {
     if (filter_id >= filters_per_stream)
+    {
         return;
+    }
 
     this->filter[filter_id] = filter;
 }
 
 void AudioSource::stop()
 {
-    if (engine)
+    if (engine != nullptr)
     {
         engine->stop_audio_source(*this);
     }
 }
 
-float AudioSourceInstance::getInfo(size_t /*aInfoKey*/)
+auto AudioSourceInstance::get_info(size_t /*info_key*/) -> float
 {
     return 0;
 }

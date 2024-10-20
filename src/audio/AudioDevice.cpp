@@ -2586,7 +2586,7 @@ auto AudioDevice::get_info(SoundHandle voice_handle, size_t mInfoKey) -> float
         unlock_audio_mutex_internal();
         return 0;
     }
-    const float v = m_voice[ch]->getInfo(mInfoKey);
+    const float v = m_voice[ch]->get_info(mInfoKey);
     unlock_audio_mutex_internal();
     return v;
 }

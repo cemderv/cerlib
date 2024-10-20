@@ -58,7 +58,7 @@ class WavStreamInstance final : public AudioSourceInstance
 
   public:
     explicit WavStreamInstance(WavStream* aParent);
-    size_t audio(float* aBuffer, size_t aSamplesToRead, size_t aBufferSize) override;
+    size_t audio(float* buffer, size_t samples_to_read, size_t buffer_size) override;
     bool   seek(double aSeconds, float* mScratch, size_t mScratchSize) override;
     bool   rewind() override;
     bool   has_ended() override;

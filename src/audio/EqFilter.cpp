@@ -29,18 +29,18 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-EqFilterInstance::EqFilterInstance(EqFilter* aParent)
+EqFilterInstance::EqFilterInstance(EqFilter* parent)
+    : m_parent(parent)
 {
-    mParent = aParent;
     FilterInstance::init_params(9);
-    m_params[BAND1] = aParent->mVolume[BAND1 - BAND1];
-    m_params[BAND2] = aParent->mVolume[BAND2 - BAND1];
-    m_params[BAND3] = aParent->mVolume[BAND3 - BAND1];
-    m_params[BAND4] = aParent->mVolume[BAND4 - BAND1];
-    m_params[BAND5] = aParent->mVolume[BAND5 - BAND1];
-    m_params[BAND6] = aParent->mVolume[BAND6 - BAND1];
-    m_params[BAND7] = aParent->mVolume[BAND7 - BAND1];
-    m_params[BAND8] = aParent->mVolume[BAND8 - BAND1];
+    m_params[BAND1] = parent->m_volume[0];
+    m_params[BAND2] = parent->m_volume[BAND2 - BAND1];
+    m_params[BAND3] = parent->m_volume[BAND3 - BAND1];
+    m_params[BAND4] = parent->m_volume[BAND4 - BAND1];
+    m_params[BAND5] = parent->m_volume[BAND5 - BAND1];
+    m_params[BAND6] = parent->m_volume[BAND6 - BAND1];
+    m_params[BAND7] = parent->m_volume[BAND7 - BAND1];
+    m_params[BAND8] = parent->m_volume[BAND8 - BAND1];
 }
 
 static auto catmull_rom(float t, float p0, float p1, float p2, float p3) -> float
@@ -51,11 +51,15 @@ static auto catmull_rom(float t, float p0, float p1, float p2, float p3) -> floa
 
 void EqFilterInstance::fft_filter_channel(const FilterChannelArgs& args)
 {
-    comp2MagPhase(args.buffer, args.samples / 2);
+    const auto half_samples    = args.samples / 2;
+    const auto half_samples_d  = double(half_samples);
+    const auto samples_over_16 = args.samples / 16;
 
-    for (size_t p = 0; p < args.samples / 2; p++)
+    comp2MagPhase(args.buffer, half_samples);
+
+    for (size_t p = 0; p < half_samples; p++)
     {
-        const auto i  = int(floor(sqrt(p / float(args.samples / 2)) * (args.samples / 2)));
+        const auto i  = int(floor(sqrt(double(p) / half_samples_d) * half_samples_d));
         const auto p2 = int(i / (args.samples / 16));
 
         auto p1 = p2 - 1;
@@ -66,7 +70,7 @@ void EqFilterInstance::fft_filter_channel(const FilterChannelArgs& args)
         p0 = std::max(p0, 0);
         p3 = std::min(p3, 7);
 
-        const auto v = float(i % (args.samples / 16)) / float(args.samples / 16);
+        const auto v = float(i % samples_over_16) / float(samples_over_16);
 
         args.buffer[p * 2] *=
             catmull_rom(v, m_params[p0 + 1], m_params[p1 + 1], m_params[p2 + 1], m_params[p3 + 1]);
@@ -78,10 +82,10 @@ void EqFilterInstance::fft_filter_channel(const FilterChannelArgs& args)
 
 EqFilter::EqFilter()
 {
-    std::ranges::fill(mVolume, 1.0f);
+    std::ranges::fill(m_volume, 1.0f);
 }
 
-std::shared_ptr<FilterInstance> EqFilter::create_instance()
+auto EqFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<EqFilterInstance>(this);
 }

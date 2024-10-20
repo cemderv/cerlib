@@ -407,12 +407,12 @@ class EqFilterInstance final : public FFTFilterInstance
         BAND8 = 8
     };
 
-    EqFilter* mParent;
+    EqFilter* m_parent = nullptr;
 
   public:
     void fft_filter_channel(const FilterChannelArgs& args) override;
 
-    explicit EqFilterInstance(EqFilter* aParent);
+    explicit EqFilterInstance(EqFilter* parent);
 };
 
 class EqFilter final : public FFTFilter
@@ -435,14 +435,17 @@ class EqFilter final : public FFTFilter
 
     auto create_instance() -> std::shared_ptr<FilterInstance> override;
 
-    std::array<float, 8> mVolume{};
+    std::array<float, 8> m_volume{};
 };
 
 class BiquadResonantFilter;
 
 struct BQRStateData
 {
-    float mY1, mY2, mX1, mX2;
+    float y1 = 0.0f;
+    float y2 = 0.0f;
+    float x1 = 0.0f;
+    float x2 = 0.0f;
 };
 
 class BiquadResonantFilterInstance final : public FilterInstance

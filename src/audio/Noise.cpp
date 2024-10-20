@@ -26,11 +26,11 @@ freely, subject to the following restrictions:
 
 namespace cer
 {
-NoiseInstance::NoiseInstance(const Noise* aParent)
+NoiseInstance::NoiseInstance(const Noise* parent)
 {
     for (int i = 0; i < 10; ++i)
     {
-        m_octave_scale[i] = aParent->octave_scale[i];
+        m_octave_scale[i] = parent->octave_scale[i];
     }
     m_prg.srand(0xfade);
 }

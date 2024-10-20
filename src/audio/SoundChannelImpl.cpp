@@ -15,7 +15,7 @@ SoundChannelImpl::SoundChannelImpl(gsl::not_null<AudioDevice*> audio_device,
 {
 }
 
-uint32_t SoundChannelImpl::id() const
+auto SoundChannelImpl::id() const -> uint32_t
 {
     return uint32_t(m_soloud_handle);
 }

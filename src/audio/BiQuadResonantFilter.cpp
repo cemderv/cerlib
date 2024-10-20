@@ -73,14 +73,14 @@ void BiquadResonantFilterInstance::calc_bqr_params()
 }
 
 
-BiquadResonantFilterInstance::BiquadResonantFilterInstance(BiquadResonantFilter* aParent)
-    : m_parent(aParent)
+BiquadResonantFilterInstance::BiquadResonantFilterInstance(BiquadResonantFilter* parent)
+    : m_parent(parent)
 {
     FilterInstance::init_params(4);
 
-    m_params[Resonance] = aParent->resonance;
-    m_params[Frequency] = aParent->frequency;
-    m_params[Type]      = float(aParent->filter_type);
+    m_params[Resonance] = parent->resonance;
+    m_params[Frequency] = parent->frequency;
+    m_params[Type]      = float(parent->filter_type);
 
     calc_bqr_params();
 }
@@ -114,20 +114,20 @@ void BiquadResonantFilterInstance::filter_channel(const FilterChannelArgs& args)
     {
         // Generate outputs by filtering inputs.
         const float x = args.buffer[c];
-        s.mY2 = (m_a0 * x) + (m_a1 * s.mX1) + (m_a2 * s.mX2) - (m_b1 * s.mY1) - (m_b2 * s.mY2);
-        args.buffer[c] += (s.mY2 - args.buffer[c]) * m_params[Wet];
+        s.y2 = (m_a0 * x) + (m_a1 * s.x1) + (m_a2 * s.x2) - (m_b1 * s.y1) - (m_b2 * s.y2);
+        args.buffer[c] += (s.y2 - args.buffer[c]) * m_params[Wet];
 
         ++c;
 
         // Permute filter operations to reduce data movement.
         // Just substitute variables instead of doing mX1=x, etc.
-        s.mX2 = args.buffer[c];
-        s.mY1 = (m_a0 * s.mX2) + (m_a1 * x) + (m_a2 * s.mX1) - (m_b1 * s.mY2) - (m_b2 * s.mY1);
-        args.buffer[c] += (s.mY1 - args.buffer[c]) * m_params[Wet];
+        s.x2 = args.buffer[c];
+        s.y1 = (m_a0 * s.x2) + (m_a1 * x) + (m_a2 * s.x1) - (m_b1 * s.y2) - (m_b2 * s.y1);
+        args.buffer[c] += (s.y1 - args.buffer[c]) * m_params[Wet];
 
         // Only move a little data.
-        s.mX1 = s.mX2;
-        s.mX2 = x;
+        s.x1 = s.x2;
+        s.x2 = x;
     }
 
     // If we skipped a sample earlier, patch it by just copying the previous.
