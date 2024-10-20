@@ -40,9 +40,7 @@ GraphicsDevice::GraphicsDevice()
 
 void GraphicsDevice::notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource)
 {
-    [[maybe_unused]] const auto it = std::ranges::find_if(m_resources, [&resource](const auto& e) {
-        return &e.get() == &resource;
-    });
+    [[maybe_unused]] const auto it = std::ranges::find(m_resources, resource);
 
     assert(it == m_resources.cend());
 
