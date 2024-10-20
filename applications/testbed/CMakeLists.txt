@@ -1,7 +1,6 @@
-cerlib_add_executable(
+cerlib_add_game(
         NAME Testbed
         COMPANY cemdervis
         VERSION 0.0.1
-        FILES Main.cpp
         VERBOSE
 )

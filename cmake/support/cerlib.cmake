@@ -2,10 +2,9 @@
 # This file is part of cerlib.
 # For conditions of distribution and use, see copyright notice in LICENSE.
 
-function(cerlib_add_executable)
+function(cerlib_add_game)
   set(options VERBOSE)
   set(one_value_args NAME COMPANY VERSION)
-  set(multi_value_args FILES)
 
   cmake_parse_arguments(CERLIB_AE "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -34,13 +33,13 @@ function(cerlib_add_executable)
   endif ()
 
   if (ANDROID)
-    add_library(${target_name} SHARED ${CERLIB_AE_FILES})
+    add_library(${target_name} SHARED)
   else ()
     if (WIN32)
       list(APPEND extra_flags WIN32)
     endif ()
 
-    add_executable(${target_name} ${extra_flags} ${CERLIB_AE_FILES})
+    add_executable(${target_name} ${extra_flags})
   endif ()
 
   target_compile_features(${target_name} PRIVATE cxx_std_20)
@@ -171,4 +170,44 @@ function(cerlib_add_executable)
   target_precompile_headers(${target_name} PRIVATE
     <cerlib.hpp>
   )
+
+  # Add the game's source files
+  set(game_source_files_dir ${current_dir}/src)
+
+  if (NOT EXISTS ${game_source_files_dir})
+    cerlib_fatal_error("Your game does not have a 'src' directory. Please create one.")
+  endif()
+
+  file(GLOB_RECURSE game_source_files CONFIGURE_DEPENDS
+    "*.hpp"
+    "*.cpp"
+    "*.h"
+    "*.c"
+  )
+
+  if (NOT game_source_files)
+    cerlib_fatal_error("Your game does not have any source files. Please place some in the 'src' folder.")
+  endif()
+
+  target_sources(${target_name} PRIVATE ${game_source_files})
+
+  # When building for Android, include some cerlib-specific setup code and link with Android
+  # system libraries.
+  if (ANDROID)
+    set(android_project_dir ${current_dir}/android_project)
+
+    if (NOT EXISTS ${android_project_dir})
+      cerlib_fatal_error("You're attempting to build your game for Android, however the 'android_project' folder is missing")
+    endif()
+
+    set(main_activity_setup_file ${android_project_dir}/app/src/MainActivitySetup.cpp)
+
+    if (NOT EXISTS ${main_activity_setup_file})
+      cerlib_fatal_error("You're attempting to build your game for Android, but some files are missing. Searched for: ${main_activity_setup_file}")
+    endif()
+
+    find_library(AndroidLibrary android REQUIRED)
+    target_link_libraries(${game_name} PRIVATE ${AndroidLibrary})
+    target_sources(${game_name} PRIVATE ${main_activity_setup_file})
+  endif ()
 endfunction()

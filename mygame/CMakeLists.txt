@@ -2,20 +2,15 @@
 
 cmake_minimum_required(VERSION 3.22)
 
-# Set general game information.
-set(game_name MyGame)
-set(game_company_name MyCompany)
-set(game_display_name "My Game")
-set(game_company_display_name "My Company")
-set(game_version 0.0.1)
-
 # Declare the game project.
 project(
-  ${game_name}
-  VERSION ${game_version}
+  MyGame
+  VERSION 0.0.1
+  DESCRIPTION "My Game"
   LANGUAGES CXX
 )
 
+# Set up build directories for Android.
 if (ANDROID)
   set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY BOTH)
   set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE BOTH)
@@ -31,32 +26,12 @@ add_subdirectory(
   ${CMAKE_CURRENT_BINARY_DIR}/cerlib_build
 )
 
-# Imports the cerlib_add_executable function.
+# Imports cerlib CMake functions.
 include(${cerlib_DIR}/cmake/support/cerlib.cmake)
 
-# Include the list of the game's source files.
-file(
-  GLOB_RECURSE
-  game_source_files
-  CONFIGURE_DEPENDS
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+# Define our game as a CMake target.
+cerlib_add_game(
+  NAME ${CMAKE_PROJECT_NAME}
+  COMPANY MyCompany
+  VERSION ${CMAKE_PROJECT_VERSION}
 )
-
-# Register the game as a cerlib-based executable.
-# This will call add_executable() internally, and set the executable
-# up correctly depending on the target platform.
-cerlib_add_executable(
-  NAME ${game_name}
-  COMPANY ${game_company_name}
-  VERSION ${game_version}
-  FILES ${game_source_files}
-)
-
-# When building for Android, include some cerlib-specific setup code and link with Android
-# system libraries.
-if (ANDROID)
-  find_library(AndroidLibrary android REQUIRED)
-  target_link_libraries(${game_name} PRIVATE ${AndroidLibrary})
-  target_sources(${game_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/android_project/app/src/MainActivitySetup.cpp)
-endif ()
