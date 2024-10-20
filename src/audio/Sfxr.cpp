@@ -38,7 +38,7 @@ SfxrInstance::SfxrInstance(Sfxr* parent)
 
 #define frnd(x) ((float)(m_rand.rand() % 10001) / 10000 * (x))
 
-size_t SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBufferSize*/)
+auto SfxrInstance::audio(float* aBuffer, size_t aSamplesToRead, size_t /*aBufferSize*/) -> size_t
 {
     float* buffer = aBuffer;
     size_t i;

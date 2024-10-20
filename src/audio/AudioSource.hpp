@@ -158,7 +158,7 @@ class AudioSourceInstance
     virtual auto rewind() -> bool;
 
     // Get information. Returns 0 by default.
-    virtual auto getInfo(size_t info_key) -> float;
+    virtual auto get_info(size_t info_key) -> float;
 
     // Play index; used to identify instances from handles
     size_t play_index = 0;

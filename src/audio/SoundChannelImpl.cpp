@@ -14,7 +14,7 @@ SoundChannelImpl::SoundChannelImpl(AudioDevice& audio_device, SoundHandle handle
 {
 }
 
-uint32_t SoundChannelImpl::id() const
+auto SoundChannelImpl::id() const -> uint32_t
 {
     return uint32_t(m_soloud_handle);
 }

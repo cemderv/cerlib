@@ -23,6 +23,7 @@ freely, subject to the following restrictions:
 */
 
 #include "audio/Filter.hpp"
+#include <array>
 
 namespace cer
 {
@@ -35,81 +36,82 @@ namespace freeverb_impl
 class Comb
 {
   public:
-    void  setbuffer(float* aBuf, int aSize);
-    float process(float aInp);
-    void  mute();
-    void  setdamp(float val);
-    void  setfeedback(float val);
+    void setbuffer(float* buf, int size);
+    auto process(float inp) -> float;
+    void mute();
+    void setdamp(float val);
+    void setfeedback(float val);
 
-    float  mFeedback    = 0.0f;
-    float  mFilterstore = 0.0f;
-    float  mDamp1       = 0.0f;
-    float  mDamp2       = 0.0f;
-    float* mBuffer      = nullptr;
-    int    mBufsize     = 0;
-    int    mBufidx      = 0;
+    float  feedback     = 0.0f;
+    float  filterstore  = 0.0f;
+    float  damp1        = 0.0f;
+    float  damp2        = 0.0f;
+    float* buffer       = nullptr;
+    int    buffer_size  = 0;
+    int    buffer_index = 0;
 };
 
 class Allpass
 {
   public:
-    Allpass();
-    void   setbuffer(float* aBuf, int aSize);
-    float  process(float aInp);
-    void   mute();
-    void   setfeedback(float aVal);
-    float  mFeedback;
-    float* mBuffer;
-    int    mBufsize;
-    int    mBufidx;
+         Allpass();
+    void setbuffer(float* buf, int size);
+    auto process(float inp) -> float;
+    void mute();
+    void setfeedback(float val);
+
+    float  feedback;
+    float* buffer;
+    int    buffer_size;
+    int    buffer_index;
 };
 
-static constexpr int   gNumcombs     = 8;
-static constexpr int   gNumallpasses = 4;
-static constexpr float gMuted        = 0;
-static constexpr float gFixedgain    = 0.015f;
-static constexpr float gScalewet     = 3;
-static constexpr float gScaledry     = 2;
-static constexpr float gScaledamp    = 0.4f;
-static constexpr float gScaleroom    = 0.28f;
-static constexpr float gOffsetroom   = 0.7f;
-static constexpr float gInitialroom  = 0.5f;
-static constexpr float gInitialdamp  = 0.5f;
-static constexpr float gInitialwet   = 1 / gScalewet;
-static constexpr float gInitialdry   = 0;
-static constexpr float gInitialwidth = 1;
-static constexpr float gInitialmode  = 0;
-static constexpr float gFreezemode   = 0.5f;
-static constexpr int   gStereospread = 23;
+static constexpr int   s_numcombs     = 8;
+static constexpr int   s_numallpasses = 4;
+static constexpr float s_muted        = 0;
+static constexpr float s_fixedgain    = 0.015f;
+static constexpr float s_scalewet     = 3;
+static constexpr float s_scaledry     = 2;
+static constexpr float s_scaledamp    = 0.4f;
+static constexpr float s_scaleroom    = 0.28f;
+static constexpr float s_offsetroom   = 0.7f;
+static constexpr float s_initialroom  = 0.5f;
+static constexpr float s_initialdamp  = 0.5f;
+static constexpr float s_initialwet   = 1 / s_scalewet;
+static constexpr float s_initialdry   = 0;
+static constexpr float s_initialwidth = 1;
+static constexpr float s_initialmode  = 0;
+static constexpr float s_freezemode   = 0.5f;
+static constexpr int   s_stereospread = 23;
 
 // These values assume 44.1KHz sample rate
 // they will probably be OK for 48KHz sample rate
 // but would need scaling for 96KHz (or other) sample rates.
 // The values were obtained by listening tests.
-static constexpr int gCombtuningL1    = 1116;
-static constexpr int gCombtuningR1    = 1116 + gStereospread;
-static constexpr int gCombtuningL2    = 1188;
-static constexpr int gCombtuningR2    = 1188 + gStereospread;
-static constexpr int gCombtuningL3    = 1277;
-static constexpr int gCombtuningR3    = 1277 + gStereospread;
-static constexpr int gCombtuningL4    = 1356;
-static constexpr int gCombtuningR4    = 1356 + gStereospread;
-static constexpr int gCombtuningL5    = 1422;
-static constexpr int gCombtuningR5    = 1422 + gStereospread;
-static constexpr int gCombtuningL6    = 1491;
-static constexpr int gCombtuningR6    = 1491 + gStereospread;
-static constexpr int gCombtuningL7    = 1557;
-static constexpr int gCombtuningR7    = 1557 + gStereospread;
-static constexpr int gCombtuningL8    = 1617;
-static constexpr int gCombtuningR8    = 1617 + gStereospread;
-static constexpr int gAllpasstuningL1 = 556;
-static constexpr int gAllpasstuningR1 = 556 + gStereospread;
-static constexpr int gAllpasstuningL2 = 441;
-static constexpr int gAllpasstuningR2 = 441 + gStereospread;
-static constexpr int gAllpasstuningL3 = 341;
-static constexpr int gAllpasstuningR3 = 341 + gStereospread;
-static constexpr int gAllpasstuningL4 = 225;
-static constexpr int gAllpasstuningR4 = 225 + gStereospread;
+static constexpr int s_combtuning_l1    = 1116;
+static constexpr int s_combtuning_r1    = 1116 + s_stereospread;
+static constexpr int s_combtuning_l2    = 1188;
+static constexpr int s_combtuning_r2    = 1188 + s_stereospread;
+static constexpr int s_combtuning_l3    = 1277;
+static constexpr int s_combtuning_r3    = 1277 + s_stereospread;
+static constexpr int s_combtuning_l4    = 1356;
+static constexpr int s_combtuning_r4    = 1356 + s_stereospread;
+static constexpr int s_combtuning_l5    = 1422;
+static constexpr int s_combtuning_r5    = 1422 + s_stereospread;
+static constexpr int s_combtuning_l6    = 1491;
+static constexpr int s_combtuning_r6    = 1491 + s_stereospread;
+static constexpr int s_combtuning_l7    = 1557;
+static constexpr int s_combtuning_r7    = 1557 + s_stereospread;
+static constexpr int s_combtuning_l8    = 1617;
+static constexpr int s_combtuning_r8    = 1617 + s_stereospread;
+static constexpr int s_allpasstuning_l1 = 556;
+static constexpr int s_allpasstuning_r1 = 556 + s_stereospread;
+static constexpr int s_allpasstuning_l2 = 441;
+static constexpr int s_allpasstuning_r2 = 441 + s_stereospread;
+static constexpr int s_allpasstuning_l3 = 341;
+static constexpr int s_allpasstuning_r3 = 341 + s_stereospread;
+static constexpr int s_allpasstuning_l4 = 225;
+static constexpr int s_allpasstuning_r4 = 225 + s_stereospread;
 
 class Revmodel
 {
@@ -117,203 +119,206 @@ class Revmodel
     Revmodel();
 
     void mute();
-    void process(float* aSampleData, size_t aNumSamples, size_t aStride);
-    void setroomsize(float aValue);
-    void setdamp(float aValue);
-    void setwet(float aValue);
-    void setdry(float aValue);
-    void setwidth(float aValue);
-    void setmode(float aValue);
+    void process(float* sample_data, size_t num_samples, size_t stride);
+    void setroomsize(float value);
+    void setdamp(float value);
+    void setwet(float value);
+    void setdry(float value);
+    void setwidth(float value);
+    void setmode(float value);
     void update();
 
-    float mGain;
-    float mRoomsize, mRoomsize1;
-    float mDamp, mDamp1;
-    float mWet, mWet1, mWet2;
-    float mDry;
-    float mWidth;
-    float mMode;
+    float gain;
+    float room_size;
+    float room_size1;
+    float damp, damp1;
+    float wet, wet1, wet2;
+    float dry;
+    float width;
+    float mode;
 
-    int mDirty;
+    int dirty;
 
     // The following are all declared inline
     // to remove the need for dynamic allocation
     // with its subsequent error-checking messiness
 
     // Comb filters
-    Comb mCombL[gNumcombs];
-    Comb mCombR[gNumcombs];
+    std::array<Comb, s_numcombs> comb_l{};
+    std::array<Comb, s_numcombs> comb_r{};
 
     // Allpass filters
-    Allpass mAllpassL[gNumallpasses];
-    Allpass mAllpassR[gNumallpasses];
+    std::array<Allpass, s_numallpasses> allpass_l{};
+    std::array<Allpass, s_numallpasses> allpass_r{};
 
     // Buffers for the combs
-    float mBufcombL1[gCombtuningL1];
-    float mBufcombR1[gCombtuningR1];
-    float mBufcombL2[gCombtuningL2];
-    float mBufcombR2[gCombtuningR2];
-    float mBufcombL3[gCombtuningL3];
-    float mBufcombR3[gCombtuningR3];
-    float mBufcombL4[gCombtuningL4];
-    float mBufcombR4[gCombtuningR4];
-    float mBufcombL5[gCombtuningL5];
-    float mBufcombR5[gCombtuningR5];
-    float mBufcombL6[gCombtuningL6];
-    float mBufcombR6[gCombtuningR6];
-    float mBufcombL7[gCombtuningL7];
-    float mBufcombR7[gCombtuningR7];
-    float mBufcombL8[gCombtuningL8];
-    float mBufcombR8[gCombtuningR8];
+    std::array<float, s_combtuning_l1> bufcomb_l1{};
+    std::array<float, s_combtuning_r1> bufcomb_r1{};
+    std::array<float, s_combtuning_l2> bufcomb_l2{};
+    std::array<float, s_combtuning_r2> bufcomb_r2{};
+    std::array<float, s_combtuning_l3> bufcomb_l3{};
+    std::array<float, s_combtuning_r3> bufcomb_r3{};
+    std::array<float, s_combtuning_l4> bufcomb_l4{};
+    std::array<float, s_combtuning_r4> bufcomb_r4{};
+    std::array<float, s_combtuning_l5> bufcomb_l5{};
+    std::array<float, s_combtuning_r5> bufcomb_r5{};
+    std::array<float, s_combtuning_l6> bufcomb_l6{};
+    std::array<float, s_combtuning_r6> bufcomb_r6{};
+    std::array<float, s_combtuning_l7> bufcomb_l7{};
+    std::array<float, s_combtuning_r7> bufcomb_r7{};
+    std::array<float, s_combtuning_l8> bufcomb_l8{};
+    std::array<float, s_combtuning_r8> bufcomb_r8{};
 
     // Buffers for the allpasses
-    float mBufallpassL1[gAllpasstuningL1];
-    float mBufallpassR1[gAllpasstuningR1];
-    float mBufallpassL2[gAllpasstuningL2];
-    float mBufallpassR2[gAllpasstuningR2];
-    float mBufallpassL3[gAllpasstuningL3];
-    float mBufallpassR3[gAllpasstuningR3];
-    float mBufallpassL4[gAllpasstuningL4];
-    float mBufallpassR4[gAllpasstuningR4];
+    std::array<float, s_allpasstuning_l1> bufallpass_l1{};
+    std::array<float, s_allpasstuning_r1> bufallpass_r1{};
+    std::array<float, s_allpasstuning_l2> bufallpass_l2{};
+    std::array<float, s_allpasstuning_r2> bufallpass_r2{};
+    std::array<float, s_allpasstuning_l3> bufallpass_l3{};
+    std::array<float, s_allpasstuning_r3> bufallpass_r3{};
+    std::array<float, s_allpasstuning_l4> bufallpass_l4{};
+    std::array<float, s_allpasstuning_r4> bufallpass_r4{};
 };
 
 Allpass::Allpass()
 {
-    mBufidx   = 0;
-    mFeedback = 0;
-    mBuffer   = 0;
-    mBufsize  = 0;
+    buffer_index = 0;
+    feedback     = 0;
+    buffer       = nullptr;
+    buffer_size  = 0;
 }
 
-float Allpass::process(float aInput)
+auto Allpass::process(float inp) -> float
 {
-    float output;
-    float bufout;
+    const float bufout   = buffer[buffer_index];
+    const float output   = -inp + bufout;
+    buffer[buffer_index] = inp + (bufout * feedback);
 
-    bufout = mBuffer[mBufidx];
-
-    output           = -aInput + bufout;
-    mBuffer[mBufidx] = aInput + (bufout * mFeedback);
-
-    if (++mBufidx >= mBufsize)
-        mBufidx = 0;
+    if (++buffer_index >= buffer_size)
+    {
+        buffer_index = 0;
+    }
 
     return output;
 }
 
-void Allpass::setbuffer(float* aBuf, int aSize)
+void Allpass::setbuffer(float* buf, int size)
 {
-    mBuffer  = aBuf;
-    mBufsize = aSize;
+    buffer      = buf;
+    buffer_size = size;
 }
 
 void Allpass::mute()
 {
-    for (int i = 0; i < mBufsize; ++i)
-        mBuffer[i] = 0;
+    for (int i = 0; i < buffer_size; ++i)
+    {
+        buffer[i] = 0;
+    }
 }
 
-void Allpass::setfeedback(float aVal)
+void Allpass::setfeedback(float val)
 {
-    mFeedback = aVal;
+    feedback = val;
 }
 
-float Comb::process(float aInput)
+auto Comb::process(float inp) -> float
 {
-    float output;
+    const float output = buffer[buffer_index];
 
-    output = mBuffer[mBufidx];
+    filterstore = (output * damp2) + (filterstore * damp1);
 
-    mFilterstore = (output * mDamp2) + (mFilterstore * mDamp1);
+    buffer[buffer_index] = inp + (filterstore * feedback);
 
-    mBuffer[mBufidx] = aInput + (mFilterstore * mFeedback);
-
-    if (++mBufidx >= mBufsize)
-        mBufidx = 0;
+    if (++buffer_index >= buffer_size)
+    {
+        buffer_index = 0;
+    }
 
     return output;
 }
 
-void Comb::setbuffer(float* aBuf, int aSize)
+void Comb::setbuffer(float* buf, int size)
 {
-    mBuffer  = aBuf;
-    mBufsize = aSize;
+    buffer      = buf;
+    buffer_size = size;
 }
 
 void Comb::mute()
 {
-    for (int i = 0; i < mBufsize; ++i)
-        mBuffer[i] = 0;
+    for (int i = 0; i < buffer_size; ++i)
+    {
+        buffer[i] = 0;
+    }
 }
 
-void Comb::setdamp(float aVal)
+void Comb::setdamp(float val)
 {
-    mDamp1 = aVal;
-    mDamp2 = 1 - aVal;
+    damp1 = val;
+    damp2 = 1 - val;
 }
 
-void Comb::setfeedback(float aVal)
+void Comb::setfeedback(float val)
 {
-    mFeedback = aVal;
+    feedback = val;
 }
 
 Revmodel::Revmodel()
 {
-    mGain      = 0;
-    mRoomsize  = 0;
-    mRoomsize1 = 0;
-    mDamp      = 0;
-    mDamp1     = 0;
-    mWet       = 0;
-    mWet1      = 0;
-    mWet2      = 0;
-    mDry       = 0;
-    mWidth     = 0;
-    mMode      = 0;
+    gain       = 0;
+    room_size  = 0;
+    room_size1 = 0;
+    damp       = 0;
+    damp1      = 0;
+    wet        = 0;
+    wet1       = 0;
+    wet2       = 0;
+    dry        = 0;
+    width      = 0;
+    mode       = 0;
 
-    mDirty = 1;
+    dirty = 1;
 
     // Tie the components to their buffers
-    mCombL[0].setbuffer(mBufcombL1, gCombtuningL1);
-    mCombR[0].setbuffer(mBufcombR1, gCombtuningR1);
-    mCombL[1].setbuffer(mBufcombL2, gCombtuningL2);
-    mCombR[1].setbuffer(mBufcombR2, gCombtuningR2);
-    mCombL[2].setbuffer(mBufcombL3, gCombtuningL3);
-    mCombR[2].setbuffer(mBufcombR3, gCombtuningR3);
-    mCombL[3].setbuffer(mBufcombL4, gCombtuningL4);
-    mCombR[3].setbuffer(mBufcombR4, gCombtuningR4);
-    mCombL[4].setbuffer(mBufcombL5, gCombtuningL5);
-    mCombR[4].setbuffer(mBufcombR5, gCombtuningR5);
-    mCombL[5].setbuffer(mBufcombL6, gCombtuningL6);
-    mCombR[5].setbuffer(mBufcombR6, gCombtuningR6);
-    mCombL[6].setbuffer(mBufcombL7, gCombtuningL7);
-    mCombR[6].setbuffer(mBufcombR7, gCombtuningR7);
-    mCombL[7].setbuffer(mBufcombL8, gCombtuningL8);
-    mCombR[7].setbuffer(mBufcombR8, gCombtuningR8);
-    mAllpassL[0].setbuffer(mBufallpassL1, gAllpasstuningL1);
-    mAllpassR[0].setbuffer(mBufallpassR1, gAllpasstuningR1);
-    mAllpassL[1].setbuffer(mBufallpassL2, gAllpasstuningL2);
-    mAllpassR[1].setbuffer(mBufallpassR2, gAllpasstuningR2);
-    mAllpassL[2].setbuffer(mBufallpassL3, gAllpasstuningL3);
-    mAllpassR[2].setbuffer(mBufallpassR3, gAllpasstuningR3);
-    mAllpassL[3].setbuffer(mBufallpassL4, gAllpasstuningL4);
-    mAllpassR[3].setbuffer(mBufallpassR4, gAllpasstuningR4);
+    comb_l[0].setbuffer(bufcomb_l1.data(), s_combtuning_l1);
+    comb_r[0].setbuffer(bufcomb_r1.data(), s_combtuning_r1);
+    comb_l[1].setbuffer(bufcomb_l2.data(), s_combtuning_l2);
+    comb_r[1].setbuffer(bufcomb_r2.data(), s_combtuning_r2);
+    comb_l[2].setbuffer(bufcomb_l3.data(), s_combtuning_l3);
+    comb_r[2].setbuffer(bufcomb_r3.data(), s_combtuning_r3);
+    comb_l[3].setbuffer(bufcomb_l4.data(), s_combtuning_l4);
+    comb_r[3].setbuffer(bufcomb_r4.data(), s_combtuning_r4);
+    comb_l[4].setbuffer(bufcomb_l5.data(), s_combtuning_l5);
+    comb_r[4].setbuffer(bufcomb_r5.data(), s_combtuning_r5);
+    comb_l[5].setbuffer(bufcomb_l6.data(), s_combtuning_l6);
+    comb_r[5].setbuffer(bufcomb_r6.data(), s_combtuning_r6);
+    comb_l[6].setbuffer(bufcomb_l7.data(), s_combtuning_l7);
+    comb_r[6].setbuffer(bufcomb_r7.data(), s_combtuning_r7);
+    comb_l[7].setbuffer(bufcomb_l8.data(), s_combtuning_l8);
+    comb_r[7].setbuffer(bufcomb_r8.data(), s_combtuning_r8);
+    allpass_l[0].setbuffer(bufallpass_l1.data(), s_allpasstuning_l1);
+    allpass_r[0].setbuffer(bufallpass_r1.data(), s_allpasstuning_r1);
+    allpass_l[1].setbuffer(bufallpass_l2.data(), s_allpasstuning_l2);
+    allpass_r[1].setbuffer(bufallpass_r2.data(), s_allpasstuning_r2);
+    allpass_l[2].setbuffer(bufallpass_l3.data(), s_allpasstuning_l3);
+    allpass_r[2].setbuffer(bufallpass_r3.data(), s_allpasstuning_r3);
+    allpass_l[3].setbuffer(bufallpass_l4.data(), s_allpasstuning_l4);
+    allpass_r[3].setbuffer(bufallpass_r4.data(), s_allpasstuning_r4);
 
     // Set default values
-    mAllpassL[0].setfeedback(0.5f);
-    mAllpassR[0].setfeedback(0.5f);
-    mAllpassL[1].setfeedback(0.5f);
-    mAllpassR[1].setfeedback(0.5f);
-    mAllpassL[2].setfeedback(0.5f);
-    mAllpassR[2].setfeedback(0.5f);
-    mAllpassL[3].setfeedback(0.5f);
-    mAllpassR[3].setfeedback(0.5f);
-    setwet(gInitialwet);
-    setroomsize(gInitialroom);
-    setdry(gInitialdry);
-    setdamp(gInitialdamp);
-    setwidth(gInitialwidth);
-    setmode(gInitialmode);
+    allpass_l[0].setfeedback(0.5f);
+    allpass_r[0].setfeedback(0.5f);
+    allpass_l[1].setfeedback(0.5f);
+    allpass_r[1].setfeedback(0.5f);
+    allpass_l[2].setfeedback(0.5f);
+    allpass_r[2].setfeedback(0.5f);
+    allpass_l[3].setfeedback(0.5f);
+    allpass_r[3].setfeedback(0.5f);
+    setwet(s_initialwet);
+    setroomsize(s_initialroom);
+    setdry(s_initialdry);
+    setdamp(s_initialdamp);
+    setwidth(s_initialwidth);
+    setmode(s_initialmode);
 
     // Buffer will be full of rubbish - so we MUST mute them
     mute();
@@ -321,60 +326,62 @@ Revmodel::Revmodel()
 
 void Revmodel::mute()
 {
-    if (mMode >= gFreezemode)
+    if (mode >= s_freezemode)
+    {
         return;
-
-    for (int i = 0; i < gNumcombs; ++i)
-    {
-        mCombL[i].mute();
-        mCombR[i].mute();
     }
-    for (int i = 0; i < gNumallpasses; ++i)
+
+    for (int i = 0; i < s_numcombs; ++i)
     {
-        mAllpassL[i].mute();
-        mAllpassR[i].mute();
+        comb_l[i].mute();
+        comb_r[i].mute();
+    }
+    for (int i = 0; i < s_numallpasses; ++i)
+    {
+        allpass_l[i].mute();
+        allpass_r[i].mute();
     }
 }
 
-void Revmodel::process(float* aSampleData, size_t aNumSamples, size_t aStride)
+void Revmodel::process(float* sample_data, size_t num_samples, size_t stride)
 {
-    float* inputL = aSampleData;
-    float* inputR = aSampleData + aStride;
+    float* input_l = sample_data;
+    float* input_r = sample_data + stride;
 
-    if (mDirty)
+    if (dirty != 0)
     {
         update();
     }
 
-    mDirty = 0;
+    dirty = 0;
 
-    while (aNumSamples-- > 0)
+    while (num_samples-- > 0)
     {
-        auto outR  = 0.0f;
-        auto outL  = 0.0f;
-        auto input = (*inputL + *inputR) * mGain;
+        auto       out_r = 0.0f;
+        auto       out_l = 0.0f;
+        const auto input = (*input_l + *input_r) * gain;
 
         // Accumulate comb filters in parallel
-        for (int i = 0; i < gNumcombs; ++i)
+        for (int i = 0; i < s_numcombs; ++i)
         {
-            outL += mCombL[i].process(input);
-            outR += mCombR[i].process(input);
+            out_l += comb_l[i].process(input);
+            out_r += comb_r[i].process(input);
         }
 
         // Feed through allpasses in series
-        for (int i = 0; i < gNumallpasses; ++i)
+        for (int i = 0; i < s_numallpasses; ++i)
         {
-            outL = mAllpassL[i].process(outL);
-            outR = mAllpassR[i].process(outR);
+            out_l = allpass_l[i].process(out_l);
+            out_r = allpass_r[i].process(out_r);
         }
 
         // Calculate output REPLACING anything already there
-        *inputL = outL * mWet1 + outR * mWet2 + *inputL * mDry;
-        *inputR = outR * mWet1 + outL * mWet2 + *inputR * mDry;
+        *input_l = out_l * wet1 + out_r * wet2 + *input_l * dry;
+        *input_r = out_r * wet1 + out_l * wet2 + *input_r * dry;
 
         // Increment sample pointers, allowing for interleave (if any)
-        inputL++;
-        inputR++;
+        input_l++;
+        input_r++;
     }
 }
 
@@ -382,68 +389,68 @@ void Revmodel::update()
 {
     // Recalculate internal values after parameter change
 
-    mWet1 = mWet * (mWidth / 2 + 0.5f);
-    mWet2 = mWet * ((1 - mWidth) / 2);
+    wet1 = wet * (width / 2 + 0.5f);
+    wet2 = wet * ((1 - width) / 2);
 
-    if (mMode >= gFreezemode)
+    if (mode >= s_freezemode)
     {
-        mRoomsize1 = 1;
-        mDamp1     = 0;
-        mGain      = gMuted;
+        room_size1 = 1;
+        damp1      = 0;
+        gain       = s_muted;
     }
     else
     {
-        mRoomsize1 = mRoomsize;
-        mDamp1     = mDamp;
-        mGain      = gFixedgain;
+        room_size1 = room_size;
+        damp1      = damp;
+        gain       = s_fixedgain;
     }
 
-    for (int i = 0; i < gNumcombs; ++i)
+    for (int i = 0; i < s_numcombs; ++i)
     {
-        mCombL[i].setfeedback(mRoomsize1);
-        mCombR[i].setfeedback(mRoomsize1);
+        comb_l[i].setfeedback(room_size1);
+        comb_r[i].setfeedback(room_size1);
     }
 
-    for (int i = 0; i < gNumcombs; ++i)
+    for (int i = 0; i < s_numcombs; ++i)
     {
-        mCombL[i].setdamp(mDamp1);
-        mCombR[i].setdamp(mDamp1);
+        comb_l[i].setdamp(damp1);
+        comb_r[i].setdamp(damp1);
     }
 }
 
-void Revmodel::setroomsize(float aValue)
+void Revmodel::setroomsize(float value)
 {
-    mRoomsize = (aValue * gScaleroom) + gOffsetroom;
-    mDirty    = 1;
+    room_size = (value * s_scaleroom) + s_offsetroom;
+    dirty     = 1;
 }
 
-void Revmodel::setdamp(float aValue)
+void Revmodel::setdamp(float value)
 {
-    mDamp  = aValue * gScaledamp;
-    mDirty = 1;
+    damp  = value * s_scaledamp;
+    dirty = 1;
 }
 
-void Revmodel::setwet(float aValue)
+void Revmodel::setwet(float value)
 {
-    mWet   = aValue * gScalewet;
-    mDirty = 1;
+    wet   = value * s_scalewet;
+    dirty = 1;
 }
 
-void Revmodel::setdry(float aValue)
+void Revmodel::setdry(float value)
 {
-    mDry = aValue * gScaledry;
+    dry = value * s_scaledry;
 }
 
-void Revmodel::setwidth(float aValue)
+void Revmodel::setwidth(float value)
 {
-    mWidth = aValue;
-    mDirty = 1;
+    width = value;
+    dirty = 1;
 }
 
-void Revmodel::setmode(float aValue)
+void Revmodel::setmode(float value)
 {
-    mMode  = aValue;
-    mDirty = 1;
+    mode  = value;
+    dirty = 1;
 }
 } // namespace freeverb_impl
 
@@ -464,7 +471,7 @@ void FreeverbFilterInstance::filter(const FilterArgs& args)
 {
     assert(args.channels == 2); // Only stereo supported at this time
 
-    if (m_params_changed)
+    if (m_params_changed != 0u)
     {
         m_model->setdamp(m_params[DAMP]);
         m_model->setmode(m_params[FREEZE]);
@@ -478,7 +485,7 @@ void FreeverbFilterInstance::filter(const FilterArgs& args)
     m_model->process(args.buffer, args.samples, args.buffer_size);
 }
 
-std::shared_ptr<FilterInstance> FreeverbFilter::create_instance()
+auto FreeverbFilter::create_instance() -> std::shared_ptr<FilterInstance>
 {
     return std::make_shared<FreeverbFilterInstance>(this);
 }

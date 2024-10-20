@@ -170,7 +170,7 @@ if (cerlib_gfx_backend STREQUAL "OpenGL")
   list(TRANSFORM opengl_files PREPEND ${cerlib_src_dir}/graphics/opengl/)
   list(TRANSFORM opengl_include_dirs PREPEND ${cerlib_src_dir}/graphics/opengl/)
   target_sources(cerlib PRIVATE ${opengl_files})
-  target_compile_definitions(cerlib PRIVATE -DCERLIB_HAVE_OPENGL)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_HAVE_OPENGL ${opengl_compile_defs})
   target_include_directories(cerlib PRIVATE ${opengl_include_dirs})
 endif ()
 

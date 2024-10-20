@@ -25,6 +25,7 @@ freely, subject to the following restrictions:
 // FFT based on fftreal by Laurent de Soras, under WTFPL
 
 #include "audio/FFT.hpp"
+#include <cerlib/Math.hpp>
 
 namespace fftimpl
 {
@@ -34,43 +35,29 @@ namespace fftimpl
 //  (include commercial use) and without fee. Please refer to this package
 //  when you modify this code."
 
+// cos(M_PI_2*0.5000)
+static constexpr auto wr5000 = 0.707106781186547524400844362104849039284835937688;
 
-#ifndef M_PI_2
-#define M_PI_2 1.570796326794896619231321691639751442098584699687f
-#endif
-#ifndef WR5000 /* cos(M_PI_2*0.5000) */
-#define WR5000 0.707106781186547524400844362104849039284835937688f
-#endif
-#ifndef WR2500 /* cos(M_PI_2*0.2500) */
-#define WR2500 0.923879532511286756128183189396788286822416625863f
-#endif
-#ifndef WI2500 /* sin(M_PI_2*0.2500) */
-#define WI2500 0.382683432365089771728459984030398866761344562485f
-#endif
-#ifndef WR1250 /* cos(M_PI_2*0.1250) */
-#define WR1250 0.980785280403230449126182236134239036973933730893f
-#endif
-#ifndef WI1250 /* sin(M_PI_2*0.1250) */
-#define WI1250 0.195090322016128267848284868477022240927691617751f
-#endif
-#ifndef WR3750 /* cos(M_PI_2*0.3750) */
-#define WR3750 0.831469612302545237078788377617905756738560811987f
-#endif
-#ifndef WI3750 /* sin(M_PI_2*0.3750) */
-#define WI3750 0.555570233019602224742830813948532874374937190754f
-#endif
+// cos(M_PI_2*0.2500)
+static constexpr auto wr2500 = 0.923879532511286756128183189396788286822416625863;
 
-#ifndef CDFT_LOOP_DIV /* control of the CDFT's speed & tolerance */
-#define CDFT_LOOP_DIV 32
-#endif
+// sin(M_PI_2*0.2500)
+static constexpr auto wi2500 = 0.382683432365089771728459984030398866761344562485f;
 
-#ifndef RDFT_LOOP_DIV /* control of the RDFT's speed & tolerance */
-#define RDFT_LOOP_DIV 64
-#endif
+// cos(M_PI_2*0.1250)
+static constexpr auto wr1250 = 0.980785280403230449126182236134239036973933730893f;
 
-#ifndef DCST_LOOP_DIV /* control of the DCT,DST's speed & tolerance */
-#define DCST_LOOP_DIV 64
-#endif
+// sin(M_PI_2*0.1250)
+static constexpr auto wi1250 = 0.195090322016128267848284868477022240927691617751f;
+
+// cos(M_PI_2*0.3750)
+static constexpr auto wr3750 = 0.831469612302545237078788377617905756738560811987f;
+
+// sin(M_PI_2*0.3750)
+static constexpr auto wi3750 = 0.555570233019602224742830813948532874374937190754f;
+
+// control of the CDFT's speed & tolerance
+static constexpr auto cdft_loop_div = size_t(32);
 
 void bitrv2(int n, float* a)
 {
@@ -1019,7 +1006,7 @@ void cftb1st(int n, float* a)
     i         = 0;
     for (;;)
     {
-        i0 = i + 4 * CDFT_LOOP_DIV;
+        i0 = i + 4 * cdft_loop_div;
         if (i0 > mh - 4)
         {
             i0 = mh - 4;
@@ -1138,7 +1125,7 @@ void cftb1st(int n, float* a)
         wk3i = wk1i - wk3i * wk1r;
         i    = i0;
     }
-    wd1r      = WR5000;
+    wd1r      = wr5000;
     j0        = mh;
     j1        = j0 + m;
     j2        = j1 + m;
@@ -1249,7 +1236,7 @@ void cftmdl1(int n, float* a)
     i         = 0;
     for (;;)
     {
-        i0 = i + 4 * CDFT_LOOP_DIV;
+        i0 = i + 4 * cdft_loop_div;
         if (i0 > mh - 4)
         {
             i0 = mh - 4;
@@ -1368,7 +1355,7 @@ void cftmdl1(int n, float* a)
         wk3i = wk1i - wk3i * wk1r;
         i    = i0;
     }
-    wd1r      = WR5000;
+    wd1r      = wr5000;
     j0        = mh;
     j1        = j0 + m;
     j2        = j1 + m;
@@ -1445,7 +1432,7 @@ void cftmdl2(int n, float* a)
 
     mh        = n >> 3;
     m         = 2 * mh;
-    wn4r      = WR5000;
+    wn4r      = wr5000;
     j1        = m;
     j2        = j1 + m;
     j3        = j2 + m;
@@ -1494,7 +1481,7 @@ void cftmdl2(int n, float* a)
     i         = 0;
     for (;;)
     {
-        i0 = i + 4 * CDFT_LOOP_DIV;
+        i0 = i + 4 * cdft_loop_div;
         if (i0 > mh - 4)
         {
             i0 = mh - 4;
@@ -1645,8 +1632,8 @@ void cftmdl2(int n, float* a)
         wd3i = -wn4r * (wk3i + wk3r);
         i    = i0;
     }
-    wl1r      = WR2500;
-    wl1i      = WI2500;
+    wl1r      = wr2500;
+    wl1i      = wi2500;
     j0        = mh;
     j1        = j0 + m;
     j2        = j1 + m;
@@ -1731,9 +1718,9 @@ void cftf161(float* a)
         y3r, y3i, y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i, y8r, y8i, y9r, y9i, y10r, y10i, y11r,
         y11i, y12r, y12i, y13r, y13i, y14r, y14i, y15r, y15i;
 
-    wn4r  = WR5000;
-    wk1r  = WR2500;
-    wk1i  = WI2500;
+    wn4r  = wr5000;
+    wk1r  = wr2500;
+    wk1i  = wi2500;
     x0r   = a[0] + a[16];
     x0i   = a[1] + a[17];
     x1r   = a[0] - a[16];
@@ -1887,13 +1874,13 @@ void cftf162(float* a)
         y1i, y2r, y2i, y3r, y3i, y4r, y4i, y5r, y5i, y6r, y6i, y7r, y7i, y8r, y8i, y9r, y9i, y10r,
         y10i, y11r, y11i, y12r, y12i, y13r, y13i, y14r, y14i, y15r, y15i;
 
-    wn4r  = WR5000;
-    wk1r  = WR1250;
-    wk1i  = WI1250;
-    wk2r  = WR2500;
-    wk2i  = WI2500;
-    wk3r  = WR3750;
-    wk3i  = WI3750;
+    wn4r  = wr5000;
+    wk1r  = wr1250;
+    wk1i  = wi1250;
+    wk2r  = wr2500;
+    wk2i  = wi2500;
+    wk3r  = wr3750;
+    wk3i  = wi3750;
     x1r   = a[0] - a[17];
     x1i   = a[1] + a[16];
     x0r   = a[8] - a[25];
@@ -2066,7 +2053,7 @@ void cftf081(float* a)
     float wn4r, x0r, x0i, x1r, x1i, x2r, x2i, x3r, x3i, y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i, y4r,
         y4i, y5r, y5i, y6r, y6i, y7r, y7i;
 
-    wn4r  = WR5000;
+    wn4r  = wr5000;
     x0r   = a[0] + a[8];
     x0i   = a[1] + a[9];
     x1r   = a[0] - a[8];
@@ -2127,9 +2114,9 @@ void cftf082(float* a)
     float wn4r, wk1r, wk1i, x0r, x0i, x1r, x1i, y0r, y0i, y1r, y1i, y2r, y2i, y3r, y3i, y4r, y4i,
         y5r, y5i, y6r, y6i, y7r, y7i;
 
-    wn4r  = WR5000;
-    wk1r  = WR2500;
-    wk1i  = WI2500;
+    wn4r  = wr5000;
+    wk1r  = wr2500;
+    wk1i  = wi2500;
     y0r   = a[0] - a[9];
     y0i   = a[1] + a[8];
     y1r   = a[0] + a[9];

@@ -28,6 +28,7 @@ if (EMSCRIPTEN OR ANDROID OR IOS)
     gles/glad.cpp
   )
   list(APPEND opengl_include_dirs gles)
+  list(APPEND opengl_compile_defs -DCERLIB_GFX_IS_GLES)
 else ()
   list(APPEND opengl_files
     desktop/glad.h

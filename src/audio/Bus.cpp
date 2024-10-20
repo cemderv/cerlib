@@ -39,7 +39,7 @@ BusInstance::BusInstance(Bus* parent)
     flags.inaudible_tick = true;
 }
 
-size_t BusInstance::audio(float* buffer, size_t samples_to_read, size_t buffer_size)
+auto BusInstance::audio(float* buffer, size_t samples_to_read, size_t buffer_size) -> size_t
 {
     const auto handle = m_parent->m_channel_handle;
 
@@ -257,7 +257,7 @@ void Bus::set_filter(size_t filter_id, Filter* filter)
     if (m_instance != nullptr)
     {
         engine->lock_audio_mutex_internal();
-        if (filter)
+        if (filter != nullptr)
         {
             m_instance->filter[filter_id] = this->filter[filter_id]->create_instance();
         }
