@@ -26,9 +26,6 @@ add_subdirectory(
   ${CMAKE_CURRENT_BINARY_DIR}/cerlib_build
 )
 
-# Imports cerlib CMake functions.
-include(${cerlib_DIR}/cmake/support/cerlib.cmake)
-
 # Define our game as a CMake target.
 cerlib_add_game(
   NAME ${CMAKE_PROJECT_NAME}
