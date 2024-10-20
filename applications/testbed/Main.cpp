@@ -1,5 +1,8 @@
 #include <cerlib.hpp>
 #include <cerlib/Main.hpp>
+#include <imgui.h>
+
+using namespace std::chrono_literals;
 
 class Testbed : public cer::Game
 {
@@ -11,7 +14,6 @@ class Testbed : public cer::Game
 
     void load_content() override
     {
-        img = cer::load_image("logo.png");
     }
 
     bool update(const cer::GameTime& time) override
@@ -21,11 +23,13 @@ class Testbed : public cer::Game
 
     void draw(const cer::Window& window) override
     {
-        cer::draw_sprite(img, (window.size_px() - img.size()) / 2);
+    }
+
+    void draw_imgui(const cer::Window& window) override
+    {
     }
 
     cer::Window window;
-    cer::Image  img;
 };
 
 int main(int argc, char* argv[])

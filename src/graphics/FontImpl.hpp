@@ -9,6 +9,7 @@
 #include "util/BinPack.hpp"
 #include "util/Object.hpp"
 
+#include "stb_truetype.hpp"
 #include "util/utf8.hpp"
 #include <stb_truetype.h>
 #include <unordered_map>

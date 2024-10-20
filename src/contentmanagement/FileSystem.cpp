@@ -17,8 +17,8 @@
 #include <string_view>
 
 #ifdef CERLIB_ENABLE_TESTS
-#include <stb_image.h>
-#include <stb_image_write.h>
+#include "graphics/stb_image.hpp"
+#include "graphics/stb_image_write.hpp"
 #endif
 
 #if defined(__APPLE__)
