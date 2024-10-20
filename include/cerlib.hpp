@@ -9,6 +9,7 @@
 #include <cerlib/Circle.hpp>
 #include <cerlib/Color.hpp>
 #include <cerlib/Content.hpp>
+#include <cerlib/Defer.hpp>
 #include <cerlib/Drawing.hpp>
 #include <cerlib/Event.hpp>
 #include <cerlib/Font.hpp>
@@ -22,6 +23,7 @@
 #include <cerlib/Interval.hpp>
 #include <cerlib/Key.hpp>
 #include <cerlib/KeyModifier.hpp>
+#include <cerlib/List.hpp>
 #include <cerlib/Logging.hpp>
 #include <cerlib/Math.hpp>
 #include <cerlib/Matrix.hpp>

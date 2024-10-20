@@ -13,8 +13,7 @@
 #include "cerlib/Sampler.hpp"
 #include "cerlib/Shader.hpp"
 #include "cerlib/Window.hpp"
-#include "util/NonCopyable.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
 #include <optional>
 #include <span>
 
@@ -36,7 +35,7 @@ class GraphicsDevice
     explicit GraphicsDevice();
 
   public:
-    NON_COPYABLE_NON_MOVABLE(GraphicsDevice);
+    forbid_copy_and_move(GraphicsDevice);
 
     virtual ~GraphicsDevice() noexcept;
 
@@ -51,23 +50,23 @@ class GraphicsDevice
     auto demand_create_shader(std::string_view                  name,
                               std::string_view                  source_code,
                               std::span<const std::string_view> defines)
-        -> gsl::not_null<ShaderImpl*>;
+        -> std::unique_ptr<ShaderImpl>;
 
     virtual auto create_canvas(const Window& window,
                                uint32_t      width,
                                uint32_t      height,
-                               ImageFormat   format) -> gsl::not_null<ImageImpl*> = 0;
+                               ImageFormat   format) -> std::unique_ptr<ImageImpl> = 0;
 
     virtual auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
-        -> gsl::not_null<ImageImpl*> = 0;
+        -> std::unique_ptr<ImageImpl> = 0;
 
-    void notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource);
+    void notify_resource_created(GraphicsResourceImpl& resource);
 
-    virtual void notify_resource_destroyed(gsl::not_null<GraphicsResourceImpl*> resource);
+    virtual void notify_resource_destroyed(GraphicsResourceImpl& resource);
 
-    virtual void notify_user_shader_destroyed(gsl::not_null<ShaderImpl*> resource);
+    virtual void notify_user_shader_destroyed(ShaderImpl& resource);
 
-    auto all_resources() const -> const std::vector<gsl::not_null<GraphicsResourceImpl*>>&;
+    auto all_resources() const -> const RefList<GraphicsResourceImpl>&;
 
     auto current_canvas() const -> const Image&;
 
@@ -105,7 +104,9 @@ class GraphicsDevice
 
     void draw_particles(const ParticleSystem& particle_system);
 
-    auto frame_stats() const -> FrameStats;
+    auto frame_stats_ref() -> FrameStats&;
+
+    auto frame_stats_ref() const -> const FrameStats&;
 
     auto current_canvas_size() const -> Vector2;
 
@@ -118,6 +119,8 @@ class GraphicsDevice
 
   protected:
     void post_init(std::unique_ptr<SpriteBatch> sprite_batch);
+
+    void pre_backend_dtor();
 
     virtual auto create_native_user_shader(std::string_view          native_code,
                                            ShaderImpl::ParameterList parameters)
@@ -137,8 +140,6 @@ class GraphicsDevice
 
     auto current_window() const -> const Window&;
 
-    auto frame_stats_ptr() -> gsl::not_null<FrameStats*>;
-
   private:
     enum class Category
     {
@@ -153,19 +154,19 @@ class GraphicsDevice
 
     void compute_combined_transformation();
 
-    std::vector<gsl::not_null<GraphicsResourceImpl*>> m_resources;
-    std::unique_ptr<SpriteBatch>                      m_sprite_batch;
-    Window                                            m_current_window;
-    bool                                              m_must_flush_draw_calls;
-    FrameStats                                        m_draw_stats;
-    Image                                             m_canvas;
-    Rectangle                                         m_viewport;
-    Matrix                                            m_viewport_transformation;
-    Matrix                                            m_combined_transformation;
-    Matrix                                            m_transformation;
-    BlendState                                        m_blend_state;
-    Sampler                                           m_sampler;
-    Shader                                            m_sprite_shader;
-    std::optional<Category>                           m_current_category;
+    RefList<GraphicsResourceImpl> m_resources;
+    std::unique_ptr<SpriteBatch>               m_sprite_batch;
+    Window                                     m_current_window;
+    bool                                       m_must_flush_draw_calls;
+    FrameStats                                 m_frame_stats;
+    Image                                      m_canvas;
+    Rectangle                                  m_viewport;
+    Matrix                                     m_viewport_transformation;
+    Matrix                                     m_combined_transformation;
+    Matrix                                     m_transformation;
+    BlendState                                 m_blend_state;
+    Sampler                                    m_sampler;
+    Shader                                     m_sprite_shader;
+    std::optional<Category>                    m_current_category;
 };
 } // namespace cer::details

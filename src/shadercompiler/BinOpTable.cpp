@@ -12,12 +12,12 @@ namespace cer::shadercompiler
 {
 BinOpTable::BinOpTable()
 {
-    const auto* int_t    = &IntType::instance();
-    const auto* bool_t   = &BoolType::instance();
-    const auto* float_t  = &FloatType::instance();
-    const auto* vector_t = &Vector2Type::instance();
-    const auto* color_t  = &Vector4Type::instance();
-    const auto* matrix_t = &MatrixType::instance();
+    const auto& int_t    = IntType::instance();
+    const auto& bool_t   = BoolType::instance();
+    const auto& float_t  = FloatType::instance();
+    const auto& vector_t = Vector2Type::instance();
+    const auto& color_t  = Vector4Type::instance();
+    const auto& matrix_t = MatrixType::instance();
 
     m_entries = {
         {BinOpKind::Add, int_t, int_t, int_t},
@@ -88,22 +88,20 @@ auto BinOpTable::bin_op_result_type(BinOpKind op_kind, const Type& lhs, const Ty
     -> const Type*
 {
     if (const auto it = std::ranges::find_if(m_entries,
-                                             [&](const auto& e) {
+                                             [&](const Entry& e) {
                                                  return e.op_kind == op_kind &&
-                                                        e.lhs.get() == &lhs && e.rhs.get() == &rhs;
+                                                        &e.lhs.get() == &lhs &&
+                                                        &e.rhs.get() == &rhs;
                                              });
         it != m_entries.cend())
     {
-        return it->result;
+        return &it->result.get();
     }
 
     return nullptr;
 }
 
-BinOpTable::Entry::Entry(BinOpKind                  op_kind,
-                         gsl::not_null<const Type*> lhs,
-                         gsl::not_null<const Type*> rhs,
-                         gsl::not_null<const Type*> result)
+BinOpTable::Entry::Entry(BinOpKind op_kind, const Type& lhs, const Type& rhs, const Type& result)
     : op_kind(op_kind)
     , lhs(lhs)
     , rhs(rhs)

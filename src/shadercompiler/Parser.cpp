@@ -13,9 +13,8 @@
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/TypeCache.hpp"
-#include "util/InternalError.hpp"
-
 #include <cassert>
+#include <cerlib/InternalError.hpp>
 #include <optional>
 
 #define PUSH_TK auto tk_pusher_ = TokenPusher(m_tk_stack, m_tk)
@@ -448,7 +447,7 @@ auto Parser::parse_function(std::string_view      name,
 
     consume(TokenType::LeftParen, true);
 
-    auto params = gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4>{};
+    auto params = UniquePtrList<FunctionParamDecl, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {
@@ -484,7 +483,7 @@ auto Parser::parse_struct() -> std::unique_ptr<StructDecl>
 
     consume(TokenType::LeftBrace, true);
 
-    auto fields = gch::small_vector<std::unique_ptr<StructFieldDecl>, 8>{};
+    auto fields = UniquePtrList<StructFieldDecl, 8>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -905,7 +904,7 @@ auto Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique
     PUSH_TK;
     consume(TokenType::LeftBrace, true);
 
-    auto args = gch::small_vector<std::unique_ptr<StructCtorArg>, 4>{};
+    auto args = UniquePtrList<StructCtorArg, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightBrace))
     {
@@ -938,7 +937,7 @@ auto Parser::parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_pt
     PUSH_TK;
     consume(TokenType::LeftParen, true);
 
-    auto args = gch::small_vector<std::unique_ptr<Expr>, 4>{};
+    auto args = UniquePtrList<Expr, 4>{};
 
     while (!is_at_end() && !m_tk->is(TokenType::RightParen))
     {
@@ -1081,10 +1080,10 @@ auto Parser::parse_type() -> const Type&
 
         consume(TokenType::RightBracket, true, "expected a ']' that ends the array type");
 
-        return *m_type_cache.create_array_type(location, base_type_name, std::move(size_expr));
+        return m_type_cache.create_array_type(location, base_type_name, std::move(size_expr));
     }
 
-    return *m_type_cache.create_unresolved_type(location, base_type_name);
+    return m_type_cache.create_unresolved_type(location, base_type_name);
 }
 
 auto Parser::next_tk() const -> const Token&

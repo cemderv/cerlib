@@ -7,7 +7,6 @@
 #include "audio/Common.hpp"
 #include "cerlib/SoundTypes.hpp"
 #include "util/Object.hpp"
-#include <gsl/pointers>
 
 namespace cer
 {
@@ -19,7 +18,9 @@ namespace cer::details
 class SoundChannelImpl final : public Object
 {
   public:
-    explicit SoundChannelImpl(gsl::not_null<AudioDevice*> audio_device, SoundHandle handle);
+    explicit SoundChannelImpl(AudioDevice& audio_device, SoundHandle handle);
+
+    forbid_copy_and_move(SoundChannelImpl);
 
     auto id() const -> uint32_t;
 
@@ -68,7 +69,7 @@ class SoundChannelImpl final : public Object
     auto stream_position() const -> SoundTime;
 
   private:
-    gsl::not_null<AudioDevice*> m_soloud;
-    cer::SoundHandle            m_soloud_handle;
+    AudioDevice& m_soloud;
+    SoundHandle  m_soloud_handle;
 };
 } // namespace cer::details

@@ -22,10 +22,9 @@
 #include "shadercompiler/Token.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/TypeCache.hpp"
-#include "util/InternalError.hpp"
 #include "util/StringViewUnorderedSet.hpp"
 #include <cassert>
-#include <gsl/util>
+#include <cerlib/InternalError.hpp>
 #include <ranges>
 
 namespace cer::details
@@ -38,21 +37,29 @@ GraphicsDevice::GraphicsDevice()
     FontImpl::create_built_in_fonts();
 }
 
-void GraphicsDevice::notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource)
+void GraphicsDevice::notify_resource_created(GraphicsResourceImpl& resource)
 {
-    [[maybe_unused]] const auto it = std::ranges::find(m_resources, resource);
+    [[maybe_unused]] const auto it = std::ranges::find_if(m_resources, [&resource](const auto& e) {
+        return &e.get() == &resource;
+    });
 
     assert(it == m_resources.cend());
 
     m_resources.push_back(resource);
 }
 
-void GraphicsDevice::notify_resource_destroyed(gsl::not_null<GraphicsResourceImpl*> resource)
+void GraphicsDevice::notify_resource_destroyed(GraphicsResourceImpl& resource)
 {
-    m_resources.erase(std::ranges::find(std::as_const(m_resources), resource));
+    const auto it = std::ranges::find_if(m_resources, [&resource](const auto& e) {
+        return &e.get() == &resource;
+    });
+
+    assert(it != m_resources.cend());
+
+    m_resources.erase(it);
 }
 
-void GraphicsDevice::notify_user_shader_destroyed(gsl::not_null<ShaderImpl*> resource)
+void GraphicsDevice::notify_user_shader_destroyed(ShaderImpl& resource)
 {
     m_sprite_batch->on_shader_destroyed(resource);
 }
@@ -69,7 +76,7 @@ GraphicsDevice::~GraphicsDevice() noexcept
 void GraphicsDevice::start_frame(const Window& window)
 {
     m_current_window = window;
-    m_draw_stats     = {};
+    m_frame_stats    = {};
 
     set_canvas({}, true);
     m_current_category = {};
@@ -202,7 +209,7 @@ static auto to_parameter_type(const shadercompiler::Type& type) -> ShaderParamet
 auto GraphicsDevice::demand_create_shader(std::string_view                  name,
                                           std::string_view                  source_code,
                                           std::span<const std::string_view> defines)
-    -> gsl::not_null<ShaderImpl*>
+    -> std::unique_ptr<ShaderImpl>
 {
     auto tokens = std::vector<shadercompiler::Token>{};
     do_lexing(source_code, name, true, tokens);
@@ -227,14 +234,14 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
 
     context.set_allow_forbidden_identifier_prefix(true);
 
-    for (const auto& symbol : built_in_symbols.all_decls())
+    for (auto& symbol_ref : built_in_symbols.all_decls())
     {
-        symbol->verify(context, global_scope);
+        symbol_ref.get().verify(context, global_scope);
     }
 
     for (const auto& symbol : built_in_symbols.all_decls())
     {
-        if (auto* var = asa<shadercompiler::VarDecl>(symbol.get());
+        if (auto* var = asa<shadercompiler::VarDecl>(&symbol.get());
             var != nullptr && var->is_system_value())
         {
             global_scope.remove_symbol(*var);
@@ -264,10 +271,11 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
     auto parameters = ShaderImpl::ParameterList{};
     parameters.reserve(code_gen_results.parameters.size());
 
-    for (const auto* param : code_gen_results.parameters)
+    for (const auto& param_ref : code_gen_results.parameters)
     {
-        const auto type       = to_parameter_type(param->type());
-        const auto array_size = param->is_array() ? param->array_size() : 0u;
+        const auto& param      = param_ref.get();
+        const auto  type       = to_parameter_type(param.type());
+        const auto  array_size = param.is_array() ? param.array_size() : 0u;
 
         const auto calculate_size_in_bytes = [type, array_size] {
             switch (type)
@@ -292,7 +300,7 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
             CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
         };
 
-        const auto size_in_bytes = gsl::narrow_cast<uint16_t>(calculate_size_in_bytes());
+        const auto size_in_bytes = narrow_cast<uint16_t>(calculate_size_in_bytes());
         const auto is_image      = type == ShaderParameterType::Image;
 
         if (!is_image)
@@ -301,27 +309,25 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
         }
 
         parameters.push_back(ShaderParameter{
-            .name          = std::string{param->name()},
+            .name          = std::string{param.name()},
             .type          = type,
             .offset        = /*offset will be determined later:*/ 0,
             .size_in_bytes = size_in_bytes,
-            .array_size    = param->is_array() ? param->array_size() : uint16_t(0),
+            .array_size    = param.is_array() ? param.array_size() : uint16_t(0),
             .is_image      = is_image,
             .image         = {},
-            .default_value = param->default_value(),
+            .default_value = param.default_value(),
         });
     }
 
-    gsl::not_null shader =
-        create_native_user_shader(code_gen_results.glsl_code, std::move(parameters)).release();
+    auto shader = create_native_user_shader(code_gen_results.glsl_code, std::move(parameters));
 
     shader->set_name(name);
 
     return shader;
 }
 
-auto GraphicsDevice::all_resources() const
-    -> const std::vector<gsl::not_null<GraphicsResourceImpl*>>&
+auto GraphicsDevice::all_resources() const -> const RefList<GraphicsResourceImpl>&
 {
     return m_resources;
 }
@@ -513,9 +519,14 @@ auto GraphicsDevice::current_window() const -> const Window&
     return m_current_window;
 }
 
-auto GraphicsDevice::frame_stats_ptr() -> gsl::not_null<FrameStats*>
+auto GraphicsDevice::frame_stats_ref() -> FrameStats&
 {
-    return &m_draw_stats;
+    return m_frame_stats;
+}
+
+auto GraphicsDevice::frame_stats_ref() const -> const FrameStats&
+{
+    return m_frame_stats;
 }
 
 void GraphicsDevice::ensure_category(Category category)
@@ -566,11 +577,6 @@ void GraphicsDevice::compute_combined_transformation()
     m_combined_transformation = m_transformation * m_viewport_transformation;
 }
 
-auto GraphicsDevice::frame_stats() const -> FrameStats
-{
-    return m_draw_stats;
-}
-
 auto GraphicsDevice::current_canvas_size() const -> Vector2
 {
     return m_viewport.size();
@@ -583,5 +589,10 @@ void GraphicsDevice::post_init(std::unique_ptr<SpriteBatch> sprite_batch)
     FontImpl::create_built_in_fonts();
 
     m_sprite_batch = std::move(sprite_batch);
+}
+
+void GraphicsDevice::pre_backend_dtor()
+{
+    FontImpl::destroy_built_in_fonts();
 }
 } // namespace cer::details

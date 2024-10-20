@@ -3,12 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "shadercompiler/Lexer.hpp"
-
 #include "shadercompiler/Error.hpp"
-#include "util/InternalError.hpp"
-
 #include <algorithm>
 #include <cassert>
+#include <cerlib/InternalError.hpp>
 #include <optional>
 #include <span>
 

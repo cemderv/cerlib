@@ -3,10 +3,10 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "OpenGLVao.hpp"
-#include "util/InternalError.hpp"
-#include "util/small_vector.hpp"
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/narrow>
+#include <cerlib/InternalError.hpp>
+#include <cerlib/List.hpp>
 
 namespace cer::details
 {
@@ -32,7 +32,7 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
         auto index                  = GLuint{};
         auto vertex_stride          = GLsizei{};
-        auto element_sizes_in_bytes = gch::small_vector<GLsizei, 6>{};
+        auto element_sizes_in_bytes = List<GLsizei, 6>{};
 
         for (const auto& element : vertex_elements)
         {

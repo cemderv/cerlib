@@ -5,10 +5,9 @@
 #include "FontImpl.hpp"
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/narrow>
-#include <gsl/pointers>
+#include <cerlib/InternalError.hpp>
 
 #ifdef CERLIB_HAVE_OPENGL
 #include "opengl/OpenGLImage.hpp"
@@ -19,8 +18,8 @@
 
 namespace cer::details
 {
-static gsl::owner<FontImpl*> s_built_in_font_regular{};
-static gsl::owner<FontImpl*> s_built_in_font_bold{};
+static std::unique_ptr<FontImpl> s_built_in_font_regular;
+static std::unique_ptr<FontImpl> s_built_in_font_bold;
 
 FontImpl::FontImpl(std::span<const std::byte> data, bool create_copy_of_data)
     : m_owns_font_data(create_copy_of_data)
@@ -57,27 +56,22 @@ void FontImpl::create_built_in_fonts()
 {
     log_verbose("Creating built-in font objects");
 
-    // NOLINTBEGIN
-    s_built_in_font_regular = std::make_unique<FontImpl>(VeraRegular_ttf_span(), false).release();
+    s_built_in_font_regular = std::make_unique<FontImpl>(VeraRegular_ttf_span(), false);
     s_built_in_font_regular->add_ref();
 
-    s_built_in_font_bold = std::make_unique<FontImpl>(VeraBold_ttf_span(), false).release();
+    s_built_in_font_bold = std::make_unique<FontImpl>(VeraBold_ttf_span(), false);
     s_built_in_font_bold->add_ref();
-    // NOLINTEND
 }
 
 void FontImpl::destroy_built_in_fonts()
 {
-    s_built_in_font_regular->release();
-    s_built_in_font_regular = nullptr;
-
-    s_built_in_font_bold->release();
-    s_built_in_font_bold = nullptr;
+    s_built_in_font_regular.reset();
+    s_built_in_font_bold.reset();
 }
 
-auto FontImpl::built_in(bool bold) -> gsl::owner<FontImpl*>
+auto FontImpl::built_in(bool bold) -> FontImpl&
 {
-    return bold ? s_built_in_font_bold : s_built_in_font_regular;
+    return bold ? *s_built_in_font_bold : *s_built_in_font_regular;
 }
 
 auto FontImpl::measure(std::string_view text, uint32_t font_size) const -> Vector2
@@ -216,10 +210,10 @@ auto FontImpl::rasterize_glyph(const RasterizedGlyphKey& key, bool update_page_i
                               reinterpret_cast<unsigned char*>(dst_data),
                               bitmap_width,
                               bitmap_height,
-                              gsl::narrow<int>(page_width),
+                              narrow<int>(page_width),
                               scale,
                               scale,
-                              gsl::narrow<int>(key.codepoint));
+                              narrow<int>(key.codepoint));
 
     if (update_page_image_immediately)
     {

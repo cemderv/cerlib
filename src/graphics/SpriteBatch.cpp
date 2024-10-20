@@ -12,15 +12,13 @@
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
 #include "cerlib/Text.hpp"
-#include "util/Util.hpp"
+#include "util/narrow_cast.hpp"
 #include <array>
 #include <cassert>
-#include <gsl/narrow>
 
 namespace cer::details
 {
-SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
-                         gsl::not_null<FrameStats*>     draw_stats)
+SpriteBatch::SpriteBatch(GraphicsDevice& device_impl, FrameStats& draw_stats)
     : m_parent_device(device_impl)
     , m_frame_stats(draw_stats)
     , m_vertex_buffer_position(0)
@@ -36,9 +34,9 @@ SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
         auto data = std::array<uint8_t, 4 * size * size>{};
         std::ranges::fill(data, 255);
 
-        m_white_image = Image{
-            m_parent_device->create_image(size, size, ImageFormat::R8G8B8A8_UNorm, data.data())
-                .get()};
+        m_white_image =
+            Image{m_parent_device.create_image(size, size, ImageFormat::R8G8B8A8_UNorm, data.data())
+                      .release()};
     }
 
     log_verbose("Created SpriteBatch");
@@ -135,9 +133,8 @@ void SpriteBatch::end()
     m_is_in_begin_end_pair = false;
 }
 
-void SpriteBatch::on_shader_destroyed(gsl::not_null<ShaderImpl*> shader)
+void SpriteBatch::on_shader_destroyed([[maybe_unused]] ShaderImpl& shader)
 {
-    CERLIB_UNUSED(shader);
 }
 
 void SpriteBatch::release_resources()
@@ -157,7 +154,7 @@ auto SpriteBatch::flush() -> void
     auto       batch_image  = Image{};
     auto       batch_start  = 0u;
     auto       batch_shader = SpriteShaderKind::Default;
-    const auto sprite_count = gsl::narrow_cast<uint32_t>(m_sprite_queue.size());
+    const auto sprite_count = narrow_cast<uint32_t>(m_sprite_queue.size());
 
     for (uint32_t i = 0; i < sprite_count; ++i)
     {

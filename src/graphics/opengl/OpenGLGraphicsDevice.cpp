@@ -9,7 +9,7 @@
 #include "OpenGLWindow.hpp"
 #include "cerlib/Game.hpp"
 #include "cerlib/Logging.hpp"
-#include "util/Util.hpp"
+#include <cerlib/Util2.hpp>
 
 // clang-format off
 #ifdef CERLIB_ENABLE_IMGUI
@@ -108,19 +108,15 @@ void OpenGLGraphicsDevice::on_end_frame(const Window& window)
     SDL_GL_SwapWindow(sdl_window);
 }
 
-void OpenGLGraphicsDevice::on_start_imgui_frame(const Window& window)
+void OpenGLGraphicsDevice::on_start_imgui_frame([[maybe_unused]] const Window& window)
 {
-    CERLIB_UNUSED(window);
-
 #ifdef CERLIB_ENABLE_IMGUI
     ImGui_ImplOpenGL3_NewFrame();
 #endif
 }
 
-void OpenGLGraphicsDevice::on_end_imgui_frame(const Window& window)
+void OpenGLGraphicsDevice::on_end_imgui_frame([[maybe_unused]] const Window& window)
 {
-    CERLIB_UNUSED(window);
-
 #ifdef CERLIB_ENABLE_IMGUI
     const auto& io = ImGui::GetIO();
 
@@ -192,7 +188,7 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
     }
 #endif
 
-    gch::small_vector<GLint, 8> scissor_rects_gl{};
+    auto scissor_rects_gl = List<GLint, 8>{};
     scissor_rects_gl.reserve(scissor_rects.size());
 
     for (const auto& rect : scissor_rects)
@@ -224,17 +220,17 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
 auto OpenGLGraphicsDevice::create_canvas(const Window& window,
                                          uint32_t      width,
                                          uint32_t      height,
-                                         ImageFormat   format) -> gsl::not_null<ImageImpl*>
+                                         ImageFormat   format) -> std::unique_ptr<ImageImpl>
 {
-    return std::make_unique<OpenGLImage>(this, window.impl(), width, height, format).release();
+    return std::make_unique<OpenGLImage>(*this, window.impl(), width, height, format);
 }
 
 auto OpenGLGraphicsDevice::create_image(uint32_t    width,
                                         uint32_t    height,
                                         ImageFormat format,
-                                        const void* data) -> gsl::not_null<ImageImpl*>
+                                        const void* data) -> std::unique_ptr<ImageImpl>
 {
-    return std::make_unique<OpenGLImage>(this, width, height, format, data).release();
+    return std::make_unique<OpenGLImage>(*this, width, height, format, data);
 }
 
 auto OpenGLGraphicsDevice::opengl_features() const -> const OpenGLFeatures&
@@ -306,7 +302,7 @@ auto OpenGLGraphicsDevice::create_native_user_shader(std::string_view          n
                                                      ShaderImpl::ParameterList parameters)
     -> std::unique_ptr<ShaderImpl>
 {
-    return std::make_unique<OpenGLUserShader>(this, native_code, std::move(parameters));
+    return std::make_unique<OpenGLUserShader>(*this, native_code, std::move(parameters));
 }
 
 OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
@@ -424,7 +420,7 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
 
     log_verbose("Initialized OpenGL device. Now calling post_init().");
 
-    post_init(std::make_unique<OpenGLSpriteBatch>(this, frame_stats_ptr()));
+    post_init(std::make_unique<OpenGLSpriteBatch>(*this, frame_stats_ref()));
 
 #ifdef CERLIB_ENABLE_IMGUI
 
@@ -455,5 +451,7 @@ OpenGLGraphicsDevice::~OpenGLGraphicsDevice() noexcept
     ImGui_ImplSDL3_Shutdown();
 #endif
 #endif
+
+    pre_backend_dtor();
 }
 } // namespace cer::details

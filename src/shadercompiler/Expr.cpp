@@ -14,11 +14,8 @@
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/SemaContext.hpp"
 #include "shadercompiler/Type.hpp"
-#include "util/InternalError.hpp"
-#include "util/Util.hpp"
-
 #include <cassert>
-#include <gsl/util>
+#include <cerlib/InternalError.hpp>
 #include <optional>
 #include <unordered_set>
 #include <utility>
@@ -67,11 +64,9 @@ void Expr::verify(SemaContext& context, Scope& scope)
     }
 }
 
-auto Expr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
+auto Expr::evaluate_constant_value([[maybe_unused]] SemaContext& context,
+                                   [[maybe_unused]] Scope&       scope) const -> std::any
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     return {};
 }
 
@@ -80,10 +75,8 @@ auto Expr::is_literal() const -> bool
     return false;
 }
 
-auto Expr::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
+auto Expr::accesses_symbol(const Decl& symbol, [[maybe_unused]] bool transitive) const -> bool
 {
-    CERLIB_UNUSED(transitive);
-
     return m_symbol == &symbol;
 }
 
@@ -123,10 +116,8 @@ void Expr::set_type(const Type& type)
     m_type = &type;
 }
 
-void IntLiteralExpr::on_verify(SemaContext& context, Scope& scope)
+void IntLiteralExpr::on_verify([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope)
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
 }
 
 IntLiteralExpr::IntLiteralExpr(const SourceLocation& location, int32_t value)
@@ -141,11 +132,9 @@ auto IntLiteralExpr::value() const -> int32_t
     return m_value;
 }
 
-auto IntLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
+auto IntLiteralExpr::evaluate_constant_value([[maybe_unused]] SemaContext& context,
+                                             [[maybe_unused]] Scope&       scope) const -> std::any
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     return m_value;
 }
 
@@ -154,10 +143,9 @@ auto IntLiteralExpr::is_literal() const -> bool
     return true;
 }
 
-void BoolLiteralExpr::on_verify(SemaContext& context, Scope& scope)
+void BoolLiteralExpr::on_verify([[maybe_unused]] SemaContext& context,
+                                [[maybe_unused]] Scope&       scope)
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
 }
 
 BoolLiteralExpr::BoolLiteralExpr(const SourceLocation& location, bool value)
@@ -172,11 +160,9 @@ auto BoolLiteralExpr::value() const -> bool
     return m_value;
 }
 
-auto BoolLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
+auto BoolLiteralExpr::evaluate_constant_value([[maybe_unused]] SemaContext& context,
+                                              [[maybe_unused]] Scope&       scope) const -> std::any
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     return m_value;
 }
 
@@ -185,10 +171,9 @@ auto BoolLiteralExpr::is_literal() const -> bool
     return true;
 }
 
-void FloatLiteralExpr::on_verify(SemaContext& context, Scope& scope)
+void FloatLiteralExpr::on_verify([[maybe_unused]] SemaContext& context,
+                                 [[maybe_unused]] Scope&       scope)
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
 }
 
 auto FloatLiteralExpr::string_value() const -> std::string_view
@@ -211,11 +196,9 @@ auto FloatLiteralExpr::value() const -> double
     return m_value;
 }
 
-auto FloatLiteralExpr::evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any
+auto FloatLiteralExpr::evaluate_constant_value([[maybe_unused]] SemaContext& context,
+                                               [[maybe_unused]] Scope& scope) const -> std::any
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     return m_value;
 }
 
@@ -442,9 +425,9 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
     set_type(symbol()->type());
 }
 
-StructCtorCall::StructCtorCall(const SourceLocation&                                location,
-                               std::unique_ptr<Expr>                                callee,
-                               gch::small_vector<std::unique_ptr<StructCtorArg>, 4> args)
+StructCtorCall::StructCtorCall(const SourceLocation&                     location,
+                               std::unique_ptr<Expr>                     callee,
+                               UniquePtrList<StructCtorArg, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
     , m_args(std::move(args))
@@ -538,7 +521,7 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
                                 *int_index};
                 }
 
-                constant_index = gsl::narrow_cast<uint32_t>(*int_index);
+                constant_index = narrow_cast<uint32_t>(*int_index);
             }
             else if (const auto* uint_index = std::any_cast<uint32_t>(&constant_value))
             {
@@ -623,11 +606,11 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
         // depending on the currently passed argument types.
         const auto& args                      = scope.function_call_args();
         auto        was_function_found_at_all = false;
-        auto        all_functions_that_match  = gch::small_vector<const FunctionDecl*, 8>{};
+        auto        all_functions_that_match  = List<const FunctionDecl*, 8>{};
 
         for (const auto& symbol : scope.find_symbols(m_name, true))
         {
-            if (const auto* function = asa<FunctionDecl>(symbol.get()))
+            if (const auto* function = asa<FunctionDecl>(&symbol.get()))
             {
                 const auto accepts_implicitly_cast_arguments =
                     built_ins.accepts_implicitly_cast_arguments(*function);
@@ -646,7 +629,7 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
                 for (size_t i = 0; i < args.size(); ++i)
                 {
                     if (!SemaContext::can_assign(params[i]->type(),
-                                                 *args[i],
+                                                 args[i],
                                                  accepts_implicitly_cast_arguments))
                     {
                         do_param_types_match = false;
@@ -665,10 +648,12 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
         const auto build_call_string = [&] {
             auto str = std::string{m_name};
             str += '(';
-            for (const auto& arg : args)
+            for (const auto& arg_ref : args)
             {
-                str += arg->type().type_name();
-                if (arg != args.back().get())
+                const auto& arg = arg_ref.get();
+                str += arg.type().type_name();
+
+                if (&arg != &args.back().get())
                 {
                     str += ", ";
                 }
@@ -750,13 +735,13 @@ auto SymAccessExpr::name() const -> std::string_view
 
 void FunctionCallExpr::on_verify(SemaContext& context, Scope& scope)
 {
-    auto args = gch::small_vector<gsl::not_null<const Expr*>, 4>{};
+    auto args = RefList<const Expr, 4>{};
     args.reserve(m_args.size());
 
     for (const auto& arg : m_args)
     {
         arg->verify(context, scope);
-        args.emplace_back(arg.get());
+        args.emplace_back(*arg);
     }
 
     scope.push_context(ScopeContext::FunctionCall);
@@ -823,7 +808,7 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
     const auto& symbol    = *this->callee().symbol();
 
     const auto get_arg_constant_values = [this, &context, &scope] {
-        auto arg_values = gch::small_vector<std::any, 4>{};
+        auto arg_values = List<std::any, 4>{};
         arg_values.reserve(m_args.size());
 
         for (const auto& arg : m_args)
@@ -982,9 +967,9 @@ auto FunctionCallExpr::callee() const -> const Expr&
     return *m_callee;
 }
 
-FunctionCallExpr::FunctionCallExpr(const SourceLocation&                       location,
-                                   std::unique_ptr<Expr>                       callee,
-                                   gch::small_vector<std::unique_ptr<Expr>, 4> args)
+FunctionCallExpr::FunctionCallExpr(const SourceLocation&            location,
+                                   std::unique_ptr<Expr>            callee,
+                                   UniquePtrList<Expr, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
     , m_args(std::move(args))
@@ -999,10 +984,9 @@ ScientificIntLiteralExpr::ScientificIntLiteralExpr(const SourceLocation& locatio
     set_type(FloatType::instance());
 }
 
-void ScientificIntLiteralExpr::on_verify(SemaContext& context, Scope& scope)
+void ScientificIntLiteralExpr::on_verify([[maybe_unused]] SemaContext& context,
+                                         [[maybe_unused]] Scope&       scope)
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
 }
 
 auto ScientificIntLiteralExpr::value() const -> std::string_view
@@ -1010,11 +994,9 @@ auto ScientificIntLiteralExpr::value() const -> std::string_view
     return m_value;
 }
 
-void HexadecimalIntLiteralExpr::on_verify(SemaContext& context, Scope& scope)
+void HexadecimalIntLiteralExpr::on_verify([[maybe_unused]] SemaContext& context,
+                                          [[maybe_unused]] Scope&       scope)
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     set_type(IntType::instance());
 }
 

@@ -8,8 +8,8 @@
 #include "cerlib/GraphicsResource.hpp"
 #include "cerlib/Logging.hpp"
 #include "shadercompiler/Type.hpp"
-#include "util/InternalError.hpp"
-#include "util/Util.hpp"
+#include <cerlib/InternalError.hpp>
+#include <cerlib/Util2.hpp>
 
 namespace cer::details
 {
@@ -46,7 +46,7 @@ auto ShaderImpl::shader_parameter_type_string(ShaderParameterType type) -> std::
     return {};
 }
 
-ShaderImpl::ShaderImpl(gsl::not_null<GraphicsDevice*> parent_device, ParameterList parameters)
+ShaderImpl::ShaderImpl(GraphicsDevice& parent_device, ParameterList parameters)
     : GraphicsResourceImpl(parent_device, GraphicsResourceType::Shader)
     , m_parameters(std::move(parameters))
 {
@@ -84,7 +84,7 @@ ShaderImpl::ShaderImpl(gsl::not_null<GraphicsDevice*> parent_device, ParameterLi
 ShaderImpl::~ShaderImpl() noexcept
 {
     log_verbose("~ShaderImpl({})", name());
-    parent_device().notify_user_shader_destroyed(this);
+    parent_device().notify_user_shader_destroyed(*this);
 }
 
 void ShaderImpl::verify_parameter_read(std::string_view    parameter_name,

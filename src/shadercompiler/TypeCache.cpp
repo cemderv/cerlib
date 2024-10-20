@@ -19,21 +19,21 @@ TypeCache::~TypeCache() noexcept = default;
 
 auto TypeCache::create_array_type(const SourceLocation& location,
                                   std::string_view      element_type_name,
-                                  std::unique_ptr<Expr> size_expr) -> gsl::not_null<ArrayType*>
+                                  std::unique_ptr<Expr> size_expr) -> ArrayType&
 {
     m_array_types.push_back(
         std::make_unique<ArrayType>(location,
                                     create_unresolved_type(location, element_type_name),
                                     std::move(size_expr)));
 
-    return m_array_types.back().get();
+    return *m_array_types.back();
 }
 
 auto TypeCache::create_unresolved_type(const SourceLocation& location, std::string_view name)
-    -> gsl::not_null<UnresolvedType*>
+    -> UnresolvedType&
 {
     m_unresolved_types.push_back(std::make_unique<UnresolvedType>(location, name));
-    return m_unresolved_types.back().get();
+    return *m_unresolved_types.back();
 }
 
 void TypeCache::clear()

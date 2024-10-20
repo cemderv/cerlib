@@ -5,8 +5,8 @@
 #pragma once
 
 #include "shadercompiler/Type.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 
 namespace cer::shadercompiler
 {
@@ -17,7 +17,7 @@ class BinOpTable final
   public:
     BinOpTable();
 
-    NON_COPYABLE(BinOpTable);
+    forbid_copy(BinOpTable);
 
     BinOpTable(BinOpTable&&) noexcept = default;
 
@@ -31,17 +31,14 @@ class BinOpTable final
   private:
     struct Entry // NOLINT(*-pro-type-member-init)
     {
-        Entry(BinOpKind                  op_kind,
-              gsl::not_null<const Type*> lhs,
-              gsl::not_null<const Type*> rhs,
-              gsl::not_null<const Type*> result);
+        Entry(BinOpKind op_kind, const Type& lhs, const Type& rhs, const Type& result);
 
-        BinOpKind                  op_kind{};
-        gsl::not_null<const Type*> lhs;
-        gsl::not_null<const Type*> rhs;
-        gsl::not_null<const Type*> result;
+        BinOpKind                          op_kind{};
+        std::reference_wrapper<const Type> lhs;
+        std::reference_wrapper<const Type> rhs;
+        std::reference_wrapper<const Type> result;
     };
 
-    gch::small_vector<Entry, 128> m_entries;
+    List<Entry, 128> m_entries;
 };
 } // namespace cer::shadercompiler

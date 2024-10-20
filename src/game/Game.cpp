@@ -4,9 +4,8 @@
 
 #include "cerlib/Game.hpp"
 #include "GameImpl.hpp"
-#include "util/Util.hpp"
-
 #include <cassert>
+#include <cerlib/Util2.hpp>
 
 // NOLINTBEGIN
 #define LOAD_GAME_IMPL auto& impl = details::GameImpl::instance()
@@ -161,130 +160,105 @@ void Game::load_content()
 {
 }
 
-auto Game::update(const GameTime& time) -> bool
+auto Game::update([[maybe_unused]] const GameTime& time) -> bool
 {
-    CERLIB_UNUSED(time);
     return true;
 }
 
-void Game::draw(const Window& window)
+void Game::draw([[maybe_unused]] const Window& window)
 {
-    CERLIB_UNUSED(window);
 }
 
-void Game::draw_imgui(const Window& window)
+void Game::draw_imgui([[maybe_unused]] const Window& window)
 {
-    CERLIB_UNUSED(window);
 }
 
-void Game::on_window_shown(const WindowShownEvent& event)
+void Game::on_window_shown([[maybe_unused]] const WindowShownEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_hidden(const WindowHiddenEvent& event)
+void Game::on_window_hidden([[maybe_unused]] const WindowHiddenEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_moved(const WindowMovedEvent& event)
+void Game::on_window_moved([[maybe_unused]] const WindowMovedEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_resized(const WindowResizedEvent& event)
+void Game::on_window_resized([[maybe_unused]] const WindowResizedEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_minimized(const WindowMinimizedEvent& event)
+void Game::on_window_minimized([[maybe_unused]] const WindowMinimizedEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_maximized(const WindowMaximizedEvent& event)
+void Game::on_window_maximized([[maybe_unused]] const WindowMaximizedEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_got_mouse_focus(const WindowGotMouseFocusEvent& event)
+void Game::on_window_got_mouse_focus([[maybe_unused]] const WindowGotMouseFocusEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_lost_mouse_focus(const WindowLostMouseFocusEvent& event)
+void Game::on_window_lost_mouse_focus([[maybe_unused]] const WindowLostMouseFocusEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_got_keyboard_focus(const WindowGotKeyboardFocusEvent& event)
+void Game::on_window_got_keyboard_focus([[maybe_unused]] const WindowGotKeyboardFocusEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_lost_keyboard_focus(const WindowLostKeyboardFocusEvent& event)
+void Game::on_window_lost_keyboard_focus([[maybe_unused]] const WindowLostKeyboardFocusEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_window_close(const WindowCloseEvent& event)
+void Game::on_window_close([[maybe_unused]] const WindowCloseEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_key_press(const KeyPressEvent& event)
+void Game::on_key_press([[maybe_unused]] const KeyPressEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_key_release(const KeyReleaseEvent& event)
+void Game::on_key_release([[maybe_unused]] const KeyReleaseEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_mouse_move(const MouseMoveEvent& event)
+void Game::on_mouse_move([[maybe_unused]] const MouseMoveEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_mouse_button_press(const MouseButtonPressEvent& event)
+void Game::on_mouse_button_press([[maybe_unused]] const MouseButtonPressEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_mouse_button_release(const MouseButtonReleaseEvent& event)
+void Game::on_mouse_button_release([[maybe_unused]] const MouseButtonReleaseEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_mouse_double_click(const MouseDoubleClickEvent& event)
+void Game::on_mouse_double_click([[maybe_unused]] const MouseDoubleClickEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_mouse_wheel(const MouseWheelEvent& event)
+void Game::on_mouse_wheel([[maybe_unused]] const MouseWheelEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_touch_finger(const TouchFingerEvent& event)
+void Game::on_touch_finger([[maybe_unused]] const TouchFingerEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_gamepad_connected(const GamepadConnectedEvent& event)
+void Game::on_gamepad_connected([[maybe_unused]] const GamepadConnectedEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_gamepad_disconnected(const GamepadDisconnectedEvent& event)
+void Game::on_gamepad_disconnected([[maybe_unused]] const GamepadDisconnectedEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 
-void Game::on_text_input(const TextInputEvent& event)
+void Game::on_text_input([[maybe_unused]] const TextInputEvent& event)
 {
-    CERLIB_UNUSED(event);
 }
 } // namespace cer
 

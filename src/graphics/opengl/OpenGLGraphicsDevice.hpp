@@ -16,7 +16,7 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
   public:
     explicit OpenGLGraphicsDevice(WindowImpl& main_window);
 
-    NON_COPYABLE_NON_MOVABLE(OpenGLGraphicsDevice);
+    forbid_copy_and_move(OpenGLGraphicsDevice);
 
     ~OpenGLGraphicsDevice() noexcept override;
 
@@ -33,10 +33,10 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
     void on_set_scissor_rects(std::span<const Rectangle> scissor_rects) override;
 
     auto create_canvas(const Window& window, uint32_t width, uint32_t height, ImageFormat format)
-        -> gsl::not_null<ImageImpl*> override;
+        -> std::unique_ptr<ImageImpl> override;
 
     auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
-        -> gsl::not_null<ImageImpl*> override;
+        -> std::unique_ptr<ImageImpl> override;
 
     auto opengl_features() const -> const OpenGLFeatures&;
 

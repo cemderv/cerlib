@@ -5,8 +5,7 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/NonCopyable.hpp"
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
 
 namespace cer::shadercompiler
 {
@@ -28,7 +27,7 @@ class Stmt
     virtual void on_verify(SemaContext& context, Scope& scope) = 0;
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Stmt);
+    forbid_copy_and_move(Stmt);
 
     virtual ~Stmt() noexcept;
 
@@ -59,7 +58,7 @@ class CompoundStmt final : public Stmt
                  std::unique_ptr<Expr> lhs,
                  std::unique_ptr<Expr> rhs);
 
-    NON_COPYABLE_NON_MOVABLE(CompoundStmt);
+    forbid_copy_and_move(CompoundStmt);
 
     ~CompoundStmt() noexcept override;
 
@@ -86,7 +85,7 @@ class AssignmentStmt final : public Stmt
                    std::unique_ptr<Expr> lhs,
                    std::unique_ptr<Expr> rhs);
 
-    NON_COPYABLE_NON_MOVABLE(AssignmentStmt);
+    forbid_copy_and_move(AssignmentStmt);
 
     ~AssignmentStmt() noexcept override;
 
@@ -108,7 +107,7 @@ class ReturnStmt final : public Stmt
   public:
     explicit ReturnStmt(const SourceLocation& location, std::unique_ptr<Expr> expr);
 
-    NON_COPYABLE_NON_MOVABLE(ReturnStmt);
+    forbid_copy_and_move(ReturnStmt);
 
     ~ReturnStmt() noexcept override;
 
@@ -130,7 +129,7 @@ class ForStmt final : public Stmt
             std::unique_ptr<RangeExpr>           range,
             std::unique_ptr<CodeBlock>           body);
 
-    NON_COPYABLE_NON_MOVABLE(ForStmt);
+    forbid_copy_and_move(ForStmt);
 
     ~ForStmt() noexcept override;
 
@@ -158,7 +157,7 @@ class IfStmt final : public Stmt
            std::unique_ptr<CodeBlock> body,
            std::unique_ptr<IfStmt>    next);
 
-    NON_COPYABLE_NON_MOVABLE(IfStmt);
+    forbid_copy_and_move(IfStmt);
 
     ~IfStmt() noexcept override;
 
@@ -183,7 +182,7 @@ class VarStmt final : public Stmt
   public:
     explicit VarStmt(const SourceLocation& location, std::unique_ptr<VarDecl> variable);
 
-    NON_COPYABLE_NON_MOVABLE(VarStmt);
+    forbid_copy_and_move(VarStmt);
 
     ~VarStmt() noexcept override;
 

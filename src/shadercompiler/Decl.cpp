@@ -15,11 +15,8 @@
 #include "shadercompiler/SemaContext.hpp"
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
-#include "util/Util.hpp"
 #include <algorithm>
 #include <cassert>
-#include <gsl/util>
-#include <utility>
 
 namespace cer::shadercompiler
 {
@@ -131,13 +128,12 @@ void StructDecl::on_verify(SemaContext& context, Scope& scope)
 
     scope.add_type(*this);
 
-    m_ctor =
-        std::make_unique<FunctionDecl>(Decl::location(),
-                                       name(),
-                                       gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4>{},
-                                       *this,
-                                       nullptr,
-                                       /*is_struct_ctor:*/ true);
+    m_ctor = std::make_unique<FunctionDecl>(Decl::location(),
+                                            name(),
+                                            UniquePtrList<FunctionParamDecl, 4>{},
+                                            *this,
+                                            nullptr,
+                                            /*is_struct_ctor:*/ true);
 
     scope.add_symbol(*m_ctor);
 
@@ -165,11 +161,9 @@ auto StructDecl::type_name() const -> std::string_view
     return name();
 }
 
-auto StructDecl::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto StructDecl::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     return *this;
 }
 
@@ -178,11 +172,9 @@ auto StructDecl::get_fields() const -> std::span<const std::unique_ptr<StructFie
     return m_fields;
 }
 
-auto StructDecl::find_member_symbol(const SemaContext& context, std::string_view name) const
-    -> Decl*
+auto StructDecl::find_member_symbol([[maybe_unused]] const SemaContext& context,
+                                    std::string_view                    name) const -> Decl*
 {
-    CERLIB_UNUSED(context);
-
     return find_field(name);
 }
 
@@ -196,12 +188,12 @@ auto StructDecl::is_built_in() const -> bool
     return m_is_built_in;
 }
 
-FunctionDecl::FunctionDecl(const SourceLocation&                                    location,
-                           std::string_view                                         name,
-                           gch::small_vector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                           const Type&                                              return_type,
-                           std::unique_ptr<CodeBlock>                               body,
-                           bool                                                     is_struct_ctor)
+FunctionDecl::FunctionDecl(const SourceLocation&                         location,
+                           std::string_view                              name,
+                           UniquePtrList<FunctionParamDecl, 4> parameters,
+                           const Type&                                   return_type,
+                           std::unique_ptr<CodeBlock>                    body,
+                           bool                                          is_struct_ctor)
     : Decl(location, name)
     , m_kind(FunctionKind::Normal)
     , m_parameters(std::move(parameters))
@@ -254,16 +246,16 @@ void FunctionDecl::on_verify(SemaContext& context, Scope& scope)
                     "struct type"};
     }
 
-    auto extra_symbols = std::vector<gsl::not_null<const Decl*>>{};
+    auto extra_symbols = RefList<const Decl>{};
 
     if (is_shader())
     {
         // Add extra symbols here if the function is a shader.
         const auto& built_ins = context.built_in_symbols();
 
-        extra_symbols.emplace_back(built_ins.sprite_image.get());
-        extra_symbols.emplace_back(built_ins.sprite_color.get());
-        extra_symbols.emplace_back(built_ins.sprite_uv.get());
+        extra_symbols.emplace_back(*built_ins.sprite_image);
+        extra_symbols.emplace_back(*built_ins.sprite_color);
+        extra_symbols.emplace_back(*built_ins.sprite_uv);
     }
 
     if (!is_built_in)
@@ -482,10 +474,8 @@ ForLoopVariableDecl::ForLoopVariableDecl(const SourceLocation& location, std::st
 {
 }
 
-void ForLoopVariableDecl::on_verify(SemaContext& context, Scope& scope)
+void ForLoopVariableDecl::on_verify([[maybe_unused]] SemaContext& context, Scope& scope)
 {
-    CERLIB_UNUSED(context);
-
     scope.add_symbol(*this);
 }
 
@@ -552,9 +542,9 @@ auto ShaderParamDecl::array_size() const -> uint16_t
 {
     assert(is_verified());
 
-    const auto array_type = gsl::not_null{asa<ArrayType>(&type())};
+    const auto& array_type = asa_or_error<ArrayType>(type());
 
-    return gsl::narrow_cast<uint16_t>(array_type->size());
+    return narrow_cast<uint16_t>(array_type.size());
 }
 
 auto ShaderParamDecl::default_value_expr() const -> const Expr*

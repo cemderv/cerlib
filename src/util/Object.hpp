@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "NonCopyable.hpp"
+#include "cerlib/CopyMoveMacros.hpp"
 
 #ifdef CERLIB_ATOMIC_REFCOUNTING
 #include <atomic>
@@ -18,11 +18,11 @@ namespace cer::details
 class Object
 {
   public:
-    explicit Object();
+    explicit Object() = default;
 
-    NON_COPYABLE_NON_MOVABLE(Object);
+    forbid_copy_and_move(Object);
 
-    virtual ~Object() noexcept;
+    virtual ~Object() noexcept = default;
 
     void add_ref();
 

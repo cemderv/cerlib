@@ -55,6 +55,11 @@ set(cerlib_public_files
   cerlib/details/MainImpl.hpp
   cerlib/Gamepad.hpp
   cerlib/Util.hpp
+  cerlib/Util2.hpp
+  cerlib/List.hpp
+  cerlib/StringUtil.hpp
+  cerlib/CopyMoveMacros.hpp
+  cerlib/Defer.hpp
   cerlib.hpp
 )
 
@@ -70,6 +75,12 @@ target_precompile_headers(cerlib PRIVATE
   <algorithm>
   <any>
   <cassert>
+  <cerlib/CopyMoveMacros.hpp>
+  <cerlib/Defer.hpp>
+  <cerlib/InternalError.hpp>
+  <cerlib/List.hpp>
+  <cerlib/StringUtil.hpp>
+  <cerlib/Util2.hpp>
   <chrono>
   <cmath>
   <compare>
@@ -78,9 +89,6 @@ target_precompile_headers(cerlib PRIVATE
   <exception>
   <fmt/format.h>
   <functional>
-  <gsl/narrow>
-  <gsl/pointers>
-  <gsl/util>
   <limits>
   <map>
   <memory>
@@ -99,25 +107,21 @@ target_precompile_headers(cerlib PRIVATE
   <utility>
   <variant>
   <vector>
-  util/InternalError.hpp
-  util/Object.hpp
-  util/Util.hpp
-  util/Platform.hpp
-  util/NonCopyable.hpp
-  util/MultiStringHash.hpp
-  util/StringUtil.hpp
-  util/StringViewUnorderedSet.hpp
-  util/small_vector.hpp
+  graphics/GraphicsDevice.hpp
+  shadercompiler/BuiltInSymbols.hpp
   shadercompiler/Decl.hpp
   shadercompiler/Expr.hpp
   shadercompiler/Lexer.hpp
-  shadercompiler/Token.hpp
   shadercompiler/Stmt.hpp
-  shadercompiler/Writer.hpp
   shadercompiler/TempVarNameGen.hpp
+  shadercompiler/Token.hpp
   shadercompiler/Type.hpp
-  shadercompiler/BuiltInSymbols.hpp
-  graphics/GraphicsDevice.hpp
+  shadercompiler/Writer.hpp
+  util/MultiStringHash.hpp
+  util/Object.hpp
+  util/Platform.hpp
+  util/StringViewUnorderedSet.hpp
+  util/narrow_cast.hpp
 )
 
 if (EMSCRIPTEN)
@@ -176,11 +180,6 @@ endif ()
 
 target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
 target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
-
-# Link out-of-source dependencies
-target_link_libraries(cerlib PRIVATE
-  GSL
-)
 
 target_link_libraries(cerlib PUBLIC
   fmt::fmt-header-only

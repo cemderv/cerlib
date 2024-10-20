@@ -15,9 +15,8 @@
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
-#include "util/Util.hpp"
 #include <cassert>
-#include <gsl/util>
+#include <cerlib/Util2.hpp>
 
 namespace cer::shadercompiler
 {
@@ -29,9 +28,9 @@ ShaderGenerator::ShaderGenerator()
 
 ShaderGenerator::~ShaderGenerator() noexcept = default;
 
-ShaderGenerationResult::ShaderGenerationResult(std::string                        glsl_code,
-                                               gsl::not_null<const FunctionDecl*> entry_point,
-                                               ParameterList                      parameters)
+ShaderGenerationResult::ShaderGenerationResult(std::string         glsl_code,
+                                               const FunctionDecl& entry_point,
+                                               ParameterList       parameters)
     : glsl_code(std::move(glsl_code))
     , entry_point(entry_point)
     , parameters(std::move(parameters))
@@ -60,14 +59,14 @@ auto ShaderGenerator::params_accessed_by_function(const FunctionDecl& function) 
         {
             if (body->accesses_symbol(*param, true))
             {
-                params.scalars.emplace_back(param);
+                params.scalars.emplace_back(*param);
             }
         }
         else if (type.is_image_type())
         {
             if (body->accesses_symbol(*param, true))
             {
-                params.resources.emplace_back(param);
+                params.resources.emplace_back(*param);
             }
         }
     }
@@ -75,21 +74,20 @@ auto ShaderGenerator::params_accessed_by_function(const FunctionDecl& function) 
     return params;
 }
 
-auto ShaderGenerator::generate(const SemaContext& context,
-                               const AST&         ast,
-                               std::string_view   entry_point_name,
-                               bool               minify) -> ShaderGenerationResult
+auto ShaderGenerator::generate(const SemaContext&    context,
+                               const AST&            ast,
+                               std::string_view      entry_point_name,
+                               [[maybe_unused]] bool minify) -> ShaderGenerationResult
 {
-    CERLIB_UNUSED(minify);
-
     assert(m_ast == nullptr);
     assert(ast.is_verified());
 
     m_ast = std::addressof(ast);
 
-    const auto _ = gsl::finally([&] {
+    defer
+    {
         m_ast = nullptr;
-    });
+    };
 
     const auto shader_name = filesystem::filename_without_extension(ast.filename());
 
@@ -100,16 +98,17 @@ auto ShaderGenerator::generate(const SemaContext& context,
         throw Error{SourceLocation(), "failed to gather children to generate"};
     }
 
-    const auto* entry_point = asa<FunctionDecl>(children_to_generate.back());
+    const auto& entry_point = asa_or_error<FunctionDecl>(*children_to_generate.back());
 
-    assert(entry_point != nullptr);
-    assert(entry_point->is_shader());
+    assert(entry_point.is_shader());
 
-    m_currently_generated_shader_function = entry_point;
+    m_currently_generated_shader_function = &entry_point;
+    defer
+    {
+        m_currently_generated_shader_function = nullptr;
+    };
 
-    auto code = do_generation(context, *entry_point, children_to_generate);
-
-    m_currently_generated_shader_function = nullptr;
+    auto code = do_generation(context, entry_point, children_to_generate);
 
     util::trim_string(code, {{'\n'}});
 
@@ -118,19 +117,19 @@ auto ShaderGenerator::generate(const SemaContext& context,
         code += '\n';
     }
 
-    const auto accessed_params = params_accessed_by_function(*entry_point);
+    const auto accessed_params = params_accessed_by_function(entry_point);
 
-    auto parameters = gch::small_vector<const ShaderParamDecl*, 8>{};
+    auto parameters = RefList<const ShaderParamDecl, 8>{};
     parameters.reserve(accessed_params.scalars.size() + accessed_params.resources.size());
 
-    for (const gsl::not_null<const ShaderParamDecl*>& param : accessed_params.scalars)
+    for (const auto& param : accessed_params.scalars)
     {
-        parameters.push_back(param.get());
+        parameters.push_back(param);
     }
 
-    for (const gsl::not_null<const ShaderParamDecl*>& param : accessed_params.resources)
+    for (const auto& param : accessed_params.resources)
     {
-        parameters.push_back(param.get());
+        parameters.push_back(param);
     }
 
 #if 0 // minify doesn't work atm
@@ -311,12 +310,10 @@ void ShaderGenerator::generate_stmt(Writer& w, const Stmt& stmt, const SemaConte
     }
 }
 
-void ShaderGenerator::generate_struct_decl(Writer&            w,
-                                           const StructDecl&  strct,
-                                           const SemaContext& context)
+void ShaderGenerator::generate_struct_decl(Writer&                             w,
+                                           const StructDecl&                   strct,
+                                           [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(context);
-
     w << "struct " << strct.name() << " ";
     w.open_brace();
 
@@ -411,13 +408,10 @@ void ShaderGenerator::generate_decl(Writer& w, const Decl& decl, const SemaConte
     }
 }
 
-void ShaderGenerator::generate_var_stmt(Writer&            w,
-                                        const VarStmt&     var_stmt,
-                                        const SemaContext& context)
+void ShaderGenerator::generate_var_stmt(Writer&                             w,
+                                        [[maybe_unused]] const VarStmt&     var_stmt,
+                                        [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(var_stmt);
-    CERLIB_UNUSED(context);
-
     w << "<< generate_var_stmt >>";
 }
 
@@ -483,10 +477,8 @@ void ShaderGenerator::generate_bin_op_expr(Writer&            w,
 
 void ShaderGenerator::generate_struct_ctor_call(Writer&               w,
                                                 const StructCtorCall& struct_ctor_call,
-                                                const SemaContext&    context)
+                                                [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(context);
-
     const auto it = m_temporary_vars.find(&struct_ctor_call);
     assert(it != m_temporary_vars.cend() && "Struct ctor call did not create a temporary variable");
 
@@ -537,12 +529,10 @@ void ShaderGenerator::generate_assignment_stmt(Writer&               w,
     w << ';';
 }
 
-void ShaderGenerator::generate_sym_access_expr(Writer&              w,
-                                               const SymAccessExpr& expr,
-                                               const SemaContext&   context)
+void ShaderGenerator::generate_sym_access_expr(Writer&                             w,
+                                               const SymAccessExpr&                expr,
+                                               [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(context);
-
     const auto* symbol = expr.symbol();
     const auto  name   = expr.name();
 
@@ -558,7 +548,7 @@ void ShaderGenerator::generate_sym_access_expr(Writer&              w,
     {
         for (const auto& [built_in_type, built_in_type_name] : m_built_in_type_dictionary)
         {
-            if (built_in_type->type_name() == name)
+            if (built_in_type.get().type_name() == name)
             {
                 w << built_in_type_name;
                 return;
@@ -592,7 +582,7 @@ auto ShaderGenerator::translate_type(const Type& type, TypeNameContext context) 
         }
     }
 
-    if (const auto it = m_built_in_type_dictionary.find(&type);
+    if (const auto it = m_built_in_type_dictionary.find(type);
         it != m_built_in_type_dictionary.cend())
     {
         return it->second;
@@ -613,7 +603,7 @@ auto ShaderGenerator::translate_array_type(const ArrayType& type,
 auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
                                                    std::string_view   entry_point,
                                                    const SemaContext& context) const
-    -> gch::small_vector<const Decl*, 8>
+    -> List<const Decl*, 8>
 {
     const auto& decls = ast.decls();
 
@@ -634,7 +624,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
     }
 
     // See what the main function depends on.
-    auto accessed_symbols = gch::small_vector<const Decl*, 16>{};
+    auto accessed_symbols = List<const Decl*, 16>{};
 
     for (const auto& decl : ast.decls())
     {
@@ -661,7 +651,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
 
     remove_duplicates_but_keep_order(accessed_symbols);
 
-    auto decls_to_generate = gch::small_vector<const Decl*, 8>{};
+    auto decls_to_generate = List<const Decl*, 8>{};
     decls_to_generate.reserve(accessed_symbols.size() + 1);
 
     for (const auto* symbol : accessed_symbols)

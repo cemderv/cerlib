@@ -5,10 +5,8 @@
 #pragma once
 
 #include "shadercompiler/Decl.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
-#include <gsl/pointers>
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <vector>
 
@@ -66,7 +64,7 @@ class BuiltInSymbols final
   public:
     BuiltInSymbols();
 
-    NON_COPYABLE(BuiltInSymbols);
+    forbid_copy(BuiltInSymbols);
 
     BuiltInSymbols(BuiltInSymbols&&) noexcept;
 
@@ -182,20 +180,26 @@ class BuiltInSymbols final
 
     // NOLINTEND
 
-    auto all_decls() const -> std::span<const gsl::not_null<Decl*>>
+    auto all_decls() -> std::span<std::reference_wrapper<Decl>>
+    {
+        return m_all;
+    }
+
+    auto all_decls() const -> std::span<const std::reference_wrapper<Decl>>
     {
         return m_all;
     }
 
   private:
     void add_func(
-        std::unique_ptr<FunctionDecl>&                                                 var,
-        std::string_view                                                               func_name,
-        std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> param_descs,
-        const Type&                                                                    return_type);
+        std::unique_ptr<FunctionDecl>& var,
+        std::string_view               func_name,
+        std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>>
+                    param_descs,
+        const Type& return_type);
 
     void add_system_value(std::unique_ptr<Decl>& var, std::string_view name, const Type& type);
 
-    gch::small_vector<gsl::not_null<Decl*>, 132> m_all;
+    RefList<Decl, 132> m_all;
 };
 } // namespace cer::shadercompiler

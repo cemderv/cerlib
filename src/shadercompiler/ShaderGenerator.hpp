@@ -5,9 +5,9 @@
 #pragma once
 
 #include "shadercompiler/TempVarNameGen.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
-#include <gsl/pointers>
+#include "shadercompiler/Type.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -44,15 +44,15 @@ class TernaryExpr;
 class ShaderGenerationResult
 {
   public:
-    using ParameterList = gch::small_vector<const ShaderParamDecl*, 8>;
+    using ParameterList = RefList<const ShaderParamDecl, 8>;
 
-    explicit ShaderGenerationResult(std::string                        glsl_code,
-                                    gsl::not_null<const FunctionDecl*> entry_point,
-                                    ParameterList                      parameters);
+    explicit ShaderGenerationResult(std::string         glsl_code,
+                                    const FunctionDecl& entry_point,
+                                    ParameterList       parameters);
 
-    std::string                        glsl_code;
-    gsl::not_null<const FunctionDecl*> entry_point;
-    ParameterList                      parameters;
+    std::string                                glsl_code;
+    std::reference_wrapper<const FunctionDecl> entry_point;
+    ParameterList                              parameters;
 };
 
 class ShaderGenerator
@@ -61,13 +61,13 @@ class ShaderGenerator
     ShaderGenerator();
 
   public:
-    NON_COPYABLE_NON_MOVABLE(ShaderGenerator);
+    forbid_copy_and_move(ShaderGenerator);
 
     virtual ~ShaderGenerator() noexcept;
 
     auto generate(const SemaContext& context,
                   const AST&         ast,
-                  std::string_view   entry_point,
+                  std::string_view   entry_point_name,
                   bool               minify) -> ShaderGenerationResult;
 
   protected:
@@ -82,9 +82,9 @@ class ShaderGenerator
 
     auto params_accessed_by_function(const FunctionDecl& function) const -> AccessedParams;
 
-    virtual auto do_generation(const SemaContext&                       context,
-                               const FunctionDecl&                      entry_point,
-                               const gch::small_vector<const Decl*, 8>& decls_to_generate)
+    virtual auto do_generation(const SemaContext&                  context,
+                               const FunctionDecl&                 entry_point,
+                               const List<const Decl*, 8>& decls_to_generate)
         -> std::string = 0;
 
     virtual void generate_stmt(Writer& w, const Stmt& stmt, const SemaContext& context);
@@ -161,16 +161,33 @@ class ShaderGenerator
     auto gather_ast_decls_to_generate(const AST&         ast,
                                       std::string_view   entry_point,
                                       const SemaContext& context) const
-        -> gch::small_vector<const Decl*, 8>;
+        -> List<const Decl*, 8>;
+
+    struct TypeHash
+    {
+        auto operator()(const Type::ConstRef& type) const -> size_t
+        {
+            return reinterpret_cast<size_t>(&type.get());
+        }
+    };
+
+    struct TypeEqual
+    {
+        auto operator()(const Type::ConstRef& lhs, const Type::ConstRef& rhs) const -> bool
+        {
+            return &lhs.get() == &rhs.get();
+        }
+    };
 
     bool     m_is_swapping_matrix_vector_multiplications{};
     uint32_t m_uniform_buffer_alignment{};
-    std::unordered_map<gsl::not_null<const Type*>, std::string> m_built_in_type_dictionary;
+
+    std::unordered_map<Type::ConstRef, std::string, TypeHash, TypeEqual> m_built_in_type_dictionary;
 
     const AST*                                   m_ast{};
     const FunctionDecl*                          m_currently_generated_shader_function{};
-    gch::small_vector<const FunctionDecl*, 8>    m_call_stack;
-    gch::small_vector<TempVarNameGen, 4>         m_temp_var_name_gen_stack;
+    List<const FunctionDecl*, 8>         m_call_stack;
+    List<TempVarNameGen, 4>              m_temp_var_name_gen_stack;
     std::unordered_map<const Expr*, std::string> m_temporary_vars;
     std::optional<std::string>                   m_current_sym_access_override;
     bool                                         m_needs_float_literal_suffix{};

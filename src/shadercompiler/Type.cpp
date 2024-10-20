@@ -11,25 +11,19 @@
 #include "shadercompiler/Expr.hpp"
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/SemaContext.hpp"
-#include "util/Util.hpp"
-
 #include <cassert>
-#include <gsl/util>
 #include <optional>
-#include <utility>
 
 namespace cer::shadercompiler
 {
-auto Type::member_type(std::string_view name) const -> const Type*
+auto Type::member_type([[maybe_unused]] std::string_view name) const -> const Type*
 {
-    CERLIB_UNUSED(name);
     return nullptr;
 }
 
-auto Type::find_member_symbol(const SemaContext& context, std::string_view name) const -> Decl*
+auto Type::find_member_symbol([[maybe_unused]] const SemaContext& context,
+                              [[maybe_unused]] std::string_view   name) const -> Decl*
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(name);
     return nullptr;
 }
 
@@ -99,10 +93,9 @@ auto IntType::instance() -> const Type&
     return s_instance;
 }
 
-auto IntType::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto IntType::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -127,10 +120,9 @@ auto BoolType::instance() -> const Type&
     return s_instance;
 }
 
-auto BoolType::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto BoolType::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -150,10 +142,9 @@ auto FloatType::instance() -> const Type&
     return s_instance;
 }
 
-auto FloatType::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto FloatType::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -178,10 +169,9 @@ auto Vector2Type::instance() -> const Type&
     return s_instance;
 }
 
-auto Vector2Type::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto Vector2Type::resolve([[maybe_unused]] SemaContext& context,
+                          [[maybe_unused]] Scope&       scope) const -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -218,10 +208,9 @@ auto Vector3Type::instance() -> const Type&
     return s_instance;
 }
 
-auto Vector3Type::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto Vector3Type::resolve([[maybe_unused]] SemaContext& context,
+                          [[maybe_unused]] Scope&       scope) const -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -258,10 +247,9 @@ auto Vector4Type::instance() -> const Type&
     return s_instance;
 }
 
-auto Vector4Type::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto Vector4Type::resolve([[maybe_unused]] SemaContext& context,
+                          [[maybe_unused]] Scope&       scope) const -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -293,10 +281,9 @@ auto MatrixType::instance() -> const Type&
     return s_instance;
 }
 
-auto MatrixType::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto MatrixType::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
     return instance();
 }
 
@@ -311,10 +298,10 @@ auto MatrixType::is_matrix_type() const -> bool
 }
 
 ArrayType::ArrayType(const SourceLocation& location,
-                     gsl::not_null<Type*>  element_type,
+                     Type&                 element_type,
                      std::unique_ptr<Expr> size_expr)
     : Type(location)
-    , m_element_type(element_type)
+    , m_element_type_ref(element_type)
     , m_size_expr(std::move(size_expr))
 {
 }
@@ -323,7 +310,7 @@ ArrayType::~ArrayType() noexcept = default;
 
 auto ArrayType::element_type() const -> const Type&
 {
-    return *m_element_type;
+    return m_element_type_ref.get();
 }
 
 auto ArrayType::size_expr() const -> const Expr&
@@ -333,15 +320,17 @@ auto ArrayType::size_expr() const -> const Expr&
 
 auto ArrayType::resolve(SemaContext& context, Scope& scope) const -> const Type&
 {
-    if (!m_element_type->is_unresolved())
+    if (!m_element_type_ref.get().is_unresolved())
     {
         // We are already resolved
         return *this;
     }
 
-    m_element_type = &m_element_type->resolve(context, scope);
+    m_element_type_ref = m_element_type_ref.get().resolve(context, scope);
 
-    m_name = m_element_type->type_name();
+    const auto& element_type = m_element_type_ref.get();
+
+    m_name = element_type.type_name();
     m_name += "[]";
 
     m_size_expr->verify(context, scope);
@@ -374,7 +363,7 @@ auto ArrayType::resolve(SemaContext& context, Scope& scope) const -> const Type&
                         *int_size};
         }
 
-        size = gsl::narrow_cast<uint32_t>(*int_size);
+        size = narrow_cast<uint32_t>(*int_size);
     }
     else if (const auto* uint_size = std::any_cast<uint32_t>(&constant_value))
     {
@@ -403,29 +392,31 @@ auto ArrayType::resolve(SemaContext& context, Scope& scope) const -> const Type&
     return *this;
 }
 
-unsigned int ArrayType::size() const
+auto ArrayType::size() const -> size_t
 {
-    assert(!m_element_type->is_unresolved());
+    assert(!m_element_type_ref.get().is_unresolved());
     return m_size;
 }
 
-std::basic_string_view<char> ArrayType::type_name() const
+auto ArrayType::type_name() const -> std::basic_string_view<char>
 {
     return m_name;
 }
 
 auto ArrayType::can_be_shader_parameter() const -> bool
 {
-    assert(!m_element_type->is_unresolved());
+    const auto& element_type = m_element_type_ref.get();
+
+    assert(!element_type.is_unresolved());
 
     // image arrays are not supported yet
-    if (m_element_type->is_image_type())
+    if (element_type.is_image_type())
     {
         return false;
     }
 
     // Probably never support user-defined structs in array parameters.
-    if (m_element_type->is_user_defined_struct())
+    if (element_type.is_user_defined_struct())
     {
         return false;
     }
@@ -439,10 +430,9 @@ UnresolvedType::UnresolvedType(const SourceLocation& location, std::string_view 
 {
 }
 
-auto UnresolvedType::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto UnresolvedType::resolve([[maybe_unused]] SemaContext& context, Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-
     const auto* resolved_type = scope.find_type(m_name);
 
     if (resolved_type == nullptr)
@@ -469,11 +459,9 @@ auto ImageType::instance() -> const Type&
     return s_instance;
 }
 
-auto ImageType::resolve(SemaContext& context, Scope& scope) const -> const Type&
+auto ImageType::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]] Scope& scope) const
+    -> const Type&
 {
-    CERLIB_UNUSED(context);
-    CERLIB_UNUSED(scope);
-
     return instance();
 }
 

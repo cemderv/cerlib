@@ -22,12 +22,12 @@ class WindowImpl;
 class ImageImpl : public GraphicsResourceImpl
 {
   public:
-    explicit ImageImpl(gsl::not_null<GraphicsDevice*> parent_device,
-                       bool                           is_canvas,
-                       WindowImpl*                    window_for_canvas,
-                       uint32_t                       width,
-                       uint32_t                       height,
-                       ImageFormat                    format);
+    explicit ImageImpl(GraphicsDevice& parent_device,
+                       bool            is_canvas,
+                       WindowImpl*     window_for_canvas,
+                       uint32_t        width,
+                       uint32_t        height,
+                       ImageFormat     format);
 
     auto is_canvas() const -> bool;
 

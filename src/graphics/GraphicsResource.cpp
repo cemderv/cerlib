@@ -5,7 +5,8 @@
 #include <cerlib/GraphicsResource.hpp>
 
 #include "GraphicsResourceImpl.hpp"
-#include "util/Util.hpp"
+
+#include <cerlib/Util2.hpp>
 
 namespace cer
 {

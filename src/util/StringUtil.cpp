@@ -2,8 +2,8 @@
 // This file is part of cerlib.
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
-#include "StringUtil.hpp"
 #include <cctype>
+#include <cerlib/StringUtil.hpp>
 
 auto cer::details::to_lower_case(std::string_view str) -> std::string
 {

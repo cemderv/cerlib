@@ -4,8 +4,8 @@
 
 #include "GraphicsDevice.hpp"
 #include "game/GameImpl.hpp"
-#include "util/Util.hpp"
 #include <cerlib/Shader.hpp>
+#include <cerlib/Util2.hpp>
 
 #include "GrayscaleShader.shd.hpp"
 
@@ -22,7 +22,7 @@ Shader::Shader(std::string_view                  name,
                std::span<const std::string_view> defines)
 {
     LOAD_DEVICE_IMPL;
-    set_impl(*this, device_impl.demand_create_shader(name, source_code, defines).get());
+    set_impl(*this, device_impl.demand_create_shader(name, source_code, defines).release());
 }
 
 void Shader::set_value(std::string_view name, float value)

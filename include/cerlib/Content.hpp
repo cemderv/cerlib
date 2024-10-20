@@ -33,6 +33,9 @@ class ContentManager;
  */
 struct AssetData
 {
+    std::unique_ptr<std::byte[]> data;
+    size_t                       size{};
+
     auto as_span() const -> std::span<const std::byte>
     {
         return {data.get(), size};
@@ -42,9 +45,6 @@ struct AssetData
     {
         return {reinterpret_cast<const char*>(data.get()), size};
     }
-
-    std::unique_ptr<std::byte[]> data;
-    size_t                       size{};
 };
 
 /**

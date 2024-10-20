@@ -8,10 +8,9 @@
 #include "cerlib/Logging.hpp"
 #include "cerlib/Shader.hpp"
 #include "graphics/ShaderImpl.hpp"
-#include "util/NonCopyable.hpp"
 #include "util/StringUnorderedMap.hpp"
-#include "util/Util.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/Util2.hpp>
 #include <span>
 #include <string>
 #include <string_view>
@@ -29,7 +28,7 @@ class ContentManager final
   public:
     ContentManager();
 
-    NON_COPYABLE_NON_MOVABLE(ContentManager);
+    forbid_copy_and_move(ContentManager);
 
     ~ContentManager() noexcept;
 

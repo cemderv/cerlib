@@ -4,14 +4,14 @@
 
 #include "OpenGLUserShader.hpp"
 
+#include "util/narrow_cast.hpp"
 #include <array>
-#include <gsl/narrow>
 
 namespace cer::details
 {
-OpenGLUserShader::OpenGLUserShader(gsl::not_null<GraphicsDevice*> parent_device,
-                                   std::string_view               glsl_code,
-                                   ParameterList                  parameters)
+OpenGLUserShader::OpenGLUserShader(GraphicsDevice&  parent_device,
+                                   std::string_view glsl_code,
+                                   ParameterList    parameters)
     : ShaderImpl(parent_device, std::move(parameters))
 {
     gl_handle = GL_CALL(glCreateShader(GL_FRAGMENT_SHADER)); // NOLINT(*-prefer-member-initializer)
@@ -26,7 +26,7 @@ OpenGLUserShader::OpenGLUserShader(gsl::not_null<GraphicsDevice*> parent_device,
     };
 
     const auto code_lengths = std::array{
-        gsl::narrow<GLint>(glsl_code.size()),
+        narrow<GLint>(glsl_code.size()),
     };
 
     GL_CALL(glShaderSource(gl_handle, 1, codes.data(), code_lengths.data()));

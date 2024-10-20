@@ -10,9 +10,9 @@
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
 #include "stb_image_write.hpp"
-#include "util/InternalError.hpp"
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/narrow>
+#include <cerlib/InternalError.hpp>
 
 #define DECLARE_THIS_IMPL_CANVAS                                                                   \
     const auto impl = static_cast<details::CanvasImpl*>(impl());                                   \
@@ -127,10 +127,10 @@ void cer::draw_particles(const ParticleSystem& particle_system)
     device_impl.draw_particles(particle_system);
 }
 
-auto cer::frame_stats() -> cer::FrameStats
+auto cer::frame_stats() -> FrameStats
 {
     LOAD_DEVICE_IMPL;
-    return device_impl.frame_stats();
+    return device_impl.frame_stats_ref();
 }
 
 auto cer::current_canvas_size() -> cer::Vector2
@@ -292,7 +292,7 @@ auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format)
 
     const auto write_func = [](void* context, void* data, int size) {
         auto*      context_t = static_cast<Context*>(context);
-        const auto span = std::span{static_cast<const std::byte*>(data), gsl::narrow<size_t>(size)};
+        const auto span      = std::span{static_cast<const std::byte*>(data), narrow<size_t>(size)};
 
         context_t->saved_data.insert(context_t->saved_data.end(), span.begin(), span.end());
     };

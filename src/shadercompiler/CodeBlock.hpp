@@ -5,9 +5,8 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 
 namespace cer::shadercompiler
@@ -23,19 +22,19 @@ class TempVarNameGen;
 class CodeBlock final
 {
   public:
-    using StmtsType = gch::small_vector<std::unique_ptr<Stmt>, 16>;
+    using StmtsType = UniquePtrList<Stmt, 16>;
 
     explicit CodeBlock(const SourceLocation& location, StmtsType stmts);
 
-    NON_COPYABLE_NON_MOVABLE(CodeBlock);
+    forbid_copy_and_move(CodeBlock);
 
     ~CodeBlock() noexcept;
 
-    void verify(SemaContext&                                context,
-                Scope&                                      scope,
-                std::span<const gsl::not_null<const Decl*>> extra_symbols) const;
+    void verify(SemaContext&                                        context,
+                Scope&                                              scope,
+                std::span<const std::reference_wrapper<const Decl>> extra_symbols) const;
 
-    auto variables() const -> gch::small_vector<gsl::not_null<VarStmt*>, 8>;
+    auto variables() const -> RefList<VarStmt, 8>;
 
     auto location() const -> const SourceLocation&;
 

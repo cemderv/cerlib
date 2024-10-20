@@ -6,7 +6,7 @@
 
 #include "shadercompiler/BinOpTable.hpp"
 #include "shadercompiler/BuiltInSymbols.hpp"
-#include "util/NonCopyable.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 
 namespace cer::shadercompiler
 {
@@ -22,7 +22,7 @@ class SemaContext final
                          const BuiltInSymbols& built_in_symbols,
                          const BinOpTable&     bin_op_table);
 
-    NON_COPYABLE_NON_MOVABLE(SemaContext);
+    forbid_copy_and_move(SemaContext);
 
     ~SemaContext() noexcept = default;
 

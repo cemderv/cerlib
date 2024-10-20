@@ -4,9 +4,8 @@
 
 #pragma once
 
-#include "util/NonCopyable.hpp"
-#include "util/small_vector.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <string_view>
 
@@ -28,7 +27,7 @@ class Scope final
   public:
     explicit Scope();
 
-    NON_COPYABLE(Scope);
+    forbid_copy(Scope);
 
     Scope(Scope&& rhs) noexcept;
 
@@ -36,7 +35,7 @@ class Scope final
 
     ~Scope() noexcept;
 
-    auto symbols() const -> std::span<const gsl::not_null<const Decl*>>;
+    auto symbols() const -> std::span<const std::reference_wrapper<const Decl>>;
 
     void add_symbol(const Decl& symbol);
 
@@ -50,13 +49,13 @@ class Scope final
         -> const Decl*;
 
     auto find_symbols(std::string_view name, bool fall_back_to_parent = true) const
-        -> gch::small_vector<gsl::not_null<const Decl*>, 4>;
+        -> RefList<const Decl, 4>;
 
     auto contains_symbol_only_here(std::string_view name) const -> bool;
 
     auto contains_symbol_here_or_up(std::string_view name) const -> bool;
 
-    auto types() const -> std::span<const gsl::not_null<const Type*>>;
+    auto types() const -> std::span<const std::reference_wrapper<const Type>>;
 
     void add_type(const Type& type);
 
@@ -88,17 +87,17 @@ class Scope final
 
     void set_current_function(const FunctionDecl* value);
 
-    auto function_call_args() const -> const gch::small_vector<gsl::not_null<const Expr*>, 4>&;
+    auto function_call_args() const -> const RefList<const Expr, 4>&;
 
-    void set_function_call_args(gch::small_vector<gsl::not_null<const Expr*>, 4> args);
+    void set_function_call_args(RefList<const Expr, 4> args);
 
   private:
-    gch::small_vector<gsl::not_null<const Decl*>, 8> m_symbols;
-    gch::small_vector<gsl::not_null<const Type*>, 8> m_types;
-    Scope*                                           m_parent{};
-    gch::small_vector<std::unique_ptr<Scope>, 4>     m_children;
-    gch::small_vector<ScopeContext, 4>               m_context_stack;
-    const FunctionDecl*                              m_current_function{};
-    gch::small_vector<gsl::not_null<const Expr*>, 4> m_function_call_args;
+    RefList<const Decl, 8> m_symbols;
+    RefList<const Type, 8> m_types;
+    Scope*                              m_parent{};
+    UniquePtrList<Scope, 4>   m_children;
+    List<ScopeContext, 4>       m_context_stack;
+    const FunctionDecl*                 m_current_function{};
+    RefList<const Expr, 4> m_function_call_args;
 };
 } // namespace cer::shadercompiler

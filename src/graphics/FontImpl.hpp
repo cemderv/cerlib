@@ -11,7 +11,6 @@
 
 #include "stb_truetype.hpp"
 #include "util/utf8.hpp"
-#include <gsl/pointers>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -54,7 +53,7 @@ class FontImpl final : public Object, public Asset
 
     static void destroy_built_in_fonts();
 
-    static auto built_in(bool bold) -> gsl::owner<FontImpl*>;
+    static auto built_in(bool bold) -> FontImpl&;
 
     auto measure(std::string_view text, uint32_t font_size) const -> Vector2;
 
