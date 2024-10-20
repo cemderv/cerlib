@@ -4,8 +4,6 @@
 
 set(cerlib_gfx_backend "OpenGL")
 
-add_subdirectory(stb)
-
 add_library(cerlib STATIC)
 
 set(cerlib_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
@@ -182,7 +180,6 @@ target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
 # Link out-of-source dependencies
 target_link_libraries(cerlib PRIVATE
   GSL
-  stblib
 )
 
 target_link_libraries(cerlib PUBLIC
@@ -276,4 +273,17 @@ if (EMSCRIPTEN)
 else ()
   target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL3)
   target_sources(cerlib PRIVATE audio/SDL3Backend.cpp)
+endif ()
+
+if (ANDROID)
+  if (ANDROID_ABI STREQUAL "arm64-v8a")
+    cerlib_log("Detected ARM64 for stb; enabling STBIR_NEON")
+    target_compile_definitions(stblib PUBLIC "-DSTBIR_NEON")
+  elseif (ANDROID_ABI STREQUAL "x86_64")
+    cerlib_log("Detected x64 for stb; enaling STBIR_SSE2")
+    target_compile_definitions(stblib PUBLIC "-DSTBIR_SSE2")
+  else ()
+    cerlib_log("Disabling SIMD for stb_image_resize2")
+    target_compile_definitions(stblib PUBLIC "-DSTBIR_NO_SIMD")
+  endif ()
 endif ()
