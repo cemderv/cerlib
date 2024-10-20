@@ -9,7 +9,7 @@ function(cerlib_add_game)
   cmake_parse_arguments(CERLIB_AE "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
   if (NOT TARGET cerlib)
-    message(FATAL_ERROR "cerlib was not found! Did you forget to call find_package(cerlib)?")
+    message(FATAL_ERROR "cerlib was not found! Did you forget to add_subdirectory() it?")
   endif ()
 
   set(target_name ${CERLIB_AE_NAME})
@@ -20,7 +20,7 @@ function(cerlib_add_game)
   set(assets_dir ${current_dir}/assets)
 
   if (${CERLIB_AE_VERBOSE})
-    message(STATUS "Adding cerlib-based executable '${target_name}'")
+    message(STATUS "Creating game target '${target_name}'")
     message(STATUS "  Company:         ${company}")
     message(STATUS "  Version:         ${version}")
     message(STATUS "  SourceDirectory: ${current_dir}")
@@ -179,10 +179,8 @@ function(cerlib_add_game)
   endif()
 
   file(GLOB_RECURSE game_source_files CONFIGURE_DEPENDS
-    "*.hpp"
-    "*.cpp"
-    "*.h"
-    "*.c"
+    "${game_source_files_dir}/*.hpp"
+    "${game_source_files_dir}/*.cpp"
   )
 
   if (NOT game_source_files)
