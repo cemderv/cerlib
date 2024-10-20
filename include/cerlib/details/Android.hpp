@@ -5,7 +5,6 @@
 #pragma once
 
 #include <android/asset_manager_jni.h>
-#include <cerlib/Export.hpp>
 
 namespace cer::details
 {

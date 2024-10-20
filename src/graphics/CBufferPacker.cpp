@@ -72,8 +72,7 @@ auto CBufferPacker::pack_parameters(ShaderImpl::ParameterList& parameters,
         }
     }
 
-    const auto cbuffer_size =
-        uint32_t(next_aligned_number(current_offset, cbuffer_alignment));
+    const auto cbuffer_size = uint32_t(next_aligned_number(current_offset, cbuffer_alignment));
 
     // Image parameters
     {

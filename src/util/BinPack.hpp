@@ -32,10 +32,7 @@ class BinPack final
 
         auto to_rectangle() const -> Rectangle
         {
-            return {float(x),
-                    float(y),
-                    float(width),
-                    float(height)};
+            return {float(x), float(y), float(width), float(height)};
         }
 
         int32_t x{};

@@ -82,8 +82,8 @@ class ShaderGenerator
 
     auto params_accessed_by_function(const FunctionDecl& function) const -> AccessedParams;
 
-    virtual auto do_generation(const SemaContext&                    context,
-                               const FunctionDecl&                   entry_point,
+    virtual auto do_generation(const SemaContext&                       context,
+                               const FunctionDecl&                      entry_point,
                                const gch::small_vector<const Decl*, 8>& decls_to_generate)
         -> std::string = 0;
 
@@ -169,8 +169,8 @@ class ShaderGenerator
 
     const AST*                                   m_ast{};
     const FunctionDecl*                          m_currently_generated_shader_function{};
-    gch::small_vector<const FunctionDecl*, 8>       m_call_stack;
-    gch::small_vector<TempVarNameGen, 4>            m_temp_var_name_gen_stack;
+    gch::small_vector<const FunctionDecl*, 8>    m_call_stack;
+    gch::small_vector<TempVarNameGen, 4>         m_temp_var_name_gen_stack;
     std::unordered_map<const Expr*, std::string> m_temporary_vars;
     std::optional<std::string>                   m_current_sym_access_override;
     bool                                         m_needs_float_literal_suffix{};

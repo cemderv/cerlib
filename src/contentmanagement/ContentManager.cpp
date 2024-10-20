@@ -17,14 +17,19 @@
 #include "graphics/FontImpl.hpp"
 #include "graphics/ImageImpl.hpp"
 #include "graphics/ShaderImpl.hpp"
+#include "util/Platform.hpp"
 #include <algorithm>
 #include <ranges>
+
+#ifdef CERLIB_PLATFORM_WINDOWS
+#include <Windows.h>
+#endif
 
 namespace cer::details
 {
 static auto root_directory() -> std::string
 {
-#if defined(_WIN32)
+#ifdef CERLIB_PLATFORM_WINDOWS
     TCHAR szFileName[MAX_PATH];
     GetModuleFileName(NULL, szFileName, MAX_PATH);
 
@@ -188,7 +193,7 @@ auto ContentManager::load_sound(std::string_view name) -> Sound
         auto  data         = filesystem::load_asset_data(full_name);
 
         auto sound_impl =
-            std::make_unique<SoundImpl>(audio_device.soloud(), std::move(data.data), data.size);
+            std::make_unique<SoundImpl>(&audio_device, std::move(data.data), data.size);
 
         return Sound{sound_impl.release()};
     });

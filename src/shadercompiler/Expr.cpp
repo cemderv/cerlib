@@ -442,8 +442,8 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
     set_type(symbol()->type());
 }
 
-StructCtorCall::StructCtorCall(const SourceLocation&                             location,
-                               std::unique_ptr<Expr>                             callee,
+StructCtorCall::StructCtorCall(const SourceLocation&                                location,
+                               std::unique_ptr<Expr>                                callee,
                                gch::small_vector<std::unique_ptr<StructCtorArg>, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
@@ -982,8 +982,8 @@ auto FunctionCallExpr::callee() const -> const Expr&
     return *m_callee;
 }
 
-FunctionCallExpr::FunctionCallExpr(const SourceLocation&                    location,
-                                   std::unique_ptr<Expr>                    callee,
+FunctionCallExpr::FunctionCallExpr(const SourceLocation&                       location,
+                                   std::unique_ptr<Expr>                       callee,
                                    gch::small_vector<std::unique_ptr<Expr>, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))

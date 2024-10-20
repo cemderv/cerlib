@@ -95,10 +95,10 @@ class Scope final
   private:
     gch::small_vector<gsl::not_null<const Decl*>, 8> m_symbols;
     gch::small_vector<gsl::not_null<const Type*>, 8> m_types;
-    Scope*                                        m_parent{};
+    Scope*                                           m_parent{};
     gch::small_vector<std::unique_ptr<Scope>, 4>     m_children;
     gch::small_vector<ScopeContext, 4>               m_context_stack;
-    const FunctionDecl*                           m_current_function{};
+    const FunctionDecl*                              m_current_function{};
     gch::small_vector<gsl::not_null<const Expr*>, 4> m_function_call_args;
 };
 } // namespace cer::shadercompiler
