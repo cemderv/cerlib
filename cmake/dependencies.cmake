@@ -37,15 +37,6 @@ CPMAddPackage(
 
 set_target_properties(fmt PROPERTIES FOLDER "Dependencies")
 
-# stb
-CPMAddPackage(
-  NAME stb
-  GITHUB_REPOSITORY nothings/stb
-  GIT_TAG master
-  GIT_SHALLOW
-  DOWNLOAD_ONLY # stb does not use CMake, we add its files manually
-)
-
 # cerlib's OpenGL loader
 CPMAddPackage(
   NAME opengl_loader

@@ -26,4 +26,10 @@ set(graphics_files
   TextImpl.cpp
   Text.cpp
   VertexElement.hpp
+  stb_image.hpp
+  stb_image.cpp
+  stb_truetype.hpp
+  stb_truetype.cpp
+  stb_image_write.hpp
+  stb_image_write.cpp
 )

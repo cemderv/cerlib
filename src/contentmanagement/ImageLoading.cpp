@@ -24,11 +24,7 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
-#include <stb_image.h>
-
-#ifndef __ANDROID__
-#include <stb_image_resize2.h>
-#endif
+#include "graphics/stb_image.hpp"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop

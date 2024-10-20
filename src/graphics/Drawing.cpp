@@ -9,10 +9,10 @@
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
+#include "stb_image_write.hpp"
 #include "util/InternalError.hpp"
 #include <cassert>
 #include <gsl/narrow>
-#include <stb_image_write.h>
 
 #define DECLARE_THIS_IMPL_CANVAS                                                                   \
     const auto impl = static_cast<details::CanvasImpl*>(impl());                                   \
