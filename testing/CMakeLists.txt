@@ -29,7 +29,6 @@ endif ()
 enable_default_cpp_flags(cerlibTests)
 
 target_link_libraries(cerlibTests PRIVATE
-  GSL
   cerlib
   snitch::snitch
 )

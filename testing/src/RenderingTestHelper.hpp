@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cerlib/Image.hpp"
-#include "util/CopyMoveMacros.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 #include <functional>
 #include <string>
 

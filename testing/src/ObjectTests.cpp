@@ -4,7 +4,8 @@
 
 #include "cerlib/details/ObjectMacros.hpp"
 #include "util/Object.hpp"
-#include "util/Util.hpp"
+#include <cerlib/Formatters.hpp>
+#include <cerlib/Util2.hpp>
 #include <memory>
 #include <snitch/snitch.hpp>
 #include <string>
@@ -148,7 +149,7 @@ TEST_CASE("Object")
 {
     SECTION("Impl construction")
     {
-        auto impl = gsl::owner<details::AnimalImpl*>(new details::AnimalImpl(0));
+        auto impl = new details::AnimalImpl(0);
 
         REQUIRE(s_info_list.size() == 1u);
         REQUIRE(s_info_list.at(0) == "AnimalImpl(0)");

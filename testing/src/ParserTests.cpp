@@ -118,36 +118,38 @@ TEST_CASE("Shader parser", "[shaderc]")
         std::vector<Token> tokens;
         do_lexing(basic_expressions, "SomeFile", true, tokens);
 
-        const small_vector_of_uniques<Decl, 8> decls = parser.parse(tokens);
+        const auto decls = parser.parse(tokens);
 
         REQUIRE(decls.size() == 1u);
         REQUIRE(isa<FunctionDecl>(*decls.front()));
-        FunctionDecl* const                      func  = asa<FunctionDecl>(decls.front().get());
-        const small_vector_of_uniques<Stmt, 16>& stmts = func->body()->stmts();
+
+        FunctionDecl* const func  = asa<FunctionDecl>(decls.front().get());
+        const auto&         stmts = func->body()->stmts();
+
         REQUIRE(stmts.size() == 14u);
 
         // 1 + 2 * 3
         {
             REQUIRE(isa<VarStmt>(*stmts[0]));
-            const Expr& expr = asa<VarStmt>(stmts[0].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[0].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
-            const BinOpExpr* const bin_op_expr1 = asa<BinOpExpr>(&expr);
+            const auto* bin_op_expr1 = asa<BinOpExpr>(&expr);
             REQUIRE(bin_op_expr1->bin_op_kind() == BinOpKind::Add);
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr1->lhs()));
             REQUIRE(isa<BinOpExpr>(bin_op_expr1->rhs()));
 
-            const IntLiteralExpr* const one = asa<IntLiteralExpr>(&bin_op_expr1->lhs());
+            const auto* one = asa<IntLiteralExpr>(&bin_op_expr1->lhs());
             REQUIRE(one->value() == 1);
 
-            const BinOpExpr* const bin_op_expr2 = asa<BinOpExpr>(&bin_op_expr1->rhs());
+            const auto* bin_op_expr2 = asa<BinOpExpr>(&bin_op_expr1->rhs());
             REQUIRE(bin_op_expr2->bin_op_kind() == BinOpKind::Multiply);
 
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr2->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr2->rhs()));
 
-            const IntLiteralExpr* const two   = asa<IntLiteralExpr>(&bin_op_expr2->lhs());
-            const IntLiteralExpr* const three = asa<IntLiteralExpr>(&bin_op_expr2->rhs());
+            const auto* two   = asa<IntLiteralExpr>(&bin_op_expr2->lhs());
+            const auto* three = asa<IntLiteralExpr>(&bin_op_expr2->rhs());
 
             REQUIRE(two->value() == 2);
             REQUIRE(three->value() == 3);
@@ -156,25 +158,25 @@ TEST_CASE("Shader parser", "[shaderc]")
         // 1 * 2 + 3
         {
             REQUIRE(isa<VarStmt>(*stmts[1]));
-            const Expr& expr = asa<VarStmt>(stmts[1].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[1].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
-            const BinOpExpr* const bin_op_expr1 = asa<BinOpExpr>(&expr);
+            const auto* bin_op_expr1 = asa<BinOpExpr>(&expr);
             REQUIRE(bin_op_expr1->bin_op_kind() == BinOpKind::Add);
             REQUIRE(isa<BinOpExpr>(bin_op_expr1->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr1->rhs()));
 
-            const BinOpExpr* const bin_op_expr2 = asa<BinOpExpr>(&bin_op_expr1->lhs());
+            const auto* bin_op_expr2 = asa<BinOpExpr>(&bin_op_expr1->lhs());
             REQUIRE(bin_op_expr2->bin_op_kind() == BinOpKind::Multiply);
 
-            const IntLiteralExpr* const three = asa<IntLiteralExpr>(&bin_op_expr1->rhs());
+            const auto* three = asa<IntLiteralExpr>(&bin_op_expr1->rhs());
             REQUIRE(three->value() == 3);
 
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr2->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr2->rhs()));
 
-            const IntLiteralExpr* const one = asa<IntLiteralExpr>(&bin_op_expr2->lhs());
-            const IntLiteralExpr* const two = asa<IntLiteralExpr>(&bin_op_expr2->rhs());
+            const auto* one = asa<IntLiteralExpr>(&bin_op_expr2->lhs());
+            const auto* two = asa<IntLiteralExpr>(&bin_op_expr2->rhs());
 
             REQUIRE(one->value() == 1);
             REQUIRE(two->value() == 2);
@@ -183,10 +185,11 @@ TEST_CASE("Shader parser", "[shaderc]")
         // 1 < 2
         {
             REQUIRE(isa<VarStmt>(*stmts[9]));
-            const Expr& expr = asa<VarStmt>(stmts[9].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[9].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
-            const BinOpExpr* const bin_op_expr = asa<BinOpExpr>(&expr);
+            const auto* bin_op_expr = asa<BinOpExpr>(&expr);
+
             REQUIRE(bin_op_expr->bin_op_kind() == BinOpKind::LessThan);
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->rhs()));
@@ -197,10 +200,11 @@ TEST_CASE("Shader parser", "[shaderc]")
         // 1 > 2
         {
             REQUIRE(isa<VarStmt>(*stmts[10]));
-            const Expr& expr = asa<VarStmt>(stmts[10].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[10].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
-            const BinOpExpr* const bin_op_expr = asa<BinOpExpr>(&expr);
+            const auto* bin_op_expr = asa<BinOpExpr>(&expr);
+
             REQUIRE(bin_op_expr->bin_op_kind() == BinOpKind::GreaterThan);
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->rhs()));
@@ -211,10 +215,11 @@ TEST_CASE("Shader parser", "[shaderc]")
         // 1 <= 2
         {
             REQUIRE(isa<VarStmt>(*stmts[11]));
-            const Expr& expr = asa<VarStmt>(stmts[11].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[11].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
-            const BinOpExpr* const bin_op_expr = asa<BinOpExpr>(&expr);
+            const auto* const bin_op_expr = asa<BinOpExpr>(&expr);
+
             REQUIRE(bin_op_expr->bin_op_kind() == BinOpKind::LessThanOrEqual);
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->rhs()));
@@ -225,10 +230,10 @@ TEST_CASE("Shader parser", "[shaderc]")
         // 1 >= 2
         {
             REQUIRE(isa<VarStmt>(*stmts[12]));
-            const Expr& expr = asa<VarStmt>(stmts[12].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[12].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
-            const BinOpExpr* const bin_op_expr = asa<BinOpExpr>(&expr);
+            const auto* bin_op_expr = asa<BinOpExpr>(&expr);
             REQUIRE(bin_op_expr->bin_op_kind() == BinOpKind::GreaterThanOrEqual);
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->lhs()));
             REQUIRE(isa<IntLiteralExpr>(bin_op_expr->rhs()));
@@ -239,11 +244,11 @@ TEST_CASE("Shader parser", "[shaderc]")
         // 1 - abs(2, 3) <= y
         {
             REQUIRE(isa<VarStmt>(*stmts[13]));
-            const Expr& expr = asa<VarStmt>(stmts[13].get())->variable().expr();
+            const auto& expr = asa<VarStmt>(stmts[13].get())->variable().expr();
 
             REQUIRE(isa<BinOpExpr>(expr));
 
-            const BinOpExpr* const bin_op_expr1 = asa<BinOpExpr>(&expr);
+            const auto* bin_op_expr1 = asa<BinOpExpr>(&expr);
 
             REQUIRE(bin_op_expr1->bin_op_kind() == BinOpKind::LessThanOrEqual);
 
@@ -252,15 +257,14 @@ TEST_CASE("Shader parser", "[shaderc]")
 
             // verify lhs
             {
-                const BinOpExpr* const lhs_bin_op_expr = asa<BinOpExpr>(&bin_op_expr1->lhs());
+                const auto* lhs_bin_op_expr = asa<BinOpExpr>(&bin_op_expr1->lhs());
 
                 REQUIRE(isa<IntLiteralExpr>(lhs_bin_op_expr->lhs()));
                 REQUIRE(isa<FunctionCallExpr>(lhs_bin_op_expr->rhs()));
 
                 REQUIRE(asa<IntLiteralExpr>(&lhs_bin_op_expr->lhs())->value() == 1);
 
-                const FunctionCallExpr* const func_call =
-                    asa<FunctionCallExpr>(&lhs_bin_op_expr->rhs());
+                const auto* func_call = asa<FunctionCallExpr>(&lhs_bin_op_expr->rhs());
 
                 REQUIRE(func_call->args().size() == 2u);
                 REQUIRE(isa<IntLiteralExpr>(func_call->args()[0].get()));
@@ -271,8 +275,7 @@ TEST_CASE("Shader parser", "[shaderc]")
 
             // verify rhs
             {
-                const SymAccessExpr* const rhs_sym_access_expr =
-                    asa<SymAccessExpr>(&bin_op_expr1->rhs());
+                const auto* rhs_sym_access_expr = asa<SymAccessExpr>(&bin_op_expr1->rhs());
 
                 REQUIRE(rhs_sym_access_expr->name() == "y");
             }
