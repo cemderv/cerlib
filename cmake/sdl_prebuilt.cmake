@@ -66,8 +66,6 @@ function(cerlib_fetch_and_add_prebuilt_sdl fetch_url)
     set_target_properties(SDL3-static PROPERTIES
       IMPORTED_LOCATION_DEBUG "${sdl_dir}/sdl-build/Debug/SDL3-static.lib"
       IMPORTED_LOCATION_RELEASE "${sdl_dir}/sdl-build/Release/SDL3-static.lib"
-      IMPORTED_LOCATION_RELWITHDEBINFO "${sdl_dir}/sdl-build/Release/SDL3-static.lib"
-      IMPORTED_LOCATION_MINSIZEREL "${sdl_dir}/sdl-build/Release/SDL3-static.lib"
     )
 
     target_link_libraries(SDL3-static INTERFACE
@@ -89,8 +87,6 @@ function(cerlib_fetch_and_add_prebuilt_sdl fetch_url)
     set_target_properties(SDL3-static PROPERTIES
       IMPORTED_LOCATION_DEBUG "${sdl_dir}/sdl-build/Debug/libSDL3.a"
       IMPORTED_LOCATION_RELEASE "${sdl_dir}/sdl-build/Release/libSDL3.a"
-      IMPORTED_LOCATION_RELWITHDEBINFO "${sdl_dir}/sdl-build/Release/libSDL3.a"
-      IMPORTED_LOCATION_MINSIZEREL "${sdl_dir}/sdl-build/Release/libSDL3.a"
     )
 
     target_link_libraries(SDL3-static INTERFACE
@@ -113,8 +109,6 @@ function(cerlib_fetch_and_add_prebuilt_sdl fetch_url)
     set_target_properties(SDL3-static PROPERTIES
       IMPORTED_LOCATION_DEBUG "${sdl_dir}/sdl-build/Debug/libSDL3.a"
       IMPORTED_LOCATION_RELEASE "${sdl_dir}/sdl-build/Release/libSDL3.a"
-      IMPORTED_LOCATION_RELWITHDEBINFO "${sdl_dir}/sdl-build/Release/libSDL3.a"
-      IMPORTED_LOCATION_MINSIZEREL "${sdl_dir}/sdl-build/Release/libSDL3.a"
       INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:m>"
       INTERFACE_LINK_OPTIONS "-pthread"
     )
