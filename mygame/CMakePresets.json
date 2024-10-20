@@ -15,7 +15,7 @@
       }
     },
     {
-      "name": "debug",
+      "name": "dev",
       "displayName": "Build the game in debug mode",
       "inherits": "default",
       "cacheVariables": {
@@ -31,9 +31,9 @@
       }
     },
     {
-      "name": "wasm-debug",
+      "name": "wasm-dev",
       "displayName": "Build the game for WebAssembly in debug mode",
-      "inherits": "debug",
+      "inherits": "dev",
       "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
     },
     {
@@ -69,12 +69,12 @@
     {
       "name": "build-base",
       "hidden": true,
-      "jobs": 10
+      "jobs": 12
     },
     {
-      "name": "debug",
+      "name": "dev",
       "inherits": "build-base",
-      "configurePreset": "debug"
+      "configurePreset": "dev"
     },
     {
       "name": "release",
@@ -82,9 +82,9 @@
       "configurePreset": "release"
     },
     {
-      "name": "wasm-debug",
+      "name": "wasm-dev",
       "inherits": "build-base",
-      "configurePreset": "wasm-debug"
+      "configurePreset": "wasm-dev"
     },
     {
       "name": "wasm",
@@ -104,15 +104,15 @@
   ],
   "workflowPresets": [
     {
-      "name": "debug",
+      "name": "dev",
       "steps": [
         {
           "type": "configure",
-          "name": "debug"
+          "name": "dev"
         },
         {
           "type": "build",
-          "name": "debug"
+          "name": "dev"
         }
       ]
     },
