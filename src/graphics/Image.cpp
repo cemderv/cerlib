@@ -34,19 +34,19 @@ Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void* da
 
     LOAD_DEVICE_IMPL;
 
-    set_impl(*this, device_impl.create_image(width, height, format, data).get());
+    set_impl(*this, device_impl.create_image(width, height, format, data).release());
 }
 
 Image::Image(std::span<const std::byte> memory)
 {
     LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, memory).get());
+    set_impl(*this, details::load_image(device_impl, memory).release());
 }
 
 Image::Image(std::string_view filename)
 {
     LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, filename).get());
+    set_impl(*this, details::load_image(device_impl, filename).release());
 }
 
 Image::Image(uint32_t width, uint32_t height, ImageFormat format, const Window& window)
@@ -57,7 +57,7 @@ Image::Image(uint32_t width, uint32_t height, ImageFormat format, const Window& 
     }
 
     LOAD_DEVICE_IMPL;
-    set_impl(*this, device_impl.create_canvas(window, width, height, format).get());
+    set_impl(*this, device_impl.create_canvas(window, width, height, format).release());
 }
 
 auto Image::is_canvas() const -> bool

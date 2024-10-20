@@ -120,6 +120,8 @@ class GraphicsDevice
   protected:
     void post_init(std::unique_ptr<SpriteBatch> sprite_batch);
 
+    void pre_backend_dtor();
+
     virtual auto create_native_user_shader(std::string_view          native_code,
                                            ShaderImpl::ParameterList parameters)
         -> std::unique_ptr<ShaderImpl> = 0;

@@ -18,11 +18,11 @@ namespace cer::details
 class Object
 {
   public:
-    explicit Object();
+    explicit Object() = default;
 
     forbid_copy_and_move(Object);
 
-    virtual ~Object() noexcept;
+    virtual ~Object() noexcept = default;
 
     void add_ref();
 

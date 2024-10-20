@@ -8,10 +8,6 @@
 
 namespace cer::details
 {
-Object::Object() = default;
-
-Object::~Object() noexcept = default;
-
 void Object::add_ref()
 {
     ++m_ref_count;

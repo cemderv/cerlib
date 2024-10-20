@@ -57,12 +57,15 @@ void FontImpl::create_built_in_fonts()
     log_verbose("Creating built-in font objects");
 
     s_built_in_font_regular = std::make_unique<FontImpl>(VeraRegular_ttf_span(), false);
-    s_built_in_font_bold    = std::make_unique<FontImpl>(VeraBold_ttf_span(), false);
+    s_built_in_font_regular->add_ref();
+
+    s_built_in_font_bold = std::make_unique<FontImpl>(VeraBold_ttf_span(), false);
+    s_built_in_font_bold->add_ref();
 }
 
 void FontImpl::destroy_built_in_fonts()
 {
-    s_built_in_font_bold.reset();
+    s_built_in_font_regular.reset();
     s_built_in_font_bold.reset();
 }
 

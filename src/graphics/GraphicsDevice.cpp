@@ -590,4 +590,9 @@ void GraphicsDevice::post_init(std::unique_ptr<SpriteBatch> sprite_batch)
 
     m_sprite_batch = std::move(sprite_batch);
 }
+
+void GraphicsDevice::pre_backend_dtor()
+{
+    FontImpl::destroy_built_in_fonts();
+}
 } // namespace cer::details

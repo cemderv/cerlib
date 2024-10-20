@@ -451,5 +451,7 @@ OpenGLGraphicsDevice::~OpenGLGraphicsDevice() noexcept
     ImGui_ImplSDL3_Shutdown();
 #endif
 #endif
+
+    pre_backend_dtor();
 }
 } // namespace cer::details
