@@ -184,11 +184,8 @@ void cer::read_canvas_data_into(
     device_impl.read_canvas_data_into(canvas, x, y, width, height, destination);
 }
 
-auto cer::read_canvas_data(const Image& canvas,
-                           uint32_t     x,
-                           uint32_t     y,
-                           uint32_t     width,
-                           uint32_t     height) -> List<std::byte>
+auto cer::read_canvas_data(
+    const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height) -> List<std::byte>
 {
     if (!canvas)
     {
@@ -267,8 +264,7 @@ void cer::save_canvas_to_file(const Image&     canvas,
     }
 }
 
-auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format)
-    -> List<std::byte>
+auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format) -> List<std::byte>
 {
     if (!canvas)
     {

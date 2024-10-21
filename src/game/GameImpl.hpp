@@ -197,8 +197,8 @@ class GameImpl final : public Object
     std::unique_ptr<GraphicsDevice> m_graphics_device;
     std::unique_ptr<AudioDevice>    m_audio_device;
     std::unique_ptr<ContentManager> m_content_manager;
-    List<WindowImpl*>        m_windows;
+    List<WindowImpl*>               m_windows;
     Vector2                         m_previous_mouse_position;
-    List<Gamepad>            m_connected_gamepads;
+    List<Gamepad>                   m_connected_gamepads;
 };
 } // namespace cer::details

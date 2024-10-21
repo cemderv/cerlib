@@ -29,10 +29,10 @@ struct DDSFace
 
 struct DDSImage
 {
-    uint32_t                 width{};
-    uint32_t                 height{};
-    uint32_t                 depth{};
-    ImageFormat              format{};
+    uint32_t         width{};
+    uint32_t         height{};
+    uint32_t         depth{};
+    ImageFormat      format{};
     List<DDSFace, 2> faces{};
 };
 

@@ -13,8 +13,8 @@
     void operator=(class_name&&) noexcept = delete
 
 #define default_copy(class_name)                                                                   \
-    class_name(const class_name&)                    = default;                                    \
-    auto operator=(const class_name&) -> class_name& = default
+    class_name(const class_name&)                  = default;                                      \
+    auto operator=(const class_name&)->class_name& = default
 
 #define default_move(class_name)                                                                   \
     class_name(class_name&&) noexcept                    = default;                                \

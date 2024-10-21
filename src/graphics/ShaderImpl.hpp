@@ -153,7 +153,7 @@ class ShaderImpl : public GraphicsResourceImpl
 
     void set_default_parameter_values();
 
-    List<uint8_t, 512>                 m_cbuffer_data;
+    List<uint8_t, 512>                         m_cbuffer_data;
     uint32_t                                   m_c_buffer_size{};
     ParameterList                              m_parameters;
     ParameterPtrsList                          m_image_parameters;

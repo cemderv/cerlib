@@ -31,8 +31,8 @@ static void shape_text(std::string_view                     text,
                        const Font&                          font,
                        uint32_t                             font_size,
                        const std::optional<TextDecoration>& decoration,
-                       List<PreshapedGlyph>&        dst_glyphs,
-                       List<TextDecorationRect>&    dst_decoration_rects)
+                       List<PreshapedGlyph>&                dst_glyphs,
+                       List<TextDecorationRect>&            dst_decoration_rects)
 {
     assert(font);
 

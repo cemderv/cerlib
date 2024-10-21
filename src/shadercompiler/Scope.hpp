@@ -92,12 +92,12 @@ class Scope final
     void set_function_call_args(RefList<const Expr, 4> args);
 
   private:
-    RefList<const Decl, 8> m_symbols;
-    RefList<const Type, 8> m_types;
-    Scope*                              m_parent{};
-    UniquePtrList<Scope, 4>   m_children;
-    List<ScopeContext, 4>       m_context_stack;
-    const FunctionDecl*                 m_current_function{};
-    RefList<const Expr, 4> m_function_call_args;
+    RefList<const Decl, 8>  m_symbols;
+    RefList<const Type, 8>  m_types;
+    Scope*                  m_parent{};
+    UniquePtrList<Scope, 4> m_children;
+    List<ScopeContext, 4>   m_context_stack;
+    const FunctionDecl*     m_current_function{};
+    RefList<const Expr, 4>  m_function_call_args;
 };
 } // namespace cer::shadercompiler

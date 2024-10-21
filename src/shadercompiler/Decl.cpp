@@ -188,12 +188,12 @@ auto StructDecl::is_built_in() const -> bool
     return m_is_built_in;
 }
 
-FunctionDecl::FunctionDecl(const SourceLocation&                         location,
-                           std::string_view                              name,
+FunctionDecl::FunctionDecl(const SourceLocation&               location,
+                           std::string_view                    name,
                            UniquePtrList<FunctionParamDecl, 4> parameters,
-                           const Type&                                   return_type,
-                           std::unique_ptr<CodeBlock>                    body,
-                           bool                                          is_struct_ctor)
+                           const Type&                         return_type,
+                           std::unique_ptr<CodeBlock>          body,
+                           bool                                is_struct_ctor)
     : Decl(location, name)
     , m_kind(FunctionKind::Normal)
     , m_parameters(std::move(parameters))

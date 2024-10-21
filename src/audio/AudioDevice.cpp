@@ -249,7 +249,7 @@ auto AudioDevice::play(AudioSource& sound, float volume, float pan, bool paused,
 
     for (size_t i = 0; i < filters_per_stream; ++i)
     {
-        if (sound.filter[i])
+        if (sound.filter[i] != nullptr)
         {
             m_voice[ch]->filter[i] = sound.filter[i]->create_instance();
         }

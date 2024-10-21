@@ -155,18 +155,18 @@ class GraphicsDevice
     void compute_combined_transformation();
 
     RefList<GraphicsResourceImpl> m_resources;
-    std::unique_ptr<SpriteBatch>               m_sprite_batch;
-    Window                                     m_current_window;
-    bool                                       m_must_flush_draw_calls;
-    FrameStats                                 m_frame_stats;
-    Image                                      m_canvas;
-    Rectangle                                  m_viewport;
-    Matrix                                     m_viewport_transformation;
-    Matrix                                     m_combined_transformation;
-    Matrix                                     m_transformation;
-    BlendState                                 m_blend_state;
-    Sampler                                    m_sampler;
-    Shader                                     m_sprite_shader;
-    std::optional<Category>                    m_current_category;
+    std::unique_ptr<SpriteBatch>  m_sprite_batch;
+    Window                        m_current_window;
+    bool                          m_must_flush_draw_calls;
+    FrameStats                    m_frame_stats;
+    Image                         m_canvas;
+    Rectangle                     m_viewport;
+    Matrix                        m_viewport_transformation;
+    Matrix                        m_combined_transformation;
+    Matrix                        m_transformation;
+    BlendState                    m_blend_state;
+    Sampler                       m_sampler;
+    Shader                        m_sprite_shader;
+    std::optional<Category>       m_current_category;
 };
 } // namespace cer::details

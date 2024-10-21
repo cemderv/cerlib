@@ -168,16 +168,16 @@ class SpriteBatch
                       const Vector2&                      offset,
                       const Color&                        color);
 
-    bool                        m_is_in_begin_end_pair{};
-    GraphicsDevice&             m_parent_device;
-    FrameStats&                 m_frame_stats;
+    bool                 m_is_in_begin_end_pair{};
+    GraphicsDevice&      m_parent_device;
+    FrameStats&          m_frame_stats;
     List<InternalSprite> m_sprite_queue;
-    uint32_t                    m_vertex_buffer_position;
-    Image                       m_white_image;
-    Matrix                      m_transformation;
-    BlendState                  m_blend_state;
-    Shader                      m_sprite_shader;
-    Sampler                     m_sampler;
+    uint32_t             m_vertex_buffer_position;
+    Image                m_white_image;
+    Matrix               m_transformation;
+    BlendState           m_blend_state;
+    Shader               m_sprite_shader;
+    Sampler              m_sampler;
 
     // Used in draw_string() as temporary buffers for text shaping results.
     List<PreshapedGlyph>     m_tmp_glyphs;

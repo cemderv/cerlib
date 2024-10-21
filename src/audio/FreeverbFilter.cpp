@@ -54,7 +54,7 @@ class Comb
 class Allpass
 {
   public:
-         Allpass();
+    Allpass();
     void setbuffer(float* buf, int size);
     auto process(float inp) -> float;
     void mute();

@@ -284,7 +284,7 @@ auto Bus::calc_fft() -> float*
     {
         engine->lock_audio_mutex_internal();
         auto temp = std::array<float, 1024>{};
-        for (int i = 0; i < 256; ++i)
+        for (size_t i = 0; i < 256; ++i)
         {
             temp[i * 2]     = m_instance->m_visualization_wave_data[i];
             temp[i * 2 + 1] = 0;
@@ -295,7 +295,7 @@ auto Bus::calc_fft() -> float*
 
         FFT::fft1024(temp.data());
 
-        for (int i = 0; i < 256; ++i)
+        for (size_t i = 0; i < 256; ++i)
         {
             const float real = temp[i * 2];
             const float imag = temp[i * 2 + 1];
