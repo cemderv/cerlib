@@ -42,7 +42,7 @@ auto cer::is_mouse_button_up(MouseButton button) -> bool
     return !is_mouse_button_down(button);
 }
 
-auto cer::current_mouse_position() -> cer::Vector2
+auto cer::current_mouse_position() -> Vector2
 {
 #ifdef __EMSCRIPTEN__
     int X{}, Y{};
@@ -56,12 +56,12 @@ auto cer::current_mouse_position() -> cer::Vector2
 #endif
 }
 
-auto cer::current_mouse_position_delta() -> cer::Vector2
+auto cer::current_mouse_position_delta() -> Vector2
 {
     return details::InputImpl::instance().mouse_position_delta();
 }
 
-auto cer::current_mouse_wheel_delta() -> cer::Vector2
+auto cer::current_mouse_wheel_delta() -> Vector2
 {
     return details::InputImpl::instance().mouse_wheel_delta();
 }

@@ -7,7 +7,6 @@
 #include "cerlib/Logging.hpp"
 #include "shadercompiler/Naming.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {
@@ -39,7 +38,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the OpenGL shader program handle.");
+        throw std::runtime_error{"Failed to create the OpenGL shader program handle."};
     }
 
     GL_CALL(glAttachShader(gl_handle, vertex_shader.gl_handle));
@@ -73,9 +72,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
         log_debug("Program linking error:\n{}", buffer.get());
 
-        const auto msg = std::string{reinterpret_cast<const char*>(buffer.get())};
-
-        CER_THROW_RUNTIME_ERROR_STR(msg);
+        throw std::runtime_error{reinterpret_cast<const char*>(buffer.get())};
     }
 
     if (vertex_shader.gl_handle != 0)

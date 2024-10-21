@@ -55,9 +55,7 @@ set(cerlib_public_files
   cerlib/details/MainImpl.hpp
   cerlib/Gamepad.hpp
   cerlib/Util.hpp
-  cerlib/Util2.hpp
   cerlib/List.hpp
-  cerlib/StringUtil.hpp
   cerlib/CopyMoveMacros.hpp
   cerlib/Defer.hpp
   cerlib.hpp
@@ -77,10 +75,7 @@ target_precompile_headers(cerlib PRIVATE
   <cassert>
   <cerlib/CopyMoveMacros.hpp>
   <cerlib/Defer.hpp>
-  <cerlib/InternalError.hpp>
   <cerlib/List.hpp>
-  <cerlib/StringUtil.hpp>
-  <cerlib/Util2.hpp>
   <chrono>
   <cmath>
   <compare>

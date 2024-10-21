@@ -9,7 +9,6 @@
 #include "game/GameImpl.hpp"
 #include "util/Platform.hpp"
 #include "util/narrow_cast.hpp"
-#include <cerlib/InternalError.hpp>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -95,8 +94,8 @@ WindowImpl::WindowImpl(std::string_view        title,
 
     if (!GameImpl::is_instance_initialized())
     {
-        CER_THROW_LOGIC_ERROR_STR("The game instance must be initialized prior to creating "
-                                  "any windows. Please call run_game() first.");
+        throw std::logic_error{"The game instance must be initialized prior to creating "
+                               "any windows. Please call run_game() first."};
     }
 
     auto& app_impl = GameImpl::instance();
@@ -105,7 +104,7 @@ WindowImpl::WindowImpl(std::string_view        title,
     {
         if (const auto windows = app_impl.windows(); !windows.empty())
         {
-            CER_THROW_LOGIC_ERROR_STR("The current system does not support more than one window.");
+            throw std::logic_error{"The current system does not support more than one window."};
         }
     }
 
@@ -179,7 +178,8 @@ auto WindowImpl::create_sdl_window(int additional_flags) -> void
 
     if (m_sdl_window == nullptr)
     {
-        CER_THROW_RUNTIME_ERROR("Failed to create the internal window. Reason: {}", SDL_GetError());
+        throw std::runtime_error{
+            fmt::format("Failed to create the internal window. Reason: {}", SDL_GetError())};
     }
 
 // Ensure that the window receives text input on non-mobile platforms.

@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "OpenGLImage.hpp"
-#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {
@@ -21,7 +20,7 @@ OpenGLImage::OpenGLImage(GraphicsDevice& parent_device,
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the texture handle.");
+        throw std::runtime_error{"Failed to create the texture handle."};
     }
 
     verify_opengl_state();
@@ -82,7 +81,7 @@ OpenGLImage::OpenGLImage(GraphicsDevice& parent_device,
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the canvas texture handle.");
+        throw std::runtime_error{"Failed to create the canvas texture handle."};
     }
 
     GL_CALL(glBindTexture(GL_TEXTURE_2D, gl_handle));
@@ -113,7 +112,7 @@ OpenGLImage::OpenGLImage(GraphicsDevice& parent_device,
 
     if (gl_framebuffer_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the canvas handle.");
+        throw std::runtime_error{"Failed to create the canvas handle."};
     }
 
     verify_opengl_state();
@@ -134,7 +133,7 @@ OpenGLImage::OpenGLImage(GraphicsDevice& parent_device,
 
     if (fbo_status != GL_FRAMEBUFFER_COMPLETE)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the internal canvas object.");
+        throw std::runtime_error{"Failed to create the internal canvas object."};
     }
 
     verify_opengl_state();

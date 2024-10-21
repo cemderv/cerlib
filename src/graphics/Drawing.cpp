@@ -12,7 +12,6 @@
 #include "stb_image_write.hpp"
 #include "util/narrow_cast.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 
 #define DECLARE_THIS_IMPL_CANVAS                                                                   \
     const auto impl = static_cast<details::CanvasImpl*>(impl());                                   \
@@ -24,7 +23,7 @@ void cer::set_scissor_rects(std::span<const Rectangle> scissor_rects)
     device_impl.set_scissor_rects(scissor_rects);
 }
 
-auto cer::current_canvas() -> cer::Image
+auto cer::current_canvas() -> Image
 {
     LOAD_DEVICE_IMPL;
     return device_impl.current_canvas();
@@ -34,7 +33,7 @@ void cer::set_canvas(const Image& canvas)
 {
     if (canvas && !canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image is not a canvas.");
+        throw std::invalid_argument{"The specified image is not a canvas."};
     }
 
     LOAD_DEVICE_IMPL;
@@ -47,7 +46,7 @@ void cer::set_transformation(const Matrix& transformation)
     device_impl.set_transformation(transformation);
 }
 
-auto cer::current_sprite_shader() -> cer::Shader
+auto cer::current_sprite_shader() -> Shader
 {
     LOAD_DEVICE_IMPL;
     return device_impl.current_sprite_shader();
@@ -133,7 +132,7 @@ auto cer::frame_stats() -> FrameStats
     return device_impl.frame_stats_ref();
 }
 
-auto cer::current_canvas_size() -> cer::Vector2
+auto cer::current_canvas_size() -> Vector2
 {
     LOAD_DEVICE_IMPL;
     return device_impl.current_canvas_size();
@@ -144,18 +143,18 @@ void cer::read_canvas_data_into(
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
     if (canvas == current_canvas())
     {
-        CER_THROW_LOGIC_ERROR_STR("The specified canvas is currently being drawn to. Please "
-                                  "unset it first before reading from it.");
+        throw std::logic_error{"The specified canvas is currently being drawn to. Please "
+                               "unset it first before reading from it."};
     }
 
     const auto canvas_width  = canvas.width();
@@ -163,20 +162,22 @@ void cer::read_canvas_data_into(
 
     if (x + width > canvas_width)
     {
-        CER_THROW_INVALID_ARG("The specified x-coordinate ({}) and width ({}) would exceed "
-                              "the canvas bounds ({})",
-                              x,
-                              width,
-                              canvas_width);
+        throw std::invalid_argument{
+            fmt::format("The specified x-coordinate ({}) and width ({}) would exceed "
+                        "the canvas bounds ({})",
+                        x,
+                        width,
+                        canvas_width)};
     }
 
     if (y + height > canvas_height)
     {
-        CER_THROW_INVALID_ARG("The specified y-coordinate ({}) and height ({}) would exceed "
-                              "the canvas bounds ({})",
-                              y,
-                              height,
-                              canvas_height);
+        throw std::invalid_argument{
+            fmt::format("The specified y-coordinate ({}) and height ({}) would exceed "
+                        "the canvas bounds ({})",
+                        y,
+                        height,
+                        canvas_height)};
     }
 
     LOAD_DEVICE_IMPL;
@@ -189,19 +190,20 @@ auto cer::read_canvas_data(
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
     const auto size_in_bytes = image_slice_pitch(width, height, canvas.format());
 
     if (size_in_bytes == 0)
     {
-        CER_THROW_INVALID_ARG_STR("Invalid canvas specified; failed to determine pixel data size");
+        throw std::invalid_argument{
+            "Invalid canvas specified; failed to determine pixel data size"};
     }
 
     auto data = List<std::byte>{size_in_bytes};
@@ -216,12 +218,12 @@ void cer::save_canvas_to_file(const Image&     canvas,
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
     const auto canvas_width  = canvas.width();
@@ -260,7 +262,7 @@ void cer::save_canvas_to_file(const Image&     canvas,
 
     if (result == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to save the canvas data.");
+        throw std::runtime_error{"Failed to save the canvas data."};
     }
 }
 
@@ -268,12 +270,12 @@ auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format) -> 
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
     const auto canvas_width  = canvas.width();
@@ -328,7 +330,7 @@ auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format) -> 
 
     if (result == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to save the canvas data.");
+        throw std::runtime_error{"Failed to save the canvas data."};
     }
 
     return my_context.saved_data;

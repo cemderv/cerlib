@@ -63,8 +63,8 @@ void cer::audio_sdl3_init(const AudioBackendArgs& args)
         const auto* msg = SDL_GetError();
 
         throw std::runtime_error{
-            cer_fmt::format("Failed to initialize the SDL audio stream. Reason: {}",
-                            msg != nullptr ? msg : "Unknown")};
+            fmt::format("Failed to initialize the SDL audio stream. Reason: {}",
+                        msg != nullptr ? msg : "Unknown")};
     }
 
     const auto audio_device_id = SDL_GetAudioStreamDevice(s_audio_stream);

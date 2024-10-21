@@ -5,7 +5,6 @@
 #include "OpenGLPrivateShader.hpp"
 #include "cerlib/Logging.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 #include <memory>
 
 namespace cer::details
@@ -53,7 +52,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the OpenGL shader handle.");
+        throw std::runtime_error{"Failed to create the OpenGL shader handle."};
     }
 
     auto code_strings = List<std::string_view>{};
@@ -118,7 +117,8 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
         const auto msg =
             std::string_view{reinterpret_cast<const char*>(buffer.get()), size_t(length)};
 
-        CER_THROW_RUNTIME_ERROR("Failed to compile the generated OpenGL shader: {}", msg);
+        throw std::runtime_error{
+            fmt::format("Failed to compile the generated OpenGL shader: {}", msg)};
     }
 
     verify_opengl_state();

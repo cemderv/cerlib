@@ -15,7 +15,6 @@
 #include "graphics/GraphicsDevice.hpp"
 #include "input/GamepadImpl.hpp"
 #include "input/InputImpl.hpp"
-#include <cerlib/InternalError.hpp>
 
 #ifndef __EMSCRIPTEN__
 #define SDL_MAIN_NOIMPL
@@ -144,7 +143,8 @@ GameImpl::GameImpl(bool enable_audio)
 #endif
     {
         const auto error = SDL_GetError();
-        CER_THROW_RUNTIME_ERROR("Failed to initialize the windowing system. Reason: {}", error);
+        throw std::runtime_error{
+            fmt::format("Failed to initialize the windowing system. Reason: {}", error)};
     }
 
     log_verbose("SDL is initialized");
@@ -181,7 +181,7 @@ void GameImpl::init_instance(bool enable_audio)
 {
     if (s_game_instance != nullptr)
     {
-        CER_THROW_LOGIC_ERROR_STR("The game is already initialized exists.");
+        throw std::logic_error{"The game is already initialized exists."};
     }
 
     s_game_instance = std::make_unique<GameImpl>(enable_audio);
@@ -191,7 +191,7 @@ auto GameImpl::instance() -> GameImpl&
 {
     if (s_game_instance == nullptr)
     {
-        CER_THROW_LOGIC_ERROR_STR("The game is not initialized yet. Please call InitGame() first.");
+        throw std::logic_error{"The game is not initialized yet. Please call run_game() first."};
     }
 
     return *s_game_instance;
@@ -211,7 +211,7 @@ void GameImpl::run()
 {
     if (m_is_running)
     {
-        CER_THROW_LOGIC_ERROR_STR("The game is already running.");
+        throw std::logic_error{"The game is already running."};
     }
 
     log_verbose("Starting to run game");
@@ -418,9 +418,8 @@ auto GameImpl::graphics_device() -> GraphicsDevice&
 {
     if (!m_graphics_device)
     {
-        CER_THROW_LOGIC_ERROR_STR("Attempting to load graphics resources or draw. However, "
-                                  "no window was created. Please "
-                                  "create a window first.");
+        throw std::logic_error{"Attempting to load graphics resources or draw. However, "
+                               "no window was created. Please create a window first."};
     }
 
     return *m_graphics_device;
@@ -430,10 +429,10 @@ auto GameImpl::audio_device() -> AudioDevice&
 {
     if (!m_audio_device)
     {
-        CER_THROW_LOGIC_ERROR_STR(
+        throw std::logic_error{
             "No audio engine available. Either no suitable audio device was found, or the "
-            "game was not initialized with "
-            "audio enabled. Please see the enableAudio parameter of InitGame().");
+            "game was not initialized with audio enabled. Please see the enable_audio parameter of "
+            "the Game class."};
     }
 
     return *m_audio_device;

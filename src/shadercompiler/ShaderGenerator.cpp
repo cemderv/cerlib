@@ -16,7 +16,6 @@
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
 #include <cassert>
-#include <cerlib/Util2.hpp>
 
 namespace cer::shadercompiler
 {
@@ -649,7 +648,7 @@ auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
         accessed_symbols.erase(it, accessed_symbols.end());
     }
 
-    remove_duplicates_but_keep_order(accessed_symbols);
+    util::remove_duplicates_but_keep_order(accessed_symbols);
 
     auto decls_to_generate = List<const Decl*, 8>{};
     decls_to_generate.reserve(accessed_symbols.size() + 1);

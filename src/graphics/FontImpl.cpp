@@ -7,7 +7,6 @@
 #include "game/GameImpl.hpp"
 #include "util/narrow_cast.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 
 #ifdef CERLIB_HAVE_OPENGL
 #include "opengl/OpenGLImage.hpp"
@@ -153,7 +152,7 @@ void FontImpl::initialize()
 {
     if (stbtt_InitFont(&m_font_info, reinterpret_cast<const unsigned char*>(m_font_data), 0) == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to load the font.");
+        throw std::runtime_error{"Failed to load the font."};
     }
 
     stbtt_GetFontVMetrics(&m_font_info, &m_ascent, &m_descent, &m_line_gap);

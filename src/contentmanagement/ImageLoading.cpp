@@ -11,7 +11,6 @@
 #include "graphics/GraphicsDevice.hpp"
 #include "graphics/ImageImpl.hpp"
 #include "util/narrow_cast.hpp"
-#include <cerlib/InternalError.hpp>
 #include <cstddef>
 
 #if defined(_MSC_VER)
@@ -76,7 +75,7 @@ static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> mem
 
     if (width <= 0 || height <= 0 || comp <= 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to load the image (invalid extents/channels).");
+        throw std::runtime_error{"Failed to load the image (invalid extents/channels)."};
     }
 
     defer
@@ -113,7 +112,7 @@ auto cer::details::load_image(GraphicsDevice& device_impl, std::span<const std::
                                         first_mipmap.data_span.data());
     }
 
-    CER_THROW_RUNTIME_ERROR_STR("Failed to load the image.");
+    throw std::runtime_error{"Failed to load the image (unknown image type)."};
 }
 
 auto cer::details::load_image(GraphicsDevice& device_impl, std::string_view filename)

@@ -6,7 +6,6 @@
 #include "contentmanagement/ContentManager.hpp"
 #include "game/GameImpl.hpp"
 #include <cerlib/Shader.hpp>
-#include <cerlib/Util2.hpp>
 
 #include "GrayscaleShader.shd.hpp"
 

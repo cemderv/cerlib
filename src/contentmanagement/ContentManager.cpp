@@ -206,14 +206,15 @@ auto ContentManager::load_custom_asset(std::string_view type_id,
 {
     if (type_id.empty())
     {
-        CER_THROW_INVALID_ARG_STR("No type ID specified.");
+        throw std::invalid_argument{"No type ID specified."};
     }
 
     const auto it_load_func = m_custom_asset_loaders.find(std::string(type_id));
 
     if (it_load_func == m_custom_asset_loaders.cend())
     {
-        CER_THROW_INVALID_ARG("No custom asset loader is registered for type ID '{}'", type_id);
+        throw std::invalid_argument{
+            fmt::format("No custom asset loader is registered for type ID '{}'", type_id)};
     }
 
     // Loading a custom asset requires special handling, as the types are not Object
@@ -229,11 +230,12 @@ auto ContentManager::load_custom_asset(std::string_view type_id,
 
         if (weak_ptr == nullptr)
         {
-            CER_THROW_LOGIC_ERROR("Attempting to load custom asset '{}' with type ID '{}'. "
-                                  "However, the asset was previously "
-                                  "loaded as a different type.",
-                                  name,
-                                  type_id);
+            throw std::logic_error{
+                fmt::format("Attempting to load custom asset '{}' with type ID '{}'. "
+                            "However, the asset was previously "
+                            "loaded as a different type.",
+                            name,
+                            type_id)};
         }
 
         if (!weak_ptr->expired())
@@ -271,8 +273,8 @@ void ContentManager::register_custom_asset_loader(std::string_view    type_id,
 {
     if (const auto it = m_custom_asset_loaders.find(type_id); it != m_custom_asset_loaders.cend())
     {
-        CER_THROW_INVALID_ARG("A custom asset loader for type '{}' is already registered.",
-                              type_id);
+        throw std::invalid_argument{
+            fmt::format("A custom asset loader for type '{}' is already registered.", type_id)};
     }
 
     m_custom_asset_loaders.emplace(std::string{type_id}, std::move(load_func));

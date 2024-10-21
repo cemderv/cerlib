@@ -18,7 +18,7 @@ OpenGLUserShader::OpenGLUserShader(GraphicsDevice&  parent_device,
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the internal shader handle.");
+        throw std::runtime_error{"Failed to create the internal shader handle."};
     }
 
     const auto codes = std::array{
@@ -44,7 +44,8 @@ OpenGLUserShader::OpenGLUserShader(GraphicsDevice&  parent_device,
 
         const auto msg = std::string_view{buffer.get(), size_t(length)};
 
-        CER_THROW_RUNTIME_ERROR("Failed to compile the generated internal shader: {}", msg);
+        throw std::runtime_error{
+            fmt::format("Failed to compile the generated internal shader: {}", msg)};
     }
 }
 } // namespace cer::details

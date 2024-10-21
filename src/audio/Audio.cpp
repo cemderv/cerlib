@@ -47,7 +47,7 @@ void cer::play_sound_fire_and_forget(const Sound&             sound,
 }
 
 auto cer::play_sound_in_background(const Sound& sound, float volume, bool start_paused)
-    -> cer::SoundChannel
+    -> SoundChannel
 {
     LOAD_AUDIO_ENGINE_IMPL_OR_RETURN_VALUE(SoundChannel{});
     return impl.play_sound_in_background(sound, volume, start_paused);

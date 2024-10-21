@@ -5,7 +5,12 @@
 #pragma once
 
 #include <cerlib/CopyMoveMacros.hpp>
-#include <cerlib/Util2.hpp>
+
+// NOLINTBEGIN
+#define CERLIB_CONCAT_INNER(a, b) a##b
+#define CERLIB_CONCAT(a, b)       CERLIB_CONCAT_INNER(a, b)
+#define CERLIB_UNIQUE_NAME(base)  CERLIB_CONCAT(base, __COUNTER__)
+// NOLINTEND
 
 namespace cer::details
 {
@@ -64,6 +69,6 @@ auto operator+(DeferOperatorOverloadTag, Functor&& functor) -> DeferObject<Funct
 #define defer_named(name)                                                                          \
     auto name = cer::details::DeferOperatorOverloadTag{} + [&]() // NOLINT(*-macro-parentheses)
 
-#define defer defer_named(UNIQUE_NAME(SCOPEGUARD))
+#define defer defer_named(CERLIB_UNIQUE_NAME(DEFER_GUARD))
 
 // NOLINTEND

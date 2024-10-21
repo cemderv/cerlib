@@ -10,8 +10,6 @@
 #include "contentmanagement/ContentManager.hpp"
 #include "contentmanagement/ImageLoading.hpp"
 #include "game/GameImpl.hpp"
-#include <cerlib/InternalError.hpp>
-#include <cerlib/Util2.hpp>
 
 // NOLINTBEGIN
 #define DECLARE_IMAGE_IMPL                                                                         \
@@ -27,10 +25,11 @@ Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void* da
 {
     if (data == nullptr)
     {
-        CER_THROW_INVALID_ARG("No image data specified (width={}; height={}; format={}).",
-                              width,
-                              height,
-                              image_format_name(format));
+        throw std::invalid_argument{
+            fmt::format("No image data specified (width={}; height={}; format={}).",
+                        width,
+                        height,
+                        image_format_name(format))};
     }
 
     LOAD_DEVICE_IMPL;
@@ -54,7 +53,7 @@ Image::Image(uint32_t width, uint32_t height, ImageFormat format, const Window& 
 {
     if (!window)
     {
-        CER_THROW_INVALID_ARG_STR("No window specified.");
+        throw std::invalid_argument{"No window specified."};
     }
 
     LOAD_DEVICE_IMPL;

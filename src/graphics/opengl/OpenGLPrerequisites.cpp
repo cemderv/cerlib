@@ -4,7 +4,6 @@
 
 #include "OpenGLPrerequisites.hpp"
 #include "cerlib/Image.hpp"
-#include <cerlib/InternalError.hpp>
 
 void cer::details::verify_opengl_state_x()
 {
@@ -21,7 +20,7 @@ void cer::details::verify_opengl_state_x()
 
         error_string.pop_back();
 
-        CER_THROW_RUNTIME_ERROR("OpenGL error(s) occurred: {}", error_string);
+        throw std::runtime_error{fmt::format("OpenGL error(s) occurred: {}", error_string)};
     }
 }
 
@@ -73,7 +72,8 @@ auto cer::details::convert_to_opengl_pixel_format(ImageFormat format) -> OpenGLF
                 .type            = GL_UNSIGNED_BYTE,
             };
 
-        default: CER_THROW_INTERNAL_ERROR("Unsupported texture format {}", int(format));
+        default:
+            throw std::runtime_error{fmt::format("Unsupported texture format {}", int(format))};
     }
 }
 

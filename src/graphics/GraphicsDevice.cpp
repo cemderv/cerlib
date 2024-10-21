@@ -24,7 +24,6 @@
 #include "shadercompiler/TypeCache.hpp"
 #include "util/StringViewUnorderedSet.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 #include <ranges>
 
 namespace cer::details
@@ -203,7 +202,7 @@ static auto to_parameter_type(const shadercompiler::Type& type) -> ShaderParamet
         }
     }
 
-    CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
+    throw std::runtime_error{"Invalid parameter type encountered"};
 }
 
 auto GraphicsDevice::demand_create_shader(std::string_view                  name,
@@ -297,7 +296,7 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
                 case ShaderParameterType::MatrixArray: return sizeof(float) * 3 * 3 * array_size;
             }
 
-            CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
+            throw std::runtime_error{"Invalid parameter type encountered"};
         };
 
         const auto size_in_bytes = narrow_cast<uint16_t>(calculate_size_in_bytes());
@@ -344,9 +343,9 @@ void GraphicsDevice::set_canvas(const Image& canvas, bool force)
         if (const auto* image_impl = dynamic_cast<const ImageImpl*>(canvas.impl());
             image_impl->window_for_canvas() != m_current_window.impl())
         {
-            CER_THROW_INVALID_ARG_STR("The specified canvas image is not compatible with the "
-                                      "current window. A canvas can "
-                                      "only be used within the window it was created for.");
+            throw std::invalid_argument{
+                "The specified canvas image is not compatible with the "
+                "current window. A canvas can only be used within the window it was created for."};
         }
     }
 

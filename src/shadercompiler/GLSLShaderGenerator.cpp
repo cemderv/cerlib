@@ -4,6 +4,7 @@
 
 #include "shadercompiler/GLSLShaderGenerator.hpp"
 
+#include "cerlib/Util.hpp"
 #include "contentmanagement/FileSystem.hpp"
 #include "shadercompiler/AST.hpp"
 #include "shadercompiler/BuiltInSymbols.hpp"
@@ -17,8 +18,6 @@
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
-#include <cerlib/StringUtil.hpp>
 
 using namespace std::string_literals;
 
@@ -31,7 +30,7 @@ GLSLShaderGenerator::GLSLShaderGenerator(bool is_gles)
 {
     m_is_swapping_matrix_vector_multiplications = true;
 
-    m_v2f_prefix = cer_fmt::format("{}v2f_", naming::forbidden_identifier_prefix);
+    m_v2f_prefix = fmt::format("{}v2f_", naming::forbidden_identifier_prefix);
 
     m_built_in_type_dictionary = {
         {IntType::instance(), "int"s},
@@ -317,7 +316,7 @@ void GLSLShaderGenerator::generate_sym_access_expr(Writer&              w,
     else if (built_ins.is_some_intrinsic_function(symbol))
     {
         // Our intrinsic functions are PascalCase, whereas in GLSL they're camelBack.
-        w << details::to_lower_case(name);
+        w << util::to_lower_case(name);
     }
     else if (built_ins.is_vector_field_access(symbol))
     {
@@ -398,7 +397,7 @@ void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
             }
             else
             {
-                CER_THROW_INTERNAL_ERROR_STR("image type not implemented");
+                throw std::runtime_error{"Image type not implemented."};
             }
 
             w << " " << param.name() << ";" << WNewline;

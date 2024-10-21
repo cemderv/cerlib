@@ -15,13 +15,13 @@ auto cer::length_squared(const Vector3& vector) -> float
     return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
 }
 
-auto cer::normalize(const Vector3& vector) -> cer::Vector3
+auto cer::normalize(const Vector3& vector) -> Vector3
 {
     const auto len = length(vector);
     return is_zero(len) ? Vector3() : vector / len;
 }
 
-auto cer::round(const Vector3& vector) -> cer::Vector3
+auto cer::round(const Vector3& vector) -> Vector3
 {
     return {
         round(vector.x),
@@ -30,7 +30,7 @@ auto cer::round(const Vector3& vector) -> cer::Vector3
     };
 }
 
-auto cer::abs(const Vector3& vector) -> cer::Vector3
+auto cer::abs(const Vector3& vector) -> Vector3
 {
     return {
         abs(vector.x),
@@ -39,7 +39,7 @@ auto cer::abs(const Vector3& vector) -> cer::Vector3
     };
 }
 
-auto cer::sin(const Vector3& vector) -> cer::Vector3
+auto cer::sin(const Vector3& vector) -> Vector3
 {
     return {
         sin(vector.x),
@@ -48,7 +48,7 @@ auto cer::sin(const Vector3& vector) -> cer::Vector3
     };
 }
 
-auto cer::cos(const Vector3& vector) -> cer::Vector3
+auto cer::cos(const Vector3& vector) -> Vector3
 {
     return {
         cos(vector.x),
@@ -57,7 +57,7 @@ auto cer::cos(const Vector3& vector) -> cer::Vector3
     };
 }
 
-auto cer::tan(const Vector3& vector) -> cer::Vector3
+auto cer::tan(const Vector3& vector) -> Vector3
 {
     return {
         tan(vector.x),
@@ -66,7 +66,7 @@ auto cer::tan(const Vector3& vector) -> cer::Vector3
     };
 }
 
-auto cer::pow(const Vector3& base, const Vector3& exp) -> cer::Vector3
+auto cer::pow(const Vector3& base, const Vector3& exp) -> Vector3
 {
     return {
         pow(base.x, exp.x),
@@ -75,7 +75,7 @@ auto cer::pow(const Vector3& base, const Vector3& exp) -> cer::Vector3
     };
 }
 
-auto cer::floor(const Vector3& value) -> cer::Vector3
+auto cer::floor(const Vector3& value) -> Vector3
 {
     return {
         floor(value.x),
@@ -84,7 +84,7 @@ auto cer::floor(const Vector3& value) -> cer::Vector3
     };
 }
 
-auto cer::ceiling(const Vector3& value) -> cer::Vector3
+auto cer::ceiling(const Vector3& value) -> Vector3
 {
     return {
         ceiling(value.x),
@@ -93,7 +93,7 @@ auto cer::ceiling(const Vector3& value) -> cer::Vector3
     };
 }
 
-auto cer::random_vector3(float min, float max) -> cer::Vector3
+auto cer::random_vector3(float min, float max) -> Vector3
 {
     return {
         random_float(min, max),
@@ -126,7 +126,7 @@ auto cer::distance_squared(const Vector3& lhs, const Vector3& rhs) -> float
     return length_squared(rhs - lhs);
 }
 
-auto cer::lerp(const Vector3& start, const Vector3& end, float t) -> cer::Vector3
+auto cer::lerp(const Vector3& start, const Vector3& end, float t) -> Vector3
 {
     return {
         lerp(start.x, end.x, t),
@@ -135,7 +135,7 @@ auto cer::lerp(const Vector3& start, const Vector3& end, float t) -> cer::Vector
     };
 }
 
-auto cer::smoothstep(const Vector3& start, const Vector3& end, float t) -> cer::Vector3
+auto cer::smoothstep(const Vector3& start, const Vector3& end, float t) -> Vector3
 {
     return {
         smoothstep(start.x, end.x, t),
@@ -144,7 +144,7 @@ auto cer::smoothstep(const Vector3& start, const Vector3& end, float t) -> cer::
     };
 }
 
-auto cer::clamp(const Vector3& value, const Vector3& min, const Vector3& max) -> cer::Vector3
+auto cer::clamp(const Vector3& value, const Vector3& min, const Vector3& max) -> Vector3
 {
     return {
         clamp(value.x, min.x, max.x),
@@ -164,7 +164,7 @@ auto cer::are_equal_within(const Vector3& lhs, const Vector3& rhs, float thresho
            equal_within(lhs.z, rhs.z, threshold);
 }
 
-auto cer::min(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::min(const Vector3& lhs, const Vector3& rhs) -> Vector3
 {
     return {
         min(lhs.x, rhs.x),
@@ -173,7 +173,7 @@ auto cer::min(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
     };
 }
 
-auto cer::max(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::max(const Vector3& lhs, const Vector3& rhs) -> Vector3
 {
     return {
         max(lhs.x, rhs.x),
@@ -182,7 +182,7 @@ auto cer::max(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
     };
 }
 
-auto cer::operator+=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
+auto cer::operator+=(Vector3& vector, const Vector3& rhs) -> Vector3&
 {
     vector.x += rhs.x;
     vector.y += rhs.y;
@@ -190,7 +190,7 @@ auto cer::operator+=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
     return vector;
 }
 
-auto cer::operator-=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
+auto cer::operator-=(Vector3& vector, const Vector3& rhs) -> Vector3&
 {
     vector.x -= rhs.x;
     vector.y -= rhs.y;
@@ -198,7 +198,7 @@ auto cer::operator-=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
     return vector;
 }
 
-auto cer::operator*=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
+auto cer::operator*=(Vector3& vector, const Vector3& rhs) -> Vector3&
 {
     vector.x *= rhs.x;
     vector.y *= rhs.y;
@@ -206,7 +206,7 @@ auto cer::operator*=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
     return vector;
 }
 
-auto cer::operator*=(Vector3& vector, float rhs) -> cer::Vector3&
+auto cer::operator*=(Vector3& vector, float rhs) -> Vector3&
 {
     vector.x *= rhs;
     vector.y *= rhs;
@@ -214,7 +214,7 @@ auto cer::operator*=(Vector3& vector, float rhs) -> cer::Vector3&
     return vector;
 }
 
-auto cer::operator/=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
+auto cer::operator/=(Vector3& vector, const Vector3& rhs) -> Vector3&
 {
     vector.x /= rhs.x;
     vector.y /= rhs.y;
@@ -222,7 +222,7 @@ auto cer::operator/=(Vector3& vector, const Vector3& rhs) -> cer::Vector3&
     return vector;
 }
 
-auto cer::operator/=(Vector3& vector, float rhs) -> cer::Vector3&
+auto cer::operator/=(Vector3& vector, float rhs) -> Vector3&
 {
     vector.x /= rhs;
     vector.y /= rhs;
@@ -230,7 +230,7 @@ auto cer::operator/=(Vector3& vector, float rhs) -> cer::Vector3&
     return vector;
 }
 
-auto cer::operator-(const Vector3& value) -> cer::Vector3
+auto cer::operator-(const Vector3& value) -> Vector3
 {
     return {
         -value.x,
@@ -239,7 +239,7 @@ auto cer::operator-(const Vector3& value) -> cer::Vector3
     };
 }
 
-auto cer::operator+(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::operator+(const Vector3& lhs, const Vector3& rhs) -> Vector3
 {
     return {
         lhs.x + rhs.x,
@@ -248,7 +248,7 @@ auto cer::operator+(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
     };
 }
 
-auto cer::operator-(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::operator-(const Vector3& lhs, const Vector3& rhs) -> Vector3
 {
     return {
         lhs.x - rhs.x,
@@ -257,7 +257,7 @@ auto cer::operator-(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
     };
 }
 
-auto cer::operator*(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::operator*(const Vector3& lhs, const Vector3& rhs) -> Vector3
 {
     return {
         lhs.x * rhs.x,
@@ -266,7 +266,7 @@ auto cer::operator*(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
     };
 }
 
-auto cer::operator*(const Vector3& lhs, float rhs) -> cer::Vector3
+auto cer::operator*(const Vector3& lhs, float rhs) -> Vector3
 {
     return {
         lhs.x * rhs,
@@ -275,12 +275,12 @@ auto cer::operator*(const Vector3& lhs, float rhs) -> cer::Vector3
     };
 }
 
-auto cer::operator*(float lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::operator*(float lhs, const Vector3& rhs) -> Vector3
 {
     return rhs * lhs;
 }
 
-auto cer::operator/(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
+auto cer::operator/(const Vector3& lhs, const Vector3& rhs) -> Vector3
 {
     return {
         lhs.x / rhs.x,
@@ -289,7 +289,7 @@ auto cer::operator/(const Vector3& lhs, const Vector3& rhs) -> cer::Vector3
     };
 }
 
-auto cer::operator/(const Vector3& lhs, float rhs) -> cer::Vector3
+auto cer::operator/(const Vector3& lhs, float rhs) -> Vector3
 {
     return {
         lhs.x / rhs,

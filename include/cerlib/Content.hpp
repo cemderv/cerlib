@@ -133,7 +133,7 @@ auto asset_loading_prefix() -> std::string;
  * @param type_id The ID of the custom asset. May be chosen freely, but must be unique.
  * @param load_func The function that is responsible for loading the custom asset.
  *
- * @throw std::invalid_argument If a loader for the specified typeId is already
+ * @throw std::invalid_argument If a loader for the specified type_id is already
  * registered.
  *
  * @ingroup Content
@@ -153,7 +153,7 @@ void unregister_custom_asset_loader(std::string_view type_id);
  * Registers a function as a custom asset loader for a specific type.
  *
  * This is a convenience function for RegisterCustomAssetLoader().
- * It forwards the C++ typeid() information as the `typeId`.
+ * It forwards the C++ typeid() information as the `type_id`.
  *
  * @tparam T The type of the custom asset.
  * @param load_func The function that is responsible for loading the custom asset.
@@ -172,12 +172,12 @@ static void register_custom_asset_loader_for_type(CustomAssetLoadFunc load_func)
 /**
  * Lazily loads a custom asset object from the storage.
  *
- * @param type_id The ID of the custom asset to load. This must correspond to `typeId`
+ * @param type_id The ID of the custom asset to load. This must correspond to `type_id`
  * that was passed to RegisterCustomAssetLoader().
  * @param name The name of the asset in the storage.
  * @param extra_info Optional extra information that is passed to the asset loader. Has
  * no effect on how the asset is cached. This means that if an asset with the same
- * `typeId` and `name`, but with different `extraInfo` values is loaded, the first asset
+ * `type_id` and `name`, but with different `extraInfo` values is loaded, the first asset
  * that was loaded by such a call is returned.
  *
  * @return The loaded asset. If the asset was previously loaded, its reference count is

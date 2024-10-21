@@ -6,7 +6,6 @@
 
 #include "GraphicsResourceImpl.hpp"
 #include "ShaderParameter.hpp"
-#include <cerlib/InternalError.hpp>
 #include <cerlib/List.hpp>
 #include <span>
 #include <unordered_set>
@@ -101,19 +100,19 @@ class ShaderImpl : public GraphicsResourceImpl
             {
                 if (offset > 0)
                 {
-                    CER_THROW_INVALID_ARG(
+                    throw std::invalid_argument{fmt::format(
                         "The number of specified values and offset (= {}+{}) exceeds the "
                         "parameter's array size (= {}).",
                         src_count,
                         offset,
-                        param->array_size);
+                        param->array_size)};
                 }
 
-                CER_THROW_INVALID_ARG(
-                    "The number of specified values (= {}) exceeds the parameter's "
-                    "array size (= {}).",
-                    src_count,
-                    param->array_size);
+                throw std::invalid_argument{
+                    fmt::format("The number of specified values (= {}) exceeds the parameter's "
+                                "array size (= {}).",
+                                src_count,
+                                param->array_size)};
             }
 
             constexpr auto increment_per_element = ShaderParameter::array_element_base_alignment;

@@ -94,8 +94,8 @@ void cer::audio_sdl2_init(const AudioBackendArgs& args)
         const auto* msg = SDL_GetError();
 
         throw std::runtime_error{
-            cer_fmt::format("Failed to initialize the SDL audio device. Reason: {}",
-                            msg != nullptr ? msg : "Unknown")};
+            fmt::format("Failed to initialize the SDL audio device. Reason: {}",
+                        msg != nullptr ? msg : "Unknown")};
     }
 
     engine->postinit_internal(s_active_audio_spec.freq,

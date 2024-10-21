@@ -11,7 +11,6 @@
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/SemaContext.hpp"
 #include <cassert>
-#include <cerlib/Util2.hpp>
 
 namespace cer::shadercompiler
 {

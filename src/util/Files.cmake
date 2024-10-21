@@ -7,7 +7,6 @@ set(util_files
   Object.hpp
   OStreamCompat.cpp
   StringUnorderedMap.hpp
-  StringUtil.cpp
   StringViewUnorderedSet.hpp
   ToString.cpp
   Util.cpp

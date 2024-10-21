@@ -6,7 +6,6 @@
 #include "util/Object.hpp"
 #include <cerlib/Formatters.hpp>
 #include <cerlib/List.hpp>
-#include <cerlib/Util2.hpp>
 #include <memory>
 #include <snitch/snitch.hpp>
 #include <string>

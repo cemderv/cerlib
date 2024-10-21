@@ -4,8 +4,8 @@
 
 #include "cerlib/Game.hpp"
 #include "GameImpl.hpp"
+#include "cerlib/Util.hpp"
 #include <cassert>
-#include <cerlib/Util2.hpp>
 
 // NOLINTBEGIN
 #define LOAD_GAME_IMPL auto& impl = details::GameImpl::instance()
@@ -43,7 +43,7 @@ Game::Game(bool enable_audio)
 #endif
 
     game_impl.set_event_func([this](const details::Event& event) {
-        std::visit(VariantSwitch{
+        std::visit(util::VariantSwitch{
                        [this](const WindowShownEvent& e) {
                            on_window_shown(e);
                        },

@@ -15,7 +15,6 @@
 #include "shadercompiler/SemaContext.hpp"
 #include "shadercompiler/Type.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 #include <optional>
 #include <unordered_set>
 #include <utility>
@@ -842,7 +841,7 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
             return float(*ui);
         }
 
-        CER_THROW_INTERNAL_ERROR_STR("expected float argument");
+        throw std::runtime_error{"expected float argument"};
     };
 
     const auto expect_and_get_vector2 = [](const std::any& value) {
@@ -851,8 +850,8 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
             return *v;
         }
 
-        CER_THROW_INTERNAL_ERROR("expected argument of type '{}'",
-                                 Vector2Type::instance().type_name());
+        throw std::runtime_error{
+            fmt::format("expected argument of type '{}'", Vector2Type::instance().type_name())};
     };
 
     const auto expect_and_get_vector3 = [](const std::any& value) {
@@ -861,8 +860,8 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
             return *v;
         }
 
-        CER_THROW_INTERNAL_ERROR("expected argument of type '{}'",
-                                 Vector3Type::instance().type_name());
+        throw std::runtime_error{
+            fmt::format("expected argument of type '{}'", Vector3Type::instance().type_name())};
     };
 
     if (built_ins.is_float_ctor(symbol))
@@ -879,12 +878,12 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
 
     if (built_ins.is_int_ctor(symbol))
     {
-        CER_THROW_NOT_IMPLEMENTED("implicit conversion to int");
+        throw std::runtime_error{"Not implemented: implicit conversion to int"};
     }
 
     if (built_ins.is_uint_ctor(symbol))
     {
-        CER_THROW_NOT_IMPLEMENTED("implicit conversion to unsigned int");
+        throw std::runtime_error{"Not implemented: implicit conversion to unsigned int"};
     }
 
     if (built_ins.is_vector2_ctor(symbol))
@@ -909,7 +908,7 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
             return Vector2{expect_and_get_float(values.at(0))};
         }
 
-        CER_THROW_INTERNAL_ERROR_STR("unknown Vector constructor call");
+        throw std::runtime_error{"Unknown Vector constructor call"};
     }
 
     if (built_ins.is_vector4_ctor(symbol))
@@ -956,7 +955,7 @@ auto FunctionCallExpr::evaluate_constant_value(SemaContext& context, Scope& scop
             return Vector4{xyz, w};
         }
 
-        CER_THROW_INTERNAL_ERROR_STR("unknown Vector3 ctor call");
+        throw std::runtime_error{"Unknown Vector3 ctor call"};
     }
 
     return {};

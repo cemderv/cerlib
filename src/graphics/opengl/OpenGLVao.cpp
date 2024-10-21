@@ -5,7 +5,6 @@
 #include "OpenGLVao.hpp"
 #include "util/narrow_cast.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 #include <cerlib/List.hpp>
 
 namespace cer::details
@@ -20,7 +19,7 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the VAO handle.");
+        throw std::runtime_error{"Failed to create the VAO handle."};
     }
 
     GL_CALL(glBindVertexArray(gl_handle));

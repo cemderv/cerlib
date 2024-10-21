@@ -19,7 +19,7 @@ auto Color::to_vector4() const -> Vector4
 }
 } // namespace cer
 
-auto cer::random_color(std::optional<float> alpha) -> cer::Color
+auto cer::random_color(std::optional<float> alpha) -> Color
 {
     if (!alpha.has_value())
     {
@@ -60,7 +60,7 @@ auto cer::fastrand_color(const ColorInterval& interval) -> Color
 }
 
 
-auto cer::operator+(const Color& lhs, const Color& rhs) -> cer::Color
+auto cer::operator+(const Color& lhs, const Color& rhs) -> Color
 {
     return {
         lhs.r + rhs.r,
@@ -70,7 +70,7 @@ auto cer::operator+(const Color& lhs, const Color& rhs) -> cer::Color
     };
 }
 
-auto cer::operator-(const Color& lhs, const Color& rhs) -> cer::Color
+auto cer::operator-(const Color& lhs, const Color& rhs) -> Color
 {
     return {
         lhs.r - rhs.r,
@@ -80,7 +80,7 @@ auto cer::operator-(const Color& lhs, const Color& rhs) -> cer::Color
     };
 }
 
-auto cer::operator*(const Color& lhs, float rhs) -> cer::Color
+auto cer::operator*(const Color& lhs, float rhs) -> Color
 {
     return {
         lhs.r * rhs,
@@ -90,7 +90,7 @@ auto cer::operator*(const Color& lhs, float rhs) -> cer::Color
     };
 }
 
-auto cer::operator*(float lhs, const Color& rhs) -> cer::Color
+auto cer::operator*(float lhs, const Color& rhs) -> Color
 {
     return {
         lhs * rhs.r,

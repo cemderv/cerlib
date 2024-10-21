@@ -392,8 +392,8 @@ static auto convert(ImageAddressMode mode) -> GLenum
         case ImageAddressMode::ClampToEdgeTexels: return GL_CLAMP_TO_EDGE;
 #ifdef CERLIB_GFX_IS_GLES
         case ImageAddressMode::ClampToSamplerBorderColor:
-            CER_THROW_INVALID_ARG_STR("ClampToSamplerBorderColor address mode is not "
-                                      "supported on the current system.");
+            throw std::invalid_argument{"ClampToSamplerBorderColor address mode is not "
+                                        "supported on the current system."};
 #else
         case ImageAddressMode::ClampToSamplerBorderColor: return GL_CLAMP_TO_BORDER;
 #endif

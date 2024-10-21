@@ -9,7 +9,6 @@
 #include "OpenGLWindow.hpp"
 #include "cerlib/Game.hpp"
 #include "cerlib/Logging.hpp"
-#include <cerlib/Util2.hpp>
 
 // clang-format off
 #ifdef CERLIB_ENABLE_IMGUI
@@ -40,7 +39,7 @@ static void open_gl_debug_message_callback([[maybe_unused]] GLenum      source,
 {
     if (type == GL_DEBUG_TYPE_ERROR_ARB)
     {
-        CER_THROW_RUNTIME_ERROR("Internal OpenGL error: {}", message);
+        throw std::runtime_error{fmt::format("Internal OpenGL error: {}", message)};
     }
     else if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB)
     {
@@ -182,9 +181,9 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
 #ifdef CERLIB_GFX_IS_GLES
     if (scissor_rects.size() > 1)
     {
-        CER_THROW_INVALID_ARG(
-            "{} scissor rects were specified, but the current system only supports 1",
-            scissor_rects.size());
+        throw std::invalid_argument{
+            fmt::format("{} scissor rects were specified, but the current system only supports 1",
+                        scissor_rects.size())};
     }
 #endif
 
@@ -343,13 +342,13 @@ OpenGLGraphicsDevice::OpenGLGraphicsDevice(WindowImpl& main_window)
 
     if (compare_opengl_version_to_min_required_version(gl_major_version, gl_minor_version) < 0)
     {
-        CER_THROW_RUNTIME_ERROR(
+        throw std::runtime_error{fmt::format(
             "The system does not support the minimum required OpenGL version ({}.{}). The "
             "current OpenGL version of the system is {}.{}.",
             min_required_gl_major_version,
             min_required_gl_minor_version,
             gl_major_version,
-            gl_minor_version);
+            gl_minor_version)};
     }
 
     // Log OpenGL information

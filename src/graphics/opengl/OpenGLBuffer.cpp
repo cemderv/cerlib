@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "OpenGLBuffer.hpp"
-#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {
@@ -16,7 +15,7 @@ OpenGLBuffer::OpenGLBuffer(GLenum target, size_t size_in_bytes, GLenum usage, co
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the OpenGL buffer");
+        throw std::runtime_error{"Failed to create the OpenGL buffer"};
     }
 
     GL_CALL(glBindBuffer(target, gl_handle));

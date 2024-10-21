@@ -6,7 +6,6 @@
 
 #include "SoundChannelImpl.hpp"
 #include "cerlib/Math.hpp"
-#include <cerlib/Util2.hpp>
 
 namespace cer
 {

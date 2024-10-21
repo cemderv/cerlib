@@ -37,4 +37,33 @@ class Object
     uint64_t m_ref_count{};
 #endif
 };
+
+template <typename T>
+struct ObjectLayout
+{
+    VERIFY_CERLIB_OBJECT(T);
+
+    typename T::impl_t* impl{};
+};
+
+template <typename T, typename TImpl = typename T::Impl>
+static void set_impl(T& obj, TImpl* impl)
+{
+    static_assert(sizeof(T) == sizeof(uintptr_t),
+                  "Invalid type of object specified; must consist of a single impl pointer.");
+
+    ObjectLayout<T>& s = reinterpret_cast<ObjectLayout<T>&>(obj);
+
+    if (s.impl != nullptr)
+    {
+        s.impl->release();
+    }
+
+    s.impl = impl;
+
+    if (s.impl)
+    {
+        s.impl->add_ref();
+    }
+}
 } // namespace cer::details

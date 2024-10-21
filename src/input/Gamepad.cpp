@@ -6,7 +6,6 @@
 
 #include "GamepadImpl.hpp"
 #include "InputImpl.hpp"
-#include <cerlib/Util2.hpp>
 
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>

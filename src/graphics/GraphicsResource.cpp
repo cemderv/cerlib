@@ -6,8 +6,6 @@
 
 #include "GraphicsResourceImpl.hpp"
 
-#include <cerlib/Util2.hpp>
-
 namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(GraphicsResource)

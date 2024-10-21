@@ -265,7 +265,7 @@ auto AudioDevice::play(AudioSource& sound, float volume, float pan, bool paused,
 auto AudioDevice::play_clocked(
     SoundTime sound_time, AudioSource& sound, float volume, float pan, size_t bus) -> SoundHandle
 {
-    const SoundHandle h = play(sound, volume, pan, 1, bus);
+    const SoundHandle h = play(sound, volume, pan, true, bus);
     lock_audio_mutex_internal();
     // mLastClockedTime is cleared to zero at start of every output buffer
     SoundTime last_time = m_last_clocked_time;
@@ -278,7 +278,9 @@ auto AudioDevice::play_clocked(
     int samples = int(floor((sound_time - last_time) * m_sample_rate));
     // Make sure we don't delay too much (or overflow)
     if (samples < 0 || samples > 2048)
+    {
         samples = 0;
+    }
     set_delay_samples(h, samples);
     set_pause(h, false);
     return h;

@@ -10,7 +10,6 @@
 #include "graphics/ShaderImpl.hpp"
 #include "util/StringUnorderedMap.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
-#include <cerlib/Util2.hpp>
 #include <span>
 #include <string>
 #include <string_view>
@@ -96,10 +95,11 @@ auto ContentManager::lazy_load(std::string_view key,
 
         if (!ref)
         {
-            CER_THROW_LOGIC_ERROR("Attempting to load asset '{}' as a '{}'. However, the "
-                                  "asset was previously loaded as a different type.",
-                                  name,
-                                  typeid(TBase).name());
+            throw std::logic_error{
+                fmt::format("Attempting to load asset '{}' as a '{}'. However, the "
+                            "asset was previously loaded as a different type.",
+                            name,
+                            typeid(TBase).name())};
         }
 
         // Construct object, increment reference count to impl object.
@@ -126,7 +126,8 @@ auto ContentManager::lazy_load(std::string_view key,
         }
         else
         {
-            CER_THROW_RUNTIME_ERROR("Loaded asset '{}', but its creation failed", name);
+            throw std::runtime_error{
+                fmt::format("Loaded asset '{}', but its creation failed", name)};
         }
     }
 

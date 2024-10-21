@@ -9,7 +9,6 @@
 #include "contentmanagement/ContentManager.hpp"
 #include "game/GameImpl.hpp"
 #include <cassert>
-#include <cerlib/Util2.hpp>
 
 namespace cer
 {

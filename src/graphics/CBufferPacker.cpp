@@ -8,7 +8,6 @@
 #include "cerlib/Math.hpp"
 #include "util/narrow_cast.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 
 namespace cer::details
 {
@@ -35,10 +34,10 @@ static auto get_base_alignment(const ShaderParameter& parameter) -> uint16_t
         case ShaderParameterType::MatrixArray: return ShaderParameter::array_element_base_alignment;
 
         case ShaderParameterType::Image:
-            CER_THROW_INTERNAL_ERROR_STR("Image parameter cannot have a base alignment.");
+            throw std::runtime_error{"Image parameter cannot have a base alignment."};
     }
 
-    CER_THROW_INTERNAL_ERROR_STR("Invalid shader parameter");
+    throw std::runtime_error{"Invalid shader parameter"};
 }
 
 auto CBufferPacker::pack_parameters(ShaderImpl::ParameterList& parameters,

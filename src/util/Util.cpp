@@ -4,6 +4,7 @@
 
 #include "cerlib/Util.hpp"
 
+#include <cctype>
 #include <ranges>
 
 void cer::util::trim_string(std::string& str, std::span<const char> chars)
@@ -27,6 +28,30 @@ auto cer::util::string_trimmed(std::string_view str, std::span<const char> chars
 {
     auto result = std::string{str};
     trim_string(result, chars);
+
+    return result;
+}
+
+auto cer::util::to_lower_case(std::string_view str) -> std::string
+{
+    auto result = std::string{str};
+
+    for (auto& ch : result)
+    {
+        ch = char(std::tolower(ch));
+    }
+
+    return result;
+}
+
+auto cer::util::to_upper_case(std::string_view str) -> std::string
+{
+    auto result = std::string{str};
+
+    for (auto& ch : result)
+    {
+        ch = char(std::toupper(ch));
+    }
 
     return result;
 }

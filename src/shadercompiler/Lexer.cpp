@@ -6,7 +6,6 @@
 #include "shadercompiler/Error.hpp"
 #include <algorithm>
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 #include <optional>
 #include <span>
 
@@ -193,7 +192,7 @@ void do_lexing(std::string_view code,
 {
     if (code.empty())
     {
-        CER_THROW_INVALID_ARG_STR("No source code provided.");
+        throw std::invalid_argument{"No source code provided."};
     }
 
     tokens.clear();

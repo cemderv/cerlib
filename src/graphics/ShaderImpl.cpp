@@ -7,9 +7,8 @@
 #include "GraphicsDevice.hpp"
 #include "cerlib/GraphicsResource.hpp"
 #include "cerlib/Logging.hpp"
+#include "cerlib/Util.hpp"
 #include "shadercompiler/Type.hpp"
-#include <cerlib/InternalError.hpp>
-#include <cerlib/Util2.hpp>
 
 namespace cer::details
 {
@@ -93,11 +92,12 @@ void ShaderImpl::verify_parameter_read(std::string_view    parameter_name,
 {
     if (dst_type != src_type)
     {
-        CER_THROW_LOGIC_ERROR("Attempting to read value of parameter '{}' (type '{}') as "
-                              "a value of type '{}'.",
-                              parameter_name,
-                              shader_parameter_type_string(src_type),
-                              shader_parameter_type_string(dst_type));
+        throw std::logic_error{
+            fmt::format("Attempting to read value of parameter '{}' (type '{}') as "
+                        "a value of type '{}'.",
+                        parameter_name,
+                        shader_parameter_type_string(src_type),
+                        shader_parameter_type_string(dst_type))};
     }
 }
 
@@ -107,11 +107,12 @@ void ShaderImpl::verify_parameter_assignment(std::string_view    parameter_name,
 {
     if (dst_type != src_type)
     {
-        CER_THROW_LOGIC_ERROR("Attempting to set value of parameter '{}' (type '{}') to "
-                              "a value of type '{}'.",
-                              parameter_name,
-                              shader_parameter_type_string(dst_type),
-                              shader_parameter_type_string(src_type));
+        throw std::logic_error{
+            fmt::format("Attempting to set value of parameter '{}' (type '{}') to "
+                        "a value of type '{}'.",
+                        parameter_name,
+                        shader_parameter_type_string(dst_type),
+                        shader_parameter_type_string(src_type))};
     }
 }
 
@@ -123,10 +124,10 @@ void ShaderImpl::update_parameter_image(std::string_view name, const Image& imag
     {
         if (!param->is_image)
         {
-            CER_THROW_LOGIC_ERROR(
-                "Attempting to set value of parameter '{}' (type '{}') to an image.",
-                name,
-                shader_parameter_type_string(param->type));
+            throw std::logic_error{
+                fmt::format("Attempting to set value of parameter '{}' (type '{}') to an image.",
+                            name,
+                            shader_parameter_type_string(param->type))};
         }
 
         if (param->image != image)
@@ -139,13 +140,13 @@ void ShaderImpl::update_parameter_image(std::string_view name, const Image& imag
 
 auto ShaderImpl::find_parameter(std::string_view name) -> ShaderParameter*
 {
-    const auto it = binary_find(m_parameters.begin(), m_parameters.end(), name);
+    const auto it = util::binary_find(m_parameters.begin(), m_parameters.end(), name);
     return it != m_parameters.end() ? &*it : nullptr;
 }
 
 auto ShaderImpl::find_parameter(std::string_view name) const -> const ShaderParameter*
 {
-    const auto it = binary_find(m_parameters.begin(), m_parameters.end(), name);
+    const auto it = util::binary_find(m_parameters.begin(), m_parameters.end(), name);
     return it != m_parameters.end() ? &*it : nullptr;
 }
 
@@ -195,10 +196,10 @@ void ShaderImpl::verify_parameter_update_condition()
     // Currently, we don't allow updating parameter values while a shader is in use.
     if (m_is_in_use)
     {
-        CER_THROW_RUNTIME_ERROR_STR(
+        throw std::runtime_error{
             "Shader parameters may not be updated while the shader is in use. Please unset "
             "the "
-            "shader first, or update the parameters before setting the shader as active.");
+            "shader first, or update the parameters before setting the shader as active."};
     }
 }
 

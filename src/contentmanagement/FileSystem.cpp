@@ -5,12 +5,10 @@
 #include "FileSystem.hpp"
 
 #include "cerlib/Logging.hpp"
+#include "cerlib/Util.hpp"
 #include "util/narrow_cast.hpp"
 #include <algorithm>
 #include <cassert>
-#include <cerlib/InternalError.hpp>
-#include <cerlib/StringUtil.hpp>
-#include <cerlib/Util2.hpp>
 #include <cstring>
 #include <fstream>
 #include <optional>
@@ -36,7 +34,7 @@ void set_android_asset_manager([[maybe_unused]] void* asset_manager)
 {
     if (asset_manager == nullptr)
     {
-        CER_THROW_INVALID_ARG_STR("No Android asset manager specified.");
+        throw std::invalid_argument{"No Android asset manager specified."};
     }
 
 #ifdef __ANDROID__
@@ -56,7 +54,7 @@ auto cer::filesystem::filename_extension(std::string_view filename) -> std::stri
 {
     if (const size_t dot_idx = filename.rfind('.'); dot_idx != std::string_view::npos)
     {
-        return details::to_lower_case(filename.substr(dot_idx));
+        return util::to_lower_case(filename.substr(dot_idx));
     }
 
     return {};
@@ -338,12 +336,12 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> AssetData
     {
         if (filename == filename_str)
         {
-            CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for reading.", filename);
+            throw std::runtime_error{
+                fmt::format("Failed to open file '{}' for reading.", filename)};
         }
 
-        CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for reading ({}).",
-                                filename,
-                                filename_str);
+        throw std::runtime_error{
+            fmt::format("Failed to open file '{}' for reading ({}).", filename, filename_str)};
     }
 
     const auto data_size = ifs.tellg();
@@ -362,13 +360,13 @@ auto cer::filesystem::load_file_data_from_disk([[maybe_unused]] std::string_view
     -> List<std::byte>
 {
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__) || TARGET_OS_IPHONE
-    CER_THROW_RUNTIME_ERROR_STR("Loading files from disk is not supported on the current system.");
+    throw std::runtime_error{"Loading files from disk is not supported on the current system."};
 #else
     auto ifs = std::ifstream{std::string{filename}, std::ios::binary | std::ios::ate};
 
     if (!ifs.is_open())
     {
-        CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for reading.", filename);
+        throw std::runtime_error{fmt::format("Failed to open file '{}' for reading.", filename)};
     }
 
     const auto file_size = ifs.tellg();
@@ -389,7 +387,7 @@ auto cer::filesystem::write_text_to_file_on_disk(std::string_view filename,
 
     if (!ofs)
     {
-        CER_THROW_RUNTIME_ERROR("Failed to open file '{}' for writing.", filename);
+        throw std::runtime_error{fmt::format("Failed to open file '{}' for writing.", filename)};
     }
 
     ofs << contents;
@@ -409,7 +407,7 @@ auto cer::filesystem::decode_image_data_from_file_on_disk(std::string_view filen
 
     if (data == nullptr)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to load the image file.");
+        throw std::runtime_error{"Failed to load the image file."};
     }
 
     defer
@@ -444,7 +442,7 @@ auto cer::filesystem::encode_image_data_to_file_on_disk(std::string_view        
                                            narrow<int>(width * 4));
         result == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to write the image data to disk.");
+        throw std::runtime_error{"Failed to write the image data to disk."};
     }
 }
 #endif

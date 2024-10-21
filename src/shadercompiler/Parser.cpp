@@ -14,7 +14,6 @@
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/TypeCache.hpp"
 #include <cassert>
-#include <cerlib/InternalError.hpp>
 #include <optional>
 
 #define PUSH_TK auto tk_pusher_ = TokenPusher(m_tk_stack, m_tk)
@@ -149,7 +148,7 @@ auto Parser::parse(std::span<const Token> tokens) -> AST::DeclsType
 {
     if (tokens.empty())
     {
-        CER_THROW_INVALID_ARG_STR("No tokens specified.");
+        throw std::invalid_argument{"No tokens specified."};
     }
 
     m_tokens = tokens;
