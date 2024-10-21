@@ -27,6 +27,18 @@ class Testbed : public cer::Game
 
     void draw_imgui(const cer::Window& window) override
     {
+        // Enable as you wish:
+#if false
+        ImGui::Begin("My ImGui Window");
+        ImGui::Text("Hello World!");
+
+        if (ImGui::Button("Click here"))
+        {
+            cer::log_info("Button was clicked!");
+        }
+
+        ImGui::End();
+#endif
     }
 
     cer::Window window;
