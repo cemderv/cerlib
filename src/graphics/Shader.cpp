@@ -3,6 +3,7 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "GraphicsDevice.hpp"
+#include "contentmanagement/ContentManager.hpp"
 #include "game/GameImpl.hpp"
 #include <cerlib/Shader.hpp>
 #include <cerlib/Util2.hpp>
@@ -17,12 +18,16 @@ namespace cer
 {
 CERLIB_IMPLEMENT_DERIVED_OBJECT(GraphicsResource, Shader)
 
-Shader::Shader(std::string_view                  name,
-               std::string_view                  source_code,
-               std::span<const std::string_view> defines)
+Shader::Shader(std::string_view name, std::string_view source_code)
 {
     LOAD_DEVICE_IMPL;
-    set_impl(*this, device_impl.demand_create_shader(name, source_code, defines).release());
+    set_impl(*this, device_impl.demand_create_shader(name, source_code, /*defines:*/ {}).release());
+}
+
+Shader::Shader(std::string_view asset_name)
+{
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_shader(asset_name);
 }
 
 void Shader::set_value(std::string_view name, float value)

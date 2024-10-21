@@ -6,12 +6,21 @@
 
 #include "FontImpl.hpp"
 #include "cerlib/Vector2.hpp"
+#include "contentmanagement/ContentManager.hpp"
+#include "game/GameImpl.hpp"
 #include <cassert>
 #include <cerlib/Util2.hpp>
 
 namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(Font);
+
+Font::Font(std::string_view asset_name)
+    : m_impl(nullptr)
+{
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_font(asset_name);
+}
 
 Font::Font(std::span<const std::byte> data)
     : m_impl(nullptr)

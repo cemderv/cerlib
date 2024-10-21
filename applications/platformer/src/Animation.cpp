@@ -1,7 +1,7 @@
 #include "Animation.hpp"
 
 Animation::Animation(std::string_view name, float frame_time, bool is_looping)
-    : image(cer::load_image(name))
+    : image(name)
     , frame_time(frame_time)
     , is_looping(is_looping)
 {
@@ -54,10 +54,7 @@ void AnimationPlayer::draw(cer::Vector2 position, cer::SpriteFlip flip) const
 {
     const float texture_height = m_animation.image.heightf();
 
-    cer::Rectangle source{float(m_frame_index) * texture_height,
-                          0,
-                          texture_height,
-                          texture_height};
+    cer::Rectangle source{float(m_frame_index) * texture_height, 0, texture_height, texture_height};
 
     cer::draw_sprite({
         .image    = m_animation.image,

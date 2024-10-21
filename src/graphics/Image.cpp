@@ -7,6 +7,7 @@
 #include "GraphicsDevice.hpp"
 #include "ImageImpl.hpp"
 #include "cerlib/Window.hpp"
+#include "contentmanagement/ContentManager.hpp"
 #include "contentmanagement/ImageLoading.hpp"
 #include "game/GameImpl.hpp"
 #include <cerlib/InternalError.hpp>
@@ -43,10 +44,10 @@ Image::Image(std::span<const std::byte> memory)
     set_impl(*this, details::load_image(device_impl, memory).release());
 }
 
-Image::Image(std::string_view filename)
+Image::Image(std::string_view asset_name)
 {
-    LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, filename).release());
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_image(asset_name);
 }
 
 Image::Image(uint32_t width, uint32_t height, ImageFormat format, const Window& window)

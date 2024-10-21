@@ -4,10 +4,7 @@
 
 #include "cerlib/Content.hpp"
 #include "ContentManager.hpp"
-#include "cerlib/Font.hpp"
 #include "cerlib/Image.hpp"
-#include "cerlib/Shader.hpp"
-#include "cerlib/Sound.hpp"
 #include "game/GameImpl.hpp"
 #include <cassert>
 
@@ -44,31 +41,6 @@ auto cer::asset_loading_prefix() -> std::string
 {
     LOAD_CONTENT_MANAGER;
     return std::string{content.asset_loading_prefix()};
-}
-
-auto cer::load_image(std::string_view name) -> cer::Image
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_image(name);
-}
-
-auto cer::load_shader(std::string_view name, std::span<const std::string_view> defines)
-    -> cer::Shader
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_shader(name, defines);
-}
-
-auto cer::load_font(std::string_view name) -> cer::Font
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_font(name);
-}
-
-auto cer::load_sound(std::string_view name) -> cer::Sound
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_sound(name);
 }
 
 void cer::register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func)
