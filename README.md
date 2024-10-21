@@ -101,7 +101,7 @@ The easiest way to start is to open the `mygame` folder in the editor / IDE of y
 
 ```bash
 cd mygame
-cmake --workflow --preset debug
+cmake --workflow --preset dev
 ```
 
 For a detailed introduction and tutorials, please visit the [Getting Started](https://cerlib.org/getting-started) page.
