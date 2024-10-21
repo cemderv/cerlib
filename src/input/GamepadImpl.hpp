@@ -29,46 +29,46 @@ class GamepadImpl final : public Object
   public:
     explicit GamepadImpl(SDL_JoystickID joystick_id, SDL_Gamepad_t* sdl_gamepad);
 
-    SDL_JoystickID joystick_id() const
+    auto joystick_id() const -> SDL_JoystickID
     {
         return m_joystick_id;
     }
 
-    SDL_Gamepad_t* sdl_gamepad() const
+    auto sdl_gamepad() const -> SDL_Gamepad_t*
     {
         return m_sdl_gamepad;
     }
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
-    std::optional<std::string_view> serial_number() const;
+    auto serial_number() const -> std::optional<std::string_view>;
 
-    double axis_value(GamepadAxis axis) const;
+    auto axis_value(GamepadAxis axis) const -> double;
 
-    bool is_button_down(GamepadButton button) const;
+    auto is_button_down(GamepadButton button) const -> bool;
 
-    std::optional<SmallDataArray<float, 16>> sensor_data(GamepadSensorType sensor) const;
+    auto sensor_data(GamepadSensorType sensor) const -> std::optional<SmallDataArray<float, 16>>;
 
-    float sensor_data_rate(GamepadSensorType sensor) const;
+    auto sensor_data_rate(GamepadSensorType sensor) const -> float;
 
-    std::optional<uint64_t> steam_handle() const;
+    auto steam_handle() const -> std::optional<uint64_t>;
 
-    uint32_t touchpad_count() const;
+    auto touchpad_count() const -> uint32_t;
 
-    SmallDataArray<GamepadTouchpadFingerData, 8> touchpad_finger_data(
-        uint32_t touchpad_index) const;
+    auto touchpad_finger_data(uint32_t touchpad_index) const
+        -> SmallDataArray<GamepadTouchpadFingerData, 8>;
 
-    std::optional<GamepadType> type() const;
+    auto type() const -> std::optional<GamepadType>;
 
-    bool set_led_color(const Color& color);
+    auto set_led_color(const Color& color) -> bool;
 
-    bool start_rumble(float             left_motor_intensity,
+    auto start_rumble(float             left_motor_intensity,
                       float             right_motor_intensity,
-                      GamepadRumbleTime duration);
+                      GamepadRumbleTime duration) -> bool;
 
-    bool has_sensor(GamepadSensorType sensor) const;
+    auto has_sensor(GamepadSensorType sensor) const -> bool;
 
-    bool is_sensor_enabled(GamepadSensorType sensor) const;
+    auto is_sensor_enabled(GamepadSensorType sensor) const -> bool;
 
     void set_sensor_enabled(GamepadSensorType sensor, bool enabled);
 

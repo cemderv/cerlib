@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cerlib/Interval.hpp>
+#include <compare>
 #include <optional>
 
 namespace cer
@@ -33,16 +35,18 @@ struct Color
     constexpr Color(float r, float g, float b, float a = 1.0f);
 
     /** Obtains the color value as a Vector3 representation. */
-    Vector3 to_vector3() const;
+    auto to_vector3() const -> Vector3;
 
     /** Obtains the color value as a Vector4 representation. */
-    Vector4 to_vector4() const;
+    auto to_vector4() const -> Vector4;
 
     /** Default comparison */
-    bool operator==(const Color&) const = default;
+    auto operator==(const Color&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Color&) const = default;
+    auto operator!=(const Color&) const -> bool = default;
+
+    auto operator<=>(const Color&) const = default;
 
     /** The value of the color's red channel */
     float r{};
@@ -58,6 +62,11 @@ struct Color
 };
 
 /**
+ * Represents a closed interval of color values.
+ */
+using ColorInterval = details::IntervalType<Color>;
+
+/**
  * Calculates a random color.
  *
  * @param alpha If specified, the resulting color will have this alpha value.
@@ -65,14 +74,37 @@ struct Color
  *
  * @ingroup Math
  */
-Color random_color(std::optional<float> alpha = std::nullopt);
+auto random_color(std::optional<float> alpha = std::nullopt) -> Color;
 
-Color operator*(const Color& lhs, float rhs);
-Color operator*(float lhs, const Color& rhs);
+/**
+ * Calculates a random color.
+ * The components are determined using the FastRand algorithm.
+ *
+ * @param alpha If specified, the resulting color will have this alpha value.
+ *              If empty, the alpha value is determined randomly.
+ *
+ * @ingroup Math
+ */
+auto fastrand_color(std::optional<float> alpha = std::nullopt) -> Color;
+
+/**
+ * Calculates a random color with its components being in a specific interval.
+ * The components are determined using the FastRand algorithm.
+ *
+ * @param interval The interval
+ *
+ * @ingroup Math
+ */
+auto fastrand_color(const ColorInterval& interval) -> Color;
+
+auto operator+(const Color& lhs, const Color& rhs) -> Color;
+
+auto operator-(const Color& lhs, const Color& rhs) -> Color;
+
+auto operator*(const Color& lhs, float rhs) -> Color;
+
+auto operator*(float lhs, const Color& rhs) -> Color;
 } // namespace cer
-
-#include <cerlib/Vector3.hpp>
-#include <cerlib/Vector4.hpp>
 
 namespace cer
 {
@@ -83,17 +115,6 @@ constexpr Color::Color(float r, float g, float b, float a)
     , a(a)
 {
 }
-
-inline Vector3 Color::to_vector3() const
-{
-    return {r, g, b};
-}
-
-inline Vector4 Color::to_vector4() const
-{
-    return {r, g, b, a};
-}
-
 /**
  * A constant white color.
  *
@@ -142,39 +163,9 @@ static constexpr Color cornflowerblue{100.0f / 255.0f, 149.0f / 255.0f, 237.0f /
  * @ingroup Math
  */
 static constexpr Color yellow{1.0f, 1.0f, 0.0f, 1.0f};
+
+/**
+ * A fully transparent black.
+ */
+static constexpr Color transparent{0.0f, 0.0f, 0.0f, 0.0f};
 } // namespace cer
-
-inline cer::Color cer::random_color(std::optional<float> alpha)
-{
-    if (!alpha.has_value())
-    {
-        alpha = random_float(0.0f, 1.0f);
-    }
-
-    return {
-        random_float(0.0f, 1.0f),
-        random_float(0.0f, 1.0f),
-        random_float(0.0f, 1.0f),
-        *alpha,
-    };
-}
-
-inline cer::Color cer::operator*(const Color& lhs, float rhs)
-{
-    return {
-        lhs.r * rhs,
-        lhs.g * rhs,
-        lhs.b * rhs,
-        lhs.a * rhs,
-    };
-}
-
-inline cer::Color cer::operator*(float lhs, const Color& rhs)
-{
-    return {
-        lhs * rhs.r,
-        lhs * rhs.g,
-        lhs * rhs.b,
-        lhs * rhs.a,
-    };
-}

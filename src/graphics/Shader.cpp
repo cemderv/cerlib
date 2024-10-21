@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "GraphicsDevice.hpp"
+#include "contentmanagement/ContentManager.hpp"
 #include "game/GameImpl.hpp"
-#include "util/Util.hpp"
 #include <cerlib/Shader.hpp>
 
 #include "GrayscaleShader.shd.hpp"
@@ -17,12 +17,16 @@ namespace cer
 {
 CERLIB_IMPLEMENT_DERIVED_OBJECT(GraphicsResource, Shader)
 
-Shader::Shader(std::string_view                  name,
-               std::string_view                  source_code,
-               std::span<const std::string_view> defines)
+Shader::Shader(std::string_view name, std::string_view source_code)
 {
     LOAD_DEVICE_IMPL;
-    set_impl(*this, device_impl.demand_create_shader(name, source_code, defines).get());
+    set_impl(*this, device_impl.demand_create_shader(name, source_code, /*defines:*/ {}).release());
+}
+
+Shader::Shader(std::string_view asset_name)
+{
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_shader(asset_name);
 }
 
 void Shader::set_value(std::string_view name, float value)
@@ -127,61 +131,61 @@ void Shader::set_value(std::string_view name, const Image& image)
     impl->update_parameter_image(name, image);
 }
 
-std::optional<float> Shader::float_value(std::string_view name) const
+auto Shader::float_value(std::string_view name) const -> std::optional<float>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<float>(name, details::ShaderParameterType::Float);
 }
 
-std::optional<int32_t> Shader::int_value(std::string_view name) const
+auto Shader::int_value(std::string_view name) const -> std::optional<int32_t>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<int32_t>(name, details::ShaderParameterType::Int);
 }
 
-std::optional<bool> Shader::bool_value(std::string_view name) const
+auto Shader::bool_value(std::string_view name) const -> std::optional<bool>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<bool>(name, details::ShaderParameterType::Bool);
 }
 
-std::optional<Vector2> Shader::vector2_value(std::string_view name) const
+auto Shader::vector2_value(std::string_view name) const -> std::optional<Vector2>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Vector2>(name, details::ShaderParameterType::Vector2);
 }
 
-std::optional<Vector3> Shader::vector3_value(std::string_view name) const
+auto Shader::vector3_value(std::string_view name) const -> std::optional<Vector3>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Vector3>(name, details::ShaderParameterType::Vector3);
 }
 
-std::optional<Vector4> Shader::vector4_value(std::string_view name) const
+auto Shader::vector4_value(std::string_view name) const -> std::optional<Vector4>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Vector4>(name, details::ShaderParameterType::Vector4);
 }
 
-std::optional<Matrix> Shader::matrix_value(std::string_view name) const
+auto Shader::matrix_value(std::string_view name) const -> std::optional<Matrix>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Matrix>(name, details::ShaderParameterType::Matrix);
 }
 
-std::optional<Image> Shader::image_value(std::string_view name) const
+auto Shader::image_value(std::string_view name) const -> std::optional<Image>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Image>(name, details::ShaderParameterType::Image);
 }
 
-bool Shader::has_parameter(std::string_view name) const
+auto Shader::has_parameter(std::string_view name) const -> bool
 {
     DECLARE_SHADER_IMPL;
     return impl->find_parameter(name) != nullptr;
 }
 
-Shader Shader::create_grayscale()
+auto Shader::create_grayscale() -> Shader
 {
     return Shader{"cerlib_GrayscaleShader", GrayscaleShader_shd_string_view()};
 }

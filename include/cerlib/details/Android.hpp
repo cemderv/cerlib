@@ -5,11 +5,10 @@
 #pragma once
 
 #include <android/asset_manager_jni.h>
-#include <cerlib/Export.hpp>
 
 namespace cer::details
 {
-CERLIB_API void set_android_asset_manager(void* asset_manager);
+void set_android_asset_manager(void* asset_manager);
 }
 
 #define CERLIB_ANDROID_DEFINE_JNI_FUNCTIONS(company_name, game_name)                               \

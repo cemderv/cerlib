@@ -5,9 +5,7 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
 #include <string>
 
 namespace cer::shadercompiler
@@ -17,200 +15,207 @@ class Expr;
 class Scope;
 class Decl;
 
-class CERLIB_API_INTERNAL Type
+class Type
 {
   protected:
     explicit Type(const SourceLocation& location);
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Type);
+    using Ref      = std::reference_wrapper<Type>;
+    using ConstRef = std::reference_wrapper<const Type>;
+
+    forbid_copy_and_move(Type);
 
     virtual ~Type() noexcept = default;
 
-    [[nodiscard]] virtual const Type& resolve(SemaContext& context, Scope& scope) const = 0;
+    [[nodiscard]] virtual auto resolve(SemaContext& context, Scope& scope) const -> const Type& = 0;
 
-    virtual std::string_view type_name() const = 0;
+    virtual auto type_name() const -> std::string_view = 0;
 
-    virtual const Type* member_type(std::string_view name) const;
+    virtual auto member_type(std::string_view name) const -> const Type*;
 
-    virtual Decl* find_member_symbol(const SemaContext& context, std::string_view name) const;
+    virtual auto find_member_symbol(const SemaContext& context, std::string_view name) const
+        -> Decl*;
 
-    bool can_be_in_constant_buffer() const;
+    auto can_be_in_constant_buffer() const -> bool;
 
-    virtual bool can_be_shader_parameter() const;
+    virtual auto can_be_shader_parameter() const -> bool;
 
-    bool is_unresolved() const;
+    auto is_unresolved() const -> bool;
 
-    bool is_array() const;
+    auto is_array() const -> bool;
 
-    virtual bool is_scalar_type() const;
+    virtual auto is_scalar_type() const -> bool;
 
-    virtual bool is_vector_type() const;
+    virtual auto is_vector_type() const -> bool;
 
-    virtual bool is_matrix_type() const;
+    virtual auto is_matrix_type() const -> bool;
 
-    virtual bool is_image_type() const;
+    virtual auto is_image_type() const -> bool;
 
-    bool is_user_defined_struct() const;
+    auto is_user_defined_struct() const -> bool;
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
   private:
     SourceLocation m_Location;
 };
 
-class CERLIB_API_INTERNAL IntType final : public Type
+class IntType final : public Type
 {
   public:
     IntType();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    bool is_scalar_type() const override;
+    auto is_scalar_type() const -> bool override;
 };
 
-class CERLIB_API_INTERNAL BoolType final : public Type
+class BoolType final : public Type
 {
   public:
     BoolType();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::basic_string_view<char> override;
 };
 
-class CERLIB_API_INTERNAL FloatType final : public Type
+class FloatType final : public Type
 {
   public:
     FloatType();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::basic_string_view<char> override;
 
-    bool is_scalar_type() const override;
+    auto is_scalar_type() const -> bool override;
 };
 
-class CERLIB_API_INTERNAL Vector2Type final : public Type
+class Vector2Type final : public Type
 {
   public:
     Vector2Type();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    Decl* find_member_symbol(const SemaContext& context, std::string_view name) const override;
+    auto find_member_symbol(const SemaContext& context, std::string_view name) const
+        -> Decl* override;
 
-    bool is_vector_type() const override;
+    auto is_vector_type() const -> bool override;
 };
 
-class CERLIB_API_INTERNAL Vector3Type final : public Type
+class Vector3Type final : public Type
 {
   public:
     Vector3Type();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::basic_string_view<char> override;
 
-    Decl* find_member_symbol(const SemaContext& context, std::string_view name) const override;
+    auto find_member_symbol(const SemaContext& context, std::string_view name) const
+        -> Decl* override;
 
-    bool is_vector_type() const override;
+    auto is_vector_type() const -> bool override;
 };
 
-class CERLIB_API_INTERNAL Vector4Type final : public Type
+class Vector4Type final : public Type
 {
   public:
     Vector4Type();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    Decl* find_member_symbol(const SemaContext& context, std::string_view name) const override;
+    auto find_member_symbol(const SemaContext& context, std::string_view name) const
+        -> Decl* override;
 };
 
-class CERLIB_API_INTERNAL MatrixType final : public Type
+class MatrixType final : public Type
 {
   public:
     MatrixType();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    bool is_matrix_type() const override;
+    auto is_matrix_type() const -> bool override;
 };
 
-class CERLIB_API_INTERNAL ImageType final : public Type
+class ImageType final : public Type
 {
   public:
     ImageType();
 
-    static const Type& instance();
+    static auto instance() -> const Type&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    bool is_image_type() const override;
+    auto is_image_type() const -> bool override;
 };
 
-class CERLIB_API_INTERNAL ArrayType final : public Type
+class ArrayType final : public Type
 {
   public:
     static constexpr uint32_t max_size = 255;
 
     explicit ArrayType(const SourceLocation& location,
-                       gsl::not_null<Type*>  element_type,
+                       Type&                 element_type,
                        std::unique_ptr<Expr> size_expr);
 
     ~ArrayType() noexcept override;
 
-    const Type& element_type() const;
+    auto element_type() const -> const Type&;
 
-    const Expr& size_expr() const;
+    auto size_expr() const -> const Expr&;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    uint32_t size() const;
+    auto size() const -> size_t;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    bool can_be_shader_parameter() const override;
+    auto can_be_shader_parameter() const -> bool override;
 
   private:
-    mutable gsl::not_null<const Type*> m_element_type;
-    std::unique_ptr<Expr>              m_size_expr;
-    mutable uint32_t                   m_size{};
-    mutable std::string                m_name;
+    mutable std::reference_wrapper<const Type> m_element_type_ref;
+    std::unique_ptr<Expr>                      m_size_expr;
+    mutable size_t                             m_size{};
+    mutable std::string                        m_name;
 };
 
-class CERLIB_API_INTERNAL UnresolvedType final : public Type
+class UnresolvedType final : public Type
 {
   public:
     explicit UnresolvedType(const SourceLocation& location, std::string_view name);
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
   private:
     std::string_view m_name;

@@ -5,10 +5,8 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 
 namespace cer::shadercompiler
@@ -21,30 +19,30 @@ class VarStmt;
 class Expr;
 class TempVarNameGen;
 
-class CERLIB_API_INTERNAL CodeBlock final
+class CodeBlock final
 {
   public:
-    using StmtsType = SmallVector<std::unique_ptr<Stmt>, 16>;
+    using StmtsType = UniquePtrList<Stmt, 16>;
 
     explicit CodeBlock(const SourceLocation& location, StmtsType stmts);
 
-    NON_COPYABLE_NON_MOVABLE(CodeBlock);
+    forbid_copy_and_move(CodeBlock);
 
     ~CodeBlock() noexcept;
 
-    void verify(SemaContext&                                context,
-                Scope&                                      scope,
-                std::span<const gsl::not_null<const Decl*>> extra_symbols) const;
+    void verify(SemaContext&                                        context,
+                Scope&                                              scope,
+                std::span<const std::reference_wrapper<const Decl>> extra_symbols) const;
 
-    SmallVector<gsl::not_null<VarStmt*>, 8> variables() const;
+    auto variables() const -> RefList<VarStmt, 8>;
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
-    const StmtsType& stmts() const;
+    auto stmts() const -> const StmtsType&;
 
     void remove_stmt(const Stmt& stmt);
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool;
 
   private:
     SourceLocation m_location;

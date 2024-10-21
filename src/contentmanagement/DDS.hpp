@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cerlib/Image.hpp"
-#include "util/SmallVector.hpp"
+#include <cerlib/List.hpp>
 #include <cstdint>
 #include <optional>
 #include <span>
@@ -19,24 +19,22 @@ namespace cer::dds
 {
 struct DDSMipmap
 {
-    std::span<const std::byte> data;
+    std::span<const std::byte> data_span;
 };
 
 struct DDSFace
 {
-    SmallVector<DDSMipmap, 8> mipmaps;
+    List<DDSMipmap, 8> mipmaps;
 };
 
 struct DDSImage
 {
-    uint32_t                width{};
-    uint32_t                height{};
-    uint32_t                depth{};
-    ImageFormat             format{};
-    SmallVector<DDSFace, 2> faces{};
+    uint32_t         width{};
+    uint32_t         height{};
+    uint32_t         depth{};
+    ImageFormat      format{};
+    List<DDSFace, 2> faces{};
 };
 
-const void* dds_image_data_upload(const DDSImage& dds_image, uint32_t array_index, uint32_t mipmap);
-
-std::optional<DDSImage> load(std::span<const std::byte> memory);
+auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>;
 } // namespace cer::dds

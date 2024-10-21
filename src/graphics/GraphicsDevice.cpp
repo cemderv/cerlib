@@ -8,6 +8,7 @@
 #include "ShaderImpl.hpp"
 #include "SpriteBatch.hpp"
 #include "cerlib/Logging.hpp"
+#include "cerlib/ParticleSystem.hpp"
 #include "shadercompiler/BinOpTable.hpp"
 #include "shadercompiler/BuiltInSymbols.hpp"
 #include "shadercompiler/Casting.hpp"
@@ -21,34 +22,43 @@
 #include "shadercompiler/Token.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/TypeCache.hpp"
-#include "util/InternalError.hpp"
 #include "util/StringViewUnorderedSet.hpp"
 #include <cassert>
-#include <gsl/util>
 #include <ranges>
 
 namespace cer::details
 {
 GraphicsDevice::GraphicsDevice()
     : m_must_flush_draw_calls(false)
-    , m_blend_state(BlendState::non_premultiplied())
-    , m_sampler(Sampler::linear_clamp())
+    , m_blend_state(non_premultiplied)
+    , m_sampler(linear_clamp)
 {
     FontImpl::create_built_in_fonts();
 }
 
-void GraphicsDevice::notify_resource_created(gsl::not_null<GraphicsResourceImpl*> resource)
+void GraphicsDevice::notify_resource_created(GraphicsResourceImpl& resource)
 {
-    assert(std::ranges::find(m_resources, resource) == m_resources.cend());
+    [[maybe_unused]] const auto it = std::ranges::find_if(m_resources, [&resource](const auto& e) {
+        return &e.get() == &resource;
+    });
+
+    assert(it == m_resources.cend());
+
     m_resources.push_back(resource);
 }
 
-void GraphicsDevice::notify_resource_destroyed(gsl::not_null<GraphicsResourceImpl*> resource)
+void GraphicsDevice::notify_resource_destroyed(GraphicsResourceImpl& resource)
 {
-    m_resources.erase(std::ranges::find(std::as_const(m_resources), resource));
+    const auto it = std::ranges::find_if(m_resources, [&resource](const auto& e) {
+        return &e.get() == &resource;
+    });
+
+    assert(it != m_resources.cend());
+
+    m_resources.erase(it);
 }
 
-void GraphicsDevice::notify_user_shader_destroyed(gsl::not_null<ShaderImpl*> resource)
+void GraphicsDevice::notify_user_shader_destroyed(ShaderImpl& resource)
 {
     m_sprite_batch->on_shader_destroyed(resource);
 }
@@ -65,12 +75,12 @@ GraphicsDevice::~GraphicsDevice() noexcept
 void GraphicsDevice::start_frame(const Window& window)
 {
     m_current_window = window;
-    m_draw_stats     = {};
+    m_frame_stats    = {};
 
     set_canvas({}, true);
     m_current_category = {};
 
-    if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+    if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
     {
         impl->m_is_in_use = true;
     }
@@ -93,7 +103,7 @@ void GraphicsDevice::end_frame(const Window&                window,
     m_current_window = {};
     m_canvas         = {};
 
-    if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+    if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
     {
         impl->m_is_in_use = false;
     }
@@ -109,7 +119,7 @@ void GraphicsDevice::end_imgui_frame(const Window& window)
     on_end_imgui_frame(window);
 }
 
-static ShaderParameterType to_parameter_type(const shadercompiler::Type& type)
+static auto to_parameter_type(const shadercompiler::Type& type) -> ShaderParameterType
 {
     if (&type == &shadercompiler::FloatType::instance())
     {
@@ -192,43 +202,45 @@ static ShaderParameterType to_parameter_type(const shadercompiler::Type& type)
         }
     }
 
-    CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
+    throw std::runtime_error{"Invalid parameter type encountered"};
 }
 
-gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
-    std::string_view name, std::string_view source_code, std::span<const std::string_view> defines)
+auto GraphicsDevice::demand_create_shader(std::string_view                  name,
+                                          std::string_view                  source_code,
+                                          std::span<const std::string_view> defines)
+    -> std::unique_ptr<ShaderImpl>
 {
-    std::vector<shadercompiler::Token> tokens;
+    auto tokens = List<shadercompiler::Token>{};
     do_lexing(source_code, name, true, tokens);
 
-    shadercompiler::TypeCache      type_cache;
-    shadercompiler::BuiltInSymbols built_in_symbols;
-    shadercompiler::BinOpTable     bin_op_table;
-    shadercompiler::Parser         parser{type_cache};
-    shadercompiler::AST::DeclsType decls = parser.parse(tokens);
+    auto type_cache       = shadercompiler::TypeCache{};
+    auto built_in_symbols = shadercompiler::BuiltInSymbols{};
+    auto bin_op_table     = shadercompiler::BinOpTable{};
+    auto parser           = shadercompiler::Parser{type_cache};
+    auto decls            = parser.parse(tokens);
 
-    StringViewUnorderedSet defines_set;
+    auto defines_set = StringViewUnorderedSet{};
 
-    for (const std::string_view& define : defines)
+    for (const auto& define : defines)
     {
         defines_set.insert(define);
     }
 
-    shadercompiler::AST ast{name, std::move(decls), &defines_set};
+    auto ast = shadercompiler::AST{name, std::move(decls), &defines_set};
 
-    shadercompiler::SemaContext context{ast, built_in_symbols, bin_op_table};
-    shadercompiler::Scope       global_scope;
+    auto context      = shadercompiler::SemaContext{ast, built_in_symbols, bin_op_table};
+    auto global_scope = shadercompiler::Scope{};
 
     context.set_allow_forbidden_identifier_prefix(true);
 
-    for (const gsl::not_null<shadercompiler::Decl*>& symbol : built_in_symbols.all_decls())
+    for (auto& symbol_ref : built_in_symbols.all_decls())
     {
-        symbol->verify(context, global_scope);
+        symbol_ref.get().verify(context, global_scope);
     }
 
-    for (const gsl::not_null<shadercompiler::Decl*>& symbol : built_in_symbols.all_decls())
+    for (const auto& symbol : built_in_symbols.all_decls())
     {
-        if (shadercompiler::VarDecl* var = asa<shadercompiler::VarDecl>(symbol.get());
+        if (auto* var = asa<shadercompiler::VarDecl>(&symbol.get());
             var != nullptr && var->is_system_value())
         {
             global_scope.remove_symbol(*var);
@@ -245,9 +257,9 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
     constexpr bool is_gles = false;
 #endif
 
-    shadercompiler::GLSLShaderGenerator glsl_code_generator{is_gles};
+    auto glsl_code_generator = shadercompiler::GLSLShaderGenerator{is_gles};
 
-    shadercompiler::ShaderGenerationResult code_gen_results =
+    const auto code_gen_results =
         glsl_code_generator.generate(context,
                                      ast,
                                      shadercompiler::naming::shader_entry_point,
@@ -255,13 +267,14 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
 
     log_verbose("Generated OpenGL shader code: {}", code_gen_results.glsl_code);
 
-    ShaderImpl::ParameterList parameters;
+    auto parameters = ShaderImpl::ParameterList{};
     parameters.reserve(code_gen_results.parameters.size());
 
-    for (const shadercompiler::ShaderParamDecl* param : code_gen_results.parameters)
+    for (const auto& param_ref : code_gen_results.parameters)
     {
-        const ShaderParameterType type       = to_parameter_type(param->type());
-        const uint16_t            array_size = param->is_array() ? param->array_size() : 0;
+        const auto& param      = param_ref.get();
+        const auto  type       = to_parameter_type(param.type());
+        const auto  array_size = param.is_array() ? param.array_size() : 0u;
 
         const auto calculate_size_in_bytes = [type, array_size] {
             switch (type)
@@ -283,11 +296,11 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
                 case ShaderParameterType::MatrixArray: return sizeof(float) * 3 * 3 * array_size;
             }
 
-            CER_THROW_INTERNAL_ERROR_STR("Invalid parameter type encountered");
+            throw std::runtime_error{"Invalid parameter type encountered"};
         };
 
-        const uint16_t size_in_bytes = gsl::narrow_cast<uint16_t>(calculate_size_in_bytes());
-        const bool     is_image      = type == ShaderParameterType::Image;
+        const auto size_in_bytes = narrow_cast<uint16_t>(calculate_size_in_bytes());
+        const auto is_image      = type == ShaderParameterType::Image;
 
         if (!is_image)
         {
@@ -295,31 +308,30 @@ gsl::not_null<ShaderImpl*> GraphicsDevice::demand_create_shader(
         }
 
         parameters.push_back(ShaderParameter{
-            .name          = std::string{param->name()},
+            .name          = std::string{param.name()},
             .type          = type,
             .offset        = /*offset will be determined later:*/ 0,
             .size_in_bytes = size_in_bytes,
-            .array_size    = param->is_array() ? param->array_size() : static_cast<uint16_t>(0),
+            .array_size    = param.is_array() ? param.array_size() : uint16_t(0),
             .is_image      = is_image,
-            .image         = Image(),
-            .default_value = param->default_value(),
+            .image         = {},
+            .default_value = param.default_value(),
         });
     }
 
-    gsl::not_null<ShaderImpl*> shader =
-        create_native_user_shader(code_gen_results.glsl_code, std::move(parameters)).release();
+    auto shader = create_native_user_shader(code_gen_results.glsl_code, std::move(parameters));
 
     shader->set_name(name);
 
     return shader;
 }
 
-const std::vector<gsl::not_null<GraphicsResourceImpl*>>& GraphicsDevice::all_resources() const
+auto GraphicsDevice::all_resources() const -> const RefList<GraphicsResourceImpl>&
 {
     return m_resources;
 }
 
-const Image& GraphicsDevice::current_canvas() const
+auto GraphicsDevice::current_canvas() const -> const Image&
 {
     return m_canvas;
 }
@@ -328,12 +340,12 @@ void GraphicsDevice::set_canvas(const Image& canvas, bool force)
 {
     if (canvas)
     {
-        if (const ImageImpl* image_impl = dynamic_cast<const ImageImpl*>(canvas.impl());
+        if (const auto* image_impl = dynamic_cast<const ImageImpl*>(canvas.impl());
             image_impl->window_for_canvas() != m_current_window.impl())
         {
-            CER_THROW_INVALID_ARG_STR("The specified canvas image is not compatible with the "
-                                      "current window. A canvas can "
-                                      "only be used within the window it was created for.");
+            throw std::invalid_argument{
+                "The specified canvas image is not compatible with the "
+                "current window. A canvas can only be used within the window it was created for."};
         }
     }
 
@@ -342,7 +354,7 @@ void GraphicsDevice::set_canvas(const Image& canvas, bool force)
         m_canvas = canvas;
         flush_draw_calls();
 
-        Rectangle new_viewport;
+        auto new_viewport = Rectangle{};
         if (canvas)
         {
             const auto [width, height] = canvas.size();
@@ -380,7 +392,7 @@ void GraphicsDevice::set_transformation(const Matrix& transformation)
     m_must_flush_draw_calls = true;
 }
 
-const Shader& GraphicsDevice::current_sprite_shader() const
+auto GraphicsDevice::current_sprite_shader() const -> const Shader&
 {
     return m_sprite_shader;
 }
@@ -389,7 +401,7 @@ void GraphicsDevice::set_sprite_shader(const Shader& pixel_shader)
 {
     if (m_sprite_shader != pixel_shader)
     {
-        if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+        if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
         {
             impl->m_is_in_use = false;
         }
@@ -397,7 +409,7 @@ void GraphicsDevice::set_sprite_shader(const Shader& pixel_shader)
         m_sprite_shader         = pixel_shader;
         m_must_flush_draw_calls = true;
 
-        if (ShaderImpl* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
+        if (auto* impl = dynamic_cast<ShaderImpl*>(m_sprite_shader.impl()))
         {
             impl->m_is_in_use = true;
         }
@@ -411,6 +423,11 @@ void GraphicsDevice::set_sampler(const Sampler& sampler)
         m_sampler               = sampler;
         m_must_flush_draw_calls = true;
     }
+}
+
+auto GraphicsDevice::current_blend_state() const -> const BlendState&
+{
+    return m_blend_state;
 }
 
 void GraphicsDevice::set_blend_state(const BlendState& blend_state)
@@ -439,6 +456,54 @@ void GraphicsDevice::draw_string(std::string_view                     text,
     m_sprite_batch->draw_string(text, font, font_size, position, color, decoration);
 }
 
+void GraphicsDevice::draw_text(const Text& text, Vector2 position, const Color& color)
+{
+    ensure_category(Category::SpriteBatch);
+    m_sprite_batch->draw_text(text, position, color);
+}
+
+void GraphicsDevice::draw_particles(const ParticleSystem& particle_system)
+{
+    const auto previous_blend_state = m_blend_state;
+
+
+    for (const auto& emitter_data : particle_system.m_emitters)
+    {
+        const auto& emitter = emitter_data.emitter;
+        const auto& image   = emitter.image;
+
+        if (!image)
+        {
+            continue;
+        }
+
+        set_blend_state(emitter.blend_state);
+        ensure_category(Category::SpriteBatch);
+
+        const auto image_size = image.size();
+        const auto origin     = image_size * 0.5f;
+
+        const auto particles_span =
+            std::span{emitter_data.particle_buffer.data(), emitter_data.active_particle_count};
+
+        auto sprite = Sprite{
+            .image  = image,
+            .origin = origin,
+        };
+
+        for (const auto& particle : particles_span)
+        {
+            sprite.dst_rect = {particle.position, image_size * particle.scale};
+            sprite.color    = particle.color;
+            sprite.rotation = particle.rotation;
+
+            m_sprite_batch->draw_sprite(sprite, SpriteBatch::SpriteShaderKind::Default);
+        }
+    }
+
+    set_blend_state(previous_blend_state);
+}
+
 void GraphicsDevice::fill_rectangle(const Rectangle& rectangle,
                                     const Color&     color,
                                     float            rotation,
@@ -448,14 +513,19 @@ void GraphicsDevice::fill_rectangle(const Rectangle& rectangle,
     m_sprite_batch->fill_rectangle(rectangle, color, rotation, origin);
 }
 
-const Window& GraphicsDevice::current_window() const
+auto GraphicsDevice::current_window() const -> const Window&
 {
     return m_current_window;
 }
 
-gsl::not_null<FrameStats*> GraphicsDevice::frame_stats_ptr()
+auto GraphicsDevice::frame_stats_ref() -> FrameStats&
 {
-    return &m_draw_stats;
+    return m_frame_stats;
+}
+
+auto GraphicsDevice::frame_stats_ref() const -> const FrameStats&
+{
+    return m_frame_stats;
 }
 
 void GraphicsDevice::ensure_category(Category category)
@@ -493,10 +563,10 @@ void GraphicsDevice::flush_draw_calls()
     m_must_flush_draw_calls = false;
 }
 
-Matrix GraphicsDevice::compute_viewport_transformation(const Rectangle& viewport)
+auto GraphicsDevice::compute_viewport_transformation(const Rectangle& viewport) -> Matrix
 {
-    const float x_scale = viewport.width > 0 ? 2.0f / viewport.width : 0.0f;
-    const float y_scale = viewport.height > 0 ? 2.0f / viewport.height : 0.0f;
+    const auto x_scale = viewport.width > 0 ? 2.0f / viewport.width : 0.0f;
+    const auto y_scale = viewport.height > 0 ? 2.0f / viewport.height : 0.0f;
 
     return {x_scale, 0, 0, 0, 0, -y_scale, 0, 0, 0, 0, 1, 0, -1, 1, 0, 1};
 }
@@ -506,12 +576,7 @@ void GraphicsDevice::compute_combined_transformation()
     m_combined_transformation = m_transformation * m_viewport_transformation;
 }
 
-FrameStats GraphicsDevice::frame_stats() const
-{
-    return m_draw_stats;
-}
-
-Vector2 GraphicsDevice::current_canvas_size() const
+auto GraphicsDevice::current_canvas_size() const -> Vector2
 {
     return m_viewport.size();
 }
@@ -523,5 +588,10 @@ void GraphicsDevice::post_init(std::unique_ptr<SpriteBatch> sprite_batch)
     FontImpl::create_built_in_fonts();
 
     m_sprite_batch = std::move(sprite_batch);
+}
+
+void GraphicsDevice::pre_backend_dtor()
+{
+    FontImpl::destroy_built_in_fonts();
 }
 } // namespace cer::details

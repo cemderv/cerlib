@@ -30,21 +30,21 @@ class WindowImpl : public Object
                         std::optional<uint32_t> height,
                         bool                    allow_high_dpi);
 
-    NON_COPYABLE_NON_MOVABLE(WindowImpl);
+    forbid_copy_and_move(WindowImpl);
 
     ~WindowImpl() noexcept override;
 
-    uint32_t id() const;
+    auto id() const -> uint32_t;
 
     void set_id(uint32_t value);
 
-    Vector2 size() const;
+    auto size() const -> Vector2;
 
-    Vector2 size_px() const;
+    auto size_px() const -> Vector2;
 
-    float pixel_ratio() const;
+    auto pixel_ratio() const -> float;
 
-    std::string_view title() const;
+    auto title() const -> std::string_view;
 
     void set_title(std::string_view value);
 
@@ -78,17 +78,17 @@ class WindowImpl : public Object
 
     void set_resize_callback(const Window::ResizeCallback& value);
 
-    uint32_t display_index() const;
+    auto display_index() const -> uint32_t;
 
-    SDL_Window* sdl_window() const;
+    auto sdl_window() const -> SDL_Window*;
 
-    uint32_t sync_interval() const;
+    auto sync_interval() const -> uint32_t;
 
     void set_sync_interval(uint32_t value);
 
     void set_clear_color(std::optional<Color> value);
 
-    std::optional<Color> clear_color() const;
+    auto clear_color() const -> std::optional<Color>;
 
     virtual void handle_resize_event() = 0;
 
@@ -117,6 +117,6 @@ class WindowImpl : public Object
     std::optional<Color> m_clear_color;
 
   protected:
-    Window::ResizeCallback m_resize_callback;
+    Window::ResizeCallback m_resize_callback; // NOLINT
 };
 } // namespace cer::details

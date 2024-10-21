@@ -10,7 +10,7 @@
 #include "OpenGLUserShader.hpp"
 #include "OpenGLVao.hpp"
 #include "graphics/SpriteBatch.hpp"
-#include "util/NonCopyable.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 
 namespace cer::details
 {
@@ -21,10 +21,9 @@ class OpenGLSpriteBatch final : public SpriteBatch
     // So image parameters in user-defined shaders must begin after that.
     static constexpr int texture_slot_base_offset = 1;
 
-    explicit OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
-                               gsl::not_null<FrameStats*>     draw_stats);
+    explicit OpenGLSpriteBatch(GraphicsDevice& device_impl, FrameStats& draw_stats);
 
-    NON_COPYABLE_NON_MOVABLE(OpenGLSpriteBatch);
+    forbid_copy_and_move(OpenGLSpriteBatch);
 
     ~OpenGLSpriteBatch() noexcept override;
 
@@ -50,7 +49,7 @@ class OpenGLSpriteBatch final : public SpriteBatch
 
     void apply_blend_state_to_gl_context(const BlendState& blend_state);
 
-    void on_shader_destroyed(gsl::not_null<ShaderImpl*> shader) override;
+    void on_shader_destroyed(ShaderImpl& shader) override;
 
     std::unique_ptr<Vertex[]> m_vertex_data;
 

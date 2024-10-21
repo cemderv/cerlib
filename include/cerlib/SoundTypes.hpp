@@ -4,27 +4,14 @@
 
 #pragma once
 
-#include <chrono>
-
 namespace cer
 {
 /**
  * Defines audio time, in fractional seconds.
- * This is a type alias for `std::chrono::duration` and therefore supports chrono
- * literals.
- *
- * Example:
- *
- * @code{.cpp}
- * using namespace std::chrono_literals;
- * // ...
- * cer::play_sound(..., delay: 1.5s);
- * cer::play_sound(..., delay: 2300ms);
- * @endcode
  *
  * @ingroup Audio
  */
-using SoundTime = std::chrono::duration<double>;
+using SoundTime = double;
 
 /**
  * Defines the behavior of a sound's playback when it is inaudible.

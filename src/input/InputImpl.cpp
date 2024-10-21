@@ -22,7 +22,7 @@
 
 namespace cer::details
 {
-int InputImpl::to_sdl_key(Key key)
+auto InputImpl::to_sdl_key(Key key) -> int
 {
     switch (key)
     {
@@ -175,7 +175,7 @@ int InputImpl::to_sdl_key(Key key)
     return SDL_SCANCODE_UNKNOWN;
 }
 
-Key InputImpl::from_sdl_key(SDL_Keycode sdl_key)
+auto InputImpl::from_sdl_key(SDL_Keycode sdl_key) -> Key
 {
     switch (sdl_key)
     {
@@ -323,11 +323,11 @@ Key InputImpl::from_sdl_key(SDL_Keycode sdl_key)
         case SDL_SCANCODE_SOFTRIGHT: return Key::SoftRight;
         case SDL_SCANCODE_CALL: return Key::Call;
         case SDL_SCANCODE_ENDCALL: return Key::EndCall;
-        default: return static_cast<Key>(0);
+        default: return Key(0);
     }
 }
 
-int InputImpl::to_sdl_mouse_button(MouseButton button)
+auto InputImpl::to_sdl_mouse_button(MouseButton button) -> int
 {
     switch (button)
     {
@@ -339,14 +339,14 @@ int InputImpl::to_sdl_mouse_button(MouseButton button)
     return 0;
 }
 
-MouseButton InputImpl::from_sdl_mouse_button(int sdl_button)
+auto InputImpl::from_sdl_mouse_button(int sdl_button) -> MouseButton
 {
     switch (sdl_button)
     {
         case SDL_BUTTON_LEFT: return MouseButton::Left;
         case SDL_BUTTON_RIGHT: return MouseButton::Right;
         case SDL_BUTTON_MIDDLE: return MouseButton::Middle;
-        default: return static_cast<MouseButton>(0);
+        default: return MouseButton(0);
     }
 }
 
@@ -370,23 +370,23 @@ MouseButton InputImpl::from_sdl_mouse_button(int sdl_button)
 #define CER_KMOD_CAPS   SDL_KMOD_CAPS
 #endif
 
-static KeyModifier operator|(KeyModifier lhs, KeyModifier rhs)
+static auto operator|(KeyModifier lhs, KeyModifier rhs) -> KeyModifier
 {
-    return static_cast<KeyModifier>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return KeyModifier(int(lhs) | int(rhs));
 }
 
-static KeyModifier& operator|=(KeyModifier& lhs, KeyModifier rhs)
+static auto operator|=(KeyModifier& lhs, KeyModifier rhs) -> KeyModifier&
 {
     lhs = lhs | rhs;
     return lhs;
 }
 
-static KeyModifier operator&(KeyModifier lhs, KeyModifier rhs)
+static auto operator&(KeyModifier lhs, KeyModifier rhs) -> KeyModifier
 {
-    return static_cast<KeyModifier>(static_cast<int>(lhs) & static_cast<int>(rhs));
+    return KeyModifier(int(lhs) & int(rhs));
 }
 
-static KeyModifier from_sdl_keymods(Uint16 mods)
+static auto from_sdl_keymods(Uint16 mods) -> KeyModifier
 {
     auto result = KeyModifier::None;
 
@@ -439,7 +439,8 @@ auto InputImpl::from_sdl_keysym(const SDL_Keysym& sdl_keysym) -> std::pair<Key, 
     const auto sdl_key = sdl_keysym.sym;
     const auto sdl_mod = sdl_keysym.mod;
 #else
-std::pair<Key, KeyModifier> InputImpl::from_sdl_keysym(SDL_Keycode sdl_key, SDL_Keymod sdl_mod)
+auto InputImpl::from_sdl_keysym(SDL_Keycode sdl_key, SDL_Keymod sdl_mod)
+    -> std::pair<Key, KeyModifier>
 {
 #endif
     return {
@@ -454,51 +455,59 @@ InputImpl::InputImpl()
 {
 }
 
-InputImpl& InputImpl::instance()
+auto InputImpl::instance() -> InputImpl&
 {
-    static auto s_instance = InputImpl();
+    static auto s_instance = InputImpl{};
     return s_instance;
 }
 
-bool InputImpl::is_key_down(Key key) const
+auto InputImpl::is_key_down(Key key) const -> bool
 {
-    const auto idx = static_cast<size_t>(key) - 1;
+    const auto idx = size_t(key) - 1;
     return idx >= m_key_states.size() ? false : m_key_states[idx] == 1;
 }
 
-bool InputImpl::was_key_just_pressed(Key key) const
+auto InputImpl::was_key_just_pressed(Key key) const -> bool
 {
-    const auto idx = static_cast<size_t>(key) - 1;
-    return idx >= m_key_states.size() ? false
-                                      : (m_previous_key_states[idx] == 0 && m_key_states[idx] == 1);
+    const auto idx = size_t(key) - 1;
+
+    return idx >= m_key_states.size()
+               ? false
+               : (m_previous_key_states.at(idx) == 0 && m_key_states.at(idx) == 1);
 }
 
-bool InputImpl::was_key_just_released(Key key) const
+auto InputImpl::was_key_just_released(Key key) const -> bool
 {
-    const auto idx = static_cast<size_t>(key) - 1;
-    return idx >= m_key_states.size() ? false
-                                      : (m_previous_key_states[idx] == 1 && m_key_states[idx] == 0);
+    const auto idx = size_t(key) - 1;
+
+    return idx >= m_key_states.size()
+               ? false
+               : (m_previous_key_states.at(idx) == 1 && m_key_states.at(idx) == 0);
 }
 
-bool InputImpl::is_mouse_button_down(MouseButton button) const
+auto InputImpl::is_mouse_button_down(MouseButton button) const -> bool
 {
     const auto bits = SDL_GetMouseState(nullptr, nullptr);
+
+#ifdef __EMSCRIPTEN__
     return (bits & SDL_BUTTON(to_sdl_mouse_button(button))) != 0u;
+#else
+    return (bits & SDL_BUTTON_MASK(to_sdl_mouse_button(button))) != 0u;
+#endif
 }
 
 void InputImpl::update_key_states()
 {
-    int          num_keys{};
-    const Uint8* sdl_key_states = SDL_GetKeyboardState(&num_keys);
-
-    const std::span sdl_key_states_span{sdl_key_states, static_cast<size_t>(num_keys)};
+    auto        num_keys            = 0;
+    const auto* sdl_key_states      = SDL_GetKeyboardState(&num_keys);
+    const auto  sdl_key_states_span = std::span{sdl_key_states, size_t(num_keys)};
 
     m_previous_key_states = m_key_states;
 
     for (size_t i = 0; i < m_key_states.size(); ++i)
     {
-        const Key key     = static_cast<Key>(i + 1);
-        const int sdl_key = to_sdl_key(key);
+        const auto key     = Key(i + 1);
+        const auto sdl_key = to_sdl_key(key);
 
         assert(sdl_key < num_keys);
 
@@ -506,7 +515,7 @@ void InputImpl::update_key_states()
     }
 }
 
-Vector2 InputImpl::mouse_position_delta() const
+auto InputImpl::mouse_position_delta() const -> Vector2
 {
     return m_mouse_position_delta;
 }
@@ -516,7 +525,7 @@ void InputImpl::set_mouse_position_delta(Vector2 value)
     m_mouse_position_delta = value;
 }
 
-Vector2 InputImpl::mouse_wheel_delta() const
+auto InputImpl::mouse_wheel_delta() const -> Vector2
 {
     return m_mouse_wheel_delta;
 }

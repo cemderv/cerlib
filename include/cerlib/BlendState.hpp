@@ -5,7 +5,7 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -27,14 +27,14 @@ enum class ColorWriteMask
     All   = Red | Green | Blue | Alpha, /**< Allow writes to all RGBA channels. */
 };
 
-static ColorWriteMask operator&(ColorWriteMask lhs, ColorWriteMask rhs)
+static auto operator&(ColorWriteMask lhs, ColorWriteMask rhs) -> ColorWriteMask
 {
-    return static_cast<ColorWriteMask>(static_cast<int>(lhs) & static_cast<int>(rhs));
+    return ColorWriteMask(int(lhs) & int(rhs));
 }
 
-static ColorWriteMask operator|(ColorWriteMask lhs, ColorWriteMask rhs)
+static auto operator|(ColorWriteMask lhs, ColorWriteMask rhs) -> ColorWriteMask
 {
-    return static_cast<ColorWriteMask>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return ColorWriteMask(int(lhs) | int(rhs));
 }
 
 /**
@@ -135,38 +135,6 @@ enum class Blend
  */
 struct BlendState
 {
-    /**
-     * Gets a blend state with alpha-blending disabled.
-     * The source color overwrites the destination color.
-     */
-    CERLIB_API static constexpr BlendState opaque();
-
-    /**
-     * Gets a blend state with alpha-blending enabled.
-     * The state assumes that the RGB channels have been premultiplied with the alpha
-     * channel.
-     */
-    CERLIB_API static constexpr BlendState alpha_blend();
-
-    /**
-     * A blend state with alpha-blending enabled.
-     * The state assumes that the RGB channels haven't been premultiplied with the alpha
-     * channel.
-     */
-    CERLIB_API static constexpr BlendState non_premultiplied();
-
-    /**
-     * Gets a blend state with alpha-blending enabled.
-     * The source color is added onto the destination color.
-     */
-    CERLIB_API static constexpr BlendState additive();
-
-    /** Default comparison */
-    bool operator==(const BlendState&) const = default;
-
-    /** Default comparison */
-    bool operator!=(const BlendState&) const = default;
-
     /** If true, the state allows alpha blending. */
     bool blending_enabled = false;
 
@@ -193,53 +161,65 @@ struct BlendState
 
     /** */
     ColorWriteMask color_write_mask = ColorWriteMask::All;
+
+    /** Default comparison */
+    auto operator==(const BlendState&) const -> bool = default;
+
+    /** Default comparison */
+    auto operator!=(const BlendState&) const -> bool = default;
 };
 
-constexpr BlendState BlendState::opaque()
-{
-    return {
-        .blending_enabled = false,
-        .blend_factor     = {1, 1, 1, 1},
-        .color_src_blend  = Blend::One,
-        .color_dst_blend  = Blend::Zero,
-        .alpha_src_blend  = Blend::One,
-        .alpha_dst_blend  = Blend::Zero,
-    };
+/**
+ * A blend state with alpha-blending disabled.
+ * The source color overwrites the destination color.
+ */
+static constexpr auto opaque = BlendState{
+    .blending_enabled = false,
+    .blend_factor     = {1, 1, 1, 1},
+    .color_src_blend  = Blend::One,
+    .color_dst_blend  = Blend::Zero,
+    .alpha_src_blend  = Blend::One,
+    .alpha_dst_blend  = Blend::Zero,
 };
 
-constexpr BlendState BlendState::alpha_blend()
-{
-    return {
-        .blending_enabled = true,
-        .blend_factor     = {1, 1, 1, 1},
-        .color_src_blend  = Blend::One,
-        .color_dst_blend  = Blend::InverseSourceAlpha,
-        .alpha_src_blend  = Blend::One,
-        .alpha_dst_blend  = Blend::InverseSourceAlpha,
-    };
+/**
+ * A blend state with alpha-blending enabled.
+ * The state assumes that the RGB channels have been premultiplied with the alpha
+ * channel.
+ */
+static constexpr auto alpha_blend = BlendState{
+    .blending_enabled = true,
+    .blend_factor     = {1, 1, 1, 1},
+    .color_src_blend  = Blend::One,
+    .color_dst_blend  = Blend::InverseSourceAlpha,
+    .alpha_src_blend  = Blend::One,
+    .alpha_dst_blend  = Blend::InverseSourceAlpha,
 };
 
-constexpr BlendState BlendState::non_premultiplied()
-{
-    return {
-        .blending_enabled = true,
-        .blend_factor     = Color{1, 1, 1, 1},
-        .color_src_blend  = Blend::SourceAlpha,
-        .color_dst_blend  = Blend::InverseSourceAlpha,
-        .alpha_src_blend  = Blend::SourceAlpha,
-        .alpha_dst_blend  = Blend::InverseSourceAlpha,
-    };
+/**
+ * A blend state with alpha-blending enabled.
+ * The state assumes that the RGB channels haven't been premultiplied with the alpha
+ * channel.
+ */
+static constexpr auto non_premultiplied = BlendState{
+    .blending_enabled = true,
+    .blend_factor     = Color{1, 1, 1, 1},
+    .color_src_blend  = Blend::SourceAlpha,
+    .color_dst_blend  = Blend::InverseSourceAlpha,
+    .alpha_src_blend  = Blend::SourceAlpha,
+    .alpha_dst_blend  = Blend::InverseSourceAlpha,
 };
 
-constexpr BlendState BlendState::additive()
-{
-    return {
-        .blending_enabled = true,
-        .blend_factor     = Color{1, 1, 1, 1},
-        .color_src_blend  = Blend::SourceAlpha,
-        .color_dst_blend  = Blend::One,
-        .alpha_src_blend  = Blend::SourceAlpha,
-        .alpha_dst_blend  = Blend::One,
-    };
+/**
+ * A blend state with alpha-blending enabled.
+ * The source color is added onto the destination color.
+ */
+static constexpr auto additive = BlendState{
+    .blending_enabled = true,
+    .blend_factor     = Color{1, 1, 1, 1},
+    .color_src_blend  = Blend::SourceAlpha,
+    .color_dst_blend  = Blend::One,
+    .alpha_src_blend  = Blend::SourceAlpha,
+    .alpha_dst_blend  = Blend::One,
 };
 } // namespace cer

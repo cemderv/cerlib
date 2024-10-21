@@ -6,7 +6,6 @@
 
 #include "cerlib/Content.hpp"
 #include "util/Object.hpp"
-#include <gsl/pointers>
 #include <string>
 
 namespace cer
@@ -21,25 +20,24 @@ class GraphicsDevice;
 class GraphicsResourceImpl : public Object, public Asset
 {
   protected:
-    explicit GraphicsResourceImpl(gsl::not_null<GraphicsDevice*> parent_device,
-                                  GraphicsResourceType           type);
+    explicit GraphicsResourceImpl(GraphicsDevice& parent_device, GraphicsResourceType type);
 
   public:
-    NON_COPYABLE_NON_MOVABLE(GraphicsResourceImpl);
+    forbid_copy_and_move(GraphicsResourceImpl);
 
     ~GraphicsResourceImpl() noexcept override;
 
-    GraphicsDevice& parent_device();
+    auto parent_device() -> GraphicsDevice&;
 
-    GraphicsResourceType type() const;
+    auto type() const -> GraphicsResourceType;
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     virtual void set_name(std::string_view name);
 
   private:
-    gsl::not_null<GraphicsDevice*> m_parent_device;
-    GraphicsResourceType           m_resource_type;
-    std::string                    m_name;
+    GraphicsDevice&      m_parent_device;
+    GraphicsResourceType m_resource_type;
+    std::string          m_name;
 };
 } // namespace cer::details

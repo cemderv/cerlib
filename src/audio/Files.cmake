@@ -8,4 +8,46 @@ set(audio_files
   SoundChannelImpl.hpp
   SoundImpl.cpp
   SoundImpl.hpp
+  AudioSource.cpp
+  AudioSource.hpp
+  BiQuadResonantFilter.cpp
+  Bus.cpp
+  Bus.hpp
+  Common.hpp
+  dr_flac.h
+  dr_impl.cpp
+  dr_mp3.h
+  dr_wav.h
+  DuckFilter.cpp
+  EchoFilter.cpp
+  EqFilter.cpp
+  Fader.cpp
+  Fader.hpp
+  FFT.cpp
+  FFT.hpp
+  FFTFilter.cpp
+  Filter.cpp
+  Filter.hpp
+  FlangerFilter.cpp
+  FreeverbFilter.cpp
+  LofiFilter.cpp
+  Misc.cpp
+  Misc.hpp
+  Noise.cpp
+  Noise.hpp
+  Queue.cpp
+  Queue.hpp
+  RobotizeFilter.cpp
+  Sfxr.cpp
+  Sfxr.hpp
+  soloud_internal.hpp
+  Thread.cpp
+  Thread.hpp
+  Wav.cpp
+  Wav.hpp
+  WaveShaperFilter.cpp
+  WavStream.cpp
+  WavStream.hpp
+  stb_vorbis.hpp
+  stb_vorbis.cpp
 )

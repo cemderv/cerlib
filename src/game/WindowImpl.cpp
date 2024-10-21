@@ -7,9 +7,8 @@
 #include "cerlib/Logging.hpp"
 #include "cerlib/Version.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
 #include "util/Platform.hpp"
-#include <gsl/narrow>
+#include "util/narrow_cast.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
@@ -17,7 +16,7 @@
 
 namespace cer::details
 {
-static int get_sdl_window_flags(bool allow_high_dpi)
+static auto get_sdl_window_flags(bool allow_high_dpi) -> int
 {
     int flags = 0;
 
@@ -46,16 +45,10 @@ static int get_sdl_window_flags(bool allow_high_dpi)
     return flags;
 }
 
-static
-#ifdef __EMSCRIPTEN__
-    int
-#else
-    SDL_bool
-#endif
-    sdl_window_event_watcher(void* userdata, SDL_Event* event)
+static auto sdl_window_event_watcher(void* userdata, SDL_Event* event)
 {
-    WindowImpl*       window     = static_cast<WindowImpl*>(userdata);
-    const SDL_Window* sdl_window = window->sdl_window();
+    auto*       window     = static_cast<WindowImpl*>(userdata);
+    const auto* sdl_window = window->sdl_window();
 
 #ifdef __EMSCRIPTEN__
     if (event->type == SDL_WINDOWEVENT && event->window.event == SDL_WINDOWEVENT_RESIZED)
@@ -65,6 +58,7 @@ static
     {
 #endif
         const auto win = SDL_GetWindowFromID(event->window.windowID);
+
         if (win == sdl_window)
         {
             window->handle_resize_event();
@@ -74,7 +68,7 @@ static
 #ifdef __EMSCRIPTEN__
     return 0;
 #else
-    return SDL_FALSE;
+    return false;
 #endif
 }
 
@@ -94,25 +88,23 @@ WindowImpl::WindowImpl(std::string_view        title,
     , m_sdl_window(nullptr)
     , m_id(id)
     , m_sync_interval(1)
-    , m_clear_color(cornflowerblue)
+    , m_clear_color(cornflowerblue * 0.25f)
 {
     log_verbose("Creating window with title '{}'", title);
 
     if (!GameImpl::is_instance_initialized())
     {
-        CER_THROW_LOGIC_ERROR_STR("The game instance must be initialized prior to creating "
-                                  "any windows. Please call run_game() first.");
+        throw std::logic_error{"The game instance must be initialized prior to creating "
+                               "any windows. Please call run_game() first."};
     }
 
-    GameImpl& app_impl = GameImpl::instance();
+    auto& app_impl = GameImpl::instance();
 
     if (is_mobile_platform() || target_platform() == TargetPlatform::Web)
     {
-        const auto windows = app_impl.windows();
-
-        if (!windows.empty())
+        if (const auto windows = app_impl.windows(); !windows.empty())
         {
-            CER_THROW_LOGIC_ERROR_STR("The current system does not support more than one window.");
+            throw std::logic_error{"The current system does not support more than one window."};
         }
     }
 
@@ -126,7 +118,7 @@ void WindowImpl::show_message_box(MessageBoxType   type,
                                   std::string_view message,
                                   const Window&    parent_window)
 {
-    const Uint32 flags = [type]() -> Uint32 {
+    const auto flags = [type]() -> Uint32 {
         switch (type)
         {
             case MessageBoxType::Information: return SDL_MESSAGEBOX_INFORMATION;
@@ -137,17 +129,17 @@ void WindowImpl::show_message_box(MessageBoxType   type,
         return 0;
     }();
 
-    const std::string title_str{title};
-    const std::string message_str{message};
+    const auto title_str   = std::string{title};
+    const auto message_str = std::string{message};
 
-    SDL_Window* parent_sdl_window = parent_window ? parent_window.impl()->sdl_window() : nullptr;
+    auto* parent_sdl_window = parent_window ? parent_window.impl()->sdl_window() : nullptr;
 
     SDL_ShowSimpleMessageBox(flags, title_str.c_str(), message_str.c_str(), parent_sdl_window);
 }
 
 void WindowImpl::activate_onscreen_keyboard()
 {
-    if (cer::is_mobile_platform())
+    if (is_mobile_platform())
     {
 #ifdef __EMSCRIPTEN__
         SDL_StartTextInput();
@@ -159,7 +151,7 @@ void WindowImpl::activate_onscreen_keyboard()
 
 void WindowImpl::deactivate_onscreen_keyboard()
 {
-    if (cer::is_mobile_platform())
+    if (is_mobile_platform())
     {
 #ifdef __EMSCRIPTEN__
         SDL_StopTextInput();
@@ -186,7 +178,8 @@ auto WindowImpl::create_sdl_window(int additional_flags) -> void
 
     if (m_sdl_window == nullptr)
     {
-        CER_THROW_RUNTIME_ERROR("Failed to create the internal window. Reason: {}", SDL_GetError());
+        throw std::runtime_error{
+            fmt::format("Failed to create the internal window. Reason: {}", SDL_GetError())};
     }
 
 // Ensure that the window receives text input on non-mobile platforms.
@@ -209,11 +202,11 @@ WindowImpl::~WindowImpl() noexcept
         m_sdl_window = nullptr;
     }
 
-    GameImpl& app_impl = GameImpl::instance();
+    auto& app_impl = GameImpl::instance();
     app_impl.notify_window_destroyed(this);
 }
 
-uint32_t WindowImpl::id() const
+auto WindowImpl::id() const -> uint32_t
 {
     return m_id;
 }
@@ -223,52 +216,52 @@ void WindowImpl::set_id(uint32_t value)
     m_id = value;
 }
 
-Vector2 WindowImpl::size() const
+auto WindowImpl::size() const -> Vector2
 {
-    int width{};
-    int height{};
+    int width  = 0;
+    int height = 0;
     SDL_GetWindowSize(m_sdl_window, &width, &height);
-    return {static_cast<float>(width), static_cast<float>(height)};
+    return {float(width), float(height)};
 }
 
-Vector2 WindowImpl::size_px() const
+auto WindowImpl::size_px() const -> Vector2
 {
 #ifdef __EMSCRIPTEN__
     return size() * pixel_ratio();
 #else
-    int width_px{};
-    int height_px{};
+    int width_px  = 0;
+    int height_px = 0;
     SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
-    return {static_cast<float>(width_px), static_cast<float>(height_px)};
+    return {float(width_px), float(height_px)};
 #endif
 }
 
-float WindowImpl::pixel_ratio() const
+auto WindowImpl::pixel_ratio() const -> float
 {
 #ifdef __EMSCRIPTEN__
     return emscripten_get_device_pixel_ratio();
 #else
 
-    int width{};
-    int height{};
+    int width  = 0;
+    int height = 0;
     SDL_GetWindowSize(m_sdl_window, &width, &height);
 
-    int width_px{};
-    int height_px{};
+    int width_px  = 0;
+    int height_px = 0;
     SDL_GetWindowSizeInPixels(m_sdl_window, &width_px, &height_px);
 
-    return static_cast<float>(static_cast<double>(width_px) / static_cast<double>(width));
+    return float(double(width_px) / double(width));
 #endif
 }
 
-std::string_view WindowImpl::title() const
+auto WindowImpl::title() const -> std::string_view
 {
     return SDL_GetWindowTitle(m_sdl_window);
 }
 
 void WindowImpl::set_title(std::string_view value)
 {
-    const std::string str{value};
+    const auto str = std::string{value};
     SDL_SetWindowTitle(m_sdl_window, str.c_str());
 }
 
@@ -279,12 +272,20 @@ void WindowImpl::set_visible(bool value)
 
 void WindowImpl::set_always_on_top(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowAlwaysOnTop(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowAlwaysOnTop(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::set_bordered(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowBordered(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowBordered(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::set_full_screen(bool value)
@@ -298,7 +299,11 @@ void WindowImpl::set_full_screen(bool value)
 
 void WindowImpl::set_resizable(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowResizable(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowResizable(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::minimize()
@@ -323,27 +328,31 @@ void WindowImpl::hide()
 
 void WindowImpl::set_minimum_size(uint32_t width, uint32_t height)
 {
-    SDL_SetWindowMinimumSize(m_sdl_window, gsl::narrow<int>(width), gsl::narrow<int>(height));
+    SDL_SetWindowMinimumSize(m_sdl_window, narrow<int>(width), narrow<int>(height));
 }
 
 void WindowImpl::set_maximum_size(uint32_t width, uint32_t height)
 {
-    SDL_SetWindowMaximumSize(m_sdl_window, gsl::narrow<int>(width), gsl::narrow<int>(height));
+    SDL_SetWindowMaximumSize(m_sdl_window, narrow<int>(width), narrow<int>(height));
 }
 
 void WindowImpl::set_mouse_grab(bool value)
 {
+#ifdef __EMSCRIPTEN__
     SDL_SetWindowMouseGrab(m_sdl_window, value ? SDL_TRUE : SDL_FALSE); // NOLINT
+#else
+    SDL_SetWindowMouseGrab(m_sdl_window, value); // NOLINT
+#endif
 }
 
 void WindowImpl::set_position(int32_t x, int32_t y)
 {
-    SDL_SetWindowPosition(m_sdl_window, gsl::narrow<int>(x), gsl::narrow<int>(y));
+    SDL_SetWindowPosition(m_sdl_window, narrow<int>(x), narrow<int>(y));
 }
 
 void WindowImpl::set_size(uint32_t width, uint32_t height)
 {
-    SDL_SetWindowSize(m_sdl_window, gsl::narrow<int>(width), gsl::narrow<int>(height));
+    SDL_SetWindowSize(m_sdl_window, narrow<int>(width), narrow<int>(height));
 }
 
 void WindowImpl::set_resize_callback(const Window::ResizeCallback& value)
@@ -351,21 +360,21 @@ void WindowImpl::set_resize_callback(const Window::ResizeCallback& value)
     m_resize_callback = value;
 }
 
-uint32_t WindowImpl::display_index() const
+auto WindowImpl::display_index() const -> uint32_t
 {
 #ifdef __EMSCRIPTEN__
     return uint32_t(SDL_GetWindowDisplayIndex(m_sdl_window));
 #else
-    return static_cast<uint32_t>(SDL_GetDisplayForWindow(m_sdl_window)); // NOLINT
+    return uint32_t(SDL_GetDisplayForWindow(m_sdl_window)); // NOLINT
 #endif
 }
 
-SDL_Window* WindowImpl::sdl_window() const
+auto WindowImpl::sdl_window() const -> SDL_Window*
 {
     return m_sdl_window;
 }
 
-uint32_t WindowImpl::sync_interval() const
+auto WindowImpl::sync_interval() const -> uint32_t
 {
     return m_sync_interval;
 }
@@ -380,7 +389,7 @@ void WindowImpl::set_clear_color(std::optional<Color> value)
     m_clear_color = value;
 }
 
-std::optional<Color> WindowImpl::clear_color() const
+auto WindowImpl::clear_color() const -> std::optional<Color>
 {
     return m_clear_color;
 }

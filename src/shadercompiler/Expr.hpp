@@ -5,13 +5,10 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
 #include <any>
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
-#include <vector>
 
 namespace cer::shadercompiler
 {
@@ -21,7 +18,7 @@ class Decl;
 class Scope;
 class BinOpExpr;
 
-class CERLIB_API_INTERNAL Expr
+class Expr
 {
   protected:
     explicit Expr(const SourceLocation& location);
@@ -32,26 +29,26 @@ class CERLIB_API_INTERNAL Expr
 
     void set_symbol(const Decl* symbol);
 
-    bool is_verified() const;
+    auto is_verified() const -> bool;
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Expr);
+    forbid_copy_and_move(Expr);
 
     virtual ~Expr() noexcept;
 
     void verify(SemaContext& context, Scope& scope);
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
-    const Type& type() const;
+    auto type() const -> const Type&;
 
-    const Decl* symbol() const;
+    auto symbol() const -> const Decl*;
 
-    virtual std::any evaluate_constant_value(SemaContext& context, Scope& scope) const;
+    virtual auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any;
 
-    virtual bool is_literal() const;
+    virtual auto is_literal() const -> bool;
 
-    virtual bool accesses_symbol(const Decl& symbol, bool transitive) const;
+    virtual auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool;
 
   private:
     SourceLocation m_location;
@@ -60,7 +57,7 @@ class CERLIB_API_INTERNAL Expr
     const Decl*    m_symbol{};
 };
 
-class CERLIB_API_INTERNAL RangeExpr final : public Expr
+class RangeExpr final : public Expr
 {
   public:
     explicit RangeExpr(const SourceLocation& location,
@@ -69,11 +66,11 @@ class CERLIB_API_INTERNAL RangeExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& start() const;
+    auto start() const -> const Expr&;
 
-    const Expr& end() const;
+    auto end() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_start;
@@ -102,7 +99,7 @@ enum class BinOpKind
     LeftShift,
 };
 
-class CERLIB_API_INTERNAL BinOpExpr final : public Expr
+class BinOpExpr final : public Expr
 {
   public:
     explicit BinOpExpr(const SourceLocation& location,
@@ -112,17 +109,17 @@ class CERLIB_API_INTERNAL BinOpExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    BinOpKind bin_op_kind() const;
+    auto bin_op_kind() const -> BinOpKind;
 
-    const Expr& lhs() const;
+    auto lhs() const -> const Expr&;
 
-    const Expr& rhs() const;
+    auto rhs() const -> const Expr&;
 
-    bool is(BinOpKind kind) const;
+    auto is(BinOpKind kind) const -> bool;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     BinOpKind             m_bin_op_kind;
@@ -130,41 +127,41 @@ class CERLIB_API_INTERNAL BinOpExpr final : public Expr
     std::unique_ptr<Expr> m_rhs;
 };
 
-class CERLIB_API_INTERNAL IntLiteralExpr final : public Expr
+class IntLiteralExpr final : public Expr
 {
   public:
     explicit IntLiteralExpr(const SourceLocation& location, int32_t value);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    int32_t value() const;
+    auto value() const -> int32_t;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool is_literal() const override;
+    auto is_literal() const -> bool override;
 
   private:
     int32_t m_value;
 };
 
-class CERLIB_API_INTERNAL BoolLiteralExpr final : public Expr
+class BoolLiteralExpr final : public Expr
 {
   public:
     explicit BoolLiteralExpr(const SourceLocation& location, bool value);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    bool value() const;
+    auto value() const -> bool;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool is_literal() const override;
+    auto is_literal() const -> bool override;
 
   private:
     bool m_value;
 };
 
-class CERLIB_API_INTERNAL FloatLiteralExpr final : public Expr
+class FloatLiteralExpr final : public Expr
 {
   public:
     explicit FloatLiteralExpr(const SourceLocation& location,
@@ -173,13 +170,13 @@ class CERLIB_API_INTERNAL FloatLiteralExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view string_value() const;
+    auto string_value() const -> std::string_view;
 
-    double value() const;
+    auto value() const -> double;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool is_literal() const override;
+    auto is_literal() const -> bool override;
 
   private:
     std::string_view m_string_value;
@@ -192,7 +189,7 @@ enum class UnaryOpKind
     LogicalNot,
 };
 
-class CERLIB_API_INTERNAL UnaryOpExpr final : public Expr
+class UnaryOpExpr final : public Expr
 {
   public:
     explicit UnaryOpExpr(const SourceLocation& location,
@@ -201,20 +198,20 @@ class CERLIB_API_INTERNAL UnaryOpExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    UnaryOpKind unary_op_kind() const;
+    auto unary_op_kind() const -> UnaryOpKind;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     UnaryOpKind           m_kind;
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL StructCtorArg final : public Expr
+class StructCtorArg final : public Expr
 {
   public:
     explicit StructCtorArg(const SourceLocation& location,
@@ -223,18 +220,18 @@ class CERLIB_API_INTERNAL StructCtorArg final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::string_view      m_name;
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL SymAccessExpr final : public Expr
+class SymAccessExpr final : public Expr
 {
     friend class BinOpExpr;
 
@@ -243,62 +240,62 @@ class CERLIB_API_INTERNAL SymAccessExpr final : public Expr
 
     explicit SymAccessExpr(const SourceLocation& location, Decl& symbol);
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::string_view m_name;
     Expr*            m_ancestor_expr;
 };
 
-class CERLIB_API_INTERNAL StructCtorCall final : public Expr
+class StructCtorCall final : public Expr
 {
   public:
-    explicit StructCtorCall(const SourceLocation&                          location,
-                            std::unique_ptr<Expr>                          callee,
-                            SmallVector<std::unique_ptr<StructCtorArg>, 4> args);
+    explicit StructCtorCall(const SourceLocation&           location,
+                            std::unique_ptr<Expr>           callee,
+                            UniquePtrList<StructCtorArg, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& callee() const;
+    auto callee() const -> const Expr&;
 
-    std::span<const std::unique_ptr<StructCtorArg>> args() const;
+    auto args() const -> std::span<const std::unique_ptr<StructCtorArg>>;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>                          m_callee;
-    SmallVector<std::unique_ptr<StructCtorArg>, 4> m_args;
+    std::unique_ptr<Expr>           m_callee;
+    UniquePtrList<StructCtorArg, 4> m_args;
 };
 
-class CERLIB_API_INTERNAL FunctionCallExpr final : public Expr
+class FunctionCallExpr final : public Expr
 {
   public:
-    explicit FunctionCallExpr(const SourceLocation&                 location,
-                              std::unique_ptr<Expr>                 callee,
-                              SmallVector<std::unique_ptr<Expr>, 4> args);
+    explicit FunctionCallExpr(const SourceLocation&  location,
+                              std::unique_ptr<Expr>  callee,
+                              UniquePtrList<Expr, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& callee() const;
+    auto callee() const -> const Expr&;
 
-    std::span<const std::unique_ptr<Expr>> args() const;
+    auto args() const -> std::span<const std::unique_ptr<Expr>>;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
   private:
-    std::unique_ptr<Expr>                 m_callee;
-    SmallVector<std::unique_ptr<Expr>, 4> m_args;
+    std::unique_ptr<Expr>  m_callee;
+    UniquePtrList<Expr, 4> m_args;
 };
 
-class CERLIB_API_INTERNAL SubscriptExpr final : public Expr
+class SubscriptExpr final : public Expr
 {
   public:
     explicit SubscriptExpr(const SourceLocation& location,
@@ -307,61 +304,61 @@ class CERLIB_API_INTERNAL SubscriptExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    const Expr& index_expr() const;
+    auto index_expr() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_expr;
     std::unique_ptr<Expr> m_index_expr;
 };
 
-class CERLIB_API_INTERNAL ScientificIntLiteralExpr final : public Expr
+class ScientificIntLiteralExpr final : public Expr
 {
   public:
     explicit ScientificIntLiteralExpr(const SourceLocation& location, std::string_view value);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view value() const;
+    auto value() const -> std::string_view;
 
   private:
     std::string_view m_value;
 };
 
-class CERLIB_API_INTERNAL HexadecimalIntLiteralExpr final : public Expr
+class HexadecimalIntLiteralExpr final : public Expr
 {
   public:
     explicit HexadecimalIntLiteralExpr(const SourceLocation& location, std::string_view value);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view value() const;
+    auto value() const -> std::string_view;
 
   private:
     std::string_view m_value;
 };
 
-class CERLIB_API_INTERNAL ParenExpr final : public Expr
+class ParenExpr final : public Expr
 {
   public:
     explicit ParenExpr(const SourceLocation& location, std::unique_ptr<Expr> expr);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL TernaryExpr final : public Expr
+class TernaryExpr final : public Expr
 {
   public:
     explicit TernaryExpr(const SourceLocation& location,
@@ -371,15 +368,15 @@ class CERLIB_API_INTERNAL TernaryExpr final : public Expr
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& condition_expr() const;
+    auto condition_expr() const -> const Expr&;
 
-    const Expr& true_expr() const;
+    auto true_expr() const -> const Expr&;
 
-    const Expr& false_expr() const;
+    auto false_expr() const -> const Expr&;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_condition_expr;
@@ -387,20 +384,20 @@ class CERLIB_API_INTERNAL TernaryExpr final : public Expr
     std::unique_ptr<Expr> m_false_expr;
 };
 
-class CERLIB_API_INTERNAL ArrayExpr final : public Expr
+class ArrayExpr final : public Expr
 {
   public:
-    explicit ArrayExpr(const SourceLocation& location, std::vector<std::unique_ptr<Expr>> elements);
+    explicit ArrayExpr(const SourceLocation& location, List<std::unique_ptr<Expr>> elements);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::span<const std::unique_ptr<Expr>> elements() const;
+    auto elements() const -> std::span<const std::unique_ptr<Expr>>;
 
-    std::any evaluate_constant_value(SemaContext& context, Scope& scope) const override;
+    auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::vector<std::unique_ptr<Expr>> m_elements;
+    List<std::unique_ptr<Expr>> m_elements;
 };
 } // namespace cer::shadercompiler

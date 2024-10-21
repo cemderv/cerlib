@@ -5,12 +5,9 @@
 #pragma once
 
 #include "shadercompiler/Decl.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
-#include <gsl/pointers>
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
-#include <vector>
 
 #define DECLARE_FUNC_FOR_ALL_VECTORS(name)                                                         \
     bool is_##name##_function(const Decl& symbol) const                                            \
@@ -66,41 +63,37 @@ class BuiltInSymbols final
   public:
     BuiltInSymbols();
 
-    NON_COPYABLE(BuiltInSymbols);
+    forbid_copy(BuiltInSymbols);
 
     BuiltInSymbols(BuiltInSymbols&&) noexcept;
 
-    BuiltInSymbols& operator=(BuiltInSymbols&&) noexcept;
+    auto operator=(BuiltInSymbols&&) noexcept -> BuiltInSymbols&;
 
     ~BuiltInSymbols() noexcept;
 
-    bool contains(const Decl& symbol) const;
+    auto contains(const Decl& symbol) const -> bool;
 
-    bool is_general_image_sampling_function(const Decl& symbol) const;
+    auto is_image_sampling_function(const Decl& symbol) const -> bool;
 
-    bool is_non_mipmapped_image_sampling_function(const Decl& symbol) const;
+    auto accepts_implicitly_cast_arguments(const FunctionDecl& function) const -> bool;
 
-    bool is_mipmapped_image_sampling_function(const Decl& symbol) const;
+    auto is_float_ctor(const Decl& symbol) const -> bool;
 
-    bool accepts_implicitly_cast_arguments(const FunctionDecl& function) const;
+    auto is_int_ctor(const Decl& symbol) const -> bool;
 
-    bool is_float_ctor(const Decl& symbol) const;
+    auto is_uint_ctor(const Decl& symbol) const -> bool;
 
-    bool is_int_ctor(const Decl& symbol) const;
+    auto is_some_vector_ctor(const Decl& symbol) const -> bool;
 
-    bool is_uint_ctor(const Decl& symbol) const;
+    auto is_vector2_ctor(const Decl& symbol) const -> bool;
 
-    bool is_some_vector_ctor(const Decl& symbol) const;
+    auto is_vector3_ctor(const Decl& symbol) const -> bool;
 
-    bool is_vector2_ctor(const Decl& symbol) const;
+    auto is_vector4_ctor(const Decl& symbol) const -> bool;
 
-    bool is_vector3_ctor(const Decl& symbol) const;
+    auto is_some_intrinsic_function(const Decl& symbol) const -> bool;
 
-    bool is_vector4_ctor(const Decl& symbol) const;
-
-    bool is_some_intrinsic_function(const Decl& symbol) const;
-
-    bool is_vector_field_access(const Decl& symbol) const;
+    auto is_vector_field_access(const Decl& symbol) const -> bool;
 
     // clang-tidy is complaining about public member variables, which is fine.
     // In this case, we know what we're doing and are treating these variables as
@@ -164,7 +157,6 @@ class BuiltInSymbols final
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(round);
 
     std::unique_ptr<FunctionDecl> sample_image;
-    std::unique_ptr<FunctionDecl> sample_level_image;
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(saturate);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(sign);
@@ -177,9 +169,9 @@ class BuiltInSymbols final
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(trunc);
 
-    std::vector<std::unique_ptr<Decl>> vector2_fields;
-    std::vector<std::unique_ptr<Decl>> vector3_fields;
-    std::vector<std::unique_ptr<Decl>> vector4_fields;
+    List<std::unique_ptr<Decl>> vector2_fields;
+    List<std::unique_ptr<Decl>> vector3_fields;
+    List<std::unique_ptr<Decl>> vector4_fields;
 
     std::unique_ptr<Decl> sprite_image;
     std::unique_ptr<Decl> sprite_color;
@@ -187,20 +179,26 @@ class BuiltInSymbols final
 
     // NOLINTEND
 
-    std::span<const gsl::not_null<Decl*>> all_decls() const
+    auto all_decls() -> std::span<std::reference_wrapper<Decl>>
+    {
+        return m_all;
+    }
+
+    auto all_decls() const -> std::span<const std::reference_wrapper<Decl>>
     {
         return m_all;
     }
 
   private:
     void add_func(
-        std::unique_ptr<FunctionDecl>&                                                 var,
-        std::string_view                                                               func_name,
-        std::initializer_list<std::pair<std::string_view, gsl::not_null<const Type*>>> param_descs,
-        const Type&                                                                    return_type);
+        std::unique_ptr<FunctionDecl>& var,
+        std::string_view               func_name,
+        std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>>
+                    param_descs,
+        const Type& return_type);
 
     void add_system_value(std::unique_ptr<Decl>& var, std::string_view name, const Type& type);
 
-    SmallVector<gsl::not_null<Decl*>, 132> m_all;
+    RefList<Decl, 132> m_all;
 };
 } // namespace cer::shadercompiler

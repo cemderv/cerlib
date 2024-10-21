@@ -2,15 +2,14 @@
 # This file is part of cerlib.
 # For conditions of distribution and use, see copyright notice in LICENSE.
 
-function(cerlib_add_executable)
+function(cerlib_add_game)
   set(options VERBOSE)
   set(one_value_args NAME COMPANY VERSION)
-  set(multi_value_args FILES)
 
   cmake_parse_arguments(CERLIB_AE "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
   if (NOT TARGET cerlib)
-    message(FATAL_ERROR "cerlib was not found! Did you forget to call find_package(cerlib)?")
+    message(FATAL_ERROR "cerlib was not found! Did you forget to add_subdirectory() it?")
   endif ()
 
   set(target_name ${CERLIB_AE_NAME})
@@ -21,7 +20,7 @@ function(cerlib_add_executable)
   set(assets_dir ${current_dir}/assets)
 
   if (${CERLIB_AE_VERBOSE})
-    message(STATUS "Adding cerlib-based executable '${target_name}'")
+    message(STATUS "Creating game target '${target_name}'")
     message(STATUS "  Company:         ${company}")
     message(STATUS "  Version:         ${version}")
     message(STATUS "  SourceDirectory: ${current_dir}")
@@ -34,19 +33,19 @@ function(cerlib_add_executable)
   endif ()
 
   if (ANDROID)
-    add_library(${target_name} SHARED ${CERLIB_AE_FILES})
+    add_library(${target_name} SHARED)
   else ()
     if (WIN32)
       list(APPEND extra_flags WIN32)
     endif ()
 
-    add_executable(${target_name} ${extra_flags} ${CERLIB_AE_FILES})
+    add_executable(${target_name} ${extra_flags})
   endif ()
 
   target_compile_features(${target_name} PRIVATE cxx_std_20)
 
   set_target_properties(${target_name} PROPERTIES
-    USE_FOLDERS              TRUE
+    USE_FOLDERS TRUE
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -92,22 +91,22 @@ function(cerlib_add_executable)
   set(script_dir ${CMAKE_CURRENT_FUNCTION_LIST_DIR})
 
   if (APPLE)
-    set(bundle_identifier   "com.${company}.${target_name}")
-    set(bundle_version      ${version})
-    set(bundle_name         ${target_name})
+    set(bundle_identifier "com.${company}.${target_name}")
+    set(bundle_version ${version})
+    set(bundle_name ${target_name})
     set(bundle_display_name ${target_name})
-    set(executable_name     ${target_name})
+    set(executable_name ${target_name})
 
     set(info_plist_dst_filename "${binary_dir}/${target_name}_Info.plist")
     configure_file("${script_dir}/Info.plist.in" ${info_plist_dst_filename})
 
     set_target_properties(${target_name} PROPERTIES
-      MACOSX_BUNDLE                 TRUE
-      MACOSX_BUNDLE_GUI_IDENTIFIER  ${bundle_display_name}
-      MACOSX_BUNDLE_INFO_PLIST      ${info_plist_dst_filename}
-      XCODE_LINK_BUILD_PHASE_MODE   BUILT_ONLY
-      BUILD_WITH_INSTALL_RPATH      TRUE
-      INSTALL_RPATH                 "@executable_path/"
+      MACOSX_BUNDLE TRUE
+      MACOSX_BUNDLE_GUI_IDENTIFIER ${bundle_display_name}
+      MACOSX_BUNDLE_INFO_PLIST ${info_plist_dst_filename}
+      XCODE_LINK_BUILD_PHASE_MODE BUILT_ONLY
+      BUILD_WITH_INSTALL_RPATH TRUE
+      INSTALL_RPATH "@executable_path/"
     )
 
     file(GLOB_RECURSE
@@ -139,8 +138,8 @@ function(cerlib_add_executable)
       ${target_name}
       ${target_name}_CopyAssets
       PROPERTIES
-        VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${target_name}>
-        FOLDER ${target_name}
+      VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:${target_name}>
+      FOLDER ${target_name}
     )
   endif ()
 
@@ -154,7 +153,7 @@ function(cerlib_add_executable)
       TARGET ${target_name}
       POST_BUILD
       COMMAND
-        ${CMAKE_COMMAND} -E copy_directory ${assets_dir} ${CMAKE_ANDROID_ASSETS_DIRECTORIES}/
+      ${CMAKE_COMMAND} -E copy_directory ${assets_dir} ${CMAKE_ANDROID_ASSETS_DIRECTORIES}/
       OUTPUT ${asset_short_files}
     )
   endif ()
@@ -164,7 +163,49 @@ function(cerlib_add_executable)
       TARGET ${target_name}
       POST_BUILD
       COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different ${cerlib_LIBRARY_LOCATION} $<TARGET_FILE_DIR:${target_name}>
+      ${CMAKE_COMMAND} -E copy_if_different ${cerlib_LIBRARY_LOCATION} $<TARGET_FILE_DIR:${target_name}>
     )
+  endif ()
+
+  target_precompile_headers(${target_name} PRIVATE
+    <cerlib.hpp>
+  )
+
+  # Add the game's source files
+  set(game_source_files_dir ${current_dir}/src)
+
+  if (NOT EXISTS ${game_source_files_dir})
+    cerlib_fatal_error("Your game does not have a 'src' directory. Please create one.")
+  endif()
+
+  file(GLOB_RECURSE game_source_files CONFIGURE_DEPENDS
+    "${game_source_files_dir}/*.hpp"
+    "${game_source_files_dir}/*.cpp"
+  )
+
+  if (NOT game_source_files)
+    cerlib_fatal_error("Your game does not have any source files. Please place some in the 'src' folder.")
+  endif()
+
+  target_sources(${target_name} PRIVATE ${game_source_files})
+
+  # When building for Android, include some cerlib-specific setup code and link with Android
+  # system libraries.
+  if (ANDROID)
+    set(android_project_dir ${current_dir}/android_project)
+
+    if (NOT EXISTS ${android_project_dir})
+      cerlib_fatal_error("You're attempting to build your game for Android, however the 'android_project' folder is missing")
+    endif()
+
+    set(main_activity_setup_file ${android_project_dir}/app/src/MainActivitySetup.cpp)
+
+    if (NOT EXISTS ${main_activity_setup_file})
+      cerlib_fatal_error("You're attempting to build your game for Android, but some files are missing. Searched for: ${main_activity_setup_file}")
+    endif()
+
+    find_library(android_library android REQUIRED)
+    target_link_libraries(${target_name} PRIVATE ${android_library})
+    target_sources(${target_name} PRIVATE ${main_activity_setup_file})
   endif ()
 endfunction()

@@ -19,4 +19,20 @@ set(opengl_files
   OpenGLVao.hpp
   OpenGLWindow.cpp
   OpenGLWindow.hpp
+  khrplatform.h
 )
+
+if (EMSCRIPTEN OR ANDROID OR IOS)
+  list(APPEND opengl_files
+    gles/glad.h
+    gles/glad.cpp
+  )
+  list(APPEND opengl_include_dirs gles)
+  list(APPEND opengl_compile_defs -DCERLIB_GFX_IS_GLES)
+else ()
+  list(APPEND opengl_files
+    desktop/glad.h
+    desktop/glad.cpp
+  )
+  list(APPEND opengl_include_dirs desktop)
+endif ()

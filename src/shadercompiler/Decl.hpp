@@ -6,10 +6,9 @@
 
 #include "shadercompiler/SourceLocation.hpp"
 #include "shadercompiler/Type.hpp"
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
 #include <any>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 #include <string>
 
@@ -22,7 +21,7 @@ class FunctionDecl;
 class StructDecl;
 class ForStmt;
 
-class CERLIB_API_INTERNAL Decl
+class Decl
 {
   protected:
     explicit Decl(const SourceLocation& location, std::string_view name);
@@ -35,19 +34,19 @@ class CERLIB_API_INTERNAL Decl
     }
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Decl);
+    forbid_copy_and_move(Decl);
 
     virtual ~Decl() noexcept;
 
     void verify(SemaContext& context, Scope& scope);
 
-    bool is_verified() const;
+    auto is_verified() const -> bool;
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
-    const Type& type() const;
+    auto type() const -> const Type&;
 
   private:
     SourceLocation m_location;
@@ -56,7 +55,7 @@ class CERLIB_API_INTERNAL Decl
     const Type*    m_type;
 };
 
-class CERLIB_API_INTERNAL StructFieldDecl final : public Decl
+class StructFieldDecl final : public Decl
 {
     friend class StructDecl;
 
@@ -65,44 +64,45 @@ class CERLIB_API_INTERNAL StructFieldDecl final : public Decl
                              std::string_view      name,
                              const Type&           type);
 
-    NON_COPYABLE_NON_MOVABLE(StructFieldDecl);
+    forbid_copy_and_move(StructFieldDecl);
 
     ~StructFieldDecl() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 };
 
-class CERLIB_API_INTERNAL StructDecl final : public Decl, public Type
+class StructDecl final : public Decl, public Type
 {
   public:
-    using FieldList = SmallVector<std::unique_ptr<StructFieldDecl>, 8>;
+    using FieldList = List<std::unique_ptr<StructFieldDecl>, 8>;
 
     explicit StructDecl(const SourceLocation& location,
                         std::string_view      name,
                         FieldList             fields,
                         bool                  is_built_in);
 
-    NON_COPYABLE_NON_MOVABLE(StructDecl);
+    forbid_copy_and_move(StructDecl);
 
     ~StructDecl() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view type_name() const override;
+    auto type_name() const -> std::string_view override;
 
-    const Type& resolve(SemaContext& context, Scope& scope) const override;
+    auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    std::span<const std::unique_ptr<StructFieldDecl>> get_fields() const;
+    auto get_fields() const -> std::span<const std::unique_ptr<StructFieldDecl>>;
 
-    StructFieldDecl* find_field(std::string_view name) const;
+    auto find_field(std::string_view name) const -> StructFieldDecl*;
 
-    bool has_field(std::string_view name) const;
+    auto has_field(std::string_view name) const -> bool;
 
-    Decl* find_member_symbol(const SemaContext& context, std::string_view name) const override;
+    auto find_member_symbol(const SemaContext& context, std::string_view name) const
+        -> Decl* override;
 
-    FunctionDecl* ctor() const;
+    auto ctor() const -> FunctionDecl*;
 
-    bool is_built_in() const;
+    auto is_built_in() const -> bool;
 
   private:
     FieldList                     m_fields;
@@ -116,7 +116,7 @@ enum class FunctionParamKind
     ShaderStageInput,
 };
 
-class CERLIB_API_INTERNAL FunctionParamDecl final : public Decl
+class FunctionParamDecl final : public Decl
 {
     friend class FunctionDecl;
 
@@ -130,11 +130,11 @@ class CERLIB_API_INTERNAL FunctionParamDecl final : public Decl
                                FunctionParamKind     kind,
                                const Type&           type);
 
-    NON_COPYABLE_NON_MOVABLE(FunctionParamDecl);
+    forbid_copy_and_move(FunctionParamDecl);
 
     ~FunctionParamDecl() noexcept override;
 
-    FunctionParamKind kind() const;
+    auto kind() const -> FunctionParamKind;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -148,14 +148,14 @@ enum class FunctionKind
     Shader,
 };
 
-class CERLIB_API_INTERNAL ForLoopVariableDecl final : public Decl
+class ForLoopVariableDecl final : public Decl
 {
     friend ForStmt;
 
   public:
     explicit ForLoopVariableDecl(const SourceLocation& location, std::string_view name);
 
-    NON_COPYABLE_NON_MOVABLE(ForLoopVariableDecl);
+    forbid_copy_and_move(ForLoopVariableDecl);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -166,53 +166,53 @@ class CERLIB_API_INTERNAL ForLoopVariableDecl final : public Decl
     }
 };
 
-class CERLIB_API_INTERNAL FunctionDecl final : public Decl
+class FunctionDecl final : public Decl
 {
   public:
-    explicit FunctionDecl(const SourceLocation&                              location,
-                          std::string_view                                   name,
-                          SmallVector<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                          const Type&                                        return_type,
-                          std::unique_ptr<CodeBlock>                         body,
-                          bool is_struct_ctor = false);
+    explicit FunctionDecl(const SourceLocation&                       location,
+                          std::string_view                            name,
+                          List<std::unique_ptr<FunctionParamDecl>, 4> parameters,
+                          const Type&                                 return_type,
+                          std::unique_ptr<CodeBlock>                  body,
+                          bool                                        is_struct_ctor = false);
 
-    NON_COPYABLE_NON_MOVABLE(FunctionDecl);
+    forbid_copy_and_move(FunctionDecl);
 
     ~FunctionDecl() noexcept override;
 
-    std::span<const std::unique_ptr<FunctionParamDecl>> parameters() const;
+    auto parameters() const -> std::span<const std::unique_ptr<FunctionParamDecl>>;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool;
 
-    CodeBlock* body();
+    auto body() -> CodeBlock*;
 
-    const CodeBlock* body() const;
+    auto body() const -> const CodeBlock*;
 
-    FunctionKind kind() const;
+    auto kind() const -> FunctionKind;
 
-    bool is(FunctionKind kind) const;
+    auto is(FunctionKind kind) const -> bool;
 
-    bool is_normal_function() const;
+    auto is_normal_function() const -> bool;
 
-    bool is_shader() const;
+    auto is_shader() const -> bool;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    FunctionParamDecl* find_parameter(std::string_view name) const;
+    auto find_parameter(std::string_view name) const -> FunctionParamDecl*;
 
-    bool is_struct_ctor() const;
+    auto is_struct_ctor() const -> bool;
 
   private:
-    FunctionKind                                       m_kind;
-    SmallVector<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
-    std::unique_ptr<CodeBlock>                         m_body;
-    bool                                               m_is_struct_ctor;
+    FunctionKind                                m_kind;
+    List<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
+    std::unique_ptr<CodeBlock>                  m_body;
+    bool                                        m_is_struct_ctor;
 };
 
 /**
  * \brief Represents a global shader parameter declaration.
  */
-class CERLIB_API_INTERNAL ShaderParamDecl final : public Decl
+class ShaderParamDecl final : public Decl
 {
   public:
     explicit ShaderParamDecl(const SourceLocation& location,
@@ -220,26 +220,26 @@ class CERLIB_API_INTERNAL ShaderParamDecl final : public Decl
                              const Type&           type,
                              std::unique_ptr<Expr> default_value_expr);
 
-    NON_COPYABLE_NON_MOVABLE(ShaderParamDecl);
+    forbid_copy_and_move(ShaderParamDecl);
 
     ~ShaderParamDecl() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    bool is_array() const;
+    auto is_array() const -> bool;
 
-    uint16_t array_size() const;
+    auto array_size() const -> uint16_t;
 
-    const Expr* default_value_expr() const;
+    auto default_value_expr() const -> const Expr*;
 
-    const std::any& default_value() const;
+    auto default_value() const -> const std::any&;
 
   private:
     std::unique_ptr<Expr> m_default_value_expr;
     std::any              m_default_value;
 };
 
-class CERLIB_API_INTERNAL VarDecl final : public Decl
+class VarDecl final : public Decl
 {
   public:
     explicit VarDecl(const SourceLocation& location,
@@ -250,17 +250,17 @@ class CERLIB_API_INTERNAL VarDecl final : public Decl
     // Overload for system values
     explicit VarDecl(std::string_view name, const Type& type);
 
-    NON_COPYABLE_NON_MOVABLE(VarDecl);
+    forbid_copy_and_move(VarDecl);
 
     ~VarDecl() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    bool is_const() const;
+    auto is_const() const -> bool;
 
-    bool is_system_value() const;
+    auto is_system_value() const -> bool;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
   private:
     bool                  m_is_const;

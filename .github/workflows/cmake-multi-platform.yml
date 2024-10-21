@@ -7,119 +7,192 @@ on:
     branches: [ "main", "develop" ]
 
 env:
-  BUILD_TYPE: Release
+  cpm_cache_name: cpm-src-cache
 
 jobs:
-  build-linux-gcc13:
-    runs-on: ubuntu-22.04
-    container: gcc:13
+  build-linux-gcc:
+    name: Linux build (GCC)
+    strategy:
+      fail-fast: true
+      matrix:
+        cmconfig: [ Debug, Release ]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install prerequisites
-        run: |
-          apt update -y
-          apt upgrade -y
-          apt install -y cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols \
-          extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck
+
+      - name: CPM source code cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/build/_deps/*-src
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-
+
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-gcc-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-gcc
+
+      - name: Set up APT packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
+          version: 1.0
 
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -G "Ninja Multi-Config" \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
           -DCERLIB_ENABLE_TESTS=ON \
           -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
-      - name: Run Cppcheck
-        run: python3 cppcheck.py ${{github.workspace}}/build
-
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}/build/bin/cerlibTests
+        run: ${{github.workspace}}/build/bin/${{matrix.cmconfig}}/cerlibTests
 
-
-  build-linux-clang16:
-    runs-on: ubuntu-22.04
-    container: gcc:13
+        
+  build-linux-clang:
+    name: Linux build (Clang)
+    strategy:
+      fail-fast: true
+      matrix:
+        cmconfig: [ Debug, Release ]
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install prerequisites
-        run: |
-          apt update -y
-          apt upgrade -y
-          apt install -y cmake build-essential libwayland-dev libxkbcommon-dev wayland-protocols \
-          xorg-dev libasound2-dev lsb-release wget software-properties-common cppcheck gnupg
 
-      - name: Install Clang
-        run: |
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x ./llvm.sh
-          ./llvm.sh 16 all
+      - name: CPM source code cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/build/_deps/*-src
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-
+
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-clang-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-clang
+
+      - name: Set up APT packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: cmake clang-16 build-essential libwayland-dev libxkbcommon-dev wayland-protocols extra-cmake-modules xorg-dev libasound2-dev clang-tidy clang-tools cppcheck lsb-release wget software-properties-common gnupg ninja-build
+          version: 1.0
 
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -G "Ninja Multi-Config" \
           -DCMAKE_C_COMPILER=clang-16 \
           -DCMAKE_CXX_COMPILER=clang++-16 \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
           -DCERLIB_ENABLE_TESTS=ON \
           -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
-      - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
-
       - name: Run Cppcheck
         run: python3 cppcheck.py ${{github.workspace}}/build
 
-      - name: Run Tests
-        run: ${{github.workspace}}/build/bin/cerlibTests
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
-  build-windows-vs2022:
-    runs-on: windows-2022
+      - name: Run Tests
+        run: ${{github.workspace}}/build/bin/${{matrix.cmconfig}}/cerlibTests
+
+
+  build-windows:
+    name: Windows build
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ 2022 ]
+        cmconfig: [ Debug, Release ]
+    runs-on: windows-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
+      
+      - name: CPM source code cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/build/_deps/*-src
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-
+
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-windows-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-windows
 
       - name: Configure CMake
         run: |
           cmake -B ${{github.workspace}}/build -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}\build\bin\Release\cerlibTests.exe
+        run: ${{github.workspace}}\build\bin\${{matrix.cmconfig}}\cerlibTests.exe
 
-  build-macos-13:
-    runs-on: macos-13
+
+  build-macos:
+    name: macOS build
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ 13, 14, 15 ]
+        cmconfig: [ Debug, Release ]
+    runs-on: macos-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Configure CMake (Xcode)
+      - name: Install prerequisites
         run: |
-          cmake -B ${{github.workspace}}/build -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
+          brew install ninja
+      
+      - name: CPM source code cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/build/_deps/*-src
+          key: ${{env.cpm_cache_name}}-${{ hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**') }}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-
 
-      - name: Build (Xcode)
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
+      - name: CPM build output cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{github.workspace}}/build/_deps/*-build
+            ${{github.workspace}}/build/_deps/*-subbuild
+          key: ${{env.cpm_cache_name}}-macos-${{matrix.os}}-ninja-${{hashFiles('CMakeLists.txt', '**/CMakeLists.txt', 'cmake/**')}}
+          restore-keys: |
+            ${{env.cpm_cache_name}}-macos-${{matrix.os}}-ninja
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}/build/bin/Release/cerlibTests
-
-
-  build-macos-14:
-    runs-on: macos-14
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure CMake (Xcode)
-        run: |
-          cmake -B ${{github.workspace}}/build -G Xcode -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
-
-      - name: Build (Xcode)
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --parallel 4
-
-      - name: Run Tests
-        run: ${{github.workspace}}/build/bin/Release/cerlibTests
-
+        run: ${{github.workspace}}/build/bin/${{matrix.cmconfig}}/cerlibTests
+        

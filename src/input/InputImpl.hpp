@@ -24,42 +24,43 @@ class InputImpl final
     InputImpl();
 
   public:
-    static InputImpl& instance();
+    static auto instance() -> InputImpl&;
 
-    static int to_sdl_key(Key key);
+    static auto to_sdl_key(Key key) -> int;
 
-    static Key from_sdl_key(SDL_Keycode sdl_key);
+    static auto from_sdl_key(SDL_Keycode sdl_key) -> Key;
 
-    static int to_sdl_mouse_button(MouseButton button);
+    static auto to_sdl_mouse_button(MouseButton button) -> int;
 
-    static MouseButton from_sdl_mouse_button(int sdl_button);
+    static auto from_sdl_mouse_button(int sdl_button) -> MouseButton;
 
 #ifdef __EMSCRIPTEN__
-    static std::pair<Key, KeyModifier> from_sdl_keysym(const SDL_Keysym& sdl_keysym);
+    static auto from_sdl_keysym(const SDL_Keysym& sdl_keysym) -> std::pair<Key, KeyModifier>;
 #else
-    static std::pair<Key, KeyModifier> from_sdl_keysym(SDL_Keycode sdl_key, SDL_Keymod sdl_mod);
+    static auto from_sdl_keysym(SDL_Keycode sdl_key, SDL_Keymod sdl_mod)
+        -> std::pair<Key, KeyModifier>;
 #endif
 
-    bool is_key_down(Key key) const;
+    auto is_key_down(Key key) const -> bool;
 
-    bool was_key_just_pressed(Key key) const;
+    auto was_key_just_pressed(Key key) const -> bool;
 
-    bool was_key_just_released(Key key) const;
+    auto was_key_just_released(Key key) const -> bool;
 
-    bool is_mouse_button_down(MouseButton button) const;
+    auto is_mouse_button_down(MouseButton button) const -> bool;
 
     void update_key_states();
 
-    Vector2 mouse_position_delta() const;
+    auto mouse_position_delta() const -> Vector2;
 
     void set_mouse_position_delta(Vector2 value);
 
-    Vector2 mouse_wheel_delta() const;
+    auto mouse_wheel_delta() const -> Vector2;
 
     void set_mouse_wheel_delta(Vector2 value);
 
   private:
-    using KeyStateArray = std::array<uint8_t, static_cast<size_t>(Key::EndCall)>;
+    using KeyStateArray = std::array<uint8_t, size_t(Key::EndCall)>;
 
     KeyStateArray m_previous_key_states;
     KeyStateArray m_key_states;

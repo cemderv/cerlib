@@ -12,9 +12,9 @@ namespace cer::details
 class OpenGLUserShader final : public ShaderImpl
 {
   public:
-    explicit OpenGLUserShader(gsl::not_null<GraphicsDevice*> parent_device,
-                              std::string_view               glsl_code,
-                              ParameterList                  parameters);
+    explicit OpenGLUserShader(GraphicsDevice&  parent_device,
+                              std::string_view glsl_code,
+                              ParameterList    parameters);
 
     GLuint gl_handle{};
 };

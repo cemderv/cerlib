@@ -6,7 +6,6 @@
 #include "OpenGLSpriteBatch.hpp"
 #include "cerlib/Logging.hpp"
 #include "shadercompiler/Naming.hpp"
-#include "util/InternalError.hpp"
 #include <cassert>
 
 namespace cer::details
@@ -39,7 +38,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the OpenGL shader program handle.");
+        throw std::runtime_error{"Failed to create the OpenGL shader program handle."};
     }
 
     GL_CALL(glAttachShader(gl_handle, vertex_shader.gl_handle));
@@ -51,7 +50,8 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
     if (vertex_shader.gl_handle != 0)
     {
-        auto index = static_cast<GLuint>(0);
+        GLuint index = 0;
+
         for (const auto& attrib : vertex_shader.attributes)
         {
             GL_CALL(glBindAttribLocation(gl_handle, index, attrib.c_str()));
@@ -72,9 +72,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
 
         log_debug("Program linking error:\n{}", buffer.get());
 
-        const std::string msg{reinterpret_cast<const char*>(buffer.get())};
-
-        CER_THROW_RUNTIME_ERROR_STR(msg);
+        throw std::runtime_error{reinterpret_cast<const char*>(buffer.get())};
     }
 
     if (vertex_shader.gl_handle != 0)
@@ -87,48 +85,50 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
         GL_CALL(glDetachShader(gl_handle, fragment_shader));
     }
 
-    auto uniform_count = GLint();
+    GLint uniform_count = 0;
     GL_CALL(glGetProgramiv(gl_handle, GL_ACTIVE_UNIFORMS, &uniform_count));
 
     if (uniform_count > 0)
     {
-        auto previous_program = GLuint();
+        GLuint previous_program = 0;
         GL_CALL(glGetIntegerv(GL_CURRENT_PROGRAM, reinterpret_cast<GLint*>(&previous_program)));
 
         GL_CALL(glUseProgram(gl_handle));
 
-        uniform_locations.reserve(static_cast<size_t>(uniform_count));
+        uniform_locations.reserve(size_t(uniform_count));
 
-        auto max_name_length = GLint();
+        GLint max_name_length = 0;
         GL_CALL(glGetProgramiv(gl_handle, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length));
 
-        auto name_buffer = SmallVector<GLchar, 32>();
+        auto name_buffer = List<GLchar, 32>{};
         name_buffer.resize(max_name_length);
 
         for (GLint i = 0; i < uniform_count; ++i)
         {
             std::ranges::fill(name_buffer, '\0');
-            auto name_length = GLsizei();
-            auto size        = GLint();
-            auto type        = GLenum();
+
+            GLsizei name_length = 0;
+            GLint   size        = 0;
+            GLenum  type        = 0;
+
             GL_CALL(glGetActiveUniform(gl_handle,
-                                       static_cast<GLuint>(i),
+                                       GLuint(i),
                                        max_name_length,
                                        &name_length,
                                        &size,
                                        &type,
                                        name_buffer.data()));
 
-            auto location = GLint();
+            GLint location = 0;
             GL_CALL(location = glGetUniformLocation(gl_handle, name_buffer.data()));
             assert(location != -1);
 
-            uniform_locations.emplace_back(std::string(name_buffer.data()), location);
+            uniform_locations.emplace_back(std::string{name_buffer.data()}, location);
         }
 
-        std::sort(uniform_locations.begin(),
-                  uniform_locations.end(),
-                  [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
+        std::ranges::sort(uniform_locations, [](const auto& lhs, const auto& rhs) {
+            return lhs.first < rhs.first;
+        });
 
         auto image_counter = OpenGLSpriteBatch::texture_slot_base_offset;
 
@@ -165,7 +165,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept
     other.gl_handle = 0;
 }
 
-OpenGLShaderProgram& OpenGLShaderProgram::operator=(OpenGLShaderProgram&& other) noexcept
+auto OpenGLShaderProgram::operator=(OpenGLShaderProgram&& other) noexcept -> OpenGLShaderProgram&
 {
     if (&other != this)
     {
@@ -184,12 +184,11 @@ OpenGLShaderProgram::~OpenGLShaderProgram() noexcept
     destroy();
 }
 
-GLint OpenGLShaderProgram::uniform_location(std::string_view name) const
+auto OpenGLShaderProgram::uniform_location(std::string_view name) const -> GLint
 {
-    const auto it =
-        std::ranges::find_if(uniform_locations, [name](const std::pair<std::string, GLint>& pair) {
-            return pair.first == name;
-        });
+    const auto it = std::ranges::find_if(uniform_locations, [name](const auto& pair) {
+        return pair.first == name;
+    });
 
     return it != uniform_locations.cend() ? it->second : -1;
 }

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <string>
 
 namespace cer
@@ -21,19 +21,19 @@ enum class ImageFormat;
 
 namespace std
 {
-CERLIB_API std::string to_string(const cer::Color& value);
+auto to_string(const cer::Color& value) -> std::string;
 
-CERLIB_API std::string to_string(const cer::Vector2& value);
+auto to_string(const cer::Vector2& value) -> std::string;
 
-CERLIB_API std::string to_string(const cer::Vector3& value);
+auto to_string(const cer::Vector3& value) -> std::string;
 
-CERLIB_API std::string to_string(const cer::Vector4& value);
+auto to_string(const cer::Vector4& value) -> std::string;
 
-CERLIB_API std::string to_string(const cer::Matrix& value);
+auto to_string(const cer::Matrix& value) -> std::string;
 
-CERLIB_API std::string to_string(cer::ImageFormat value);
+auto to_string(cer::ImageFormat value) -> std::string;
 
-CERLIB_API std::string to_string(const cer::Image& value);
+auto to_string(const cer::Image& value) -> std::string;
 
-CERLIB_API std::string to_string(const cer::Rectangle& value);
+auto to_string(const cer::Rectangle& value) -> std::string;
 } // namespace std

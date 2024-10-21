@@ -6,14 +6,12 @@
 
 #include "ShaderImpl.hpp"
 #include "cerlib/Math.hpp"
-#include "util/InternalError.hpp"
-
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/util>
 
 namespace cer::details
 {
-static uint16_t get_base_alignment(const ShaderParameter& parameter)
+static auto get_base_alignment(const ShaderParameter& parameter) -> uint16_t
 {
     assert(!parameter.is_image);
 
@@ -36,29 +34,29 @@ static uint16_t get_base_alignment(const ShaderParameter& parameter)
         case ShaderParameterType::MatrixArray: return ShaderParameter::array_element_base_alignment;
 
         case ShaderParameterType::Image:
-            CER_THROW_INTERNAL_ERROR_STR("Image parameter cannot have a base alignment.");
+            throw std::runtime_error{"Image parameter cannot have a base alignment."};
     }
 
-    CER_THROW_INTERNAL_ERROR_STR("Invalid shader parameter");
+    throw std::runtime_error{"Invalid shader parameter"};
 }
 
-CBufferPacker::Result CBufferPacker::pack_parameters(ShaderImpl::ParameterList& parameters,
-                                                     uint32_t                   cbuffer_alignment,
-                                                     bool take_max_of_alignment_and_size)
+auto CBufferPacker::pack_parameters(ShaderImpl::ParameterList& parameters,
+                                    uint32_t                   cbuffer_alignment,
+                                    bool take_max_of_alignment_and_size) -> Result
 {
-    uint16_t current_offset{};
+    auto current_offset = uint16_t{};
 
-    for (ShaderParameter& param : parameters)
+    for (auto& param : parameters)
     {
         if (param.is_image)
         {
             continue;
         }
 
-        uint16_t       param_size_in_bytes = param.size_in_bytes;
-        const uint16_t base_alignment      = get_base_alignment(param);
-        const uint16_t offset =
-            gsl::narrow_cast<uint16_t>(next_aligned_number(current_offset, base_alignment));
+        auto       param_size_in_bytes = param.size_in_bytes;
+        const auto base_alignment      = get_base_alignment(param);
+        const auto offset =
+            narrow_cast<uint16_t>(next_aligned_number(current_offset, base_alignment));
 
         param.offset = offset;
 
@@ -72,13 +70,12 @@ CBufferPacker::Result CBufferPacker::pack_parameters(ShaderImpl::ParameterList& 
         }
     }
 
-    const uint32_t cbuffer_size =
-        static_cast<uint32_t>(next_aligned_number(current_offset, cbuffer_alignment));
+    const auto cbuffer_size = uint32_t(next_aligned_number(current_offset, cbuffer_alignment));
 
     // Image parameters
     {
-        uint16_t i{};
-        for (ShaderParameter& param : parameters)
+        auto i = uint16_t{};
+        for (auto& param : parameters)
         {
             if (!param.is_image)
             {

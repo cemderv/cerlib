@@ -7,18 +7,18 @@
 #include "GraphicsDevice.hpp"
 #include "ImageImpl.hpp"
 #include "Tessellation2D.hpp"
+#include "TextImpl.hpp"
 #include "cerlib/Font.hpp"
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
-#include "util/Util.hpp"
+#include "cerlib/Text.hpp"
+#include "util/narrow_cast.hpp"
 #include <array>
 #include <cassert>
-#include <gsl/narrow>
 
 namespace cer::details
 {
-SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
-                         gsl::not_null<FrameStats*>     draw_stats)
+SpriteBatch::SpriteBatch(GraphicsDevice& device_impl, FrameStats& draw_stats)
     : m_parent_device(device_impl)
     , m_frame_stats(draw_stats)
     , m_vertex_buffer_position(0)
@@ -29,18 +29,14 @@ SpriteBatch::SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
 
     // White image
     {
-        constexpr size_t size = 1;
+        constexpr auto size = size_t(1);
 
-        std::array<uint8_t, 4 * size * size> data{};
+        auto data = std::array<uint8_t, 4 * size * size>{};
         std::ranges::fill(data, 255);
 
-        m_white_image = Image(m_parent_device
-                                  ->create_image(size,
-                                                 size,
-                                                 ImageFormat::R8G8B8A8_UNorm,
-                                                 1,
-                                                 [&](uint32_t) { return data.data(); })
-                                  .get());
+        m_white_image =
+            Image{m_parent_device.create_image(size, size, ImageFormat::R8G8B8A8_UNorm, data.data())
+                      .release()};
     }
 
     log_verbose("Created SpriteBatch");
@@ -69,20 +65,10 @@ void SpriteBatch::draw_sprite(const Sprite& sprite, SpriteShaderKind sprite_shad
 {
     verify_has_begun();
 
-    Rectangle src_rect;
-    if (sprite.src_rect)
-    {
-        src_rect = *sprite.src_rect;
-    }
-    else
-    {
-        src_rect = Rectangle(0, 0, sprite.image.size());
-    }
-
-    m_sprite_queue.push_back(InternalSprite{
+    m_sprite_queue.push_back({
         .image       = sprite.image,
         .dst         = sprite.dst_rect,
-        .src         = src_rect,
+        .src         = sprite.src_rect.value_or(Rectangle{0, 0, sprite.image.size()}),
         .color       = sprite.color,
         .origin      = sprite.origin,
         .rotation    = sprite.rotation,
@@ -99,107 +85,21 @@ void SpriteBatch::draw_string(std::string_view                     text,
                               const std::optional<TextDecoration>& decoration)
 {
     verify_has_begun();
+    assert(font);
 
-    FontImpl* font_impl = font ? font.impl() : FontImpl::built_in(false);
+    shape_text(text, font, font_size, decoration, m_tmp_glyphs, m_tmp_decoration_rects);
 
-    const float line_height  = font_impl->line_height(font_size);
-    const float stroke_width = line_height * 0.1f;
+    do_draw_text(m_tmp_glyphs, m_tmp_decoration_rects, position, color);
+}
 
-    if (!decoration.has_value())
-    {
-        font_impl->for_each_glyph<false>(text, font_size, [&](uint32_t codepoint, Rectangle rect) {
-            const FontImpl::RasterizedGlyph& glyph =
-                font_impl->rasterized_glyph(codepoint, font_size);
+void SpriteBatch::draw_text(const Text& text, const Vector2& position, const Color& color)
+{
+    verify_has_begun();
+    assert(text);
 
-            const FontImpl::FontPage& page = font_impl->page(glyph.page_index);
+    const TextImpl& text_impl = *text.impl();
 
-            rect.x += position.x;
-            rect.y += position.y;
-
-            draw_sprite(
-                Sprite{
-                    .image    = page.atlas,
-                    .dst_rect = rect,
-                    .src_rect = glyph.uv_rect,
-                    .color    = color,
-                    .rotation = 0.0f,
-                    .origin   = Vector2(),
-                    .flip     = SpriteFlip::None,
-                },
-                SpriteShaderKind::Monochromatic);
-
-            return true;
-        });
-    }
-    else
-    {
-        assert(decoration.has_value());
-
-        font_impl->for_each_glyph<true>(
-            text,
-            font_size,
-            [&](uint32_t codepoint, Rectangle rect, const FontImpl::GlyphIterationExtras& extras) {
-                const FontImpl::RasterizedGlyph& glyph =
-                    font_impl->rasterized_glyph(codepoint, font_size);
-
-                const FontImpl::FontPage& page = font_impl->page(glyph.page_index);
-
-                rect.x += position.x;
-                rect.y += position.y;
-
-                draw_sprite(
-                    Sprite{
-                        .image    = page.atlas,
-                        .dst_rect = rect,
-                        .src_rect = glyph.uv_rect,
-                        .color    = color,
-                        .rotation = 0.0f,
-                        .origin   = Vector2(),
-                        .flip     = SpriteFlip::None,
-                    },
-                    SpriteShaderKind::Monochromatic);
-
-                if (extras.is_last_on_line)
-                {
-                    if (const TextUnderline* underline = std::get_if<TextUnderline>(&*decoration))
-                    {
-                        Rectangle underline_rect = extras.line_rect_thus_far;
-                        underline_rect.x += position.x;
-                        underline_rect.y += position.y;
-                        underline_rect.y += underline_rect.height;
-                        underline_rect.height = clamp(underline->thickness.value_or(stroke_width),
-                                                      1.0f,
-                                                      line_height * 0.5f);
-                        underline_rect.y += underline_rect.height / 2.0f;
-
-                        fill_rectangle(underline_rect,
-                                       underline->color.value_or(color),
-                                       0.0f,
-                                       Vector2());
-                    }
-                    else if (const auto* strikethrough =
-                                 std::get_if<TextStrikethrough>(&*decoration))
-                    {
-                        Rectangle underline_rect = extras.line_rect_thus_far;
-                        underline_rect.x += position.x;
-                        underline_rect.y += position.y;
-                        underline_rect.y += underline_rect.height / 2;
-                        underline_rect.height =
-                            clamp(strikethrough->thickness.value_or(stroke_width),
-                                  1.0f,
-                                  line_height * 0.5f);
-                        underline_rect.y -= underline_rect.height / 2.0f;
-
-                        fill_rectangle(underline_rect,
-                                       strikethrough->color.value_or(color),
-                                       0.0f,
-                                       Vector2());
-                    }
-                }
-
-                return true;
-            });
-    }
+    do_draw_text(text_impl.glyphs(), text_impl.decoration_rects(), position, color);
 }
 
 void SpriteBatch::fill_rectangle(const Rectangle& rectangle,
@@ -209,14 +109,12 @@ void SpriteBatch::fill_rectangle(const Rectangle& rectangle,
 {
     verify_has_begun();
 
-    draw_sprite(Sprite{
+    draw_sprite({
         .image    = m_white_image,
         .dst_rect = rectangle,
-        .src_rect = {},
         .color    = color,
         .rotation = rotation,
         .origin   = origin,
-        .flip     = SpriteFlip::None,
     });
 }
 
@@ -235,9 +133,8 @@ void SpriteBatch::end()
     m_is_in_begin_end_pair = false;
 }
 
-void SpriteBatch::on_shader_destroyed(gsl::not_null<ShaderImpl*> shader)
+void SpriteBatch::on_shader_destroyed([[maybe_unused]] ShaderImpl& shader)
 {
-    CERLIB_UNUSED(shader);
 }
 
 void SpriteBatch::release_resources()
@@ -254,16 +151,16 @@ void SpriteBatch::verify_has_begun() const
 
 auto SpriteBatch::flush() -> void
 {
-    Image            batch_image;
-    uint32_t         batch_start{};
-    SpriteShaderKind batch_shader = SpriteShaderKind::Default;
-    const uint32_t   sprite_count = gsl::narrow_cast<uint32_t>(m_sprite_queue.size());
+    auto       batch_image  = Image{};
+    auto       batch_start  = 0u;
+    auto       batch_shader = SpriteShaderKind::Default;
+    const auto sprite_count = narrow_cast<uint32_t>(m_sprite_queue.size());
 
     for (uint32_t i = 0; i < sprite_count; ++i)
     {
-        const InternalSprite&  sprite      = m_sprite_queue[i];
-        const Image&           image       = sprite.image;
-        const SpriteShaderKind shader_kind = sprite.shader_kind;
+        const auto& sprite      = m_sprite_queue[i];
+        const auto& image       = sprite.image;
+        const auto  shader_kind = sprite.shader_kind;
 
         if (image != batch_image || shader_kind != batch_shader)
         {
@@ -288,32 +185,34 @@ void SpriteBatch::render_batch(const Image&     image,
                                uint32_t         start,
                                uint32_t         count)
 {
-    constexpr bool are_canvases_flipped_up_down = true;
+    constexpr auto are_canvases_flipped_up_down = true;
 
     assert(image);
 
     set_up_batch(image, shader, start, count);
 
-    const float image_width  = image.widthf();
-    const float image_height = image.heightf();
+    const auto image_width  = image.widthf();
+    const auto image_height = image.heightf();
 
     assert(!is_zero(image_width));
     assert(!is_zero(image_height));
 
-    const float inverse_image_width  = 1.0f / image_width;
-    const float inverse_image_height = 1.0f / image_height;
+    const auto inverse_image_width  = 1.0f / image_width;
+    const auto inverse_image_height = 1.0f / image_height;
 
-    const Rectangle texture_size_and_inverse{image_width,
-                                             image_height,
-                                             inverse_image_width,
-                                             inverse_image_height};
+    const auto texture_size_and_inverse = Rectangle{
+        image_width,
+        image_height,
+        inverse_image_width,
+        inverse_image_height,
+    };
 
-    const bool flip_image_up_down = are_canvases_flipped_up_down && image.is_canvas();
+    const auto flip_image_up_down = are_canvases_flipped_up_down && image.is_canvas();
 
     while (count > 0)
     {
-        uint32_t       batch_size      = count;
-        const uint32_t remaining_space = max_batch_size - m_vertex_buffer_position;
+        auto       batch_size      = count;
+        const auto remaining_space = max_batch_size - m_vertex_buffer_position;
 
         if (batch_size > remaining_space)
         {
@@ -358,12 +257,12 @@ void SpriteBatch::render_sprite(const InternalSprite& sprite,
                                 const Rectangle&      texture_size_and_inverse,
                                 bool                  flip_image_up_down)
 {
-    const Rectangle destination = sprite.dst;
-    const Rectangle source      = sprite.src.scaled(texture_size_and_inverse.size());
-    const Color     color       = sprite.color;
+    const auto destination = sprite.dst;
+    const auto source      = sprite.src.scaled(texture_size_and_inverse.size());
+    const auto color       = sprite.color;
 
-    Vector2 origin = sprite.origin;
-    if (sprite.src.width != 0.0f)
+    auto origin = sprite.origin;
+    if (!is_zero(sprite.src.width))
     {
         origin.x /= sprite.src.width;
     }
@@ -372,7 +271,7 @@ void SpriteBatch::render_sprite(const InternalSprite& sprite,
         origin.x *= texture_size_and_inverse.width;
     }
 
-    if (sprite.src.height != 0.0f)
+    if (!is_zero(sprite.src.height))
     {
         origin.y /= sprite.src.height;
     }
@@ -381,27 +280,22 @@ void SpriteBatch::render_sprite(const InternalSprite& sprite,
         origin.y *= texture_size_and_inverse.height;
     }
 
-    const float rotation = sprite.rotation;
+    const auto rotation = sprite.rotation;
 
-    const Vector2 destination_pos{destination.x, destination.y};
-    const Vector2 destination_size{destination.width, destination.height};
+    const auto destination_pos  = Vector2{destination.x, destination.y};
+    const auto destination_size = Vector2{destination.width, destination.height};
 
-    Vector2 rotation_matrix_row1;
-    Vector2 rotation_matrix_row2;
+    const auto [rot_matrix_row1, rot_matrix_row2] = [rotation] {
+        if (is_zero(rotation))
+        {
+            return std::pair{Vector2{1, 0}, Vector2{0, 1}};
+        }
 
-    if (is_zero(rotation))
-    {
-        rotation_matrix_row1 = Vector2{1, 0};
-        rotation_matrix_row2 = Vector2{0, 1};
-    }
-    else
-    {
-        const float s = sin(rotation);
-        const float c = cos(rotation);
+        const auto s = sin(rotation);
+        const auto c = cos(rotation);
 
-        rotation_matrix_row1 = Vector2{c, s};
-        rotation_matrix_row2 = Vector2{-s, c};
-    }
+        return std::pair{Vector2{c, s}, Vector2{-s, c}};
+    }();
 
     constexpr auto corner_offsets = std::array{
         Vector2{0, 0},
@@ -410,34 +304,56 @@ void SpriteBatch::render_sprite(const InternalSprite& sprite,
         Vector2{1, 1},
     };
 
-    int flip_flags = static_cast<int>(sprite.flip);
+    auto flip_flags = int(sprite.flip);
 
     if (flip_image_up_down)
     {
-        flip_flags |= static_cast<int>(SpriteFlip::Vertically);
+        flip_flags |= int(SpriteFlip::Vertically);
     }
 
-    const int mirror_bits = flip_flags & 3;
-
-    const Vector2 source_pos  = source.position();
-    const Vector2 source_size = source.size();
+    const auto mirror_bits = flip_flags & 3;
+    const auto source_pos  = source.position();
+    const auto source_size = source.size();
 
     for (uint32_t i = 0; i < vertices_per_sprite; ++i)
     {
-        const Vector2 corner_offset = (corner_offsets[i] - origin) * destination_size;
-        const Vector2 position1 = Vector2{corner_offset.x} * rotation_matrix_row1 + destination_pos;
-        const Vector2 position2 = Vector2{corner_offset.y} * rotation_matrix_row2 + position1;
+        const auto corner_offset = (corner_offsets[i] - origin) * destination_size;
+        const auto position1     = Vector2{corner_offset.x} * rot_matrix_row1 + destination_pos;
+        const auto position2     = Vector2{corner_offset.y} * rot_matrix_row2 + position1;
 
-        const Vector4 position = Vector4{position2.x, position2.y, 0.0f, 1.0f};
-        const Vector2 uv       = (corner_offsets[i ^ mirror_bits] * source_size) + source_pos;
+        const auto position = Vector4{position2.x, position2.y, 0.0f, 1.0f};
+        const auto uv       = (corner_offsets[i ^ mirror_bits] * source_size) + source_pos;
 
         // NOLINTBEGIN
-        dst_vertices[i] = Vertex{
+        dst_vertices[i] = {
             .position = position,
             .color    = color,
             .uv       = uv,
         };
         // NOLINTEND
+    }
+}
+
+void SpriteBatch::do_draw_text(std::span<const PreshapedGlyph>     glyphs,
+                               std::span<const TextDecorationRect> decoration_rects,
+                               const Vector2&                      offset,
+                               const Color&                        color)
+{
+    for (const auto& glyph : glyphs)
+    {
+        draw_sprite(
+            {
+                .image    = glyph.image,
+                .dst_rect = glyph.dst_rect.offset(offset),
+                .src_rect = glyph.src_rect,
+                .color    = color,
+            },
+            SpriteShaderKind::Monochromatic);
+    }
+
+    for (const auto& deco : decoration_rects)
+    {
+        fill_rectangle(deco.rect.offset(offset), deco.color.value_or(color), 0.0f, {});
     }
 }
 } // namespace cer::details

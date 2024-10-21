@@ -4,6 +4,7 @@
 
 #include "shadercompiler/ShaderGenerator.hpp"
 
+#include "cerlib/Util.hpp"
 #include "contentmanagement/FileSystem.hpp"
 #include "shadercompiler/AST.hpp"
 #include "shadercompiler/Casting.hpp"
@@ -14,9 +15,7 @@
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
-#include "util/Util.hpp"
 #include <cassert>
-#include <gsl/util>
 
 namespace cer::shadercompiler
 {
@@ -28,44 +27,45 @@ ShaderGenerator::ShaderGenerator()
 
 ShaderGenerator::~ShaderGenerator() noexcept = default;
 
-ShaderGenerationResult::ShaderGenerationResult(std::string                        glsl_code,
-                                               gsl::not_null<const FunctionDecl*> entry_point,
-                                               ParameterList                      parameters)
+ShaderGenerationResult::ShaderGenerationResult(std::string         glsl_code,
+                                               const FunctionDecl& entry_point,
+                                               ParameterList       parameters)
     : glsl_code(std::move(glsl_code))
     , entry_point(entry_point)
     , parameters(std::move(parameters))
 {
 }
 
-AccessedParams ShaderGenerator::params_accessed_by_function(const FunctionDecl& function) const
+auto ShaderGenerator::params_accessed_by_function(const FunctionDecl& function) const
+    -> AccessedParams
 {
     AccessedParams params;
     params.scalars.reserve(8);
     params.resources.reserve(4);
 
-    const CodeBlock* body = function.body();
+    const auto* body = function.body();
 
-    for (const std::unique_ptr<Decl>& decl : m_ast->decls())
+    for (const auto& decl : m_ast->decls())
     {
-        const ShaderParamDecl* param = asa<ShaderParamDecl>(decl.get());
+        const auto* param = asa<ShaderParamDecl>(decl.get());
 
         if (param == nullptr)
         {
             continue;
         }
 
-        if (const Type& type = param->type(); type.can_be_in_constant_buffer())
+        if (const auto& type = param->type(); type.can_be_in_constant_buffer())
         {
             if (body->accesses_symbol(*param, true))
             {
-                params.scalars.emplace_back(param);
+                params.scalars.emplace_back(*param);
             }
         }
         else if (type.is_image_type())
         {
             if (body->accesses_symbol(*param, true))
             {
-                params.resources.emplace_back(param);
+                params.resources.emplace_back(*param);
             }
         }
     }
@@ -73,68 +73,62 @@ AccessedParams ShaderGenerator::params_accessed_by_function(const FunctionDecl& 
     return params;
 }
 
-ShaderGenerationResult ShaderGenerator::generate(const SemaContext& context,
-                                                 const AST&         ast,
-                                                 std::string_view   entry_point_name,
-                                                 bool               minify)
+auto ShaderGenerator::generate(const SemaContext&    context,
+                               const AST&            ast,
+                               std::string_view      entry_point_name,
+                               [[maybe_unused]] bool minify) -> ShaderGenerationResult
 {
-    CERLIB_UNUSED(minify);
-
     assert(m_ast == nullptr);
     assert(ast.is_verified());
 
     m_ast = std::addressof(ast);
 
-    const auto _ = gsl::finally([&] { m_ast = nullptr; });
+    defer
+    {
+        m_ast = nullptr;
+    };
 
-    const std::string shader_name = filesystem::filename_without_extension(ast.filename());
+    const auto shader_name = filesystem::filename_without_extension(ast.filename());
 
-    const SmallVector<const Decl*, 8> children_to_generate =
-        gather_ast_decls_to_generate(ast, entry_point_name, context);
+    const auto children_to_generate = gather_ast_decls_to_generate(ast, entry_point_name, context);
 
     if (children_to_generate.empty())
     {
-        throw Error(SourceLocation(), "failed to gather children to generate");
+        throw Error{SourceLocation(), "failed to gather children to generate"};
     }
 
-    const FunctionDecl* entry_point = asa<FunctionDecl>(children_to_generate.back());
-    assert(entry_point);
-    assert(entry_point->is_shader());
+    const auto& entry_point = asa_or_error<FunctionDecl>(*children_to_generate.back());
 
-    m_currently_generated_shader_function = entry_point;
+    assert(entry_point.is_shader());
 
-    std::string code = do_generation(context, *entry_point, children_to_generate);
-
-    m_currently_generated_shader_function = nullptr;
-
-    while (!code.empty() && code.back() == '\n')
+    m_currently_generated_shader_function = &entry_point;
+    defer
     {
-        code.pop_back();
-    }
+        m_currently_generated_shader_function = nullptr;
+    };
 
-    while (!code.empty() && code.front() == '\n')
-    {
-        code.erase(0, 1);
-    }
+    auto code = do_generation(context, entry_point, children_to_generate);
+
+    util::trim_string(code, {{'\n'}});
 
     if (!code.empty())
     {
         code += '\n';
     }
 
-    const AccessedParams accessed_params = params_accessed_by_function(*entry_point);
+    const auto accessed_params = params_accessed_by_function(entry_point);
 
-    SmallVector<const ShaderParamDecl*, 8> parameters;
+    auto parameters = RefList<const ShaderParamDecl, 8>{};
     parameters.reserve(accessed_params.scalars.size() + accessed_params.resources.size());
 
-    for (const gsl::not_null<const ShaderParamDecl*>& param : accessed_params.scalars)
+    for (const auto& param : accessed_params.scalars)
     {
-        parameters.push_back(param.get());
+        parameters.push_back(param);
     }
 
-    for (const gsl::not_null<const ShaderParamDecl*>& param : accessed_params.resources)
+    for (const auto& param : accessed_params.resources)
     {
-        parameters.push_back(param.get());
+        parameters.push_back(param);
     }
 
 #if 0 // minify doesn't work atm
@@ -161,7 +155,7 @@ void ShaderGenerator::generate_code_block(Writer&            w,
 {
     m_temp_var_name_gen_stack.emplace_back(&code_block);
 
-    for (const std::unique_ptr<Stmt>& stmt : code_block.stmts())
+    for (const auto& stmt : code_block.stmts())
     {
         generate_stmt(w, *stmt, context);
         w << WNewline;
@@ -172,17 +166,17 @@ void ShaderGenerator::generate_code_block(Writer&            w,
 
 void ShaderGenerator::generate_expr(Writer& w, const Expr& expr, const SemaContext& context)
 {
-    if (const ParenExpr* e = asa<ParenExpr>(&expr))
+    if (const auto* e = asa<ParenExpr>(&expr))
     {
         w << '(';
         generate_expr(w, e->expr(), context);
         w << ')';
     }
-    else if (const IntLiteralExpr* int_lit = asa<IntLiteralExpr>(&expr))
+    else if (const auto* int_lit = asa<IntLiteralExpr>(&expr))
     {
         w << int_lit->value();
     }
-    else if (const FloatLiteralExpr* float_lit = asa<FloatLiteralExpr>(&expr))
+    else if (const auto* float_lit = asa<FloatLiteralExpr>(&expr))
     {
         w << float_lit->string_value();
         if (m_needs_float_literal_suffix)
@@ -190,45 +184,44 @@ void ShaderGenerator::generate_expr(Writer& w, const Expr& expr, const SemaConte
             w << 'f';
         }
     }
-    else if (const BoolLiteralExpr* bool_lit = asa<BoolLiteralExpr>(&expr))
+    else if (const auto* bool_lit = asa<BoolLiteralExpr>(&expr))
     {
         w << bool_lit->value();
     }
-    else if (const ScientificIntLiteralExpr* scientific_lit = asa<ScientificIntLiteralExpr>(&expr))
+    else if (const auto* scientific_lit = asa<ScientificIntLiteralExpr>(&expr))
     {
         w << scientific_lit->value();
     }
-    else if (const HexadecimalIntLiteralExpr* hexadecimal_lit =
-                 asa<HexadecimalIntLiteralExpr>(&expr))
+    else if (const auto* hexadecimal_lit = asa<HexadecimalIntLiteralExpr>(&expr))
     {
         w << hexadecimal_lit->value();
     }
-    else if (const SymAccessExpr* sym_access = asa<SymAccessExpr>(&expr))
+    else if (const auto* sym_access = asa<SymAccessExpr>(&expr))
     {
         generate_sym_access_expr(w, *sym_access, context);
     }
-    else if (const TernaryExpr* ternary = asa<TernaryExpr>(&expr))
+    else if (const auto* ternary = asa<TernaryExpr>(&expr))
     {
         generate_ternary_expr(w, *ternary, context);
     }
-    else if (const UnaryOpExpr* unary_op = asa<UnaryOpExpr>(&expr))
+    else if (const auto* unary_op = asa<UnaryOpExpr>(&expr))
     {
         w << '-';
         generate_expr(w, unary_op->expr(), context);
     }
-    else if (const FunctionCallExpr* function_call = asa<FunctionCallExpr>(&expr))
+    else if (const auto* function_call = asa<FunctionCallExpr>(&expr))
     {
         generate_function_call_expr(w, *function_call, context);
     }
-    else if (const StructCtorCall* struct_ctor_call = asa<StructCtorCall>(&expr))
+    else if (const auto* struct_ctor_call = asa<StructCtorCall>(&expr))
     {
         generate_struct_ctor_call(w, *struct_ctor_call, context);
     }
-    else if (const BinOpExpr* bin_op = asa<BinOpExpr>(&expr))
+    else if (const auto* bin_op = asa<BinOpExpr>(&expr))
     {
         generate_bin_op_expr(w, *bin_op, context);
     }
-    else if (const SubscriptExpr* sub = asa<SubscriptExpr>(&expr))
+    else if (const auto* sub = asa<SubscriptExpr>(&expr))
     {
         generate_subscript_expr(w, *sub, context);
     }
@@ -240,45 +233,45 @@ void ShaderGenerator::generate_expr(Writer& w, const Expr& expr, const SemaConte
 
 void ShaderGenerator::prepare_expr(Writer& w, const Expr& expr, const SemaContext& context)
 {
-    if (const BinOpExpr* bin_op = asa<BinOpExpr>(&expr))
+    if (const auto* bin_op = asa<BinOpExpr>(&expr))
     {
         prepare_expr(w, bin_op->lhs(), context);
         prepare_expr(w, bin_op->rhs(), context);
     }
-    else if (const UnaryOpExpr* unary_op = asa<UnaryOpExpr>(&expr))
+    else if (const auto* unary_op = asa<UnaryOpExpr>(&expr))
     {
         prepare_expr(w, unary_op->expr(), context);
     }
-    else if (const TernaryExpr* ternary_op = asa<TernaryExpr>(&expr))
+    else if (const auto* ternary_op = asa<TernaryExpr>(&expr))
     {
         prepare_expr(w, ternary_op->condition_expr(), context);
         prepare_expr(w, ternary_op->true_expr(), context);
         prepare_expr(w, ternary_op->false_expr(), context);
     }
-    else if (const SubscriptExpr* subscript = asa<SubscriptExpr>(&expr))
+    else if (const auto* subscript = asa<SubscriptExpr>(&expr))
     {
         prepare_expr(w, subscript->expr(), context);
         prepare_expr(w, subscript->index_expr(), context);
     }
-    else if (const StructCtorCall* struct_ctor_call = asa<StructCtorCall>(&expr))
+    else if (const auto* struct_ctor_call = asa<StructCtorCall>(&expr))
     {
         prepare_expr(w, struct_ctor_call->callee(), context);
 
-        for (const std::unique_ptr<StructCtorArg>& arg : struct_ctor_call->args())
+        for (const auto& arg : struct_ctor_call->args())
         {
             prepare_expr(w, *arg, context);
         }
     }
-    else if (const FunctionCallExpr* func_call = asa<FunctionCallExpr>(&expr))
+    else if (const auto* func_call = asa<FunctionCallExpr>(&expr))
     {
         prepare_expr(w, func_call->callee(), context);
 
-        for (const std::unique_ptr<Expr>& arg : func_call->args())
+        for (const auto& arg : func_call->args())
         {
             prepare_expr(w, *arg, context);
         }
     }
-    else if (const StructCtorArg* struct_ctor_arg = asa<StructCtorArg>(&expr))
+    else if (const auto* struct_ctor_arg = asa<StructCtorArg>(&expr))
     {
         prepare_expr(w, struct_ctor_arg->expr(), context);
     }
@@ -286,46 +279,44 @@ void ShaderGenerator::prepare_expr(Writer& w, const Expr& expr, const SemaContex
 
 void ShaderGenerator::generate_stmt(Writer& w, const Stmt& stmt, const SemaContext& context)
 {
-    if (const VarStmt* var_stmt = asa<VarStmt>(&stmt))
+    if (const auto* var_stmt = asa<VarStmt>(&stmt))
     {
         generate_var_stmt(w, *var_stmt, context);
     }
-    else if (const IfStmt* if_stmt = asa<IfStmt>(&stmt))
+    else if (const auto* if_stmt = asa<IfStmt>(&stmt))
     {
         generate_if_stmt(w, *if_stmt, context);
     }
-    else if (const ReturnStmt* return_stmt = asa<ReturnStmt>(&stmt))
+    else if (const auto* return_stmt = asa<ReturnStmt>(&stmt))
     {
         generate_return_stmt(w, *return_stmt, context);
     }
-    else if (const ForStmt* for_stmt = asa<ForStmt>(&stmt))
+    else if (const auto* for_stmt = asa<ForStmt>(&stmt))
     {
         generate_for_stmt(w, *for_stmt, context);
     }
-    else if (const CompoundStmt* compound_stmt = asa<CompoundStmt>(&stmt))
+    else if (const auto* compound_stmt = asa<CompoundStmt>(&stmt))
     {
         generate_compound_stmt(w, *compound_stmt, context);
     }
-    else if (const AssignmentStmt* assignment_stmt = asa<AssignmentStmt>(&stmt))
+    else if (const auto* assignment_stmt = asa<AssignmentStmt>(&stmt))
     {
         generate_assignment_stmt(w, *assignment_stmt, context);
     }
     else
     {
-        w << "<< NotImplementedStmt() >> ";
+        w << "<< not_implemented_stmt() >> ";
     }
 }
 
-void ShaderGenerator::generate_struct_decl(Writer&            w,
-                                           const StructDecl&  strct,
-                                           const SemaContext& context)
+void ShaderGenerator::generate_struct_decl(Writer&                             w,
+                                           const StructDecl&                   strct,
+                                           [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(context);
-
     w << "struct " << strct.name() << " ";
     w.open_brace();
 
-    for (const std::unique_ptr<StructFieldDecl>& field : strct.get_fields())
+    for (const auto& field : strct.get_fields())
     {
         w << translate_type(field->type(), TypeNameContext::StructField) << " ";
         w << field->name() << ';' << WNewline;
@@ -337,7 +328,7 @@ void ShaderGenerator::generate_struct_decl(Writer&            w,
 void ShaderGenerator::generate_if_stmt(Writer& w, const IfStmt& if_stmt, const SemaContext& context)
 {
     {
-        const IfStmt* stmt = &if_stmt;
+        const auto* stmt = &if_stmt;
 
         while (stmt != nullptr)
         {
@@ -350,7 +341,7 @@ void ShaderGenerator::generate_if_stmt(Writer& w, const IfStmt& if_stmt, const S
         }
     }
 
-    const IfStmt* stmt = &if_stmt;
+    const auto* stmt = &if_stmt;
 
     while (stmt != nullptr)
     {
@@ -378,9 +369,9 @@ void ShaderGenerator::generate_for_stmt(Writer&            w,
                                         const ForStmt&     for_stmt,
                                         const SemaContext& context)
 {
-    const std::string_view var_name = for_stmt.loop_variable().name();
-    const RangeExpr&       range    = for_stmt.range();
-    const Type&            type     = range.type();
+    const auto  var_name = for_stmt.loop_variable().name();
+    const auto& range    = for_stmt.range();
+    const auto& type     = range.type();
 
     prepare_expr(w, range.start(), context);
     prepare_expr(w, range.end(), context);
@@ -398,15 +389,15 @@ void ShaderGenerator::generate_for_stmt(Writer&            w,
 
 void ShaderGenerator::generate_decl(Writer& w, const Decl& decl, const SemaContext& context)
 {
-    if (const FunctionDecl* function = asa<FunctionDecl>(&decl))
+    if (const auto* function = asa<FunctionDecl>(&decl))
     {
         generate_function_decl(w, *function, context);
     }
-    else if (const StructDecl* strct = asa<StructDecl>(&decl))
+    else if (const auto* strct = asa<StructDecl>(&decl))
     {
         generate_struct_decl(w, *strct, context);
     }
-    else if (const VarDecl* var = asa<VarDecl>(&decl))
+    else if (const auto* var = asa<VarDecl>(&decl))
     {
         generate_global_var_decl(w, *var, context);
     }
@@ -416,13 +407,10 @@ void ShaderGenerator::generate_decl(Writer& w, const Decl& decl, const SemaConte
     }
 }
 
-void ShaderGenerator::generate_var_stmt(Writer&            w,
-                                        const VarStmt&     var_stmt,
-                                        const SemaContext& context)
+void ShaderGenerator::generate_var_stmt(Writer&                             w,
+                                        [[maybe_unused]] const VarStmt&     var_stmt,
+                                        [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(var_stmt);
-    CERLIB_UNUSED(context);
-
     w << "<< generate_var_stmt >>";
 }
 
@@ -430,13 +418,13 @@ void ShaderGenerator::generate_bin_op_expr(Writer&            w,
                                            const BinOpExpr&   bin_op,
                                            const SemaContext& context)
 {
-    const Expr* lhs_expr = &bin_op.lhs();
-    const Expr* rhs_expr = &bin_op.rhs();
+    const auto* lhs_expr = &bin_op.lhs();
+    const auto* rhs_expr = &bin_op.rhs();
 
     if (m_is_swapping_matrix_vector_multiplications)
     {
-        const Type& lhs_type = lhs_expr->type();
-        const Type& rhs_type = rhs_expr->type();
+        const auto& lhs_type = lhs_expr->type();
+        const auto& rhs_type = rhs_expr->type();
 
         if ((lhs_type.is_matrix_type() && rhs_type.is_matrix_type()) ||
             (lhs_type.is_matrix_type() && rhs_type.is_vector_type()) ||
@@ -448,9 +436,9 @@ void ShaderGenerator::generate_bin_op_expr(Writer&            w,
 
     generate_expr(w, *lhs_expr, context);
 
-    const bool space_between_operands = bin_op.bin_op_kind() != BinOpKind::MemberAccess;
+    const auto need_space_between_operands = bin_op.bin_op_kind() != BinOpKind::MemberAccess;
 
-    if (space_between_operands)
+    if (need_space_between_operands)
     {
         w << ' ';
     }
@@ -478,7 +466,7 @@ void ShaderGenerator::generate_bin_op_expr(Writer&            w,
         default: throw Error(bin_op.location(), "Invalid binary operation kind");
     }
 
-    if (space_between_operands)
+    if (need_space_between_operands)
     {
         w << ' ';
     }
@@ -488,12 +476,11 @@ void ShaderGenerator::generate_bin_op_expr(Writer&            w,
 
 void ShaderGenerator::generate_struct_ctor_call(Writer&               w,
                                                 const StructCtorCall& struct_ctor_call,
-                                                const SemaContext&    context)
+                                                [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(context);
-
     const auto it = m_temporary_vars.find(&struct_ctor_call);
     assert(it != m_temporary_vars.cend() && "Struct ctor call did not create a temporary variable");
+
     w << it->second;
 }
 
@@ -541,14 +528,12 @@ void ShaderGenerator::generate_assignment_stmt(Writer&               w,
     w << ';';
 }
 
-void ShaderGenerator::generate_sym_access_expr(Writer&              w,
-                                               const SymAccessExpr& expr,
-                                               const SemaContext&   context)
+void ShaderGenerator::generate_sym_access_expr(Writer&                             w,
+                                               const SymAccessExpr&                expr,
+                                               [[maybe_unused]] const SemaContext& context)
 {
-    CERLIB_UNUSED(context);
-
-    const Decl*            symbol = expr.symbol();
-    const std::string_view name   = expr.name();
+    const auto* symbol = expr.symbol();
+    const auto  name   = expr.name();
 
     if (isa<FunctionParamDecl>(symbol))
     {
@@ -560,11 +545,11 @@ void ShaderGenerator::generate_sym_access_expr(Writer&              w,
     }
     else
     {
-        for (const auto& [builtInType, builtInTypeName] : m_built_in_type_dictionary)
+        for (const auto& [built_in_type, built_in_type_name] : m_built_in_type_dictionary)
         {
-            if (builtInType->type_name() == name)
+            if (built_in_type.get().type_name() == name)
             {
-                w << builtInTypeName;
+                w << built_in_type_name;
                 return;
             }
         }
@@ -586,40 +571,17 @@ void ShaderGenerator::generate_ternary_expr(Writer&            w,
     w << ")";
 }
 
-template <typename T>
-void remove_duplicates_but_keep_order(T& container)
-{
-    size_t i{};
-    while (i != container.size())
-    {
-        size_t j = i;
-        ++j;
-        while (j != container.size())
-        {
-            if (container.at(j) == container.at(i))
-            {
-                container.erase(container.begin() + j);
-            }
-            else
-            {
-                ++j;
-            }
-        }
-        ++i;
-    }
-}
-
-std::string ShaderGenerator::translate_type(const Type& type, TypeNameContext context) const
+auto ShaderGenerator::translate_type(const Type& type, TypeNameContext context) const -> std::string
 {
     if (context == TypeNameContext::FunctionParam)
     {
-        if (const StructDecl* strct = asa<StructDecl>(&type))
+        if (const auto* strct = asa<StructDecl>(&type))
         {
             return std::string{strct->name()};
         }
     }
 
-    if (const auto it = m_built_in_type_dictionary.find(&type);
+    if (const auto it = m_built_in_type_dictionary.find(type);
         it != m_built_in_type_dictionary.cend())
     {
         return it->second;
@@ -628,23 +590,25 @@ std::string ShaderGenerator::translate_type(const Type& type, TypeNameContext co
     return std::string{type.type_name()};
 }
 
-std::string ShaderGenerator::translate_array_type(const ArrayType& type,
-                                                  std::string_view variable_name) const
+auto ShaderGenerator::translate_array_type(const ArrayType& type,
+                                           std::string_view variable_name) const -> std::string
 {
     return cer_fmt::format("{} {}[{}]",
-                       translate_type(type.element_type(), TypeNameContext::Normal),
-                       variable_name,
-                       type.size());
+                           translate_type(type.element_type(), TypeNameContext::Normal),
+                           variable_name,
+                           type.size());
 }
 
-SmallVector<const Decl*, 8> ShaderGenerator::gather_ast_decls_to_generate(
-    const AST& ast, std::string_view entry_point, const SemaContext& context) const
+auto ShaderGenerator::gather_ast_decls_to_generate(const AST&         ast,
+                                                   std::string_view   entry_point,
+                                                   const SemaContext& context) const
+    -> List<const Decl*, 8>
 {
-    const SmallVector<std::unique_ptr<Decl>, 8>& decls = ast.decls();
+    const auto& decls = ast.decls();
 
     const auto main_function = [&] {
         const auto it = std::ranges::find_if(decls, [entry_point](const auto& decl) {
-            const FunctionDecl* func = asa<FunctionDecl>(decl.get());
+            const auto* func = asa<FunctionDecl>(decl.get());
             return func != nullptr && func->is_shader() && func->name() == entry_point;
         });
 
@@ -653,17 +617,17 @@ SmallVector<const Decl*, 8> ShaderGenerator::gather_ast_decls_to_generate(
 
     if (main_function == nullptr)
     {
-        throw Error{SourceLocation(ast.filename(), 0, 0, 0),
+        throw Error{SourceLocation{ast.filename(), 0, 0, 0},
                     "no suitable entry point named '{}' found",
                     entry_point};
     }
 
     // See what the main function depends on.
-    SmallVector<const Decl*, 16> accessed_symbols;
+    auto accessed_symbols = List<const Decl*, 16>{};
 
-    for (const std::unique_ptr<Decl>& decl : ast.decls())
+    for (const auto& decl : ast.decls())
     {
-        if (const FunctionDecl* func = asa<FunctionDecl>(decl.get());
+        if (const auto* func = asa<FunctionDecl>(decl.get());
             func != nullptr && func->is_struct_ctor())
         {
             continue;
@@ -677,19 +641,19 @@ SmallVector<const Decl*, 8> ShaderGenerator::gather_ast_decls_to_generate(
 
     // Remove non-top-level symbols
     {
-        const auto it = std::ranges::remove_if(accessed_symbols, [&](const Decl* symbol) {
+        const auto it = std::ranges::remove_if(accessed_symbols, [&](const auto* symbol) {
                             return !ast.is_top_level_symbol(context, *symbol);
                         }).begin();
 
         accessed_symbols.erase(it, accessed_symbols.end());
     }
 
-    remove_duplicates_but_keep_order(accessed_symbols);
+    util::remove_duplicates_but_keep_order(accessed_symbols);
 
-    SmallVector<const Decl*, 8> decls_to_generate;
+    auto decls_to_generate = List<const Decl*, 8>{};
     decls_to_generate.reserve(accessed_symbols.size() + 1);
 
-    for (const Decl* symbol : accessed_symbols)
+    for (const auto* symbol : accessed_symbols)
     {
         decls_to_generate.push_back(symbol);
     }

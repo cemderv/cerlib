@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer
 {
@@ -94,57 +94,40 @@ enum class Comparison
  */
 struct Sampler
 {
-    static constexpr Sampler point_repeat();
-    static constexpr Sampler point_clamp();
-    static constexpr Sampler linear_repeat();
-    static constexpr Sampler linear_clamp();
-
-    /** Default comparison */
-    bool operator==(const Sampler&) const = default;
-
-    /** Default comparison */
-    bool operator!=(const Sampler&) const = default;
-
     ImageFilter        filter             = ImageFilter::Linear;
     ImageAddressMode   address_u          = ImageAddressMode::ClampToEdgeTexels;
     ImageAddressMode   address_v          = ImageAddressMode::ClampToEdgeTexels;
     Comparison         texture_comparison = Comparison::Never;
     SamplerBorderColor border_color       = SamplerBorderColor::OpaqueBlack;
+
+    /** Default comparison */
+    auto operator==(const Sampler&) const -> bool = default;
+
+    /** Default comparison */
+    auto operator!=(const Sampler&) const -> bool = default;
 };
 
-constexpr Sampler Sampler::point_repeat()
-{
-    return {
-        .filter    = ImageFilter::Point,
-        .address_u = ImageAddressMode::Repeat,
-        .address_v = ImageAddressMode::Repeat,
-    };
-}
+static constexpr auto point_repeat = Sampler{
+    .filter    = ImageFilter::Point,
+    .address_u = ImageAddressMode::Repeat,
+    .address_v = ImageAddressMode::Repeat,
+};
 
-constexpr Sampler Sampler::point_clamp()
-{
-    return {
-        .filter    = ImageFilter::Point,
-        .address_u = ImageAddressMode::ClampToEdgeTexels,
-        .address_v = ImageAddressMode::ClampToEdgeTexels,
-    };
-}
+static constexpr auto point_clamp = Sampler{
+    .filter    = ImageFilter::Point,
+    .address_u = ImageAddressMode::ClampToEdgeTexels,
+    .address_v = ImageAddressMode::ClampToEdgeTexels,
+};
 
-constexpr Sampler Sampler::linear_repeat()
-{
-    return {
-        .filter    = ImageFilter::Linear,
-        .address_u = ImageAddressMode::Repeat,
-        .address_v = ImageAddressMode::Repeat,
-    };
-}
+static constexpr auto linear_repeat = Sampler{
+    .filter    = ImageFilter::Linear,
+    .address_u = ImageAddressMode::Repeat,
+    .address_v = ImageAddressMode::Repeat,
+};
 
-constexpr Sampler Sampler::linear_clamp()
-{
-    return {
-        .filter    = ImageFilter::Linear,
-        .address_u = ImageAddressMode::ClampToEdgeTexels,
-        .address_v = ImageAddressMode::ClampToEdgeTexels,
-    };
-}
+static constexpr auto linear_clamp = Sampler{
+    .filter    = ImageFilter::Linear,
+    .address_u = ImageAddressMode::ClampToEdgeTexels,
+    .address_v = ImageAddressMode::ClampToEdgeTexels,
+};
 } // namespace cer

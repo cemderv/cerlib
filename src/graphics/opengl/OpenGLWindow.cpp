@@ -6,7 +6,6 @@
 #include "OpenGLPrerequisites.hpp"
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
 #include "util/Platform.hpp"
 
 namespace cer::details
@@ -59,9 +58,9 @@ OpenGLWindow::OpenGLWindow(std::string_view        title,
 
     create_sdl_window(SDL_WINDOW_OPENGL);
 
-    GameImpl& game_impl = GameImpl::instance();
+    auto& game_impl = GameImpl::instance();
 
-    const std::span<WindowImpl* const> windows = game_impl.windows();
+    const auto windows = game_impl.windows();
 
     if (windows.size() == 1 && windows[0] == this)
     {
@@ -103,10 +102,10 @@ void OpenGLWindow::handle_resize_event()
     if (m_resize_callback)
     {
         const auto [width, height] = size();
-        m_resize_callback(static_cast<uint32_t>(width),
-                          static_cast<uint32_t>(height),
-                          static_cast<uint32_t>(width_px),
-                          static_cast<uint32_t>(height_px));
+        m_resize_callback(uint32_t(width),
+                          uint32_t(height),
+                          uint32_t(width_px),
+                          uint32_t(height_px));
     }
 }
 
@@ -115,7 +114,7 @@ void OpenGLWindow::make_context_current()
     SDL_GL_MakeCurrent(sdl_window(), m_gl_context);
 }
 
-SDL_GLContext OpenGLWindow::sdl_gl_context() const
+auto OpenGLWindow::sdl_gl_context() const -> SDL_GLContext
 {
     return m_gl_context;
 }

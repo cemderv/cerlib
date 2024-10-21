@@ -7,10 +7,9 @@
 #include "GraphicsDevice.hpp"
 #include "ImageImpl.hpp"
 #include "cerlib/Window.hpp"
+#include "contentmanagement/ContentManager.hpp"
 #include "contentmanagement/ImageLoading.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
-#include "util/Util.hpp"
 
 // NOLINTBEGIN
 #define DECLARE_IMAGE_IMPL                                                                         \
@@ -22,119 +21,86 @@ namespace cer
 {
 CERLIB_IMPLEMENT_DERIVED_OBJECT(GraphicsResource, Image);
 
-Image::Image(
-    uint32_t width, uint32_t height, ImageFormat format, uint32_t mipmap_count, const void* data)
+Image::Image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
 {
     if (data == nullptr)
     {
-        CER_THROW_INVALID_ARG(
-            "No image data specified (width={}; height={}; format={}, mipmapCount={}).",
-            width,
-            height,
-            image_format_name(format),
-            mipmap_count);
+        throw std::invalid_argument{
+            fmt::format("No image data specified (width={}; height={}; format={}).",
+                        width,
+                        height,
+                        image_format_name(format))};
     }
 
     LOAD_DEVICE_IMPL;
 
-    set_impl(
-        *this,
-        device_impl
-            .create_image(width, height, format, mipmap_count, [data](uint32_t) { return data; })
-            .get());
+    set_impl(*this, device_impl.create_image(width, height, format, data).release());
 }
 
-Image::Image(uint32_t            width,
-             uint32_t            height,
-             ImageFormat         format,
-             uint32_t            mipmap_count,
-             const DataCallback& data_callback)
+Image::Image(std::span<const std::byte> memory)
 {
-    if (!data_callback)
-    {
-        CER_THROW_INVALID_ARG_STR("No image data callback specified.");
-    }
-
     LOAD_DEVICE_IMPL;
-
-    set_impl(*this,
-             device_impl.create_image(width, height, format, mipmap_count, data_callback).get());
+    set_impl(*this, details::load_image(device_impl, memory).release());
 }
 
-Image::Image(std::span<const std::byte> memory, bool generate_mipmaps)
+Image::Image(std::string_view asset_name)
 {
-    LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, memory, generate_mipmaps).get());
-}
-
-Image::Image(std::string_view filename, bool generate_mipmaps)
-{
-    LOAD_DEVICE_IMPL;
-    set_impl(*this, details::load_image(device_impl, filename, generate_mipmaps).get());
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_image(asset_name);
 }
 
 Image::Image(uint32_t width, uint32_t height, ImageFormat format, const Window& window)
 {
     if (!window)
     {
-        CER_THROW_INVALID_ARG_STR("No window specified.");
+        throw std::invalid_argument{"No window specified."};
     }
 
     LOAD_DEVICE_IMPL;
-    set_impl(*this, device_impl.create_canvas(window, width, height, format).get());
+    set_impl(*this, device_impl.create_canvas(window, width, height, format).release());
 }
 
-bool Image::is_canvas() const
+auto Image::is_canvas() const -> bool
 {
     DECLARE_IMAGE_IMPL;
     return impl->is_canvas();
 }
 
-uint32_t Image::width() const
+auto Image::width() const -> uint32_t
 {
     DECLARE_IMAGE_IMPL;
     return impl->width();
 }
 
-uint32_t Image::height() const
+auto Image::height() const -> uint32_t
 {
     DECLARE_IMAGE_IMPL;
     return impl->height();
 }
 
-float Image::widthf() const
+auto Image::widthf() const -> float
 {
-    return static_cast<float>(width());
+    return float(width());
 }
 
-float Image::heightf() const
+auto Image::heightf() const -> float
 {
-    return static_cast<float>(height());
+    return float(height());
 }
 
-Vector2 Image::size() const
+auto Image::size() const -> Vector2
 {
     DECLARE_IMAGE_IMPL;
-
-    return {
-        static_cast<float>(impl->width()),
-        static_cast<float>(impl->height()),
-    };
+    return {float(impl->width()), float(impl->height())};
 }
 
-ImageFormat Image::format() const
+auto Image::format() const -> ImageFormat
 {
     DECLARE_IMAGE_IMPL;
     return impl->format();
 }
 
-uint32_t Image::mipmap_count() const
-{
-    DECLARE_IMAGE_IMPL;
-    return impl->mipmap_count();
-}
-
-std::optional<Color> Image::canvas_clear_color() const
+auto Image::canvas_clear_color() const -> std::optional<Color>
 {
     DECLARE_IMAGE_IMPL;
     return impl->canvas_clear_color();
@@ -146,14 +112,14 @@ void Image::set_canvas_clear_color(std::optional<Color> value)
     impl->set_canvas_clear_color(value);
 }
 
-uint32_t Image::size_in_bytes() const
+auto Image::size_in_bytes() const -> uint32_t
 {
     DECLARE_IMAGE_IMPL;
     return image_slice_pitch(impl->width(), impl->height(), impl->format());
 }
 } // namespace cer
 
-uint32_t cer::image_format_bits_per_pixel(ImageFormat format)
+auto cer::image_format_bits_per_pixel(ImageFormat format) -> uint32_t
 {
     switch (format)
     {
@@ -166,17 +132,17 @@ uint32_t cer::image_format_bits_per_pixel(ImageFormat format)
     return 0;
 }
 
-uint32_t cer::image_row_pitch(uint32_t width, ImageFormat format)
+auto cer::image_row_pitch(uint32_t width, ImageFormat format) -> uint32_t
 {
     return width * image_format_bits_per_pixel(format) / 8;
 }
 
-uint32_t cer::image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format)
+auto cer::image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format) -> uint32_t
 {
     return width * height * image_format_bits_per_pixel(format) / 8;
 }
 
-std::string_view cer::image_format_name(ImageFormat format)
+auto cer::image_format_name(ImageFormat format) -> std::string_view
 {
     switch (format)
     {

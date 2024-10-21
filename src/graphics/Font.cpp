@@ -6,13 +6,20 @@
 
 #include "FontImpl.hpp"
 #include "cerlib/Vector2.hpp"
-#include "util/Util.hpp"
-
+#include "contentmanagement/ContentManager.hpp"
+#include "game/GameImpl.hpp"
 #include <cassert>
 
 namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(Font);
+
+Font::Font(std::string_view asset_name)
+    : m_impl(nullptr)
+{
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_font(asset_name);
+}
 
 Font::Font(std::span<const std::byte> data)
     : m_impl(nullptr)
@@ -20,18 +27,18 @@ Font::Font(std::span<const std::byte> data)
     set_impl(*this, std::make_unique<details::FontImpl>(data, true).release());
 }
 
-Font Font::built_in(bool bold)
+auto Font::built_in(bool bold) -> Font
 {
-    return Font{details::FontImpl::built_in(bold)};
+    return Font{&details::FontImpl::built_in(bold)};
 }
 
-Vector2 Font::measure(std::string_view text, uint32_t size) const
+auto Font::measure(std::string_view text, uint32_t size) const -> Vector2
 {
     assert(m_impl);
     return m_impl->measure(text, size);
 }
 
-float Font::line_height(uint32_t size) const
+auto Font::line_height(uint32_t size) const -> float
 {
     assert(m_impl);
     return m_impl->line_height(size);

@@ -9,20 +9,19 @@
 
 namespace cer::details
 {
-GraphicsResourceImpl::GraphicsResourceImpl(gsl::not_null<GraphicsDevice*> parent_device,
-                                           GraphicsResourceType           type)
+GraphicsResourceImpl::GraphicsResourceImpl(GraphicsDevice& parent_device, GraphicsResourceType type)
     : m_parent_device(parent_device)
     , m_resource_type(type)
 {
-    m_parent_device->notify_resource_created(this);
+    m_parent_device.notify_resource_created(*this);
 }
 
 GraphicsResourceImpl::~GraphicsResourceImpl() noexcept
 {
-    m_parent_device->notify_resource_destroyed(this);
+    m_parent_device.notify_resource_destroyed(*this);
 }
 
-std::string_view GraphicsResourceImpl::name() const
+auto GraphicsResourceImpl::name() const -> std::string_view
 {
     return m_name;
 }
@@ -32,12 +31,12 @@ void GraphicsResourceImpl::set_name(std::string_view name)
     m_name = name;
 }
 
-GraphicsDevice& GraphicsResourceImpl::parent_device()
+auto GraphicsResourceImpl::parent_device() -> GraphicsDevice&
 {
-    return *m_parent_device;
+    return m_parent_device;
 }
 
-GraphicsResourceType GraphicsResourceImpl::type() const
+auto GraphicsResourceImpl::type() const -> GraphicsResourceType
 {
     return m_resource_type;
 }

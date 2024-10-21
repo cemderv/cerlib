@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 #include <any>
 #include <functional>
@@ -33,18 +33,18 @@ class ContentManager;
  */
 struct AssetData
 {
-    std::span<const std::byte> as_span() const
+    std::unique_ptr<std::byte[]> data;
+    size_t                       size{};
+
+    auto as_span() const -> std::span<const std::byte>
     {
         return {data.get(), size};
     }
 
-    std::string_view as_string_view() const
+    auto as_string_view() const -> std::string_view
     {
         return {reinterpret_cast<const char*>(data.get()), size};
     }
-
-    std::unique_ptr<std::byte[]> data;
-    size_t                       size{};
 };
 
 /**
@@ -56,7 +56,7 @@ struct AssetData
  *
  * @ingroup Content
  */
-class CERLIB_API Asset
+class Asset
 {
     friend details::ContentManager;
 
@@ -66,15 +66,15 @@ class CERLIB_API Asset
   public:
     Asset(const Asset&) = default;
 
-    Asset& operator=(const Asset&) = default;
+    auto operator=(const Asset&) -> Asset& = default;
 
     Asset(Asset&&) noexcept = default;
 
-    Asset& operator=(Asset&&) noexcept = default;
+    auto operator=(Asset&&) noexcept -> Asset& = default;
 
     virtual ~Asset() noexcept;
 
-    std::string_view asset_name() const;
+    auto asset_name() const -> std::string_view;
 
   private:
     details::ContentManager* m_content_manager{};
@@ -107,9 +107,9 @@ using CustomAssetLoadFunc = std::function<std::shared_ptr<Asset>(
  * @code{.cpp}
  * cer::set_asset_loading_prefix("MySpecialFolder/Folder2/");
  *
- * const auto image = cer::load_image("MyImage.png");
+ * const auto image = cer::Image{"MyImage.png"};
  *
- * # ^ Same as cer::load_image("MySpecialFolder/Folder2/MyImage.png")
+ * # ^ Same as cer::Image{"MySpecialFolder/Folder2/MyImage.png"}
  * @endcode
  *
  * @attention This affects how assets are cached. The content manager
@@ -117,7 +117,7 @@ using CustomAssetLoadFunc = std::function<std::shared_ptr<Asset>(
  *
  * @ingroup Content
  */
-CERLIB_API void set_asset_loading_prefix(std::string_view prefix);
+void set_asset_loading_prefix(std::string_view prefix);
 
 /**
  * Gets the prefix that should be prepended to asset names when loading. May be
@@ -125,58 +125,7 @@ CERLIB_API void set_asset_loading_prefix(std::string_view prefix);
  *
  * @ingroup Content
  */
-CERLIB_API std::string asset_loading_prefix();
-
-/**
- * Lazily loads an Image object from the storage.
- *
- * @param name The name of the asset in the storage.
- * @param generate_mipmaps If true, loads a version of the image with mipmaps generated.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-CERLIB_API Image load_image(std::string_view name, bool generate_mipmaps = false);
-
-/**
- * Lazily loads a Shader object from the storage.
- *
- * @param name The name of the asset in the storage.
- * @param defines Reserved; currently has no effect.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-CERLIB_API Shader load_shader(std::string_view                  name,
-                              std::span<const std::string_view> defines = {});
-
-/**
- * Lazily loads a Font object from the storage.
- *
- * @param name The name of the asset in the storage.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-CERLIB_API Font load_font(std::string_view name);
-
-/**
- * Lazily loads a Sound object from the storage.
- *
- * @param name The name of the asset in the storage.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-CERLIB_API Sound load_sound(std::string_view name);
+auto asset_loading_prefix() -> std::string;
 
 /**
  * Registers a function as a custom asset loader for a specific type ID.
@@ -184,13 +133,12 @@ CERLIB_API Sound load_sound(std::string_view name);
  * @param type_id The ID of the custom asset. May be chosen freely, but must be unique.
  * @param load_func The function that is responsible for loading the custom asset.
  *
- * @throw std::invalid_argument If a loader for the specified typeId is already
+ * @throw std::invalid_argument If a loader for the specified type_id is already
  * registered.
  *
  * @ingroup Content
  */
-CERLIB_API void register_custom_asset_loader(std::string_view    type_id,
-                                             CustomAssetLoadFunc load_func);
+void register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func);
 
 /**
  * Removed the custom asset loader for a specific type ID.
@@ -199,13 +147,13 @@ CERLIB_API void register_custom_asset_loader(std::string_view    type_id,
  *
  * @ingroup Content
  */
-CERLIB_API void unregister_custom_asset_loader(std::string_view type_id);
+void unregister_custom_asset_loader(std::string_view type_id);
 
 /**
  * Registers a function as a custom asset loader for a specific type.
  *
  * This is a convenience function for RegisterCustomAssetLoader().
- * It forwards the C++ typeid() information as the `typeId`.
+ * It forwards the C++ typeid() information as the `type_id`.
  *
  * @tparam T The type of the custom asset.
  * @param load_func The function that is responsible for loading the custom asset.
@@ -224,12 +172,12 @@ static void register_custom_asset_loader_for_type(CustomAssetLoadFunc load_func)
 /**
  * Lazily loads a custom asset object from the storage.
  *
- * @param type_id The ID of the custom asset to load. This must correspond to `typeId`
+ * @param type_id The ID of the custom asset to load. This must correspond to `type_id`
  * that was passed to RegisterCustomAssetLoader().
  * @param name The name of the asset in the storage.
  * @param extra_info Optional extra information that is passed to the asset loader. Has
  * no effect on how the asset is cached. This means that if an asset with the same
- * `typeId` and `name`, but with different `extraInfo` values is loaded, the first asset
+ * `type_id` and `name`, but with different `extraInfo` values is loaded, the first asset
  * that was loaded by such a call is returned.
  *
  * @return The loaded asset. If the asset was previously loaded, its reference count is
@@ -237,9 +185,8 @@ static void register_custom_asset_loader_for_type(CustomAssetLoadFunc load_func)
  *
  * @ingroup Content
  */
-CERLIB_API std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
-                                                    std::string_view name,
-                                                    const std::any&  extra_info);
+auto load_custom_asset(std::string_view type_id, std::string_view name, const std::any& extra_info)
+    -> std::shared_ptr<Asset>;
 
 /**
  * Registers a function as a custom asset loader for a specific type.
@@ -257,15 +204,14 @@ CERLIB_API std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
  * @ingroup Content
  */
 template <typename T>
-static std::shared_ptr<T> load_custom_asset_of_type(std::string_view name,
-                                                    const std::any&  extra_info)
+static auto load_custom_asset_of_type(std::string_view name, const std::any& extra_info)
+    -> std::shared_ptr<T>
     requires(std::is_base_of_v<Asset, T>)
 {
-    const std::shared_ptr<Asset> asset = load_custom_asset(typeid(T).name(), name, extra_info);
+    const auto asset      = load_custom_asset(typeid(T).name(), name, extra_info);
+    auto       asset_type = std::dynamic_pointer_cast<T>(asset);
 
-    std::shared_ptr<T> asset_type = std::dynamic_pointer_cast<T>(asset);
-
-    if (!asset_type)
+    if (asset_type == nullptr)
     {
         throw std::invalid_argument("The loaded asset type differs from the desired type T.");
     }
@@ -281,5 +227,5 @@ static std::shared_ptr<T> load_custom_asset_of_type(std::string_view name,
  *
  * @ingroup Content
  */
-CERLIB_API bool is_asset_loaded(std::string_view name);
+auto is_asset_loaded(std::string_view name) -> bool;
 } // namespace cer

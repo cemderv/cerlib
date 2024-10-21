@@ -4,21 +4,7 @@
 
 set(cerlib_gfx_backend "OpenGL")
 
-add_subdirectory(stb)
-
-set(cerlib_library_type STATIC)
-
-if (CERLIB_SHARED_LIBRARY)
-  set(cerlib_library_type SHARED)
-endif ()
-
-if (EMSCRIPTEN)
-  set(cerlib_library_type STATIC)
-endif ()
-
-cerlib_log("Creating cerlib library of type (${cerlib_library_type})")
-
-add_library(cerlib ${cerlib_library_type})
+add_library(cerlib STATIC)
 
 set(cerlib_include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(cerlib_src_dir ${CMAKE_CURRENT_SOURCE_DIR})
@@ -36,6 +22,7 @@ set(cerlib_public_files
   cerlib/GraphicsResource.hpp
   cerlib/Image.hpp
   cerlib/Input.hpp
+  cerlib/Interval.hpp
   cerlib/Key.hpp
   cerlib/KeyModifier.hpp
   cerlib/Math.hpp
@@ -43,6 +30,11 @@ set(cerlib_public_files
   cerlib/Matrix.hpp
   cerlib/Hashing.hpp
   cerlib/MouseButton.hpp
+  cerlib/Particle.hpp
+  cerlib/ParticleEmitter.hpp
+  cerlib/ParticleModifier.hpp
+  cerlib/ParticleSystem.hpp
+  cerlib/ParticleEmitterShape.hpp
   cerlib/Rectangle.hpp
   cerlib/Sampler.hpp
   cerlib/Shader.hpp
@@ -50,10 +42,10 @@ set(cerlib_public_files
   cerlib/Sound.hpp
   cerlib/SoundChannel.hpp
   cerlib/SoundTypes.hpp
+  cerlib/Text.hpp
   cerlib/ToString.hpp
   cerlib/Tween.hpp
   cerlib/Vector2.hpp
-  cerlib/Export.hpp
   cerlib/Vector3.hpp
   cerlib/Vector4.hpp
   cerlib/Version.hpp
@@ -63,6 +55,9 @@ set(cerlib_public_files
   cerlib/details/MainImpl.hpp
   cerlib/Gamepad.hpp
   cerlib/Util.hpp
+  cerlib/List.hpp
+  cerlib/CopyMoveMacros.hpp
+  cerlib/Defer.hpp
   cerlib.hpp
 )
 
@@ -71,8 +66,73 @@ list(TRANSFORM cerlib_public_files PREPEND ${cerlib_include_dir}/)
 # Add public files to target
 target_sources(cerlib PRIVATE ${cerlib_public_files})
 target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
-
 source_group("Public" FILES ${cerlib_public_files})
+
+# Precompiled headers
+target_precompile_headers(cerlib PRIVATE
+  <algorithm>
+  <any>
+  <cassert>
+  <cerlib/CopyMoveMacros.hpp>
+  <cerlib/Defer.hpp>
+  <cerlib/List.hpp>
+  <chrono>
+  <cmath>
+  <compare>
+  <cstddef>
+  <cstdint>
+  <exception>
+  <fmt/format.h>
+  <functional>
+  <limits>
+  <map>
+  <memory>
+  <optional>
+  <ostream>
+  <ranges>
+  <set>
+  <span>
+  <stdexcept>
+  <string>
+  <string_view>
+  <thread>
+  <tuple>
+  <unordered_map>
+  <unordered_set>
+  <utility>
+  <variant>
+  <vector>
+  graphics/GraphicsDevice.hpp
+  shadercompiler/BuiltInSymbols.hpp
+  shadercompiler/Decl.hpp
+  shadercompiler/Expr.hpp
+  shadercompiler/Lexer.hpp
+  shadercompiler/Stmt.hpp
+  shadercompiler/TempVarNameGen.hpp
+  shadercompiler/Token.hpp
+  shadercompiler/Type.hpp
+  shadercompiler/Writer.hpp
+  util/MultiStringHash.hpp
+  util/Object.hpp
+  util/Platform.hpp
+  util/StringViewUnorderedSet.hpp
+  util/narrow_cast.hpp
+)
+
+set_source_files_properties(graphics/stb_image.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+
+if (EMSCRIPTEN)
+  target_precompile_headers(cerlib PRIVATE <SDL2/SDL.h>)
+else ()
+  target_precompile_headers(cerlib PRIVATE <SDL3/SDL.h>)
+endif ()
+
+if (cerlib_gfx_backend STREQUAL "OpenGL")
+  target_precompile_headers(cerlib PRIVATE
+    <glad.h>
+    graphics/opengl/OpenGLPrerequisites.hpp
+  )
+endif ()
 
 set(src_sub_dirs
   audio
@@ -84,6 +144,17 @@ set(src_sub_dirs
   shadercompiler
   util
 )
+
+if (CERLIB_ENABLE_IMGUI)
+  list(APPEND src_sub_dirs imgui)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_ENABLE_IMGUI)
+
+  # Provide the user access to the ImGui API.
+  target_include_directories(cerlib PUBLIC imgui)
+
+  # We provide a custom OpenGL loader, ImGui doesn't need its own.
+  target_compile_definitions(cerlib PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM)
+endif ()
 
 foreach (dir ${src_sub_dirs})
   include(${dir}/Files.cmake)
@@ -101,17 +172,14 @@ endforeach ()
 
 set_target_properties(cerlib PROPERTIES FOLDER "cerlib")
 
-if (cerlib_library_type STREQUAL "SHARED")
-  target_compile_definitions(cerlib PUBLIC -DCERLIB_SHARED_LIBRARY)
-  target_compile_definitions(cerlib PRIVATE -Dcerlib_EXPORTS)
-endif ()
-
 if (cerlib_gfx_backend STREQUAL "OpenGL")
   cerlib_log("Using OpenGL")
   include(graphics/opengl/Files.cmake)
   list(TRANSFORM opengl_files PREPEND ${cerlib_src_dir}/graphics/opengl/)
-  target_link_libraries(cerlib PUBLIC opengl-loader)
+  list(TRANSFORM opengl_include_dirs PREPEND ${cerlib_src_dir}/graphics/opengl/)
   target_sources(cerlib PRIVATE ${opengl_files})
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_HAVE_OPENGL ${opengl_compile_defs})
+  target_include_directories(cerlib PRIVATE ${opengl_include_dirs})
 endif ()
 
 if (CERLIB_ATOMIC_REFCOUNTING)
@@ -120,13 +188,6 @@ endif ()
 
 target_include_directories(cerlib PUBLIC ${cerlib_include_dir})
 target_include_directories(cerlib PRIVATE ${cerlib_src_dir})
-
-# Link out-of-source dependencies
-target_link_libraries(cerlib PRIVATE
-  GSL
-  utf8cpp
-  stblib
-)
 
 target_link_libraries(cerlib PUBLIC
   fmt::fmt-header-only
@@ -166,12 +227,6 @@ if (EMSCRIPTEN)
   )
 endif ()
 
-if (CERLIB_ENABLE_IMGUI)
-  add_subdirectory(imgui)
-  target_link_libraries(cerlib PUBLIC cerlib_imgui)
-  target_compile_definitions(cerlib PRIVATE -DCERLIB_ENABLE_IMGUI)
-endif ()
-
 if (ANDROID)
   target_link_libraries(cerlib PUBLIC dl m atomic stdc++ android log)
 
@@ -190,13 +245,14 @@ if (IOS)
 endif ()
 
 target_link_libraries(cerlib PUBLIC cerlib_SDL)
-target_link_libraries(cerlib PRIVATE SoLoud)
 
 enable_default_cpp_flags(cerlib)
 enable_clang_tidy(cerlib)
 
 if (CERLIB_ENABLE_VERBOSE_LOGGING)
-  target_compile_definitions(cerlib PRIVATE "-DCERLIB_ENABLE_VERBOSE_LOGGING")
+  target_compile_definitions(cerlib PRIVATE
+    -DCERLIB_ENABLE_VERBOSE_LOGGING
+  )
 endif ()
 
 cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/VeraRegular.ttf)
@@ -206,3 +262,16 @@ cerlib_embed_file(cerlib ${CMAKE_CURRENT_SOURCE_DIR}/resources/GrayscaleShader.s
 cerlib_compile_shader(shaders/SpriteBatchVS.vert)
 cerlib_compile_shader(shaders/SpriteBatchPSDefault.frag)
 cerlib_compile_shader(shaders/SpriteBatchPSMonochromatic.frag)
+
+target_compile_definitions(cerlib PRIVATE
+  -DSTB_VORBIS_NO_STDIO
+)
+
+# Audio
+if (EMSCRIPTEN)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL2)
+  target_sources(cerlib PRIVATE audio/SDL2Backend.cpp)
+else ()
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_AUDIO_BACKEND_SDL3)
+  target_sources(cerlib PRIVATE audio/SDL3Backend.cpp)
+endif ()

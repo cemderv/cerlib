@@ -5,8 +5,7 @@
 #pragma once
 
 #include "OpenGLPrerequisites.hpp"
-#include "util/NonCopyable.hpp"
-
+#include <cerlib/CopyMoveMacros.hpp>
 #include <cstddef>
 #include <cstdint>
 
@@ -19,11 +18,11 @@ class OpenGLBuffer final
 
     explicit OpenGLBuffer(GLenum target, size_t size_in_bytes, GLenum usage, const void* data);
 
-    NON_COPYABLE(OpenGLBuffer);
+    forbid_copy(OpenGLBuffer);
 
     OpenGLBuffer(OpenGLBuffer&& other) noexcept;
 
-    OpenGLBuffer& operator=(OpenGLBuffer&& other) noexcept;
+    auto operator=(OpenGLBuffer&& other) noexcept -> OpenGLBuffer&;
 
     ~OpenGLBuffer() noexcept;
 

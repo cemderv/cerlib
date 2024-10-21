@@ -6,8 +6,6 @@
 
 #include "DxgiFormatConversion.hpp"
 #include "cerlib/Math.hpp"
-#include "util/InternalError.hpp"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -29,12 +27,10 @@ static constexpr uint32_t D3D11_REQ_MIP_LEVELS                   = 15; // NOLINT
 static constexpr uint32_t D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION   = 16384; // NOLINT
 static constexpr uint32_t D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION = 2048; // NOLINT
 
-static constexpr uint32_t make_fourcc(char ch0, char ch1, char ch2, char ch3)
+static constexpr auto make_fourcc(char ch0, char ch1, char ch2, char ch3) -> uint32_t
 {
-    return static_cast<uint32_t>(static_cast<uint8_t>(ch0)) |
-           static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8 |
-           static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16 |
-           static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24;
+    return uint32_t(uint8_t(ch0)) | uint32_t(uint8_t(ch1)) << 8 | uint32_t(uint8_t(ch2)) << 16 |
+           uint32_t(uint8_t(ch3)) << 24;
 }
 
 // #pragma pack(push, 1)
@@ -90,7 +86,7 @@ struct DdsHeaderDxT10
 
 // #pragma pack(pop)
 
-static size_t bits_per_pixel(DXGI_FORMAT fmt)
+static auto bits_per_pixel(DXGI_FORMAT fmt) -> size_t
 {
     switch (fmt)
     {
@@ -306,14 +302,14 @@ static void get_surface_info(size_t      width,
     }
 }
 
-static constexpr bool is_bitmask(
-    const DdsPixelformat& ddpf, uint32_t r, uint32_t g, uint32_t b, uint32_t a)
+static constexpr auto is_bitmask(
+    const DdsPixelformat& ddpf, uint32_t r, uint32_t g, uint32_t b, uint32_t a) -> bool
 {
     return ddpf.r_bit_mask == r && ddpf.g_bit_mask == g && ddpf.b_bit_mask == b &&
            ddpf.a_bit_mask == a;
 }
 
-static DXGI_FORMAT get_dxgi_format(const DdsPixelformat& ddpf)
+static auto get_dxgi_format(const DdsPixelformat& ddpf) -> DXGI_FORMAT
 {
     if ((ddpf.flags & dds_rgb) != 0u)
     {
@@ -503,20 +499,21 @@ static void fill_init_data(size_t                     width,
         {
             get_surface_info(w, h, format, &num_bytes, &row_bytes, &num_rows);
 
-            auto& face = init_data.faces.at(face_index);
-            auto& mip  = face.mipmaps.at(mip_index);
-            mip.data   = src_bits.subspan(0, num_bytes);
+            auto& face    = init_data.faces.at(face_index);
+            auto& mip     = face.mipmaps.at(mip_index);
+            mip.data_span = src_bits.subspan(0, num_bytes);
 
             src_bits = src_bits.subspan(num_bytes * d);
 
-            w = max(w >> 1, static_cast<size_t>(1));
-            h = max(h >> 1, static_cast<size_t>(1));
-            d = max(d >> 1, static_cast<size_t>(1));
+            w = max(w >> 1, size_t(1));
+            h = max(h >> 1, size_t(1));
+            d = max(d >> 1, size_t(1));
         }
     }
 }
 
-static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const std::byte> bit_data)
+static auto create_image_from_dds(const DdsHeader& header, std::span<const std::byte> bit_data)
+    -> DDSImage
 {
     DDSImage image{};
     image.width  = header.width;
@@ -539,12 +536,12 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
 
         if (array_size == 0)
         {
-            CER_THROW_RUNTIME_ERROR("DDS has invalid array size ({})", array_size);
+            throw std::runtime_error{fmt::format("DDS has invalid array size ({})", array_size)};
         }
 
         if (bits_per_pixel(d3d10ext->dxgi_format) == 0)
         {
-            CER_THROW_RUNTIME_ERROR_STR("DDS has invalid format");
+            throw std::runtime_error{"DDS has invalid format"};
         }
 
         dxgi_format = d3d10ext->dxgi_format;
@@ -555,7 +552,8 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
                 // D3DX writes 1D textures with a fixed Height of 1.
                 if ((header.flags & dds_height) != 0u && image.height != 1)
                 {
-                    CER_THROW_RUNTIME_ERROR("DDS has invalid 1D image height ({})", image.height);
+                    throw std::runtime_error{
+                        fmt::format("DDS has invalid 1D image height ({})", image.height)};
                 }
 
                 image.height = image.depth = 1;
@@ -564,7 +562,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
             case D3D11_RESOURCE_DIMENSION_TEXTURE2D:
                 if ((d3d10ext->misc_flag & D3D11_RESOURCE_MISC_TEXTURECUBE) != 0u)
                 {
-                    CER_THROW_RUNTIME_ERROR_STR("Cubemaps are not supported");
+                    throw std::runtime_error{"Cubemaps are not supported"};
                 }
 
                 image.depth = 1;
@@ -573,21 +571,21 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
             case D3D11_RESOURCE_DIMENSION_TEXTURE3D: {
                 if ((header.flags & dds_header_flags_volume) == 0u)
                 {
-                    CER_THROW_RUNTIME_ERROR_STR("DDS has invalid 3D image flags");
+                    throw std::runtime_error{"DDS has invalid 3D image flags"};
                 }
 
                 if (array_size > 1)
                 {
-                    CER_THROW_RUNTIME_ERROR("DDS has invalid array size for 3D image ({})",
-                                            array_size);
+                    throw std::runtime_error{
+                        fmt::format("DDS has invalid array size for 3D image ({})", array_size)};
                 }
 
                 break;
             }
 
             default:
-                CER_THROW_RUNTIME_ERROR("DDS has invalid image type ({})",
-                                        d3d10ext->resource_dimension);
+                throw std::runtime_error{
+                    fmt::format("DDS has invalid image type ({})", d3d10ext->resource_dimension)};
         }
 
         res_dim = d3d10ext->resource_dimension;
@@ -598,7 +596,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
 
         if (dxgi_format == DXGI_FORMAT_UNKNOWN)
         {
-            CER_THROW_RUNTIME_ERROR_STR("DDS has invalid image format");
+            throw std::runtime_error{"DDS has invalid image format"};
         }
 
         if ((header.flags & dds_header_flags_volume) != 0u)
@@ -609,7 +607,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
         {
             if ((header.caps2 & dds_cubemap) != 0u)
             {
-                CER_THROW_RUNTIME_ERROR_STR("Cubemaps are not supported");
+                throw std::runtime_error{"Cubemaps are not supported"};
             }
 
             image.depth = 1;
@@ -621,7 +619,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
 
     if (mip_count > D3D11_REQ_MIP_LEVELS)
     {
-        CER_THROW_RUNTIME_ERROR_STR("DDS exceeds number of allowed mipmaps");
+        throw std::runtime_error{"DDS exceeds number of allowed mipmaps"};
     }
 
     switch (res_dim)
@@ -630,7 +628,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
             if (array_size > D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION ||
                 image.width > D3D11_REQ_TEXTURE1D_U_DIMENSION)
             {
-                CER_THROW_RUNTIME_ERROR_STR("DDS has invalid dimensions");
+                throw std::runtime_error{"DDS has invalid dimensions"};
             }
             break;
 
@@ -639,7 +637,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
                 image.width > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION ||
                 image.height > D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION)
             {
-                CER_THROW_RUNTIME_ERROR_STR("DDS has invalid dimensions");
+                throw std::runtime_error{"DDS has invalid dimensions"};
             }
             break;
 
@@ -648,7 +646,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
                 image.height > D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION ||
                 image.depth > D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION)
             {
-                CER_THROW_RUNTIME_ERROR_STR("DDS has invalid dimensions");
+                throw std::runtime_error{"DDS has invalid dimensions"};
             }
             break;
         default: break;
@@ -674,7 +672,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
 
     if (!format.has_value())
     {
-        CER_THROW_RUNTIME_ERROR_STR("Unsupported format in DDS data.");
+        throw std::runtime_error{"Unsupported format in DDS data."};
     }
 
     image.format = *format;
@@ -682,12 +680,7 @@ static DDSImage create_image_from_dds(const DdsHeader& header, std::span<const s
     return image;
 }
 
-const void* dds_image_data_upload(const DDSImage& dds_image, uint32_t array_index, uint32_t mipmap)
-{
-    return dds_image.faces.at(array_index).mipmaps.at(mipmap).data.data();
-}
-
-std::optional<DDSImage> load(std::span<const std::byte> memory)
+auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>
 {
     // Validate DDS file in memory.
     if (memory.size() < sizeof(uint32_t) + sizeof(DdsHeader))
@@ -707,7 +700,7 @@ std::optional<DDSImage> load(std::span<const std::byte> memory)
     // Verify the header to validate the DDS file.
     if (header->size != sizeof(DdsHeader) || header->ddspf.size != sizeof(DdsPixelformat))
     {
-        CER_THROW_RUNTIME_ERROR_STR("DDS has invalid header");
+        throw std::runtime_error{"DDS has invalid header"};
     }
 
     // Check for the DX10 extension.
@@ -719,7 +712,7 @@ std::optional<DDSImage> load(std::span<const std::byte> memory)
         // Must be long enough for both headers and magic value
         if (memory.size() < (sizeof(DdsHeader) + sizeof(uint32_t) + sizeof(DdsHeaderDxT10)))
         {
-            CER_THROW_RUNTIME_ERROR_STR("DDS has invalid header/magic number");
+            throw std::runtime_error{"DDS has invalid header/magic number"};
         }
 
         b_dxt10_header = true;

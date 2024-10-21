@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 
 namespace cer::details
 {
 using MainFunc = int (*)(int, char**);
 
-[[nodiscard]] CERLIB_API int run_game(int a, char* b[], MainFunc c, void* d);
+[[nodiscard]] auto run_game(int a, char* b[], MainFunc c, void* d) -> int;
 } // namespace cer::details

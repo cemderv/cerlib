@@ -6,7 +6,7 @@
 
 #include "OpenGLPrerequisites.hpp"
 #include "graphics/VertexElement.hpp"
-#include "util/NonCopyable.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 #include <span>
 
 namespace cer::details
@@ -18,11 +18,11 @@ class OpenGLVao final
 
     explicit OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vertex_elements);
 
-    NON_COPYABLE(OpenGLVao);
+    forbid_copy(OpenGLVao);
 
     OpenGLVao(OpenGLVao&&) noexcept;
 
-    OpenGLVao& operator=(OpenGLVao&& other) noexcept;
+    auto operator=(OpenGLVao&& other) noexcept -> OpenGLVao&;
 
     ~OpenGLVao() noexcept;
 

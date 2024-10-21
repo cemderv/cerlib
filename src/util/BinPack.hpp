@@ -6,8 +6,8 @@
 
 #include "cerlib/Rectangle.hpp"
 
+#include <cerlib/List.hpp>
 #include <optional>
-#include <vector>
 
 namespace cer
 {
@@ -32,10 +32,7 @@ class BinPack final
 
         auto to_rectangle() const -> Rectangle
         {
-            return {static_cast<float>(x),
-                    static_cast<float>(y),
-                    static_cast<float>(width),
-                    static_cast<float>(height)};
+            return {float(x), float(y), float(width), float(height)};
         }
 
         int32_t x{};
@@ -46,37 +43,35 @@ class BinPack final
 
     BinPack();
 
-    explicit BinPack(int32_t width, int32_t height);
+    BinPack(int32_t width, int32_t height);
 
-    void insert(std::vector<Size>& rects, std::vector<Rect>& dst);
+    void insert(List<Size>& rects, List<Rect>& dst);
 
-    std::optional<Rect> insert(int32_t width, int32_t height);
-
-    double occupancy() const;
+    auto insert(int32_t width, int32_t height) -> std::optional<Rect>;
 
   private:
-    std::optional<Rect> score_rect(int width, int height, int& score1, int& score2) const;
+    auto score_rect(int width, int height, int& score1, int& score2) const -> std::optional<Rect>;
 
     void place_rect(const Rect& node);
 
-    std::optional<Rect> find_position_for_new_node(int  width,
-                                                   int  height,
-                                                   int& best_area_fit,
-                                                   int& best_short_side_fit) const;
+    auto find_position_for_new_node(int  width,
+                                    int  height,
+                                    int& best_area_fit,
+                                    int& best_short_side_fit) const -> std::optional<Rect>;
 
     void insert_new_free_rectangle(const Rect& new_free_rect);
 
-    bool split_free_node(const Rect& free_node, const Rect& used_node);
+    auto split_free_node(const Rect& free_node, const Rect& used_node) -> bool;
 
     void prune_free_list();
 
     int32_t m_bin_width{};
     int32_t m_bin_height{};
 
-    size_t            m_new_free_rectangles_last_size{};
-    std::vector<Rect> m_new_free_rectangles;
+    size_t     m_new_free_rectangles_last_size{};
+    List<Rect> m_new_free_rectangles;
 
-    std::vector<Rect> m_used_rectangles;
-    std::vector<Rect> m_free_rectangles;
+    List<Rect> m_used_rectangles;
+    List<Rect> m_free_rectangles;
 };
 } // namespace cer

@@ -4,26 +4,31 @@
 
 #pragma once
 
+#include "audio/Common.hpp"
 #include "cerlib/SoundTypes.hpp"
 #include "util/Object.hpp"
 
-#include <gsl/pointers>
-#include <soloud.h>
+namespace cer
+{
+class AudioDevice;
+}
 
 namespace cer::details
 {
 class SoundChannelImpl final : public Object
 {
   public:
-    explicit SoundChannelImpl(gsl::not_null<SoLoud::Soloud*> soloud, SoLoud::handle handle);
+    explicit SoundChannelImpl(AudioDevice& audio_device, SoundHandle handle);
 
-    uint32_t id() const;
+    forbid_copy_and_move(SoundChannelImpl);
 
-    bool is_paused() const;
+    auto id() const -> uint32_t;
+
+    auto is_paused() const -> bool;
 
     void set_is_paused(bool value);
 
-    float relative_play_speed() const;
+    auto relative_play_speed() const -> float;
 
     void set_relative_play_speed(float value);
 
@@ -31,21 +36,21 @@ class SoundChannelImpl final : public Object
 
     void stop();
 
-    float volume() const;
+    auto volume() const -> float;
 
     void set_volume(float value);
 
-    float pan() const;
+    auto pan() const -> float;
 
     void set_pan(float value);
 
     void set_is_protected(bool value);
 
-    bool is_looping() const;
+    auto is_looping() const -> bool;
 
     void set_is_looping(bool value);
 
-    SoundTime loop_point() const;
+    auto loop_point() const -> SoundTime;
 
     void set_loop_point(SoundTime value);
 
@@ -61,10 +66,10 @@ class SoundChannelImpl final : public Object
 
     void pause_after(SoundTime after);
 
-    SoundTime stream_position() const;
+    auto stream_position() const -> SoundTime;
 
   private:
-    gsl::not_null<SoLoud::Soloud*> m_soloud;
-    SoLoud::handle                 m_soloud_handle;
+    AudioDevice& m_soloud;
+    SoundHandle  m_soloud_handle;
 };
 } // namespace cer::details

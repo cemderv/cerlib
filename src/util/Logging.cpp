@@ -18,7 +18,7 @@ namespace cer::details
 void log_internal(const std::string& message, LogMessageType type)
 {
 #if CERLIB_PLATFORM_WINDOWS
-    std::string full_msg;
+    auto full_msg = std::string{};
     full_msg.reserve(message.size() + 1);
 
     switch (type)
@@ -32,8 +32,9 @@ void log_internal(const std::string& message, LogMessageType type)
 
     OutputDebugString(full_msg.c_str());
 #elif CERLIB_PLATFORM_ANDROID
-    const int log_priority = [type] {
-        switch(type) {
+    const auto log_priority = [type] {
+        switch (type)
+        {
             case LogMessageType::Info: return ANDROID_LOG_INFO;
             case LogMessageType::Warning: return ANDROID_LOG_WARN;
             case LogMessageType::Error: return ANDROID_LOG_ERROR;

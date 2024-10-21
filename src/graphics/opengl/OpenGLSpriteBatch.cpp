@@ -15,8 +15,7 @@
 
 namespace cer::details
 {
-OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
-                                     gsl::not_null<FrameStats*>     draw_stats)
+OpenGLSpriteBatch::OpenGLSpriteBatch(GraphicsDevice& device_impl, FrameStats& draw_stats)
     : SpriteBatch(device_impl, draw_stats)
 {
     log_verbose("Initializing OpenGLSpriteBatch, but verifying OpenGL state first");
@@ -29,15 +28,15 @@ OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
                                                  GL_VERTEX_SHADER,
                                                  SpriteBatchVS_vert_string_view());
 
-    OpenGLPrivateShader ps_default{"SpriteBatchPSDefault",
-                                   GL_FRAGMENT_SHADER,
-                                   SpriteBatchPSDefault_frag_string_view()};
+    auto ps_default = OpenGLPrivateShader{"SpriteBatchPSDefault",
+                                          GL_FRAGMENT_SHADER,
+                                          SpriteBatchPSDefault_frag_string_view()};
 
-    OpenGLPrivateShader ps_monochromatic{"SpriteBatchPSMonochromatic",
-                                         GL_FRAGMENT_SHADER,
-                                         SpriteBatchPSMonochromatic_frag_string_view()};
+    auto ps_monochromatic = OpenGLPrivateShader{"SpriteBatchPSMonochromatic",
+                                                GL_FRAGMENT_SHADER,
+                                                SpriteBatchPSMonochromatic_frag_string_view()};
 
-    m_default_sprite_shader_program = OpenGLShaderProgram(m_sprite_vertex_shader, ps_default);
+    m_default_sprite_shader_program = OpenGLShaderProgram{m_sprite_vertex_shader, ps_default};
     m_default_sprite_shader_program_u_transformation =
         GL_CALL(glGetUniformLocation(m_default_sprite_shader_program.gl_handle, "Transformation"));
 
@@ -49,24 +48,24 @@ OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
 
     // Vertex buffer
     {
-        constexpr uint32_t how_many_vertices = max_batch_size * vertices_per_sprite;
+        constexpr auto how_many_vertices = max_batch_size * vertices_per_sprite;
 
-        m_vbo = OpenGLBuffer(GL_ARRAY_BUFFER,
+        m_vbo = OpenGLBuffer{GL_ARRAY_BUFFER,
                              sizeof(Vertex) * how_many_vertices,
                              GL_DYNAMIC_DRAW,
-                             nullptr);
+                             nullptr};
     }
 
     // Index buffer
     {
-        constexpr uint32_t how_many_indices = max_batch_size * indices_per_sprite;
+        constexpr auto how_many_indices = max_batch_size * indices_per_sprite;
 
-        std::vector<uint16_t> indices;
+        auto indices = List<uint16_t>{};
         indices.reserve(how_many_indices);
 
         for (uint32_t j = 0; j < max_batch_size * vertices_per_sprite; j += vertices_per_sprite)
         {
-            const uint16_t i = static_cast<uint16_t>(j);
+            const auto i = uint16_t(j);
 
             indices.push_back(i);
             indices.push_back(i + 1);
@@ -79,46 +78,48 @@ OpenGLSpriteBatch::OpenGLSpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
 
         assert(indices.size() == how_many_indices);
 
-        m_ibo = OpenGLBuffer(GL_ELEMENT_ARRAY_BUFFER,
+        m_ibo = OpenGLBuffer{GL_ELEMENT_ARRAY_BUFFER,
                              sizeof(uint16_t) * indices.size(),
                              GL_STATIC_DRAW,
-                             indices.data());
+                             indices.data()};
     }
 
     // VAO
-    m_vao = OpenGLVao(m_vbo.gl_handle,
-                      m_ibo.gl_handle,
-                      {{
-                          VertexElement::Vector4,
-                          VertexElement::Vector4,
-                          VertexElement::Vector2,
-                      }});
+    m_vao = OpenGLVao{
+        m_vbo.gl_handle,
+        m_ibo.gl_handle,
+        {{
+            VertexElement::Vector4,
+            VertexElement::Vector4,
+            VertexElement::Vector2,
+        }},
+    };
 }
 
 OpenGLSpriteBatch::~OpenGLSpriteBatch() noexcept = default;
 
 void OpenGLSpriteBatch::prepare_for_rendering()
 {
-    OpenGLGraphicsDevice* opengl_device = static_cast<OpenGLGraphicsDevice*>(parent_device().get());
+    auto& opengl_device = static_cast<OpenGLGraphicsDevice&>(parent_device());
 
     set_default_render_state();
     apply_blend_state_to_gl_context(current_blend_state());
 
-    opengl_device->bind_vao(m_vao);
+    opengl_device.bind_vao(m_vao);
 
-    const OpenGLUserShader* sprite_shader =
-        static_cast<const OpenGLUserShader*>(this->sprite_shader().impl());
-
-    if (sprite_shader != nullptr)
+    if (const auto* sprite_shader =
+            static_cast<const OpenGLUserShader*>(this->sprite_shader().impl());
+        sprite_shader != nullptr)
     {
         auto it = m_custom_shader_programs.find(sprite_shader);
+
         if (it == m_custom_shader_programs.cend())
         {
-            OpenGLShaderProgram program{m_sprite_vertex_shader,
-                                        sprite_shader->gl_handle,
-                                        sprite_shader->name(),
-                                        true,
-                                        sprite_shader->all_parameters()};
+            auto program = OpenGLShaderProgram{m_sprite_vertex_shader,
+                                               sprite_shader->gl_handle,
+                                               sprite_shader->name(),
+                                               true,
+                                               sprite_shader->all_parameters()};
 
             it = m_custom_shader_programs.emplace(sprite_shader, std::move(program)).first;
         }
@@ -136,10 +137,10 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
                                      [[maybe_unused]] uint32_t start,
                                      [[maybe_unused]] uint32_t count)
 {
-    OpenGLGraphicsDevice* opengl_device = static_cast<OpenGLGraphicsDevice*>(parent_device().get());
+    auto& opengl_device = static_cast<OpenGLGraphicsDevice&>(parent_device());
 
-    OpenGLShaderProgram* shader_program{};
-    GLint                u_transformation = -1;
+    const OpenGLShaderProgram* shader_program   = nullptr;
+    GLint                      u_transformation = -1;
 
     switch (shader_kind)
     {
@@ -166,25 +167,25 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
 
     assert(shader_program != nullptr);
 
-    opengl_device->use_program(shader_program->gl_handle);
+    opengl_device.use_program(shader_program->gl_handle);
 
     if (shader_program == m_current_custom_shader_program)
     {
         // Apply custom shader uniforms
-        ShaderImpl*    shader_impl  = static_cast<ShaderImpl*>(sprite_shader().impl());
-        const uint8_t* cbuffer_data = shader_impl->cbuffer_data();
+        auto*       shader_impl  = static_cast<ShaderImpl*>(sprite_shader().impl());
+        const auto* cbuffer_data = shader_impl->cbuffer_data();
 
-        for (const ShaderParameter* param : shader_impl->dirty_scalar_parameters())
+        for (const auto* param : shader_impl->dirty_scalar_parameters())
         {
-            const GLint location = shader_program->uniform_location(param->name);
+            const auto location = shader_program->uniform_location(param->name);
             if (location == -1)
             {
                 continue;
             }
 
-            const uint8_t* const param_data          = cbuffer_data + param->offset; // NOLINT
-            const GLfloat* const param_data_as_float = reinterpret_cast<const GLfloat*>(param_data);
-            const GLint* const   param_data_as_int   = reinterpret_cast<const GLint*>(param_data);
+            const auto* const param_data          = cbuffer_data + param->offset; // NOLINT
+            const auto* const param_data_as_float = reinterpret_cast<const GLfloat*>(param_data);
+            const auto* const param_data_as_int   = reinterpret_cast<const GLint*>(param_data);
 
             switch (param->type)
             {
@@ -221,44 +222,32 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
                     break;
                 }
                 case ShaderParameterType::FloatArray: {
-                    glUniform1fv(location,
-                                 static_cast<GLsizei>(param->array_size),
-                                 param_data_as_float);
+                    glUniform1fv(location, GLsizei(param->array_size), param_data_as_float);
                     break;
                 }
                 case ShaderParameterType::IntArray: {
-                    glUniform1iv(location,
-                                 static_cast<GLsizei>(param->array_size),
-                                 param_data_as_int);
+                    glUniform1iv(location, GLsizei(param->array_size), param_data_as_int);
                     break;
                 }
                 case ShaderParameterType::BoolArray: {
-                    glUniform1iv(location,
-                                 static_cast<GLsizei>(param->array_size),
-                                 param_data_as_int);
+                    glUniform1iv(location, GLsizei(param->array_size), param_data_as_int);
                     break;
                 }
                 case ShaderParameterType::Vector2Array: {
-                    glUniform2fv(location,
-                                 static_cast<GLsizei>(param->array_size),
-                                 param_data_as_float);
+                    glUniform2fv(location, GLsizei(param->array_size), param_data_as_float);
                     break;
                 }
                 case ShaderParameterType::Vector3Array: {
-                    glUniform3fv(location,
-                                 static_cast<GLsizei>(param->array_size),
-                                 param_data_as_float);
+                    glUniform3fv(location, GLsizei(param->array_size), param_data_as_float);
                     break;
                 }
                 case ShaderParameterType::Vector4Array: {
-                    glUniform4fv(location,
-                                 static_cast<GLsizei>(param->array_size),
-                                 param_data_as_float);
+                    glUniform4fv(location, GLsizei(param->array_size), param_data_as_float);
                     break;
                 }
                 case ShaderParameterType::MatrixArray: {
                     glUniformMatrix4fv(location,
-                                       static_cast<GLsizei>(param->array_size),
+                                       GLsizei(param->array_size),
                                        GL_FALSE,
                                        param_data_as_float);
                     break;
@@ -274,7 +263,7 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
             // already set during construction.
             // Instead, we have to figure out which texture slots those parameters correspond
             // to and bind the parameter's images to those slots.
-            OpenGLImage* opengl_image = static_cast<OpenGLImage*>(param->image.impl());
+            auto* opengl_image = static_cast<OpenGLImage*>(param->image.impl());
 
             glActiveTexture(GL_TEXTURE0 + texture_slot_base_offset + param->offset);
             glBindTexture(GL_TEXTURE_2D, opengl_image != nullptr ? opengl_image->gl_handle : 0);
@@ -282,7 +271,7 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
             if (opengl_image != nullptr)
             {
                 // TODO: make the sampler a parameter-based setting
-                const Sampler sampler = Sampler::linear_repeat();
+                constexpr auto sampler = linear_repeat;
                 apply_sampler_to_gl_context(sampler);
                 opengl_image->last_applied_sampler = sampler;
             }
@@ -291,20 +280,20 @@ void OpenGLSpriteBatch::set_up_batch(const Image&              image,
         shader_impl->clear_dirty_image_parameters();
     }
 
-    const Matrix transformation = current_transformation();
+    const auto transformation = current_transformation();
     GL_CALL(glUniformMatrix4fv(u_transformation, 1, GL_FALSE, transformation.data()));
 
-    OpenGLImage* opengl_image = static_cast<OpenGLImage*>(image.impl());
+    auto* opengl_image = static_cast<OpenGLImage*>(image.impl());
 
     GL_CALL(glActiveTexture(GL_TEXTURE0));
     GL_CALL(glBindTexture(GL_TEXTURE_2D, opengl_image->gl_handle));
 
-    const Sampler sampler = current_sampler();
+    const auto sampler = current_sampler();
 
     if (*shader_program == m_monochromatic_shader_program)
     {
         // We're drawing text. Use nearest neighbor interpolation.
-        apply_sampler_to_gl_context(Sampler::point_clamp());
+        apply_sampler_to_gl_context(point_clamp);
     }
     else if (opengl_image->last_applied_sampler != sampler)
     {
@@ -323,12 +312,12 @@ void OpenGLSpriteBatch::fill_vertices_and_draw(uint32_t         batch_start,
 
     if (use_buffer_sub_data && !m_vertex_data)
     {
-        m_vertex_data = std::make_unique<Vertex[]>(static_cast<size_t>(max_batch_size) *
-                                                   static_cast<size_t>(vertices_per_sprite));
+        m_vertex_data =
+            std::make_unique<Vertex[]>(size_t(max_batch_size) * size_t(vertices_per_sprite));
     }
 
-    const uint32_t start_vertex = batch_start * vertices_per_sprite;
-    const uint32_t vertex_count = batch_size * vertices_per_sprite;
+    const auto start_vertex = batch_start * vertices_per_sprite;
+    const auto vertex_count = batch_size * vertices_per_sprite;
 
     Vertex* vertices = nullptr;
 
@@ -346,11 +335,11 @@ void OpenGLSpriteBatch::fill_vertices_and_draw(uint32_t         batch_start,
 
         map_flags |= GL_MAP_UNSYNCHRONIZED_BIT;
 
-        vertices = static_cast<Vertex*>(glMapBufferRange(
-            GL_ARRAY_BUFFER,
-            static_cast<GLintptr>(static_cast<size_t>(start_vertex) * sizeof(Vertex)),
-            static_cast<GLintptr>(static_cast<size_t>(vertex_count) * sizeof(Vertex)),
-            map_flags));
+        vertices =
+            static_cast<Vertex*>(glMapBufferRange(GL_ARRAY_BUFFER,
+                                                  GLintptr(size_t(start_vertex) * sizeof(Vertex)),
+                                                  GLintptr(size_t(vertex_count) * sizeof(Vertex)),
+                                                  map_flags));
     }
 
     fill_sprite_vertices(vertices,
@@ -371,11 +360,11 @@ void OpenGLSpriteBatch::fill_vertices_and_draw(uint32_t         batch_start,
         GL_CALL(glUnmapBuffer(GL_ARRAY_BUFFER));
     }
 
-    const uint32_t start_index = batch_start * indices_per_sprite;
-    const uint32_t index_count = batch_size * indices_per_sprite;
+    const auto start_index = batch_start * indices_per_sprite;
+    const auto index_count = batch_size * indices_per_sprite;
 
     GL_CALL(glDrawElements(GL_TRIANGLES,
-                           static_cast<GLsizei>(index_count),
+                           GLsizei(index_count),
                            GL_UNSIGNED_SHORT,
                            reinterpret_cast<const void*>(start_index * sizeof(uint16_t))));
 
@@ -395,7 +384,7 @@ void OpenGLSpriteBatch::set_default_render_state()
     GL_CALL(glCullFace(GL_FRONT));
 }
 
-static GLenum convert(ImageAddressMode mode)
+static auto convert(ImageAddressMode mode) -> GLenum
 {
     switch (mode)
     {
@@ -403,8 +392,8 @@ static GLenum convert(ImageAddressMode mode)
         case ImageAddressMode::ClampToEdgeTexels: return GL_CLAMP_TO_EDGE;
 #ifdef CERLIB_GFX_IS_GLES
         case ImageAddressMode::ClampToSamplerBorderColor:
-            CER_THROW_INVALID_ARG_STR("ClampToSamplerBorderColor address mode is not "
-                                      "supported on the current system.");
+            throw std::invalid_argument{"ClampToSamplerBorderColor address mode is not "
+                                        "supported on the current system."};
 #else
         case ImageAddressMode::ClampToSamplerBorderColor: return GL_CLAMP_TO_BORDER;
 #endif
@@ -428,20 +417,15 @@ void OpenGLSpriteBatch::apply_sampler_to_gl_context(const Sampler& sampler)
             break;
     }
 
-    GL_CALL(glTexParameteri(GL_TEXTURE_2D,
-                            GL_TEXTURE_WRAP_S,
-                            static_cast<GLint>(convert(sampler.address_u))));
-
-    GL_CALL(glTexParameteri(GL_TEXTURE_2D,
-                            GL_TEXTURE_WRAP_T,
-                            static_cast<GLint>(convert(sampler.address_v))));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GLint(convert(sampler.address_u))));
+    GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GLint(convert(sampler.address_v))));
 
     // TODO: sampler.textureComparison
     // TODO: sampler.maxAnisotropy
     // TODO: sampler.borderColor
 }
 
-static GLenum convert(BlendFunction function)
+static auto convert(BlendFunction function) -> GLenum
 {
     switch (function)
     {
@@ -455,7 +439,7 @@ static GLenum convert(BlendFunction function)
     return GL_FUNC_ADD;
 }
 
-static GLenum convert(Blend blend)
+static auto convert(Blend blend) -> GLenum
 {
     switch (blend)
     {
@@ -506,12 +490,10 @@ void OpenGLSpriteBatch::apply_blend_state_to_gl_context(const BlendState& blend_
     GL_CALL(glBlendEquationSeparate(convert(blend_state.color_blend_function),
                                     convert(blend_state.alpha_blend_function)));
 
-    const ColorWriteMask color_mask = blend_state.color_write_mask;
+    const auto color_mask = blend_state.color_write_mask;
 
     const auto gl_channel_mask = [color_mask](ColorWriteMask m) -> GLboolean {
-        return (static_cast<int>(color_mask) & static_cast<int>(m)) == static_cast<int>(m)
-                   ? GL_TRUE
-                   : GL_FALSE;
+        return (int(color_mask) & int(m)) == int(m) ? GL_TRUE : GL_FALSE;
     };
 
     GL_CALL(glColorMask(gl_channel_mask(ColorWriteMask::Red),
@@ -522,14 +504,14 @@ void OpenGLSpriteBatch::apply_blend_state_to_gl_context(const BlendState& blend_
     m_last_applied_blend_state = blend_state;
 }
 
-auto OpenGLSpriteBatch::on_shader_destroyed(gsl::not_null<ShaderImpl*> shader) -> void
+void OpenGLSpriteBatch::on_shader_destroyed(ShaderImpl& shader)
 {
-    const OpenGLUserShader* opengl_shader = static_cast<const OpenGLUserShader*>(shader.get());
+    const auto& opengl_shader = static_cast<const OpenGLUserShader&>(shader);
 
-    if (const auto it = m_custom_shader_programs.find(opengl_shader);
+    if (const auto it = m_custom_shader_programs.find(&opengl_shader);
         it != m_custom_shader_programs.cend())
     {
-        log_verbose("Erasing OpenGLShaderProgram with user-origin '{}'", shader->name());
+        log_verbose("Erasing OpenGLShaderProgram with user-origin '{}'", shader.name());
         m_custom_shader_programs.erase(it);
     }
 

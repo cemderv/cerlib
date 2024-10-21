@@ -12,7 +12,7 @@
 
 namespace cer
 {
-static bool is_contained_in(const BinPack::Rect& a, const BinPack::Rect& b)
+static auto is_contained_in(const BinPack::Rect& a, const BinPack::Rect& b) -> bool
 {
     return a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width &&
            a.y + a.height <= b.y + b.height;
@@ -27,14 +27,14 @@ BinPack::BinPack(int32_t width, int32_t height)
     m_free_rectangles.emplace_back(0, 0, width, height);
 }
 
-std::optional<BinPack::Rect> BinPack::insert(int32_t width, int32_t height)
+auto BinPack::insert(int32_t width, int32_t height) -> std::optional<BinPack::Rect>
 {
     // Unused in this function. We don't need to know the score after finding the
     // position.
-    int32_t score1 = std::numeric_limits<int32_t>::max();
-    int32_t score2 = std::numeric_limits<int32_t>::max();
+    auto score1 = std::numeric_limits<int>::max();
+    auto score2 = std::numeric_limits<int>::max();
 
-    const std::optional<Rect> new_node = find_position_for_new_node(width, height, score1, score2);
+    const auto new_node = find_position_for_new_node(width, height, score1, score2);
 
     if (new_node.has_value())
     {
@@ -44,24 +44,22 @@ std::optional<BinPack::Rect> BinPack::insert(int32_t width, int32_t height)
     return new_node;
 }
 
-void BinPack::insert(std::vector<Size>& rects, std::vector<Rect>& dst)
+void BinPack::insert(List<Size>& rects, List<Rect>& dst)
 {
     dst.clear();
 
     while (!rects.empty())
     {
-        int                 best_score1     = std::numeric_limits<int>::max();
-        int                 best_score2     = std::numeric_limits<int>::max();
-        size_t              best_rect_index = static_cast<size_t>(-1);
-        std::optional<Rect> best_node;
+        auto best_score1     = std::numeric_limits<int>::max();
+        auto best_score2     = std::numeric_limits<int>::max();
+        auto best_rect_index = size_t(-1);
+        auto best_node       = std::optional<Rect>{};
 
         for (size_t i = 0; i < rects.size(); ++i)
         {
-            int score1 = 0;
-            int score2 = 0;
-
-            const std::optional<Rect> new_node =
-                score_rect(rects[i].width, rects[i].height, score1, score2);
+            auto       score1   = 0;
+            auto       score2   = 0;
+            const auto new_node = score_rect(rects[i].width, rects[i].height, score1, score2);
 
             if (score1 < best_score1 || (score1 == best_score1 && score2 < best_score2))
             {
@@ -72,21 +70,21 @@ void BinPack::insert(std::vector<Size>& rects, std::vector<Rect>& dst)
             }
         }
 
-        if (best_rect_index == static_cast<size_t>(-1))
+        if (best_rect_index == size_t(-1))
         {
             return;
         }
 
-        place_rect(*best_node);
-        dst.push_back(*best_node);
-        rects[best_rect_index] = rects.back();
+        place_rect(best_node.value());
+        dst.push_back(best_node.value());
+        rects.at(best_rect_index) = rects.back();
         rects.pop_back();
     }
 }
 
 void BinPack::place_rect(const Rect& node)
 {
-    for (size_t i = 0; i < m_free_rectangles.size();)
+    for (size_t i = 0; i < m_free_rectangles.size(); /*left blank*/)
     {
         if (split_free_node(m_free_rectangles[i], node))
         {
@@ -104,15 +102,13 @@ void BinPack::place_rect(const Rect& node)
     m_used_rectangles.push_back(node);
 }
 
-std::optional<BinPack::Rect> BinPack::score_rect(int  width,
-                                                 int  height,
-                                                 int& score1,
-                                                 int& score2) const
+auto BinPack::score_rect(int width, int height, int& score1, int& score2) const
+    -> std::optional<Rect>
 {
     score1 = std::numeric_limits<int>::max();
     score2 = std::numeric_limits<int>::max();
 
-    const std::optional<Rect> new_node = find_position_for_new_node(width, height, score1, score2);
+    const auto new_node = find_position_for_new_node(width, height, score1, score2);
 
     // Cannot fit the current rect.
     if (!new_node.has_value())
@@ -124,41 +120,26 @@ std::optional<BinPack::Rect> BinPack::score_rect(int  width,
     return new_node;
 }
 
-/// Computes the ratio of used surface area.
-double BinPack::occupancy() const
+auto BinPack::find_position_for_new_node(int  width,
+                                         int  height,
+                                         int& best_area_fit,
+                                         int& best_short_side_fit) const -> std::optional<Rect>
 {
-    uint64_t used_surface_area = 0;
-
-    for (const Rect& used_rectangle : m_used_rectangles)
-    {
-        used_surface_area += static_cast<uint64_t>(used_rectangle.width) *
-                             static_cast<uint64_t>(used_rectangle.height);
-    }
-
-    return static_cast<double>(used_surface_area) /
-           (static_cast<double>(m_bin_width) * static_cast<double>(m_bin_height));
-}
-
-std::optional<BinPack::Rect> BinPack::find_position_for_new_node(int  width,
-                                                                 int  height,
-                                                                 int& best_area_fit,
-                                                                 int& best_short_side_fit) const
-{
-    std::optional<Rect> best_node;
+    auto best_node = std::optional<Rect>{};
 
     best_area_fit       = std::numeric_limits<int>::max();
     best_short_side_fit = std::numeric_limits<int>::max();
 
-    for (const Rect& free_rectangle : m_free_rectangles)
+    for (const auto& free_rectangle : m_free_rectangles)
     {
-        const int area_fit = (free_rectangle.width * free_rectangle.height) - (width * height);
+        const auto area_fit = (free_rectangle.width * free_rectangle.height) - (width * height);
 
         // Try to place the rect in upright (non-flipped) orientation.
         if (free_rectangle.width >= width && free_rectangle.height >= height)
         {
-            const int leftover_horiz = abs(free_rectangle.width - width);
-            const int leftover_vert  = abs(free_rectangle.height - height);
-            const int short_side_fit = min(leftover_horiz, leftover_vert);
+            const auto leftover_horiz = abs(free_rectangle.width - width);
+            const auto leftover_vert  = abs(free_rectangle.height - height);
+            const auto short_side_fit = min(leftover_horiz, leftover_vert);
 
             if (area_fit < best_area_fit ||
                 (area_fit == best_area_fit && short_side_fit < best_short_side_fit))
@@ -173,7 +154,7 @@ std::optional<BinPack::Rect> BinPack::find_position_for_new_node(int  width,
     return best_node;
 }
 
-bool BinPack::split_free_node(const Rect& free_node, const Rect& used_node)
+auto BinPack::split_free_node(const Rect& free_node, const Rect& used_node) -> bool
 {
     // Test with SAT if the rectangles even intersect.
     if (used_node.x >= free_node.x + free_node.width ||
@@ -194,7 +175,7 @@ bool BinPack::split_free_node(const Rect& free_node, const Rect& used_node)
         // New node at the top side of the used node.
         if (used_node.y > free_node.y && used_node.y < free_node.y + free_node.height)
         {
-            Rect new_node   = free_node;
+            auto new_node   = free_node;
             new_node.height = used_node.y - new_node.y;
             insert_new_free_rectangle(new_node);
         }
@@ -202,7 +183,7 @@ bool BinPack::split_free_node(const Rect& free_node, const Rect& used_node)
         // New node at the bottom side of the used node.
         if (used_node.y + used_node.height < free_node.y + free_node.height)
         {
-            Rect new_node   = free_node;
+            auto new_node   = free_node;
             new_node.y      = used_node.y + used_node.height;
             new_node.height = free_node.y + free_node.height - (used_node.y + used_node.height);
             insert_new_free_rectangle(new_node);
@@ -215,7 +196,7 @@ bool BinPack::split_free_node(const Rect& free_node, const Rect& used_node)
         // New node at the left side of the used node.
         if (used_node.x > free_node.x && used_node.x < free_node.x + free_node.width)
         {
-            Rect new_node  = free_node;
+            auto new_node  = free_node;
             new_node.width = used_node.x - new_node.x;
             insert_new_free_rectangle(new_node);
         }
@@ -223,7 +204,7 @@ bool BinPack::split_free_node(const Rect& free_node, const Rect& used_node)
         // New node at the right side of the used node.
         if (used_node.x + used_node.width < free_node.x + free_node.width)
         {
-            Rect new_node  = free_node;
+            auto new_node  = free_node;
             new_node.x     = used_node.x + used_node.width;
             new_node.width = free_node.x + free_node.width - (used_node.x + used_node.width);
             insert_new_free_rectangle(new_node);
@@ -261,13 +242,14 @@ void BinPack::insert_new_free_rectangle(const Rect& new_free_rect)
             ++i;
         }
     }
+
     m_new_free_rectangles.push_back(new_free_rect);
 }
 
 void BinPack::prune_free_list()
 {
     // Test all newly introduced free rectangles against old free rectangles.
-    for (const Rect& rect : m_free_rectangles)
+    for (const auto& rect : m_free_rectangles)
     {
         for (size_t j = 0; j < m_new_free_rectangles.size();)
         {

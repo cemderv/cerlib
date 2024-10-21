@@ -39,7 +39,7 @@ void ASTOptimizer::optimize(AST& ast)
     }
 
     // Remove unused parameters
-    AST::DeclsType& decls = ast.decls();
+    auto& decls = ast.decls();
 
     const auto it =
         std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
@@ -49,12 +49,12 @@ void ASTOptimizer::optimize(AST& ast)
     decls.erase(it, decls.end());
 }
 
-bool ASTOptimizer::remove_unused_functions(AST& ast) const
+auto ASTOptimizer::remove_unused_functions(AST& ast) const -> bool
 {
-    AST::DeclsType& decls = ast.decls();
+    auto& decls = ast.decls();
 
     const auto it = std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
-                        const FunctionDecl* func = asa<FunctionDecl>(decl.get());
+                        const auto* func = asa<FunctionDecl>(decl.get());
                         if (func == nullptr)
                         {
                             return false;
@@ -84,12 +84,12 @@ bool ASTOptimizer::remove_unused_functions(AST& ast) const
     return false;
 }
 
-bool ASTOptimizer::remove_unused_structs(AST& ast) const
+auto ASTOptimizer::remove_unused_structs(AST& ast) const -> bool
 {
-    AST::DeclsType& decls = ast.decls();
+    auto& decls = ast.decls();
 
     const auto it = std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
-                        const StructDecl* strct = asa<StructDecl>(decl.get());
+                        const auto* strct = asa<StructDecl>(decl.get());
                         if (strct == nullptr)
                         {
                             return false;
@@ -112,10 +112,11 @@ bool ASTOptimizer::remove_unused_structs(AST& ast) const
     return false;
 }
 
-bool ASTOptimizer::optimize_block(CodeBlock* block)
+auto ASTOptimizer::optimize_block(CodeBlock* block) -> bool
 {
-    const auto it = std::ranges::find_if(m_code_block_name_gens,
-                                         [block](const auto& pair) { return pair.first == block; });
+    const auto it = std::ranges::find_if(m_code_block_name_gens, [block](const auto& pair) {
+        return pair.first == block;
+    });
 
     if (it == m_code_block_name_gens.cend())
     {
@@ -125,33 +126,33 @@ bool ASTOptimizer::optimize_block(CodeBlock* block)
     return remove_unused_variables(block);
 }
 
-bool ASTOptimizer::remove_unused_variables(CodeBlock* block)
+auto ASTOptimizer::remove_unused_variables(CodeBlock* block) -> bool
 {
-    SmallVector<VarStmt*, 4> var_stmts;
+    auto var_stmts = List<VarStmt*, 4>{};
 
-    for (const std::unique_ptr<Stmt>& stmt : block->stmts())
+    for (const auto& stmt : block->stmts())
     {
-        if (VarStmt* var_stmt = asa<VarStmt>(stmt.get()))
+        if (auto* var_stmt = asa<VarStmt>(stmt.get()))
         {
             var_stmts.push_back(var_stmt);
         }
     }
 
-    SmallVector<gsl::not_null<VarStmt*>, 4> var_stmts_to_remove;
+    auto var_stmts_to_remove = RefList<VarStmt, 4>{};
 
-    for (VarStmt* var_stmt : var_stmts)
+    for (auto* var_stmt : var_stmts)
     {
         if (!block->accesses_symbol(var_stmt->variable(), false))
         {
-            var_stmts_to_remove.emplace_back(var_stmt);
+            var_stmts_to_remove.emplace_back(*var_stmt);
         }
     }
 
     const bool has_removed_any = !var_stmts_to_remove.empty();
 
-    for (const gsl::not_null<VarStmt*>& lbe : var_stmts_to_remove)
+    for (const auto& lbe : var_stmts_to_remove)
     {
-        block->remove_stmt(*lbe);
+        block->remove_stmt(lbe.get());
     }
 
     return has_removed_any;

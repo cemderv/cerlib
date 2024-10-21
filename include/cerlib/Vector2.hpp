@@ -43,14 +43,15 @@ struct Vector2
      */
     constexpr Vector2(float x, float y);
 
-    bool operator==(const Vector2&) const = default;
-    bool operator!=(const Vector2&) const = default;
+    auto operator==(const Vector2&) const -> bool = default;
+
+    auto operator!=(const Vector2&) const -> bool = default;
 
     /** The value of the X component */
-    float x{};
+    float x = 0.0f;
 
     /** The value of the Y component */
-    float y{};
+    float y = 0.0f;
 };
 
 /**
@@ -58,28 +59,28 @@ struct Vector2
  *
  * @ingroup Math
  */
-float length(const Vector2& vector);
+auto length(const Vector2& vector) -> float;
 
 /**
  * Calculates the squared length of a 2D vector.
  *
  * @ingroup Math
  */
-float length_squared(const Vector2& vector);
+auto length_squared(const Vector2& vector) -> float;
 
 /**
  * Calculates the normalized version of a 2D vector.
  *
  * @ingroup Math
  */
-Vector2 normalize(const Vector2& vector);
+auto normalize(const Vector2& vector) -> Vector2;
 
 /**
  * Calculates the rounded version of a 2D vector.
  *
  * @ingroup Math
  */
-Vector2 round(const Vector2& vector);
+auto round(const Vector2& vector) -> Vector2;
 
 /**
  * Calculates a version of a 2D vector with all of its components being their
@@ -87,35 +88,35 @@ Vector2 round(const Vector2& vector);
  *
  * @ingroup Math
  */
-Vector2 abs(const Vector2& vector);
+auto abs(const Vector2& vector) -> Vector2;
 
 /**
  * Calculates the sine of a 2D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector2 sin(const Vector2& vector);
+auto sin(const Vector2& vector) -> Vector2;
 
 /**
  * Calculates the cosine of a 2D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector2 cos(const Vector2& vector);
+auto cos(const Vector2& vector) -> Vector2;
 
 /**
  * Calculates the tangent of a 2D vector's elements, specified in radians.
  *
  * @ingroup Math
  */
-Vector2 tan(const Vector2& vector);
+auto tan(const Vector2& vector) -> Vector2;
 
 /**
  * Calculates the value of `base` raised to the power `exp` (2D vector).
  *
  * @ingroup Math
  */
-Vector2 pow(const Vector2& x, const Vector2& y);
+auto pow(const Vector2& x, const Vector2& y) -> Vector2;
 
 /**
  * Rounds a 2D vector's elements up to their nearest integers.
@@ -124,7 +125,7 @@ Vector2 pow(const Vector2& x, const Vector2& y);
  *
  * @ingroup Math
  */
-Vector2 floor(const Vector2& value);
+auto floor(const Vector2& value) -> Vector2;
 
 /**
  * Rounds a 2D vector's elements down to their nearest integers.
@@ -133,35 +134,43 @@ Vector2 floor(const Vector2& value);
  *
  * @ingroup Math
  */
-Vector2 ceiling(const Vector2& value);
+auto ceiling(const Vector2& value) -> Vector2;
 
 /**
  * Calculates a random 2D vector.
  *
  * @ingroup Math
  */
-Vector2 random_vector2(float min = 0.0f, float max = 1.0f);
+auto random_vector2(float min = 0.0f, float max = 1.0f) -> Vector2;
+
+/**
+ * Calculates a random 2D angle vector.
+ * The number is determined using the FastRand algorithm.
+ *
+ * @ingroup Math
+ */
+auto fastrand_angle_vector2() -> Vector2;
 
 /**
  * Calculates the dot product of two 2D vectors.
  *
  * @ingroup Math
  */
-float dot(const Vector2& lhs, const Vector2& rhs);
+auto dot(const Vector2& lhs, const Vector2& rhs) -> float;
 
 /**
  * Calculates the distance between two 2D vectors.
  *
  * @ingroup Math
  */
-float distance(const Vector2& lhs, const Vector2& rhs);
+auto distance(const Vector2& lhs, const Vector2& rhs) -> float;
 
 /**
  * Calculates the squared distance between two 2D vectors.
  *
  * @ingroup Math
  */
-float distance_squared(const Vector2& lhs, const Vector2& rhs);
+auto distance_squared(const Vector2& lhs, const Vector2& rhs) -> float;
 
 /**
  * Performs a linear interpolation between two 2D vectors.
@@ -172,7 +181,7 @@ float distance_squared(const Vector2& lhs, const Vector2& rhs);
  *
  * @ingroup Math
  */
-Vector2 lerp(const Vector2& start, const Vector2& end, float t);
+auto lerp(const Vector2& start, const Vector2& end, float t) -> Vector2;
 
 /**
  * Performs a smoothstep interpolation from one 2D vector to another.
@@ -183,7 +192,7 @@ Vector2 lerp(const Vector2& start, const Vector2& end, float t);
  *
  * @ingroup Math
  */
-Vector2 smoothstep(const Vector2& start, const Vector2& end, float t);
+auto smoothstep(const Vector2& start, const Vector2& end, float t) -> Vector2;
 
 /**
  * Clamps a 2D vector into a specific range.
@@ -194,7 +203,7 @@ Vector2 smoothstep(const Vector2& start, const Vector2& end, float t);
  *
  * @ingroup Math
  */
-Vector2 clamp(const Vector2& value, const Vector2& min, const Vector2& max);
+auto clamp(const Vector2& value, const Vector2& min, const Vector2& max) -> Vector2;
 
 /**
  * Gets a value indicating whether all components of a 2D vector are exactly
@@ -204,7 +213,7 @@ Vector2 clamp(const Vector2& value, const Vector2& min, const Vector2& max);
  *
  * @ingroup Math
  */
-bool is_zero(const Vector2& vector);
+auto is_zero(const Vector2& vector) -> bool;
 
 /**
  * Gets a value indicating whether two 2D vectors are equal within a specific
@@ -217,9 +226,9 @@ bool is_zero(const Vector2& vector);
  *
  * @ingroup Math
  */
-bool are_equal_within(const Vector2& lhs,
+auto are_equal_within(const Vector2& lhs,
                       const Vector2& rhs,
-                      float          threshold = std::numeric_limits<float>::epsilon());
+                      float          threshold = std::numeric_limits<float>::epsilon()) -> bool;
 
 /**
  * Calculates the smaller of two 2D vectors.
@@ -235,7 +244,7 @@ bool are_equal_within(const Vector2& lhs,
  *
  * @ingroup Math
  */
-Vector2 min(const Vector2& lhs, const Vector2& rhs);
+auto min(const Vector2& lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Calculates the larger of two 2D vectors.
@@ -251,7 +260,7 @@ Vector2 min(const Vector2& lhs, const Vector2& rhs);
  *
  * @ingroup Math
  */
-Vector2 max(const Vector2& lhs, const Vector2& rhs);
+auto max(const Vector2& lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Calculates the normal of a 2D line.
@@ -261,105 +270,105 @@ Vector2 max(const Vector2& lhs, const Vector2& rhs);
  *
  * @ingroup Math
  */
-Vector2 line_normal(const Vector2& start, const Vector2& end);
+auto line_normal(const Vector2& start, const Vector2& end) -> Vector2;
 
 /**
  * Adds two 2D vectors.
  *
  * @ingroup Math
  */
-Vector2 operator+(const Vector2& lhs, const Vector2& rhs);
+auto operator+(const Vector2& lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Subtracts two 2D vectors.
  *
  * @ingroup Math
  */
-Vector2 operator-(const Vector2& lhs, const Vector2& rhs);
+auto operator-(const Vector2& lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Multiplies two 2D vectors.
  *
  * @ingroup Math
  */
-Vector2 operator*(const Vector2& lhs, const Vector2& rhs);
+auto operator*(const Vector2& lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Multiplies a 2D vector by a number.
  *
  * @ingroup Math
  */
-Vector2 operator*(const Vector2& lhs, float rhs);
+auto operator*(const Vector2& lhs, float rhs) -> Vector2;
 
 /**
  * Multiplies a 2D vector by a number.
  *
  * @ingroup Math
  */
-Vector2 operator*(float lhs, const Vector2& rhs);
+auto operator*(float lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Divides a 2D vector by another 2D vector.
  *
  * @ingroup Math
  */
-Vector2 operator/(const Vector2& lhs, const Vector2& rhs);
+auto operator/(const Vector2& lhs, const Vector2& rhs) -> Vector2;
 
 /**
  * Divides a 2D vector by a number.
  *
  * @ingroup Math
  */
-Vector2 operator/(const Vector2& lhs, float rhs);
+auto operator/(const Vector2& lhs, float rhs) -> Vector2;
 
 /**
  * Adds a 2D vector to another 2D vector.
  *
  * @ingroup Math
  */
-Vector2& operator+=(Vector2& vector, const Vector2& rhs);
+auto operator+=(Vector2& vector, const Vector2& rhs) -> Vector2&;
 
 /**
  * Subtracts a 2D vector from another 2D vector.
  *
  * @ingroup Math
  */
-Vector2& operator-=(Vector2& vector, const Vector2& rhs);
+auto operator-=(Vector2& vector, const Vector2& rhs) -> Vector2&;
 
 /**
  * Scales a 2D vector by another 2D vector.
  *
  * @ingroup Math
  */
-Vector2& operator*=(Vector2& vector, const Vector2& rhs);
+auto operator*=(Vector2& vector, const Vector2& rhs) -> Vector2&;
 
 /**
  * Scales a 2D vector by a number.
  *
  * @ingroup Math
  */
-Vector2& operator*=(Vector2& vector, float rhs);
+auto operator*=(Vector2& vector, float rhs) -> Vector2&;
 
 /**
  * Divides a 2D vector by another 2D vector.
  *
  * @ingroup Math
  */
-Vector2& operator/=(Vector2& vector, const Vector2& rhs);
+auto operator/=(Vector2& vector, const Vector2& rhs) -> Vector2&;
 
 /**
  * Divides a 2D vector by a number.
  *
  * @ingroup Math
  */
-Vector2& operator/=(Vector2& vector, float rhs);
+auto operator/=(Vector2& vector, float rhs) -> Vector2&;
 
 /**
  * Negates a 2D vector.
  *
  * @ingroup Math
  */
-Vector2 operator-(const Vector2& value);
+auto operator-(const Vector2& value) -> Vector2;
 } // namespace cer
 
 template <>
@@ -397,8 +406,6 @@ class std::numeric_limits<cer::Vector2>
     }
 };
 
-#include <cerlib/Math.hpp>
-
 namespace cer
 {
 constexpr Vector2::Vector2() = default;
@@ -415,260 +422,3 @@ constexpr Vector2::Vector2(float x, float y)
 {
 }
 } // namespace cer
-
-inline float cer::length(const Vector2& vector)
-{
-    return std::sqrt(length_squared(vector));
-}
-
-inline float cer::length_squared(const Vector2& vector)
-{
-    return vector.x * vector.x + vector.y * vector.y;
-}
-
-inline cer::Vector2 cer::normalize(const Vector2& vector)
-{
-    const float len = length(vector);
-    return is_zero(len) ? Vector2() : vector / len;
-}
-
-inline cer::Vector2 cer::round(const Vector2& vector)
-{
-    return {
-        round(vector.x),
-        round(vector.y),
-    };
-}
-
-inline cer::Vector2 cer::abs(const Vector2& vector)
-{
-    return {
-        abs(vector.x),
-        abs(vector.y),
-    };
-}
-
-inline cer::Vector2 cer::sin(const Vector2& vector)
-{
-    return {
-        sin(vector.x),
-        sin(vector.y),
-    };
-}
-
-inline cer::Vector2 cer::cos(const Vector2& vector)
-{
-    return {
-        cos(vector.x),
-        cos(vector.y),
-    };
-}
-
-inline cer::Vector2 cer::tan(const Vector2& vector)
-{
-    return {
-        tan(vector.x),
-        tan(vector.y),
-    };
-}
-
-inline cer::Vector2 cer::pow(const Vector2& x, const Vector2& y)
-{
-    return {
-        pow(x.x, y.x),
-        pow(x.y, y.y),
-    };
-}
-
-inline cer::Vector2 cer::floor(const Vector2& value)
-{
-    return {
-        floor(value.x),
-        floor(value.y),
-    };
-}
-
-inline cer::Vector2 cer::ceiling(const Vector2& value)
-{
-    return {
-        ceiling(value.x),
-        ceiling(value.y),
-    };
-}
-
-inline cer::Vector2 cer::random_vector2(float min, float max)
-{
-    return {
-        random_float(min, max),
-        random_float(min, max),
-    };
-}
-
-inline float cer::dot(const Vector2& lhs, const Vector2& rhs)
-{
-    return lhs.x * rhs.x + lhs.y * rhs.y;
-}
-
-inline float cer::distance(const Vector2& lhs, const Vector2& rhs)
-{
-    return length(rhs - lhs);
-}
-
-inline float cer::distance_squared(const Vector2& lhs, const Vector2& rhs)
-{
-    return length_squared(rhs - lhs);
-}
-
-inline cer::Vector2 cer::lerp(const Vector2& start, const Vector2& end, float t)
-{
-    return {
-        lerp(start.x, end.x, t),
-        lerp(start.y, end.y, t),
-    };
-}
-
-inline cer::Vector2 cer::smoothstep(const Vector2& start, const Vector2& end, float t)
-{
-    return {
-        smoothstep(start.x, end.x, t),
-        smoothstep(start.y, end.y, t),
-    };
-}
-
-inline cer::Vector2 cer::clamp(const Vector2& value, const Vector2& min, const Vector2& max)
-{
-    return {
-        clamp(value.x, min.x, max.x),
-        clamp(value.y, min.y, max.y),
-    };
-}
-
-inline bool cer::is_zero(const Vector2& vector)
-{
-    return is_zero(vector.x) && is_zero(vector.y);
-}
-
-inline bool cer::are_equal_within(const Vector2& lhs, const Vector2& rhs, float threshold)
-{
-    return equal_within(lhs.x, rhs.x, threshold) && equal_within(lhs.y, rhs.y, threshold);
-}
-
-inline cer::Vector2 cer::min(const Vector2& lhs, const Vector2& rhs)
-{
-    return Vector2(min(lhs.x, rhs.x), min(lhs.y, rhs.y));
-}
-
-inline cer::Vector2 cer::max(const Vector2& lhs, const Vector2& rhs)
-{
-    return Vector2(max(lhs.x, rhs.x), max(lhs.y, rhs.y));
-}
-
-inline cer::Vector2 cer::line_normal(const Vector2& start, const Vector2& end)
-{
-    const auto dx = end.x - start.x;
-    const auto dy = end.y - start.y;
-    return normalize(Vector2(-dy, dx));
-}
-
-inline cer::Vector2& cer::operator+=(Vector2& vector, const Vector2& rhs)
-{
-    vector.x += rhs.x;
-    vector.y += rhs.y;
-    return vector;
-}
-
-inline cer::Vector2& cer::operator-=(Vector2& vector, const Vector2& rhs)
-{
-    vector.x -= rhs.x;
-    vector.y -= rhs.y;
-    return vector;
-}
-
-inline cer::Vector2& cer::operator*=(Vector2& vector, const Vector2& rhs)
-{
-    vector.x *= rhs.x;
-    vector.y *= rhs.y;
-    return vector;
-}
-
-inline cer::Vector2& cer::operator*=(Vector2& vector, float rhs)
-{
-    vector.x *= rhs;
-    vector.y *= rhs;
-    return vector;
-}
-
-inline cer::Vector2& cer::operator/=(Vector2& vector, const Vector2& rhs)
-{
-    vector.x /= rhs.x;
-    vector.y /= rhs.y;
-    return vector;
-}
-
-inline cer::Vector2& cer::operator/=(Vector2& vector, float rhs)
-{
-    vector.x /= rhs;
-    vector.y /= rhs;
-    return vector;
-}
-
-inline cer::Vector2 cer::operator-(const Vector2& value)
-{
-    return {
-        -value.x,
-        -value.y,
-    };
-}
-
-inline cer::Vector2 cer::operator+(const Vector2& lhs, const Vector2& rhs)
-{
-    return {
-        lhs.x + rhs.x,
-        lhs.y + rhs.y,
-    };
-}
-
-inline cer::Vector2 cer::operator-(const Vector2& lhs, const Vector2& rhs)
-{
-    return {
-        lhs.x - rhs.x,
-        lhs.y - rhs.y,
-    };
-}
-
-inline cer::Vector2 cer::operator*(const Vector2& lhs, const Vector2& rhs)
-{
-    return {
-        lhs.x * rhs.x,
-        lhs.y * rhs.y,
-    };
-}
-
-inline cer::Vector2 cer::operator*(const Vector2& lhs, float rhs)
-{
-    return {
-        lhs.x * rhs,
-        lhs.y * rhs,
-    };
-}
-
-inline cer::Vector2 cer::operator*(float lhs, const Vector2& rhs)
-{
-    return rhs * lhs;
-}
-
-inline cer::Vector2 cer::operator/(const Vector2& lhs, const Vector2& rhs)
-{
-    return {
-        lhs.x / rhs.x,
-        lhs.y / rhs.y,
-    };
-}
-
-inline cer::Vector2 cer::operator/(const Vector2& lhs, float rhs)
-{
-    return {
-        lhs.x / rhs,
-        lhs.y / rhs,
-    };
-}

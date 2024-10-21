@@ -12,6 +12,8 @@ if (CERLIB_VERSION STREQUAL "")
   message(FATAL_ERROR "No version found in VERSION.txt!")
 endif ()
 
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
+
 project(
   cerlib
   DESCRIPTION "cerlib is a 2D Game Library for C++"

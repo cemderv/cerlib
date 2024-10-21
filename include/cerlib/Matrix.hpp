@@ -64,43 +64,43 @@ struct Matrix
     /**
      * Gets a pointer to the beginning of the matrix's data.
      */
-    const float* data() const;
+    auto data() const -> const float*;
 
     /**
      * Gets the beginning iterator of the matrix.
      */
-    float* begin();
+    auto begin() -> float*;
 
     /**
      * Gets the beginning iterator of the matrix.
      */
-    const float* begin() const;
+    auto begin() const -> const float*;
 
     /**
      * Gets the beginning iterator of the matrix.
      */
-    const float* cbegin() const;
+    auto cbegin() const -> const float*;
 
     /**
      * Gets the end iterator of the matrix.
      */
-    float* end();
+    auto end() -> float*;
 
     /**
      * Gets the end iterator of the matrix.
      */
-    const float* end() const;
+    auto end() const -> const float*;
 
     /**
      * Gets the end iterator of the matrix.
      */
-    const float* cend() const;
+    auto cend() const -> const float*;
 
     /** Default comparison */
-    bool operator==(const Matrix&) const = default;
+    auto operator==(const Matrix&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Matrix&) const = default;
+    auto operator!=(const Matrix&) const -> bool = default;
 
     float m11 = 1;
     float m12 = 0;
@@ -127,7 +127,7 @@ struct Matrix
  *
  * @ingroup Math
  */
-Matrix transpose(const Matrix& matrix);
+auto transpose(const Matrix& matrix) -> Matrix;
 
 /**
  * Creates a translation matrix.
@@ -136,7 +136,7 @@ Matrix transpose(const Matrix& matrix);
  *
  * @ingroup Math
  */
-Matrix translate(Vector2 translation);
+auto translate(Vector2 translation) -> Matrix;
 
 /**
  * Creates a scaling matrix.
@@ -145,7 +145,7 @@ Matrix translate(Vector2 translation);
  *
  * @ingroup Math
  */
-Matrix scale(Vector2 scale);
+auto scale(Vector2 scale) -> Matrix;
 
 /**
  * Creates a matrix that rotates around the Z-axis.
@@ -154,7 +154,7 @@ Matrix scale(Vector2 scale);
  *
  * @ingroup Math
  */
-Matrix rotate(float radians);
+auto rotate(float radians) -> Matrix;
 
 /**
  * Gets a value indicating whether two matrices are equal within a specific
@@ -167,14 +167,12 @@ Matrix rotate(float radians);
  *
  * @ingroup Math
  */
-bool are_equal_within(const Matrix& lhs,
+auto are_equal_within(const Matrix& lhs,
                       const Matrix& rhs,
-                      float         threshold = std::numeric_limits<float>::epsilon());
+                      float         threshold = std::numeric_limits<float>::epsilon()) -> bool;
 
-Matrix operator*(const Matrix& lhs, const Matrix& rhs);
+auto operator*(const Matrix& lhs, const Matrix& rhs) -> Matrix;
 } // namespace cer
-
-#include <cerlib/Vector2.hpp>
 
 namespace cer
 {
@@ -220,167 +218,4 @@ constexpr Matrix::Matrix(float diagonal_value)
     , m44(diagonal_value)
 {
 }
-
-inline const float* Matrix::data() const
-{
-    return &m11;
-}
-
-inline float* Matrix::begin()
-{
-    return &m11;
-}
-
-inline const float* Matrix::begin() const
-{
-    return &m11;
-}
-
-inline const float* Matrix::cbegin() const
-{
-    return &m11;
-}
-
-inline float* Matrix::end()
-{
-    return &m11 + 16;
-}
-
-inline const float* Matrix::end() const
-{
-    return &m11 + 16;
-}
-
-inline const float* Matrix::cend() const
-{
-    return &m11 + 16;
-}
-
-inline Matrix operator*(const Matrix& lhs, const Matrix& rhs)
-{
-    return {
-        lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21 + lhs.m13 * rhs.m31 + lhs.m14 * rhs.m41,
-        lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22 + lhs.m13 * rhs.m32 + lhs.m14 * rhs.m42,
-        lhs.m11 * rhs.m13 + lhs.m12 * rhs.m23 + lhs.m13 * rhs.m33 + lhs.m14 * rhs.m43,
-        lhs.m11 * rhs.m14 + lhs.m12 * rhs.m24 + lhs.m13 * rhs.m34 + lhs.m14 * rhs.m44,
-        lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21 + lhs.m23 * rhs.m31 + lhs.m24 * rhs.m41,
-        lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22 + lhs.m23 * rhs.m32 + lhs.m24 * rhs.m42,
-        lhs.m21 * rhs.m13 + lhs.m22 * rhs.m23 + lhs.m23 * rhs.m33 + lhs.m24 * rhs.m43,
-        lhs.m21 * rhs.m14 + lhs.m22 * rhs.m24 + lhs.m23 * rhs.m34 + lhs.m24 * rhs.m44,
-        lhs.m31 * rhs.m11 + lhs.m32 * rhs.m21 + lhs.m33 * rhs.m31 + lhs.m34 * rhs.m41,
-        lhs.m31 * rhs.m12 + lhs.m32 * rhs.m22 + lhs.m33 * rhs.m32 + lhs.m34 * rhs.m42,
-        lhs.m31 * rhs.m13 + lhs.m32 * rhs.m23 + lhs.m33 * rhs.m33 + lhs.m34 * rhs.m43,
-        lhs.m31 * rhs.m14 + lhs.m32 * rhs.m24 + lhs.m33 * rhs.m34 + lhs.m34 * rhs.m44,
-        lhs.m41 * rhs.m11 + lhs.m42 * rhs.m21 + lhs.m43 * rhs.m31 + lhs.m44 * rhs.m41,
-        lhs.m41 * rhs.m12 + lhs.m42 * rhs.m22 + lhs.m43 * rhs.m32 + lhs.m44 * rhs.m42,
-        lhs.m41 * rhs.m13 + lhs.m42 * rhs.m23 + lhs.m43 * rhs.m33 + lhs.m44 * rhs.m43,
-        lhs.m41 * rhs.m14 + lhs.m42 * rhs.m24 + lhs.m43 * rhs.m34 + lhs.m44 * rhs.m44,
-    };
-}
 } // namespace cer
-
-inline cer::Matrix cer::transpose(const Matrix& matrix)
-{
-    return {
-        matrix.m11,
-        matrix.m21,
-        matrix.m31,
-        matrix.m41,
-        matrix.m12,
-        matrix.m22,
-        matrix.m32,
-        matrix.m42,
-        matrix.m13,
-        matrix.m23,
-        matrix.m33,
-        matrix.m43,
-        matrix.m14,
-        matrix.m24,
-        matrix.m34,
-        matrix.m44,
-    };
-}
-
-inline cer::Matrix cer::translate(Vector2 translation)
-{
-    const float x = translation.x;
-    const float y = translation.y;
-
-    return {
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        x,
-        y,
-        0,
-        1,
-    };
-}
-
-inline cer::Matrix cer::scale(Vector2 scale)
-{
-    return {
-        scale.x,
-        0,
-        0,
-        0,
-        0,
-        scale.y,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-    };
-}
-
-inline cer::Matrix cer::rotate(float radians)
-{
-    const float c = cos(radians);
-    const float s = sin(radians);
-
-    return {
-        c,
-        s,
-        0,
-        0,
-        -s,
-        c,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        1,
-    };
-}
-
-inline bool cer::are_equal_within(const Matrix& lhs, const Matrix& rhs, float threshold)
-{
-    return equal_within(lhs.m11, rhs.m11, threshold) && equal_within(lhs.m12, rhs.m12, threshold) &&
-           equal_within(lhs.m13, rhs.m13, threshold) && equal_within(lhs.m14, rhs.m14, threshold) &&
-           equal_within(lhs.m21, rhs.m21, threshold) && equal_within(lhs.m22, rhs.m22, threshold) &&
-           equal_within(lhs.m23, rhs.m23, threshold) && equal_within(lhs.m24, rhs.m24, threshold) &&
-           equal_within(lhs.m31, rhs.m31, threshold) && equal_within(lhs.m32, rhs.m32, threshold) &&
-           equal_within(lhs.m33, rhs.m33, threshold) && equal_within(lhs.m34, rhs.m34, threshold) &&
-           equal_within(lhs.m41, rhs.m41, threshold) && equal_within(lhs.m42, rhs.m42, threshold) &&
-           equal_within(lhs.m43, rhs.m43, threshold) && equal_within(lhs.m44, rhs.m44, threshold);
-}

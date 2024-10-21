@@ -23,7 +23,9 @@ class SmallDataArray final
         const size_t count = data.size() > m_data.size() ? m_data.size() : data.size();
 
         for (size_t i = 0; i < count; ++i)
+        {
             m_data[i] = data[i];
+        }
 
         m_size = count;
     }
@@ -34,42 +36,48 @@ class SmallDataArray final
         assert(size <= m_data.size());
     }
 
-    uint32_t size() const
+    auto size() const -> uint32_t
     {
         return m_size;
     }
 
-    T* begin()
+    auto begin() -> T*
     {
         return m_data.data();
     }
 
-    const T* begin() const
+    auto begin() const -> const T*
     {
         return m_data.data();
     }
 
-    const T* cbegin() const
+    auto cbegin() const -> const T*
     {
         return m_data.cbegin();
     }
 
-    T* end()
+    auto end() -> T*
     {
         return m_data.data() + m_size;
     }
 
-    const T* end() const
+    auto end() const -> const T*
     {
         return m_data.data() + m_size;
     }
 
-    const T* cend() const
+    auto cend() const -> const T*
     {
         return m_data.data() + m_size;
     }
 
-    T operator[](uint32_t index) const
+    auto operator[](uint32_t index) -> T&
+    {
+        assert(index < m_size);
+        return m_data.at(index);
+    }
+
+    auto operator[](uint32_t index) const -> const T&
     {
         assert(index < m_size);
         return m_data.at(index);

@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
-#include <cerlib/Export.hpp>
 #include <cerlib/GraphicsResource.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <functional>
 #include <optional>
 #include <span>
@@ -63,54 +63,20 @@ enum class ImageFileFormat
  *
  * @ingroup Graphics
  */
-class CERLIB_API Image : public GraphicsResource
+class Image : public GraphicsResource
 {
     CERLIB_DECLARE_DERIVED_OBJECT(GraphicsResource, Image);
 
   public:
     /**
-     * Represents a callback function that is used when constructing a image.
-     * Images can be constructed by passing initial data to them directly or by passing a
-     * function of this type. In that case, the image calls this function to retrieve data
-     * for a specific array and mipmap index.
-     *
-     * @param mipmap The mipmap for which data is requested.
-     *
-     * @return The data for the specific array and mipmap index. The data must remain
-     * valid throughout the image's construction. Afterwards, it may be freed; the image
-     * does not own the data.
-     */
-    using DataCallback = std::function<const void*(uint32_t mipmap)>;
-
-    /**
      * Creates a 2D image from raw data.
      *
      * @param width The width of the image, in pixels.
      * @param height The height of the image, in pixels.
      * @param format The pixel format of the image.
-     * @param mipmap_count The number of mipmaps in the image.
      * @param data The initial data of the image.
      */
-    explicit Image(uint32_t    width,
-                   uint32_t    height,
-                   ImageFormat format,
-                   uint32_t    mipmap_count,
-                   const void* data);
-
-    /**
-     * Creates a 2D image from raw data.
-     *
-     * @param width The width of the image, in pixels.
-     * @param height The height of the image, in pixels.
-     * @param format The pixel format of the image.
-     * @param mipmap_count The number of mipmaps in the image.
-     * @param data_callback The data function for the image.
-     */
-    explicit Image(uint32_t            width,
-                   uint32_t            height,
-                   ImageFormat         format,
-                   uint32_t            mipmap_count,
-                   const DataCallback& data_callback);
+    explicit Image(uint32_t width, uint32_t height, ImageFormat format, const void* data);
 
     /**
      * Loads a 2D image from memory.
@@ -118,25 +84,18 @@ class CERLIB_API Image : public GraphicsResource
      *  - jpg, bmp, png, tga, gif, hdr, dds
      *
      * @param memory The data to load.
-     * @param generate_mipmaps If true, mipmaps are automatically generated for the image.
-     * If the image already had mipmaps, none are generated instead.
      */
-    explicit Image(std::span<const std::byte> memory, bool generate_mipmaps);
+    explicit Image(std::span<const std::byte> memory);
 
     /**
-     * Loads a 2D image from a file.
-     * Supported file formats are:
-     *  - jpg, bmp, png, tga, gif, hdr, dds
+     * Lazily loads an Image object from the storage.
      *
-     * @param filename The data to load.
-     * @param generate_mipmaps If true, mipmaps are automatically generated for the image.
-     * If the image already had mipmaps, none are generated instead.
+     * @param asset_name The name of the image in the asset storage.
      *
-     * @attention This constructor is only available on desktop platforms.
-     * On non-desktop platforms, the cer::LoadImage() function must be used to load
-     * images. Calling this on non-desktop platforms will raise an error.
+     * @throw std::runtime_error If the asset does not exist or could not be read or
+     * loaded.
      */
-    explicit Image(std::string_view filename, bool generate_mipmaps = false);
+    explicit Image(std::string_view asset_name);
 
     /**
      * Creates a 2D image to be used as a canvas.
@@ -149,37 +108,34 @@ class CERLIB_API Image : public GraphicsResource
     explicit Image(uint32_t width, uint32_t height, ImageFormat format, const Window& window);
 
     /** Gets a value indicating whether the image is a canvas. */
-    bool is_canvas() const;
+    auto is_canvas() const -> bool;
 
     /** Gets the width of the image, in pixels. */
-    uint32_t width() const;
+    auto width() const -> uint32_t;
 
     /** Gets the height of the image, in pixels. */
-    uint32_t height() const;
+    auto height() const -> uint32_t;
 
     /** Gets the width of the image, in pixels. */
-    float widthf() const;
+    auto widthf() const -> float;
 
     /** Gets the height of the image, in pixels. */
-    float heightf() const;
+    auto heightf() const -> float;
 
     /** Gets the size of the image as a 2D vector, in pixels. */
-    Vector2 size() const;
+    auto size() const -> Vector2;
 
     /** Gets the underlying pixel format of the image. */
-    ImageFormat format() const;
-
-    /** Gets the number of mipmaps in the image. */
-    uint32_t mipmap_count() const;
+    auto format() const -> ImageFormat;
 
     /** Gets the clear color of the image when it is set as a canvas. */
-    std::optional<Color> canvas_clear_color() const;
+    auto canvas_clear_color() const -> std::optional<Color>;
 
     /** Sets the clear color of the image when it is set as a canvas. */
     void set_canvas_clear_color(std::optional<Color> value);
 
     /** Gets the size of the image's pixel data, in bytes. */
-    uint32_t size_in_bytes() const;
+    auto size_in_bytes() const -> uint32_t;
 };
 
 /**
@@ -189,7 +145,7 @@ class CERLIB_API Image : public GraphicsResource
  *
  * @ingroup Graphics
  */
-CERLIB_API uint32_t image_format_bits_per_pixel(ImageFormat format);
+auto image_format_bits_per_pixel(ImageFormat format) -> uint32_t;
 
 /**
  * Gets the number of bytes in a row of a specific image format.
@@ -199,7 +155,7 @@ CERLIB_API uint32_t image_format_bits_per_pixel(ImageFormat format);
  *
  * @ingroup Graphics
  */
-CERLIB_API uint32_t image_row_pitch(uint32_t width, ImageFormat format);
+auto image_row_pitch(uint32_t width, ImageFormat format) -> uint32_t;
 
 /**
  * Gets the number of bytes in a slice of a specific image format.
@@ -210,7 +166,7 @@ CERLIB_API uint32_t image_row_pitch(uint32_t width, ImageFormat format);
  *
  * @ingroup Graphics
  */
-CERLIB_API uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format);
+auto image_slice_pitch(uint32_t width, uint32_t height, ImageFormat format) -> uint32_t;
 
 /**
  * Gets the name of an image format.
@@ -219,5 +175,5 @@ CERLIB_API uint32_t image_slice_pitch(uint32_t width, uint32_t height, ImageForm
  *
  * @ingroup Graphics
  */
-CERLIB_API std::string_view image_format_name(ImageFormat format);
+auto image_format_name(ImageFormat format) -> std::string_view;
 } // namespace cer

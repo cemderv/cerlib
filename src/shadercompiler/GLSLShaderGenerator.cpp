@@ -4,6 +4,7 @@
 
 #include "shadercompiler/GLSLShaderGenerator.hpp"
 
+#include "cerlib/Util.hpp"
 #include "contentmanagement/FileSystem.hpp"
 #include "shadercompiler/AST.hpp"
 #include "shadercompiler/BuiltInSymbols.hpp"
@@ -16,9 +17,9 @@
 #include "shadercompiler/Stmt.hpp"
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/Writer.hpp"
-#include "util/InternalError.hpp"
-#include "util/StringUtil.hpp"
 #include <cassert>
+
+using namespace std::string_literals;
 
 namespace cer::shadercompiler
 {
@@ -29,28 +30,29 @@ GLSLShaderGenerator::GLSLShaderGenerator(bool is_gles)
 {
     m_is_swapping_matrix_vector_multiplications = true;
 
-    m_v2f_prefix = cer_fmt::format("{}v2f_", naming::forbidden_identifier_prefix);
+    m_v2f_prefix = fmt::format("{}v2f_", naming::forbidden_identifier_prefix);
 
     m_built_in_type_dictionary = {
-        {&IntType::instance(), "int"},
-        {&BoolType::instance(), "bool"},
-        {&FloatType::instance(), "float"},
-        {&Vector2Type::instance(), "vec2"},
-        {&Vector3Type::instance(), "vec3"},
-        {&Vector4Type::instance(), "vec4"},
-        {&MatrixType::instance(), "mat4"},
+        {IntType::instance(), "int"s},
+        {BoolType::instance(), "bool"s},
+        {FloatType::instance(), "float"s},
+        {Vector2Type::instance(), "vec2"s},
+        {Vector3Type::instance(), "vec3"s},
+        {Vector4Type::instance(), "vec4"s},
+        {MatrixType::instance(), "mat4"s},
     };
 
     m_needs_float_literal_suffix = false;
 }
 
-std::string GLSLShaderGenerator::do_generation(const SemaContext&                 context,
-                                               const FunctionDecl&                entry_point,
-                                               const SmallVector<const Decl*, 8>& decls_to_generate)
+auto GLSLShaderGenerator::do_generation(const SemaContext&          context,
+                                        const FunctionDecl&         entry_point,
+                                        const List<const Decl*, 8>& decls_to_generate)
+    -> std::string
 {
     const auto shader_name = filesystem::filename_without_extension(m_ast->filename());
 
-    Writer w;
+    auto w = Writer{};
 
     if (m_is_gles)
     {
@@ -71,13 +73,13 @@ std::string GLSLShaderGenerator::do_generation(const SemaContext&               
     w << WNewline;
 
     // Emit the uniform buffer for the shader parameters.
-    if (const AccessedParams accessed_params = params_accessed_by_function(entry_point))
+    if (const auto accessed_params = params_accessed_by_function(entry_point))
     {
         emit_uniform_buffer_for_user_params(w, entry_point, accessed_params);
         w << WNewline;
     }
 
-    for (const Decl* decl : decls_to_generate)
+    for (const auto* decl : decls_to_generate)
     {
         if (isa<ShaderParamDecl>(decl))
         {
@@ -85,7 +87,7 @@ std::string GLSLShaderGenerator::do_generation(const SemaContext&               
             continue;
         }
 
-        const size_t writer_size = w.buffer_length();
+        const auto writer_size = w.buffer_length();
 
         generate_decl(w, *decl, context);
 
@@ -105,7 +107,7 @@ void GLSLShaderGenerator::generate_var_stmt(Writer&            w,
                                             const VarStmt&     var_stmt,
                                             const SemaContext& context)
 {
-    const VarDecl& var = var_stmt.variable();
+    const auto& var = var_stmt.variable();
 
     if (var.is_system_value())
     {
@@ -159,7 +161,7 @@ void GLSLShaderGenerator::generate_function_decl(Writer&             w,
         w << translate_type(function.type(), TypeNameContext::FunctionReturnType) << ' '
           << function.name() << '(';
 
-        for (const std::unique_ptr<FunctionParamDecl>& param : function.parameters())
+        for (const auto& param : function.parameters())
         {
             w << translate_type(param->type(), TypeNameContext::FunctionParam) << ' '
               << param->name();
@@ -182,13 +184,13 @@ void GLSLShaderGenerator::generate_function_decl(Writer&             w,
 
 void GLSLShaderGenerator::prepare_expr(Writer& w, const Expr& expr, const SemaContext& context)
 {
-    if (const auto struct_ctor_call = asa<StructCtorCall>(&expr))
+    if (const auto* struct_ctor_call = asa<StructCtorCall>(&expr))
     {
-        std::string tmp_name = m_temp_var_name_gen_stack.back().next();
+        auto tmp_name = m_temp_var_name_gen_stack.back().next();
 
         prepare_expr(w, struct_ctor_call->callee(), context);
 
-        for (const std::unique_ptr<StructCtorArg>& arg : struct_ctor_call->args())
+        for (const auto& arg : struct_ctor_call->args())
         {
             prepare_expr(w, *arg, context);
         }
@@ -197,7 +199,7 @@ void GLSLShaderGenerator::prepare_expr(Writer& w, const Expr& expr, const SemaCo
 
         w << ' ' << tmp_name << ';' << WNewline;
 
-        for (const std::unique_ptr<StructCtorArg>& arg : struct_ctor_call->args())
+        for (const auto& arg : struct_ctor_call->args())
         {
             w << tmp_name << '.' << arg->name() << " = ";
             generate_expr(w, arg->expr(), context);
@@ -214,7 +216,7 @@ void GLSLShaderGenerator::generate_return_stmt(Writer&            w,
 {
     assert(!m_call_stack.empty());
 
-    if (const FunctionDecl& current_function = *m_call_stack.back(); current_function.is_shader())
+    if (const auto& current_function = *m_call_stack.back(); current_function.is_shader())
     {
         prepare_expr(w, stmt.expr(), context);
 
@@ -246,12 +248,12 @@ void GLSLShaderGenerator::generate_function_call_expr(Writer&                 w,
                                                       const FunctionCallExpr& function_call,
                                                       const SemaContext&      context)
 {
-    const Expr&     callee = function_call.callee();
-    const std::span args   = function_call.args();
+    const auto& callee = function_call.callee();
+    const auto  args   = function_call.args();
 
     prepare_expr(w, callee, context);
 
-    for (const std::unique_ptr<Expr>& arg : args)
+    for (const auto& arg : args)
     {
         prepare_expr(w, *arg, context);
     }
@@ -260,7 +262,7 @@ void GLSLShaderGenerator::generate_function_call_expr(Writer&                 w,
 
     w << '(';
 
-    for (const std::unique_ptr<Expr>& arg : args)
+    for (const auto& arg : args)
     {
         generate_expr(w, *arg, context);
 
@@ -277,9 +279,9 @@ void GLSLShaderGenerator::generate_sym_access_expr(Writer&              w,
                                                    const SymAccessExpr& expr,
                                                    const SemaContext&   context)
 {
-    const BuiltInSymbols&  built_ins = context.built_in_symbols();
-    const Decl&            symbol    = *expr.symbol();
-    const std::string_view name      = expr.name();
+    const auto& built_ins = context.built_in_symbols();
+    const auto& symbol    = *expr.symbol();
+    const auto  name      = expr.name();
 
     if (const auto param = asa<ShaderParamDecl>(&symbol);
         param != nullptr && param->type().can_be_in_constant_buffer())
@@ -302,13 +304,9 @@ void GLSLShaderGenerator::generate_sym_access_expr(Writer&              w,
     {
         w << "mix";
     }
-    else if (built_ins.is_non_mipmapped_image_sampling_function(symbol))
+    else if (built_ins.is_image_sampling_function(symbol))
     {
         w << "texture";
-    }
-    else if (built_ins.is_mipmapped_image_sampling_function(symbol))
-    {
-        w << "textureLod";
     }
     else if (built_ins.is_atan2_function(symbol))
     {
@@ -318,7 +316,7 @@ void GLSLShaderGenerator::generate_sym_access_expr(Writer&              w,
     else if (built_ins.is_some_intrinsic_function(symbol))
     {
         // Our intrinsic functions are PascalCase, whereas in GLSL they're camelBack.
-        w << details::to_lower_case(name);
+        w << util::to_lower_case(name);
     }
     else if (built_ins.is_vector_field_access(symbol))
     {
@@ -359,14 +357,15 @@ void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
       w.CloseBrace(true);
       w << WNewline;
 #else
-        for (const gsl::not_null<const ShaderParamDecl*>& param : params.scalars)
+        for (const auto& param_ref : params.scalars)
         {
-            const std::string_view name = param->name();
-            const Type&            type = param->type();
+            const auto& param = param_ref.get();
+            const auto  name  = param.name();
+            const auto& type  = param.type();
 
             w << "uniform ";
 
-            if (const ArrayType* array_type = asa<ArrayType>(&type))
+            if (const auto* array_type = asa<ArrayType>(&type))
             {
                 w << translate_array_type(*array_type, name);
             }
@@ -383,23 +382,25 @@ void GLSLShaderGenerator::emit_uniform_buffer_for_user_params(
     // Image parameters
     {
         // int i = 0;
-        for (const gsl::not_null<const ShaderParamDecl*> param : params.resources)
+        for (const auto param_ref : params.resources)
         {
+            const auto& param = param_ref.get();
+
             // Not always supported. Have to check support first before using
             // layout(binding=...). w << "layout(binding = " << i << ") ";
 
             w << "uniform ";
 
-            if (&param->type() == &ImageType::instance())
+            if (&param.type() == &ImageType::instance())
             {
                 w << "sampler2D";
             }
             else
             {
-                CER_THROW_INTERNAL_ERROR_STR("image type not implemented");
+                throw std::runtime_error{"Image type not implemented."};
             }
 
-            w << " " << param->name() << ";" << WNewline;
+            w << " " << param.name() << ";" << WNewline;
             // ++i;
         }
     }

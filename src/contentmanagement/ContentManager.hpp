@@ -8,10 +8,8 @@
 #include "cerlib/Logging.hpp"
 #include "cerlib/Shader.hpp"
 #include "graphics/ShaderImpl.hpp"
-#include "util/NonCopyable.hpp"
 #include "util/StringUnorderedMap.hpp"
-#include "util/Util.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
 #include <span>
 #include <string>
 #include <string_view>
@@ -29,27 +27,28 @@ class ContentManager final
   public:
     ContentManager();
 
-    NON_COPYABLE_NON_MOVABLE(ContentManager);
+    forbid_copy_and_move(ContentManager);
 
     ~ContentManager() noexcept;
 
     void set_asset_loading_prefix(std::string_view prefix);
 
-    std::string_view asset_loading_prefix() const;
+    auto asset_loading_prefix() const -> std::string_view;
 
-    Image load_image(std::string_view name, bool generate_mipmaps);
+    auto load_image(std::string_view name) -> Image;
 
-    Shader load_shader(std::string_view name, std::span<const std::string_view> defines = {});
+    auto load_shader(std::string_view name, std::span<const std::string_view> defines = {})
+        -> Shader;
 
-    Font load_font(std::string_view name);
+    auto load_font(std::string_view name) -> Font;
 
-    Sound load_sound(std::string_view name);
+    auto load_sound(std::string_view name) -> Sound;
 
-    std::shared_ptr<Asset> load_custom_asset(std::string_view type_id,
-                                             std::string_view name,
-                                             const std::any&  extra_info);
+    auto load_custom_asset(std::string_view type_id,
+                           std::string_view name,
+                           const std::any&  extra_info) -> std::shared_ptr<Asset>;
 
-    bool is_loaded(std::string_view name) const;
+    auto is_loaded(std::string_view name) const -> bool;
 
     void register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func);
 
@@ -88,7 +87,7 @@ auto ContentManager::lazy_load(std::string_view key,
     static_assert(std::is_base_of_v<Asset, TImpl>, "Type must derive from Asset");
 
     // TODO: we can optimize this: use key directly if asset prefix is empty
-    const auto key_str = m_asset_loading_prefix + std::string(key);
+    const auto key_str = m_asset_loading_prefix + std::string{key};
 
     if (const auto it = m_loaded_assets.find(key_str); it != m_loaded_assets.cend())
     {
@@ -96,32 +95,63 @@ auto ContentManager::lazy_load(std::string_view key,
 
         if (!ref)
         {
-            CER_THROW_LOGIC_ERROR("Attempting to load asset '{}' as a '{}'. However, the "
-                                  "asset was previously loaded as a different type.",
-                                  name,
-                                  typeid(TBase).name());
+            throw std::logic_error{
+                fmt::format("Attempting to load asset '{}' as a '{}'. However, the "
+                            "asset was previously loaded as a different type.",
+                            name,
+                            typeid(TBase).name())};
         }
 
         // Construct object, increment reference count to impl object.
-        auto obj = TBase();
+        auto obj = TBase{};
+
         set_impl(obj, *ref);
+
         return obj;
     }
-    else
+
+    // Load fresh object, store its impl pointer in the map, but return the object.
+    const auto name_str = m_asset_loading_prefix + std::string(name);
+    auto       asset    = load_func(name_str);
+
+    constexpr auto allowed_to_be_null = std::is_same_v<TImpl, SoundImpl>;
+
+    if (!asset)
     {
-        // Load fresh object, store its impl pointer in the map, but return the object.
-        const auto name_str = m_asset_loading_prefix + std::string(name);
-        auto       asset    = load_func(name_str);
-        auto       impl     = asset.impl();
+        if constexpr (allowed_to_be_null)
+        {
+            m_loaded_assets.emplace(key_str, static_cast<TImpl*>(nullptr));
 
-        impl->m_content_manager = this;
-        impl->m_asset_name      = key_str;
-
-        log_verbose("Loaded asset '{}'", key_str);
-
-        m_loaded_assets.emplace(key_str, static_cast<TImpl*>(impl));
-
-        return asset;
+            return asset;
+        }
+        else
+        {
+            throw std::runtime_error{
+                fmt::format("Loaded asset '{}', but its creation failed", name)};
+        }
     }
+
+    struct Msg
+    {
+        explicit Msg(std::string_view asset_name)
+            : asset_name(asset_name)
+        {
+        }
+
+        ~Msg() noexcept
+        {
+            log_verbose("Loaded asset '{}'", asset_name);
+        }
+
+        std::string_view asset_name;
+    } msg{key_str};
+
+    auto impl               = asset.impl();
+    impl->m_content_manager = this;
+    impl->m_asset_name      = key_str;
+
+    m_loaded_assets.emplace(key_str, static_cast<TImpl*>(impl));
+
+    return asset;
 }
 } // namespace cer::details

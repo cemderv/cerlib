@@ -4,8 +4,8 @@
 
 #include "shadercompiler/Writer.hpp"
 
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/narrow>
 
 namespace cer::shadercompiler
 {
@@ -24,7 +24,7 @@ void Writer::append(std::string_view str)
 {
     if (!m_buffer.empty() && m_buffer.back() == '\n')
     {
-        m_buffer.append(static_cast<size_t>(2) * static_cast<size_t>(m_indentation), ' ');
+        m_buffer.append(size_t(2) * size_t(m_indentation), ' ');
     }
 
     m_buffer += str;
@@ -63,27 +63,29 @@ void Writer::pad(uint32_t count)
     m_buffer.append(count, ' ');
 }
 
-std::string_view Writer::buffer() const
+auto Writer::buffer() const -> std::string_view
 {
     return m_buffer;
 }
 
-std::string Writer::take_buffer()
+auto Writer::take_buffer() -> std::string
 {
     return std::move(m_buffer);
 }
 
-size_t Writer::buffer_length() const
+auto Writer::buffer_length() const -> size_t
 {
     return m_buffer.size();
 }
 
-int Writer::current_column() const
+auto Writer::current_column() const -> int
 {
     // TODO: optimize this, this is ugly
     int column = 0;
 
-    for (int i = gsl::narrow_cast<int>(m_buffer.size()) - 1; i >= 0; --i)
+    const auto end = narrow_cast<int>(m_buffer.size()) - 1;
+
+    for (int i = end; i >= 0; --i)
     {
         if (m_buffer[i] == '\n')
         {
@@ -96,55 +98,55 @@ int Writer::current_column() const
     return column;
 }
 
-Writer& Writer::operator<<(std::string_view str)
+auto Writer::operator<<(std::string_view str) -> Writer&
 {
     append(str);
     return *this;
 }
 
-Writer& Writer::operator<<(const std::string& str)
+auto Writer::operator<<(const std::string& str) -> Writer&
 {
     append(str);
     return *this;
 }
 
-Writer& Writer::operator<<(const char* str)
+auto Writer::operator<<(const char* str) -> Writer&
 {
     append(str);
     return *this;
 }
 
-Writer& Writer::operator<<(char ch)
+auto Writer::operator<<(char ch) -> Writer&
 {
     append(std::string_view{&ch, 1});
     return *this;
 }
 
-Writer& Writer::operator<<(int value)
+auto Writer::operator<<(int value) -> Writer&
 {
     append(std::to_string(value));
     return *this;
 }
 
-Writer& Writer::operator<<(unsigned int value)
+auto Writer::operator<<(unsigned int value) -> Writer&
 {
     append(std::to_string(value));
     return *this;
 }
 
-Writer& Writer::operator<<(bool value)
+auto Writer::operator<<(bool value) -> Writer&
 {
     append(value ? "true" : "false");
     return *this;
 }
 
-Writer& Writer::operator<<(WriterNewlineTag)
+auto Writer::operator<<(WriterNewlineTag) -> Writer&
 {
     append("\n");
     return *this;
 }
 
-Writer& Writer::operator<<(WriteNewlineLazyTag)
+auto Writer::operator<<(WriteNewlineLazyTag) -> Writer&
 {
     if (m_buffer.empty() || m_buffer.back() != '\n')
     {

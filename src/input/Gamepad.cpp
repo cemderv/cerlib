@@ -6,7 +6,6 @@
 
 #include "GamepadImpl.hpp"
 #include "InputImpl.hpp"
-#include "util/Util.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
@@ -18,93 +17,94 @@ namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(Gamepad);
 
-std::string_view Gamepad::name() const
+auto Gamepad::name() const -> std::string_view
 {
     DECLARE_THIS_IMPL;
     return impl->name();
 }
 
-std::optional<std::string_view> Gamepad::serial_number() const
+auto Gamepad::serial_number() const -> std::optional<std::string_view>
 {
     DECLARE_THIS_IMPL;
     return impl->serial_number();
 }
 
-double Gamepad::axis_value(GamepadAxis axis) const
+auto Gamepad::axis_value(GamepadAxis axis) const -> double
 {
     DECLARE_THIS_IMPL;
     return impl->axis_value(axis);
 }
 
-bool Gamepad::is_button_down(GamepadButton button) const
+auto Gamepad::is_button_down(GamepadButton button) const -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->is_button_down(button);
 }
 
-bool Gamepad::is_button_up(GamepadButton button) const
+auto Gamepad::is_button_up(GamepadButton button) const -> bool
 {
     return !is_button_down(button);
 }
 
-std::optional<SmallDataArray<float, 16>> Gamepad::sensor_data(GamepadSensorType sensor) const
+auto Gamepad::sensor_data(GamepadSensorType sensor) const
+    -> std::optional<SmallDataArray<float, 16>>
 {
     DECLARE_THIS_IMPL;
     return impl->sensor_data(sensor);
 }
 
-float Gamepad::sensor_data_rate(GamepadSensorType sensor) const
+auto Gamepad::sensor_data_rate(GamepadSensorType sensor) const -> float
 {
     DECLARE_THIS_IMPL;
     return impl->sensor_data_rate(sensor);
 }
 
-std::optional<uint64_t> Gamepad::steam_handle() const
+auto Gamepad::steam_handle() const -> std::optional<uint64_t>
 {
     DECLARE_THIS_IMPL;
     return impl->steam_handle();
 }
 
-uint32_t Gamepad::touchpad_count() const
+auto Gamepad::touchpad_count() const -> uint32_t
 {
     DECLARE_THIS_IMPL;
     return impl->touchpad_count();
 }
 
-SmallDataArray<GamepadTouchpadFingerData, 8> Gamepad::touchpad_finger_data(
-    uint32_t touchpad_index) const
+auto Gamepad::touchpad_finger_data(uint32_t touchpad_index) const
+    -> SmallDataArray<GamepadTouchpadFingerData, 8>
 {
     DECLARE_THIS_IMPL;
     return impl->touchpad_finger_data(touchpad_index);
 }
 
-std::optional<GamepadType> Gamepad::type() const
+auto Gamepad::type() const -> std::optional<GamepadType>
 {
     DECLARE_THIS_IMPL;
     return impl->type();
 }
 
-bool Gamepad::set_led_color(const Color& color)
+auto Gamepad::set_led_color(const Color& color) -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->set_led_color(color);
 }
 
-bool Gamepad::start_rumble(float             left_motor_intensity,
+auto Gamepad::start_rumble(float             left_motor_intensity,
                            float             right_motor_intensity,
-                           GamepadRumbleTime duration)
+                           GamepadRumbleTime duration) -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->start_rumble(left_motor_intensity, right_motor_intensity, duration);
 }
 
-bool Gamepad::has_sensor(GamepadSensorType sensor) const
+auto Gamepad::has_sensor(GamepadSensorType sensor) const -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->has_sensor(sensor);
 }
 
-bool Gamepad::is_sensor_enabled(GamepadSensorType sensor) const
+auto Gamepad::is_sensor_enabled(GamepadSensorType sensor) const -> bool
 {
     DECLARE_THIS_IMPL;
     return impl->is_sensor_enabled(sensor);

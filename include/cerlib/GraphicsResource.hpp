@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <string_view>
 
 namespace cer
@@ -33,21 +33,21 @@ enum class GraphicsResourceType
  *
  * Graphics resources are always owned by the user via automatic reference counting.
  * When a resource is set to be used by the library, for example when calling
- * setVertexBuffer(), the library holds a reference until it is done using it or when
+ * set_shader(), the library holds a reference until it is done using it or when
  * another resource is set using the respective call.
  *
  * @ingroup Graphics
  */
-class CERLIB_API GraphicsResource
+class GraphicsResource
 {
     CERLIB_DECLARE_OBJECT(GraphicsResource);
 
   public:
     /** Gets the type of the resource. */
-    GraphicsResourceType type() const;
+    auto type() const -> GraphicsResourceType;
 
     /** Gets the debuggable name of the resource. */
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     /**
      * Sets the debuggable name of the resource.

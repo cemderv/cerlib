@@ -4,10 +4,8 @@
 
 #pragma once
 
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
-#include <gsl/pointers>
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <memory>
 
 namespace cer::shadercompiler
@@ -17,12 +15,12 @@ class SourceLocation;
 class ArrayType;
 class UnresolvedType;
 
-class CERLIB_API_INTERNAL TypeCache final
+class TypeCache final
 {
   public:
     TypeCache();
 
-    NON_COPYABLE(TypeCache);
+    forbid_copy(TypeCache);
 
     TypeCache(TypeCache&&) noexcept;
 
@@ -30,17 +28,17 @@ class CERLIB_API_INTERNAL TypeCache final
 
     ~TypeCache() noexcept;
 
-    gsl::not_null<ArrayType*> create_array_type(const SourceLocation& location,
-                                                std::string_view      element_type_name,
-                                                std::unique_ptr<Expr> size_expr);
+    auto create_array_type(const SourceLocation& location,
+                           std::string_view      element_type_name,
+                           std::unique_ptr<Expr> size_expr) -> ArrayType&;
 
-    gsl::not_null<UnresolvedType*> create_unresolved_type(const SourceLocation& location,
-                                                          std::string_view      name);
+    auto create_unresolved_type(const SourceLocation& location, std::string_view name)
+        -> UnresolvedType&;
 
     void clear();
 
   private:
-    SmallVector<std::unique_ptr<ArrayType>, 32>      m_array_types;
-    SmallVector<std::unique_ptr<UnresolvedType>, 32> m_unresolved_types;
+    UniquePtrList<ArrayType, 32>      m_array_types;
+    UniquePtrList<UnresolvedType, 32> m_unresolved_types;
 };
 } // namespace cer::shadercompiler

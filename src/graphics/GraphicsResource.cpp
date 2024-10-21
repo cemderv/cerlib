@@ -5,19 +5,18 @@
 #include <cerlib/GraphicsResource.hpp>
 
 #include "GraphicsResourceImpl.hpp"
-#include "util/Util.hpp"
 
 namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(GraphicsResource)
 
-GraphicsResourceType GraphicsResource::type() const
+auto GraphicsResource::type() const -> GraphicsResourceType
 {
     DECLARE_THIS_IMPL;
     return impl->type();
 }
 
-std::string_view GraphicsResource::name() const
+auto GraphicsResource::name() const -> std::string_view
 {
     DECLARE_THIS_IMPL;
     return impl->name();

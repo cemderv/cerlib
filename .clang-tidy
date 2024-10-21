@@ -10,7 +10,6 @@ Checks: "-*,
   cppcoreguidelines-no-suspend-with-lock,\
   cppcoreguidelines-owning-memory,\
   cppcoreguidelines-pro-bounds-array-to-pointer-decay,\
-  cppcoreguidelines-pro-bounds-pointer-arithmetic,\
   cppcoreguidelines-pro-type-const-cast,\
   cppcoreguidelines-pro-type-cstyle-cast,\
   cppcoreguidelines-pro-type-member-init,\
@@ -115,6 +114,7 @@ Checks: "-*,
   modernize-use-ranges,\
   modernize-use-starts-ends-with,\
   modernize-use-using,\
+  modernize-use-trailing-return-type,\
   performance-avoid-endl,\
   performance-faster-string-find,\
   performance-for-range-copy,\

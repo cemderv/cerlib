@@ -22,27 +22,24 @@ class WindowImpl;
 class ImageImpl : public GraphicsResourceImpl
 {
   public:
-    explicit ImageImpl(gsl::not_null<GraphicsDevice*> parent_device,
-                       bool                           is_canvas,
-                       WindowImpl*                    window_for_canvas,
-                       uint32_t                       width,
-                       uint32_t                       height,
-                       ImageFormat                    format,
-                       uint32_t                       mipmap_count);
+    explicit ImageImpl(GraphicsDevice& parent_device,
+                       bool            is_canvas,
+                       WindowImpl*     window_for_canvas,
+                       uint32_t        width,
+                       uint32_t        height,
+                       ImageFormat     format);
 
-    bool is_canvas() const;
+    auto is_canvas() const -> bool;
 
-    WindowImpl* window_for_canvas() const;
+    auto window_for_canvas() const -> WindowImpl*;
 
-    uint32_t width() const;
+    auto width() const -> uint32_t;
 
-    uint32_t height() const;
+    auto height() const -> uint32_t;
 
-    ImageFormat format() const;
+    auto format() const -> ImageFormat;
 
-    uint32_t mipmap_count() const;
-
-    std::optional<Color> canvas_clear_color() const;
+    auto canvas_clear_color() const -> std::optional<Color>;
 
     void set_canvas_clear_color(const std::optional<Color>& value);
 
@@ -52,7 +49,6 @@ class ImageImpl : public GraphicsResourceImpl
     uint32_t             m_width{};
     uint32_t             m_height{};
     ImageFormat          m_format{};
-    uint32_t             m_mipmap_count{};
     std::optional<Color> m_canvas_clear_color{};
 };
 } // namespace cer::details

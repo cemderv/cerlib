@@ -9,7 +9,8 @@
 
 namespace cer::shadercompiler
 {
-static std::string build_full_message(const SourceLocation& location, std::string_view message)
+static auto build_full_message(const SourceLocation& location, std::string_view message)
+    -> std::string
 {
     assert(!location.filename.empty());
 
@@ -17,10 +18,10 @@ static std::string build_full_message(const SourceLocation& location, std::strin
            : location.column == 0
                ? cer_fmt::format("{}({}): error: {}", location.filename, location.line, message)
                : cer_fmt::format("{}({}, {}): error: {}",
-                             location.filename,
-                             location.line,
-                             location.column,
-                             message);
+                                 location.filename,
+                                 location.line,
+                                 location.column,
+                                 message);
 }
 
 Error::Error() = default;
@@ -31,12 +32,12 @@ Error::Error(const SourceLocation& location, std::string_view message)
     log_debug("{}", m_full_message);
 }
 
-const char* Error::what() const noexcept
+auto Error::what() const noexcept -> const char*
 {
     return m_full_message.c_str();
 }
 
-std::string_view Error::full_message() const
+auto Error::full_message() const -> std::string_view
 {
     return m_full_message;
 }

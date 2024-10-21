@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/SmallDataArray.hpp>
 #include <cerlib/Vector2.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <chrono>
 #include <optional>
 
@@ -130,10 +130,10 @@ using GamepadSensorData = SmallDataArray<float, 16>;
 struct GamepadTouchpadFingerData final
 {
     /** Default comparison */
-    bool operator==(const GamepadTouchpadFingerData&) const = default;
+    auto operator==(const GamepadTouchpadFingerData&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const GamepadTouchpadFingerData&) const = default;
+    auto operator!=(const GamepadTouchpadFingerData&) const -> bool = default;
 
     /** The index of the touch. */
     int32_t index = 0;
@@ -161,7 +161,7 @@ using GamepadRumbleTime = std::chrono::duration<double>;
  *
  * @ingroup Input
  */
-class CERLIB_API Gamepad final
+class Gamepad final
 {
     CERLIB_DECLARE_OBJECT(Gamepad);
 
@@ -169,12 +169,12 @@ class CERLIB_API Gamepad final
     /**
      * Gets the name of the gamepad as provided by the vendor.
      */
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
     /**
      * Gets the serial number of the gamepad, if available.
      */
-    std::optional<std::string_view> serial_number() const;
+    auto serial_number() const -> std::optional<std::string_view>;
 
     /**
      * Gets the normalized value of a specific axis on the gamepad.
@@ -182,7 +182,7 @@ class CERLIB_API Gamepad final
      * @param axis The axis to query.
      * @return The normalized value of the axis, in the range `[0.0 .. 1.0]`.
      */
-    double axis_value(GamepadAxis axis) const;
+    auto axis_value(GamepadAxis axis) const -> double;
 
     /**
      * Gets a value indicating whether a specific button is currently pressed on the gamepad.
@@ -190,7 +190,7 @@ class CERLIB_API Gamepad final
      * @param button The button to query.
      * @return True if the button is currently pressed; false otherwise.
      */
-    bool is_button_down(GamepadButton button) const;
+    auto is_button_down(GamepadButton button) const -> bool;
 
     /**
      * Gets a value indicating whether a specific button is currently *not* pressed on the
@@ -199,21 +199,21 @@ class CERLIB_API Gamepad final
      * @param button The button to query.
      * @return True if the button is currently not pressed; false otherwise.
      */
-    bool is_button_up(GamepadButton button) const;
+    auto is_button_up(GamepadButton button) const -> bool;
 
     /**
      * Gets the current data of a specific sensor on the gamepad.
      *
      * @param sensor The sensor to query.
      */
-    std::optional<SmallDataArray<float, 16>> sensor_data(GamepadSensorType sensor) const;
+    auto sensor_data(GamepadSensorType sensor) const -> std::optional<SmallDataArray<float, 16>>;
 
     /**
      * Gets the data rate (number of events per second) of a specific sensor on the gamepad.
      *
      * @param sensor The sensor to query.
      */
-    float sensor_data_rate(GamepadSensorType sensor) const;
+    auto sensor_data_rate(GamepadSensorType sensor) const -> float;
 
     /**
      * Gets the Steam Input handle of the gamepad, if available.
@@ -221,12 +221,12 @@ class CERLIB_API Gamepad final
      * @return A InputHandle_t that can be used with the Steam Input API:
      * https://partner.steamgames.com/doc/api/ISteamInput
      */
-    std::optional<uint64_t> steam_handle() const;
+    auto steam_handle() const -> std::optional<uint64_t>;
 
     /**
      * Gets the number of touchpads available on the gamepad.
      */
-    uint32_t touchpad_count() const;
+    auto touchpad_count() const -> uint32_t;
 
     /**
      * Gets the state of currently pressed touches on the gamepad's touchpad.
@@ -235,13 +235,13 @@ class CERLIB_API Gamepad final
      * @param touchpad_index The index of the touchpad to query. To obtain the number of touchpads
      * on the gamepad, use the Gamepad::touchpad_count() method.
      */
-    SmallDataArray<GamepadTouchpadFingerData, 8> touchpad_finger_data(
-        uint32_t touchpad_index) const;
+    auto touchpad_finger_data(uint32_t touchpad_index) const
+        -> SmallDataArray<GamepadTouchpadFingerData, 8>;
 
     /**
      * Gets the type of the gamepad.
      */
-    std::optional<GamepadType> type() const;
+    auto type() const -> std::optional<GamepadType>;
 
     /**
      * If supported by the gamepad, changes its LED color.
@@ -250,7 +250,7 @@ class CERLIB_API Gamepad final
      *
      * @return True if the LED was successfully changed; false otherwise.
      */
-    bool set_led_color(const Color& color);
+    auto set_led_color(const Color& color) -> bool;
 
     /**
      * Starts the rumble motors on the gamepad, if supported by the gamepad, for
@@ -275,9 +275,9 @@ class CERLIB_API Gamepad final
      * my_gamepad.start_rumble(0.5f, 1.0f, 500ms);
      * @endcode
      */
-    bool start_rumble(float             left_motor_intensity,
+    auto start_rumble(float             left_motor_intensity,
                       float             right_motor_intensity,
-                      GamepadRumbleTime duration);
+                      GamepadRumbleTime duration) -> bool;
 
     /**
      * Gets a value indicating whether the gamepad supports a specific sensor.
@@ -285,7 +285,7 @@ class CERLIB_API Gamepad final
      * @param sensor The sensor to check for availability.
      * @return True if the gamepad supports the sensor; false otherwise.
      */
-    bool has_sensor(GamepadSensorType sensor) const;
+    auto has_sensor(GamepadSensorType sensor) const -> bool;
 
     /**
      * Gets a value indicating whether a specific sensor on the gamepad is currently enabled.
@@ -293,7 +293,7 @@ class CERLIB_API Gamepad final
      * @param sensor The sensor to check.
      * @return True if the sensor is currently enabled; false otherwise.
      */
-    bool is_sensor_enabled(GamepadSensorType sensor) const;
+    auto is_sensor_enabled(GamepadSensorType sensor) const -> bool;
 
     /**
      * Enables or disables a specific sensor on the gamepad.

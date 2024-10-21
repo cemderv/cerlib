@@ -7,9 +7,8 @@
 #include "OpenGLPrerequisites.hpp"
 #include "OpenGLPrivateShader.hpp"
 #include "graphics/ShaderParameter.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
-
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <string>
 
 namespace cer::details
@@ -28,29 +27,29 @@ class OpenGLShaderProgram final
                                  bool                             is_user_shader,
                                  std::span<const ShaderParameter> parameters);
 
-    NON_COPYABLE(OpenGLShaderProgram);
+    forbid_copy(OpenGLShaderProgram);
 
     OpenGLShaderProgram(OpenGLShaderProgram&& other) noexcept;
 
-    OpenGLShaderProgram& operator=(OpenGLShaderProgram&& other) noexcept;
+    auto operator=(OpenGLShaderProgram&& other) noexcept -> OpenGLShaderProgram&;
 
     ~OpenGLShaderProgram() noexcept;
 
-    GLint uniform_location(std::string_view name) const;
+    auto uniform_location(std::string_view name) const -> GLint;
 
-    bool operator==(const OpenGLShaderProgram& other) const
+    auto operator==(const OpenGLShaderProgram& other) const -> bool
     {
         return gl_handle == other.gl_handle;
     }
 
-    bool operator!=(const OpenGLShaderProgram& other) const
+    auto operator!=(const OpenGLShaderProgram& other) const -> bool
     {
         return gl_handle == other.gl_handle;
     }
 
-    std::string                                name;
-    GLuint                                     gl_handle;
-    SmallVector<std::pair<std::string, GLint>> uniform_locations;
+    std::string                               name;
+    GLuint                                    gl_handle;
+    PairList<std::string, GLint> uniform_locations;
 
   private:
     void destroy();

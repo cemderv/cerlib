@@ -3,9 +3,9 @@
 // For conditions of distribution and use, see copyright notice in LICENSE.
 
 #include "OpenGLVao.hpp"
-#include "util/InternalError.hpp"
-#include "util/SmallVector.hpp"
+#include "util/narrow_cast.hpp"
 #include <cassert>
+#include <cerlib/List.hpp>
 
 namespace cer::details
 {
@@ -19,7 +19,7 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
 
     if (gl_handle == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to create the VAO handle.");
+        throw std::runtime_error{"Failed to create the VAO handle."};
     }
 
     GL_CALL(glBindVertexArray(gl_handle));
@@ -29,13 +29,13 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         verify_opengl_state();
 
-        auto index                  = GLuint();
-        auto vertex_stride          = static_cast<GLsizei>(0);
-        auto element_sizes_in_bytes = SmallVector<GLsizei, 6>();
+        auto index                  = GLuint{};
+        auto vertex_stride          = GLsizei{};
+        auto element_sizes_in_bytes = List<GLsizei, 6>{};
 
-        for (const auto element : vertex_elements)
+        for (const auto& element : vertex_elements)
         {
-            const auto size = [element]() -> GLsizei {
+            const auto maybe_size = [element]() -> std::optional<size_t> {
                 switch (element)
                 {
                     case VertexElement::Int: return sizeof(int32_t);
@@ -45,18 +45,19 @@ OpenGLVao::OpenGLVao(GLuint vbo, GLuint ibo, std::span<const VertexElement> vert
                     case VertexElement::Vector3: return sizeof(float) * 3;
                     case VertexElement::Vector4: return sizeof(float) * 4;
                 }
-                return 0;
+
+                return std::nullopt;
             }();
 
-            assert(size > 0);
+            const auto size = maybe_size.value();
 
-            element_sizes_in_bytes.push_back(size);
-            vertex_stride += size;
+            element_sizes_in_bytes.push_back(GLsizei(size));
+            vertex_stride += GLsizei(size);
             ++index;
         }
 
         index       = 0;
-        auto offset = GLsizeiptr();
+        auto offset = GLsizeiptr{};
 
         for (const auto element : vertex_elements)
         {
@@ -106,7 +107,7 @@ OpenGLVao::OpenGLVao(OpenGLVao&& other) noexcept
     other.gl_handle = 0;
 }
 
-OpenGLVao& OpenGLVao::operator=(OpenGLVao&& other) noexcept
+auto OpenGLVao::operator=(OpenGLVao&& other) noexcept -> OpenGLVao&
 {
     if (&other != this)
     {

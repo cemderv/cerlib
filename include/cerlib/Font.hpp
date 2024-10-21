@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
 #include <cerlib/Rectangle.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <functional>
 #include <span>
 
@@ -25,15 +25,25 @@ struct Vector2;
  *
  * @ingroup Graphics
  */
-class CERLIB_API Font final
+class Font final
 {
     CERLIB_DECLARE_OBJECT(Font);
 
   public:
     /**
+     * Lazily loads a Font object from the storage.
+     *
+     * @param asset_name The name of the font in the asset storage.
+     *
+     * @throw std::runtime_error If the asset does not exist or could not be read or
+     * loaded.
+     */
+    explicit Font(std::string_view asset_name);
+
+    /**
      * Loads a font from memory.
      *
-     * @param data The font data to load.
+     * @param data he font data to load.
      */
     explicit Font(std::span<const std::byte> data);
 
@@ -42,7 +52,7 @@ class CERLIB_API Font final
      *
      * @param bold If true, returns the bold version of the built-in font.
      */
-    static Font built_in(bool bold = false);
+    static auto built_in(bool bold = false) -> Font;
 
     /**
      * Measures the size of a text when it would be drawn using the font at a
@@ -51,14 +61,14 @@ class CERLIB_API Font final
      * @param text The text to measure.
      * @param size The font size, in pixels.
      */
-    Vector2 measure(std::string_view text, uint32_t size) const;
+    auto measure(std::string_view text, uint32_t size) const -> Vector2;
 
     /**
      * Gets the uniform height of a line in the font at a specific size.
      *
      * @param size The font size, in pixels.
      */
-    float line_height(uint32_t size) const;
+    auto line_height(uint32_t size) const -> float;
 
     /**
      * Performs an action for each glyph in a specific text.

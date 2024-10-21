@@ -27,9 +27,13 @@ constexpr GLsizei shader_log_max_length = 256;
 #define USE_OPENGL_DEBUGGING
 #endif
 
+#ifdef USE_OPENGL_DEBUGGING
 #define GL_CALL(expr)                                                                              \
     expr;                                                                                          \
     verify_opengl_state()
+#else
+#define GL_CALL(expr) expr
+#endif
 
 struct OpenGLFeatures
 {
@@ -59,7 +63,7 @@ static inline auto verify_opengl_state() -> void
 }
 #endif
 
-OpenGLFormatTriplet convert_to_opengl_pixel_format(ImageFormat format);
+auto convert_to_opengl_pixel_format(ImageFormat format) -> OpenGLFormatTriplet;
 
-int compare_opengl_version_to_min_required_version(int major, int minor);
+auto compare_opengl_version_to_min_required_version(int major, int minor) -> int;
 } // namespace cer::details

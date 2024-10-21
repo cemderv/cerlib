@@ -38,7 +38,15 @@ def is_valid_entry(obj):
     return ('_deps' not in key and
             'cerlibTests.dir' not in key and
             'embedded_files' not in key and
-            'stb.c' not in key)
+            'stb_image.cpp' not in key and
+            'stb_image_write.cpp' not in key and
+            'stb_truetype.cpp' not in key and
+            'dr_impl.cpp' not in key and
+            'stb_vorbis.cpp' not in key and
+            'BiQuadResonantFilter.cpp' not in key and
+            'glad.cpp' not in key and
+            'imgui' not in key
+            )
 
 
 json_doc = [obj for obj in json_doc if is_valid_entry(obj)]

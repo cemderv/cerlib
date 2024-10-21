@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <cerlib/Export.hpp>
+#include <cerlib/details/ObjectMacros.hpp>
 #include <span>
 
 namespace cer
@@ -20,7 +20,7 @@ class SoundImpl;
  *
  * @ingroup Audio
  */
-class CERLIB_API Sound
+class Sound
 {
     CERLIB_DECLARE_OBJECT(Sound);
 
@@ -32,6 +32,16 @@ class CERLIB_API Sound
      * @param data The data to load the sound from. The sound will create its own copy of the data.
      */
     explicit Sound(std::span<const std::byte> data);
+
+    /**
+     * Lazily loads a Sound object from the storage.
+     *
+     * @param asset_name The name of the sound in the asset storage.
+     *
+     * @throw std::runtime_error If the asset does not exist or could not be read or
+     * loaded.
+     */
+    explicit Sound(std::string_view asset_name);
 
     /** Stops playing the sound and all of its derived channels. */
     void stop();

@@ -8,20 +8,16 @@ PlatformerGame::PlatformerGame()
     // The original game is written for a fixed resolution of 800x480 pixels.
     constexpr cer::Vector2 resolution{800, 480};
 
-    m_window = cer::Window{"Platformer Game",
-                           0,
-                           {},
-                           {},
-                           static_cast<uint32_t>(resolution.x),
-                           static_cast<uint32_t>(resolution.y)};
+    m_window =
+        cer::Window{"Platformer Game", 0, {}, {}, uint32_t(resolution.x), uint32_t(resolution.y)};
 
     m_window.set_resizable(false);
     m_window.set_clear_color(cer::green);
 
     if (m_window.pixel_ratio() != 1.0f)
     {
-        m_canvas = cer::Image{static_cast<uint32_t>(resolution.x),
-                              static_cast<uint32_t>(resolution.y),
+        m_canvas = cer::Image{uint32_t(resolution.x),
+                              uint32_t(resolution.y),
                               cer::ImageFormat::R8G8B8A8_UNorm,
                               m_window};
     }
@@ -38,11 +34,11 @@ void PlatformerGame::load_content()
 {
     m_hud_font = cer::Font::built_in();
 
-    m_win_overlay  = cer::load_image("overlays/you_win.png");
-    m_lose_overlay = cer::load_image("overlays/you_lose.png");
-    m_died_overlay = cer::load_image("overlays/you_died.png");
+    m_win_overlay  = cer::Image{"overlays/you_win.png"};
+    m_lose_overlay = cer::Image{"overlays/you_lose.png"};
+    m_died_overlay = cer::Image{"overlays/you_died.png"};
 
-    cer::SoundChannel music_channel = play_sound_in_background(cer::load_sound("sounds/music.mp3"));
+    cer::SoundChannel music_channel = cer::play_sound_in_background(cer::Sound{"sounds/music.mp3"});
 
     music_channel.set_looping(true);
 
@@ -106,7 +102,7 @@ void PlatformerGame::draw(const cer::Window& window)
 {
     if (m_canvas)
     {
-        set_blend_state(cer::BlendState::non_premultiplied());
+        set_blend_state(cer::non_premultiplied);
         m_canvas.set_canvas_clear_color(cer::red);
         set_canvas(m_canvas);
     }
@@ -116,7 +112,7 @@ void PlatformerGame::draw(const cer::Window& window)
 
     if (m_canvas)
     {
-        cer::set_blend_state(cer::BlendState::opaque());
+        cer::set_blend_state(cer::opaque);
         cer::set_canvas({});
 
         cer::draw_sprite({
@@ -143,8 +139,8 @@ void PlatformerGame::draw_hud()
     // player is running out of time.
     const double time_remaining = m_level->time_remaining();
 
-    const std::string minutes_string = std::to_string(static_cast<int>(time_remaining / 60.0));
-    std::string seconds_string = std::to_string(static_cast<int>(std::fmod(time_remaining, 60)));
+    const std::string minutes_string = std::to_string(int(time_remaining / 60.0));
+    std::string       seconds_string = std::to_string(int(std::fmod(time_remaining, 60)));
 
     if (seconds_string.size() == 1)
     {
@@ -156,7 +152,7 @@ void PlatformerGame::draw_hud()
     cer::Color time_color;
 
     if (time_remaining > warning_time || m_level->is_exit_reached() ||
-        (static_cast<int>(time_remaining) % 2) == 0)
+        (int(time_remaining) % 2) == 0)
     {
         time_color = cer::yellow;
     }

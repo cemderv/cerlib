@@ -21,14 +21,16 @@ class Error final : public std::exception
     explicit Error(const SourceLocation& location, std::string_view message);
 
     template <typename... Args>
-    explicit Error(const SourceLocation& location, cer_fmt::format_string<Args...> fmt, Args&&... args)
+    explicit Error(const SourceLocation&           location,
+                   cer_fmt::format_string<Args...> fmt,
+                   Args&&... args)
         : Error(location, cer_fmt::format(fmt, std::forward<Args>(args)...))
     {
     }
 
-    const char* what() const noexcept override;
+    auto what() const noexcept -> const char* override;
 
-    std::string_view full_message() const;
+    auto full_message() const -> std::string_view;
 
   private:
     std::string m_full_message;

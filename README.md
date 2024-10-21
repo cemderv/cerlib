@@ -16,16 +16,16 @@
 
 - Simple and lightweight cross-platform library focused on 2D game development
 - App framework
-  - Based on SDL
+  - Based on SDL3
 - Content management system
     - Images: .png, .jpg, .bmp, .dds, .hdr, .tga, .psd, .gif
-    - Generation of mipmaps
     - Fonts: .ttf, .otf
     - Sounds: .wav, .mp3, .ogg, .flac
 - Efficient, GPU-based sprite and UTF8 text rendering
 - Custom sprite shading
     - Simple & safe shading language that transpiles to native shading languages
 - Integrated linear math library with first-class support
+- Simple audio playback including faders and channels for playback control
 - First-class support for [ImGui](https://github.com/ocornut/imgui)
     - Automatically available in your game, simply `#include <imgui.h>` and use it
 - Compatibility with graphics debuggers such as [RenderDoc](https://renderdoc.org)

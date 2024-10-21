@@ -9,10 +9,9 @@
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
 #include "game/GameImpl.hpp"
-#include "util/InternalError.hpp"
+#include "stb_image_write.hpp"
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/narrow>
-#include <stb_image_write.h>
 
 #define DECLARE_THIS_IMPL_CANVAS                                                                   \
     const auto impl = static_cast<details::CanvasImpl*>(impl());                                   \
@@ -24,7 +23,7 @@ void cer::set_scissor_rects(std::span<const Rectangle> scissor_rects)
     device_impl.set_scissor_rects(scissor_rects);
 }
 
-cer::Image cer::current_canvas()
+auto cer::current_canvas() -> Image
 {
     LOAD_DEVICE_IMPL;
     return device_impl.current_canvas();
@@ -34,7 +33,7 @@ void cer::set_canvas(const Image& canvas)
 {
     if (canvas && !canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image is not a canvas.");
+        throw std::invalid_argument{"The specified image is not a canvas."};
     }
 
     LOAD_DEVICE_IMPL;
@@ -47,7 +46,7 @@ void cer::set_transformation(const Matrix& transformation)
     device_impl.set_transformation(transformation);
 }
 
-cer::Shader cer::current_sprite_shader()
+auto cer::current_sprite_shader() -> Shader
 {
     LOAD_DEVICE_IMPL;
     return device_impl.current_sprite_shader();
@@ -80,11 +79,9 @@ void cer::draw_sprite(const Image& image, Vector2 position, Color color)
 
     LOAD_DEVICE_IMPL;
 
-    const Vector2 image_size = image.size();
-
     device_impl.draw_sprite(Sprite{
         .image    = image,
-        .dst_rect = Rectangle{position, image_size},
+        .dst_rect = {position, image.size()},
         .color    = color,
     });
 }
@@ -111,19 +108,31 @@ void cer::draw_string(std::string_view                     text,
     device_impl.draw_string(text, font, font_size, position, color, decoration);
 }
 
+void cer::draw_text(const Text& text, Vector2 position, const Color& color)
+{
+    LOAD_DEVICE_IMPL;
+    device_impl.draw_text(text, position, color);
+}
+
 void cer::fill_rectangle(Rectangle rectangle, Color color, float rotation, Vector2 origin)
 {
     LOAD_DEVICE_IMPL;
     device_impl.fill_rectangle(rectangle, color, rotation, origin);
 }
 
-cer::FrameStats cer::frame_stats()
+void cer::draw_particles(const ParticleSystem& particle_system)
 {
     LOAD_DEVICE_IMPL;
-    return device_impl.frame_stats();
+    device_impl.draw_particles(particle_system);
 }
 
-cer::Vector2 cer::current_canvas_size()
+auto cer::frame_stats() -> FrameStats
+{
+    LOAD_DEVICE_IMPL;
+    return device_impl.frame_stats_ref();
+}
+
+auto cer::current_canvas_size() -> Vector2
 {
     LOAD_DEVICE_IMPL;
     return device_impl.current_canvas_size();
@@ -134,39 +143,41 @@ void cer::read_canvas_data_into(
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
     if (canvas == current_canvas())
     {
-        CER_THROW_LOGIC_ERROR_STR("The specified canvas is currently being drawn to. Please "
-                                  "unset it first before reading from it.");
+        throw std::logic_error{"The specified canvas is currently being drawn to. Please "
+                               "unset it first before reading from it."};
     }
 
-    const uint32_t canvas_width  = canvas.width();
-    const uint32_t canvas_height = canvas.height();
+    const auto canvas_width  = canvas.width();
+    const auto canvas_height = canvas.height();
 
     if (x + width > canvas_width)
     {
-        CER_THROW_INVALID_ARG("The specified x-coordinate ({}) and width ({}) would exceed "
-                              "the canvas bounds ({})",
-                              x,
-                              width,
-                              canvas_width);
+        throw std::invalid_argument{
+            fmt::format("The specified x-coordinate ({}) and width ({}) would exceed "
+                        "the canvas bounds ({})",
+                        x,
+                        width,
+                        canvas_width)};
     }
 
     if (y + height > canvas_height)
     {
-        CER_THROW_INVALID_ARG("The specified y-coordinate ({}) and height ({}) would exceed "
-                              "the canvas bounds ({})",
-                              y,
-                              height,
-                              canvas_height);
+        throw std::invalid_argument{
+            fmt::format("The specified y-coordinate ({}) and height ({}) would exceed "
+                        "the canvas bounds ({})",
+                        y,
+                        height,
+                        canvas_height)};
     }
 
     LOAD_DEVICE_IMPL;
@@ -174,27 +185,28 @@ void cer::read_canvas_data_into(
     device_impl.read_canvas_data_into(canvas, x, y, width, height, destination);
 }
 
-std::vector<std::byte> cer::read_canvas_data(
-    const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+auto cer::read_canvas_data(
+    const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height) -> List<std::byte>
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
     const auto size_in_bytes = image_slice_pitch(width, height, canvas.format());
 
     if (size_in_bytes == 0)
     {
-        CER_THROW_INVALID_ARG_STR("Invalid canvas specified; failed to determine pixel data size");
+        throw std::invalid_argument{
+            "Invalid canvas specified; failed to determine pixel data size"};
     }
 
-    std::vector<std::byte> data{size_in_bytes};
+    auto data = List<std::byte>{size_in_bytes};
     read_canvas_data_into(canvas, x, y, width, height, data.data());
 
     return data;
@@ -206,42 +218,41 @@ void cer::save_canvas_to_file(const Image&     canvas,
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
-    const uint32_t               canvas_width  = canvas.width();
-    const uint32_t               canvas_height = canvas.height();
-    const std::vector<std::byte> pixel_data =
-        read_canvas_data(canvas, 0, 0, canvas_width, canvas_height);
-    const uint32_t    row_pitch    = image_row_pitch(canvas_width, canvas.format());
-    const std::string filename_str = std::string{filename};
+    const auto canvas_width  = canvas.width();
+    const auto canvas_height = canvas.height();
+    const auto pixel_data    = read_canvas_data(canvas, 0, 0, canvas_width, canvas_height);
+    const auto row_pitch     = image_row_pitch(canvas_width, canvas.format());
+    const auto filename_str  = std::string{filename};
 
     const int result = [&] {
         switch (format)
         {
             case ImageFileFormat::Png:
                 return stbi_write_png(filename_str.c_str(),
-                                      static_cast<int>(canvas_width),
-                                      static_cast<int>(canvas_height),
+                                      int(canvas_width),
+                                      int(canvas_height),
                                       4,
                                       pixel_data.data(),
-                                      static_cast<int>(row_pitch));
+                                      int(row_pitch));
             case ImageFileFormat::Jpeg:
                 return stbi_write_jpg(filename_str.c_str(),
-                                      static_cast<int>(canvas_width),
-                                      static_cast<int>(canvas_height),
+                                      int(canvas_width),
+                                      int(canvas_height),
                                       4,
                                       pixel_data.data(),
                                       90);
             case ImageFileFormat::Bmp:
                 return stbi_write_bmp(filename_str.c_str(),
-                                      static_cast<int>(canvas_width),
-                                      static_cast<int>(canvas_height),
+                                      int(canvas_width),
+                                      int(canvas_height),
                                       4,
                                       pixel_data.data());
         }
@@ -251,36 +262,35 @@ void cer::save_canvas_to_file(const Image&     canvas,
 
     if (result == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to save the canvas data.");
+        throw std::runtime_error{"Failed to save the canvas data."};
     }
 }
 
-std::vector<std::byte> cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format)
+auto cer::save_canvas_to_memory(const Image& canvas, ImageFileFormat format) -> List<std::byte>
 {
     if (!canvas)
     {
-        CER_THROW_INVALID_ARG_STR("No canvas specified.");
+        throw std::invalid_argument{"No canvas specified."};
     }
 
     if (!canvas.is_canvas())
     {
-        CER_THROW_INVALID_ARG_STR("The specified image does not represent a canvas.");
+        throw std::invalid_argument{"The specified image does not represent a canvas."};
     }
 
-    const uint32_t               canvas_width  = canvas.width();
-    const uint32_t               canvas_height = canvas.height();
-    const std::vector<std::byte> pixel_data =
-        read_canvas_data(canvas, 0, 0, canvas_width, canvas_height);
-    const uint32_t row_pitch = image_row_pitch(canvas_width, canvas.format());
+    const auto canvas_width  = canvas.width();
+    const auto canvas_height = canvas.height();
+    const auto pixel_data    = read_canvas_data(canvas, 0, 0, canvas_width, canvas_height);
+    const auto row_pitch     = image_row_pitch(canvas_width, canvas.format());
 
     struct Context
     {
-        std::vector<std::byte> saved_data;
+        List<std::byte> saved_data;
     };
 
     const auto write_func = [](void* context, void* data, int size) {
-        Context*        context_t = static_cast<Context*>(context);
-        const std::span span{static_cast<const std::byte*>(data), gsl::narrow<size_t>(size)};
+        auto*      context_t = static_cast<Context*>(context);
+        const auto span      = std::span{static_cast<const std::byte*>(data), narrow<size_t>(size)};
 
         context_t->saved_data.insert(context_t->saved_data.end(), span.begin(), span.end());
     };
@@ -293,24 +303,24 @@ std::vector<std::byte> cer::save_canvas_to_memory(const Image& canvas, ImageFile
             case ImageFileFormat::Png:
                 return stbi_write_png_to_func(write_func,
                                               &my_context,
-                                              static_cast<int>(canvas_width),
-                                              static_cast<int>(canvas_height),
+                                              int(canvas_width),
+                                              int(canvas_height),
                                               4,
                                               pixel_data.data(),
-                                              static_cast<int>(row_pitch));
+                                              int(row_pitch));
             case ImageFileFormat::Jpeg:
                 return stbi_write_jpg_to_func(write_func,
                                               &my_context,
-                                              static_cast<int>(canvas_width),
-                                              static_cast<int>(canvas_height),
+                                              int(canvas_width),
+                                              int(canvas_height),
                                               4,
                                               pixel_data.data(),
                                               90);
             case ImageFileFormat::Bmp:
                 return stbi_write_bmp_to_func(write_func,
                                               &my_context,
-                                              static_cast<int>(canvas_width),
-                                              static_cast<int>(canvas_height),
+                                              int(canvas_width),
+                                              int(canvas_height),
                                               4,
                                               pixel_data.data());
         }
@@ -320,7 +330,7 @@ std::vector<std::byte> cer::save_canvas_to_memory(const Image& canvas, ImageFile
 
     if (result == 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to save the canvas data.");
+        throw std::runtime_error{"Failed to save the canvas data."};
     }
 
     return my_context.saved_data;

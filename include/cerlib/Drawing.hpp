@@ -5,40 +5,56 @@
 #pragma once
 
 #include <cerlib/Image.hpp>
+#include <cerlib/List.hpp>
 #include <cerlib/Matrix.hpp>
 #include <cerlib/Rectangle.hpp>
 #include <cerlib/Vector2.hpp>
 #include <optional>
 #include <variant>
-#include <vector>
 
 namespace cer
 {
-struct Sampler;
 class Font;
 class Shader;
+class Text;
+class ParticleSystem;
 struct BlendState;
+struct Sampler;
 
 /**
- * Defines various flip factors for 2D sprites that are drawn using DrawSprite().
+ * Defines various flip factors for 2D sprites that are drawn using draw_sprite().
  *
  * @ingroup Graphics
  */
 enum class SpriteFlip
 {
-    None         = 0, /**< The sprite is drawn normally, without any flipping. */
-    Horizontally = 1, /**< The sprite is flipped horizontally around its center. */
-    Vertically   = 2, /**< The sprite is flipped vertically around its center. */
-    Both         = Horizontally | Vertically, /**< The sprite is flipped both horizontally
-and vertically around its center. */
+    /**
+     * The sprite is drawn normally, without any flipping.
+     */
+    None = 0,
+
+    /**
+     * The sprite is flipped horizontally around its center.
+     */
+    Horizontally = 1,
+
+    /**
+     * The sprite is flipped vertically around its center.
+     */
+    Vertically = 2,
+
+    /**
+     * The sprite is flipped both horizontally and vertically around its center.
+     */
+    Both = Horizontally | Vertically,
 };
 
-static SpriteFlip operator|(SpriteFlip lhs, SpriteFlip rhs)
+static auto operator|(SpriteFlip lhs, SpriteFlip rhs) -> SpriteFlip
 {
-    return static_cast<SpriteFlip>(static_cast<int>(lhs) | static_cast<int>(rhs));
+    return SpriteFlip(int(lhs) | int(rhs));
 }
 
-static SpriteFlip& operator|=(SpriteFlip& lhs, SpriteFlip rhs)
+static auto operator|=(SpriteFlip& lhs, SpriteFlip rhs) -> SpriteFlip&
 {
     lhs = lhs | rhs;
     return lhs;
@@ -52,10 +68,10 @@ static SpriteFlip& operator|=(SpriteFlip& lhs, SpriteFlip rhs)
 struct Sprite
 {
     /** Default comparison */
-    bool operator==(const Sprite&) const = default;
+    auto operator==(const Sprite&) const -> bool = default;
 
     /** Default comparison */
-    bool operator!=(const Sprite&) const = default;
+    auto operator!=(const Sprite&) const -> bool = default;
 
     Image                    image{};
     Rectangle                dst_rect{};
@@ -98,6 +114,13 @@ struct TextStrikethrough
 };
 
 /**
+ * Defines various styles for 2D text objects that are drawn using draw_string() and draw_text().
+ *
+ * @ingroup Graphics
+ */
+using TextDecoration = std::variant<TextUnderline, TextStrikethrough>;
+
+/**
  * Represents drawing statistics of a frame.
  *
  * @ingroup Graphics
@@ -109,27 +132,20 @@ struct FrameStats
 };
 
 /**
- * Defines various styles for 2D text objects that are drawn using DrawString().
- *
- * @ingroup Graphics
- */
-using TextDecoration = std::variant<TextUnderline, TextStrikethrough>;
-
-/**
  * Sets the active set of scissor rectangles.
  *
  * @param scissor_rects The scissor rectangles to set for subsequent drawing.
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_scissor_rects(std::span<const Rectangle> scissor_rects);
+void set_scissor_rects(std::span<const Rectangle> scissor_rects);
 
 /**
  * Gets the currently bound canvas.
  *
  * @ingroup Graphics
  */
-CERLIB_API Image current_canvas();
+auto current_canvas() -> Image;
 
 /**
  * Sets the active canvas to use as a rendering destination.
@@ -151,7 +167,7 @@ CERLIB_API Image current_canvas();
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_canvas(const Image& canvas);
+void set_canvas(const Image& canvas);
 
 /**
  * Sets the transformation to apply to all subsequent 2D objects.
@@ -160,14 +176,14 @@ CERLIB_API void set_canvas(const Image& canvas);
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_transformation(const Matrix& transformation);
+void set_transformation(const Matrix& transformation);
 
 /**
  * Gets the currently set sprite shader.
  *
  * @ingroup Graphics
  */
-CERLIB_API Shader current_sprite_shader();
+auto current_sprite_shader() -> Shader;
 
 /**
  * Sets the active custom shader to use for sprite rendering.
@@ -177,7 +193,7 @@ CERLIB_API Shader current_sprite_shader();
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_sprite_shader(const Shader& shader);
+void set_sprite_shader(const Shader& shader);
 
 /**
  * Sets the image sampler to use for sprite rendering.
@@ -187,7 +203,7 @@ CERLIB_API void set_sprite_shader(const Shader& shader);
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_sampler(const Sampler& sampler);
+void set_sampler(const Sampler& sampler);
 
 /**
  * Sets the blend state to use for sprite rendering.
@@ -197,7 +213,7 @@ CERLIB_API void set_sampler(const Sampler& sampler);
  *
  * @ingroup Graphics
  */
-CERLIB_API void set_blend_state(const BlendState& blend_state);
+void set_blend_state(const BlendState& blend_state);
 
 /**
  * Draws a 2D sprite.
@@ -210,7 +226,7 @@ CERLIB_API void set_blend_state(const BlendState& blend_state);
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_sprite(const Image& image, Vector2 position, Color color = white);
+void draw_sprite(const Image& image, Vector2 position, Color color = white);
 
 /**
  * Draws a 2D sprite.
@@ -219,7 +235,7 @@ CERLIB_API void draw_sprite(const Image& image, Vector2 position, Color color = 
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_sprite(const Sprite& sprite);
+void draw_sprite(const Sprite& sprite);
 
 /**
  * Draws 2D text.
@@ -233,12 +249,21 @@ CERLIB_API void draw_sprite(const Sprite& sprite);
  *
  * @ingroup Graphics
  */
-CERLIB_API void draw_string(std::string_view                     text,
-                            const Font&                          font,
-                            uint32_t                             font_size,
-                            Vector2                              position,
-                            Color                                color      = white,
-                            const std::optional<TextDecoration>& decoration = std::nullopt);
+void draw_string(std::string_view                     text,
+                 const Font&                          font,
+                 uint32_t                             font_size,
+                 Vector2                              position,
+                 Color                                color      = white,
+                 const std::optional<TextDecoration>& decoration = std::nullopt);
+
+/**
+ * Draws 2D text from a pre-created Text object.
+ *
+ * @param text The text object to draw.
+ * @param position The top-left position of the text.
+ * @param color The color of the text.
+ */
+void draw_text(const Text& text, Vector2 position, const Color& color = white);
 
 /**
  * Draws a filled solid color rectangle.
@@ -250,17 +275,24 @@ CERLIB_API void draw_string(std::string_view                     text,
  *
  * @ingroup Graphics
  */
-CERLIB_API void fill_rectangle(Rectangle rectangle,
-                               Color     color    = white,
-                               float     rotation = 0.0f,
-                               Vector2   origin   = Vector2());
+void fill_rectangle(Rectangle rectangle,
+                    Color     color    = white,
+                    float     rotation = 0.0f,
+                    Vector2   origin   = Vector2());
+
+/**
+ * Draws a 2D particle system.
+ *
+ * @param particle_system The particle system to draw
+ */
+void draw_particles(const ParticleSystem& particle_system);
 
 /**
  * Gets statistics about the previous frame.
  *
  * @ingroup Graphics
  */
-CERLIB_API FrameStats frame_stats();
+auto frame_stats() -> FrameStats;
 
 /**
  * Gets the size of the current canvas, in pixels.
@@ -269,7 +301,7 @@ CERLIB_API FrameStats frame_stats();
  *
  * @ingroup Graphics
  */
-CERLIB_API Vector2 current_canvas_size();
+auto current_canvas_size() -> Vector2;
 
 /**
  * Gets the pixel data that is currently stored in a canvas.
@@ -290,12 +322,12 @@ CERLIB_API Vector2 current_canvas_size();
  *
  * @ingroup Graphics
  */
-CERLIB_API void read_canvas_data_into(const Image& canvas,
-                                      uint32_t     x,
-                                      uint32_t     y,
-                                      uint32_t     width,
-                                      uint32_t     height,
-                                      void*        destination);
+void read_canvas_data_into(const Image& canvas,
+                           uint32_t     x,
+                           uint32_t     y,
+                           uint32_t     width,
+                           uint32_t     height,
+                           void*        destination);
 
 /**
  * Gets the pixel data that is currently stored in a canvas.
@@ -308,12 +340,12 @@ CERLIB_API void read_canvas_data_into(const Image& canvas,
  * @param width The width of the area within the canvas to read, in pixels.
  * @param height The height of the area within the canvas to read, in pixels.
  *
- * @return An std::vector that contains the pixel data of the canvas.
+ * @return A buffer that contains the pixel data of the canvas.
  *
  * @ingroup Graphics
  */
-CERLIB_API std::vector<std::byte> read_canvas_data(
-    const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+auto read_canvas_data(const Image& canvas, uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+    -> List<std::byte>;
 
 /**
  * Saves the pixel data of a canvas to a file.
@@ -324,9 +356,9 @@ CERLIB_API std::vector<std::byte> read_canvas_data(
  *
  * @ingroup Graphics
  */
-CERLIB_API void save_canvas_to_file(const Image&     canvas,
-                                    std::string_view filename,
-                                    ImageFileFormat  format = ImageFileFormat::Png);
+void save_canvas_to_file(const Image&     canvas,
+                         std::string_view filename,
+                         ImageFileFormat  format = ImageFileFormat::Png);
 
 /**
  * Saves the pixel data of a canvas to a buffer in memory.
@@ -338,6 +370,6 @@ CERLIB_API void save_canvas_to_file(const Image&     canvas,
  *
  * @ingroup Graphics
  */
-CERLIB_API std::vector<std::byte> save_canvas_to_memory(
-    const Image& canvas, ImageFileFormat format = ImageFileFormat::Png);
+auto save_canvas_to_memory(const Image& canvas, ImageFileFormat format = ImageFileFormat::Png)
+    -> List<std::byte>;
 } // namespace cer

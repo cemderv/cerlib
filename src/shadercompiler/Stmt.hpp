@@ -5,9 +5,7 @@
 #pragma once
 
 #include "shadercompiler/SourceLocation.hpp"
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include <memory>
+#include <cerlib/CopyMoveMacros.hpp>
 
 namespace cer::shadercompiler
 {
@@ -21,7 +19,7 @@ class VarDecl;
 class TempVarNameGen;
 class ForLoopVariableDecl;
 
-class CERLIB_API_INTERNAL Stmt
+class Stmt
 {
   protected:
     explicit Stmt(const SourceLocation& location);
@@ -29,15 +27,15 @@ class CERLIB_API_INTERNAL Stmt
     virtual void on_verify(SemaContext& context, Scope& scope) = 0;
 
   public:
-    NON_COPYABLE_NON_MOVABLE(Stmt);
+    forbid_copy_and_move(Stmt);
 
     virtual ~Stmt() noexcept;
 
-    const SourceLocation& location() const;
+    auto location() const -> const SourceLocation&;
 
     void verify(SemaContext& context, Scope& scope);
 
-    virtual bool accesses_symbol(const Decl& symbol, bool transitive) const = 0;
+    virtual auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool = 0;
 
   private:
     SourceLocation m_location;
@@ -52,7 +50,7 @@ enum class CompoundStmtKind
     Div,
 };
 
-class CERLIB_API_INTERNAL CompoundStmt final : public Stmt
+class CompoundStmt final : public Stmt
 {
   public:
     CompoundStmt(const SourceLocation& location,
@@ -60,19 +58,19 @@ class CERLIB_API_INTERNAL CompoundStmt final : public Stmt
                  std::unique_ptr<Expr> lhs,
                  std::unique_ptr<Expr> rhs);
 
-    NON_COPYABLE_NON_MOVABLE(CompoundStmt);
+    forbid_copy_and_move(CompoundStmt);
 
     ~CompoundStmt() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    CompoundStmtKind kind() const;
+    auto kind() const -> CompoundStmtKind;
 
-    const Expr& lhs() const;
+    auto lhs() const -> const Expr&;
 
-    const Expr& rhs() const;
+    auto rhs() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     CompoundStmtKind      m_kind;
@@ -80,50 +78,50 @@ class CERLIB_API_INTERNAL CompoundStmt final : public Stmt
     std::unique_ptr<Expr> m_rhs;
 };
 
-class CERLIB_API_INTERNAL AssignmentStmt final : public Stmt
+class AssignmentStmt final : public Stmt
 {
   public:
     AssignmentStmt(const SourceLocation& location,
                    std::unique_ptr<Expr> lhs,
                    std::unique_ptr<Expr> rhs);
 
-    NON_COPYABLE_NON_MOVABLE(AssignmentStmt);
+    forbid_copy_and_move(AssignmentStmt);
 
     ~AssignmentStmt() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& lhs() const;
+    auto lhs() const -> const Expr&;
 
-    const Expr& rhs() const;
+    auto rhs() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_lhs;
     std::unique_ptr<Expr> m_rhs;
 };
 
-class CERLIB_API_INTERNAL ReturnStmt final : public Stmt
+class ReturnStmt final : public Stmt
 {
   public:
     explicit ReturnStmt(const SourceLocation& location, std::unique_ptr<Expr> expr);
 
-    NON_COPYABLE_NON_MOVABLE(ReturnStmt);
+    forbid_copy_and_move(ReturnStmt);
 
     ~ReturnStmt() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr& expr() const;
+    auto expr() const -> const Expr&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr> m_expr;
 };
 
-class CERLIB_API_INTERNAL ForStmt final : public Stmt
+class ForStmt final : public Stmt
 {
   public:
     ForStmt(const SourceLocation&                location,
@@ -131,19 +129,19 @@ class CERLIB_API_INTERNAL ForStmt final : public Stmt
             std::unique_ptr<RangeExpr>           range,
             std::unique_ptr<CodeBlock>           body);
 
-    NON_COPYABLE_NON_MOVABLE(ForStmt);
+    forbid_copy_and_move(ForStmt);
 
     ~ForStmt() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const ForLoopVariableDecl& loop_variable() const;
+    auto loop_variable() const -> const ForLoopVariableDecl&;
 
-    const RangeExpr& range() const;
+    auto range() const -> const RangeExpr&;
 
-    const CodeBlock& body() const;
+    auto body() const -> const CodeBlock&;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<ForLoopVariableDecl> m_loop_variable;
@@ -151,7 +149,7 @@ class CERLIB_API_INTERNAL ForStmt final : public Stmt
     std::unique_ptr<CodeBlock>           m_body;
 };
 
-class CERLIB_API_INTERNAL IfStmt final : public Stmt
+class IfStmt final : public Stmt
 {
   public:
     IfStmt(const SourceLocation&      location,
@@ -159,19 +157,19 @@ class CERLIB_API_INTERNAL IfStmt final : public Stmt
            std::unique_ptr<CodeBlock> body,
            std::unique_ptr<IfStmt>    next);
 
-    NON_COPYABLE_NON_MOVABLE(IfStmt);
+    forbid_copy_and_move(IfStmt);
 
     ~IfStmt() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    const Expr* condition_expr() const;
+    auto condition_expr() const -> const Expr*;
 
-    const CodeBlock& body() const;
+    auto body() const -> const CodeBlock&;
 
-    const IfStmt* next() const;
+    auto next() const -> const IfStmt*;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<Expr>      m_condition_expr;
@@ -179,24 +177,24 @@ class CERLIB_API_INTERNAL IfStmt final : public Stmt
     std::unique_ptr<IfStmt>    m_next;
 };
 
-class CERLIB_API_INTERNAL VarStmt final : public Stmt
+class VarStmt final : public Stmt
 {
   public:
     explicit VarStmt(const SourceLocation& location, std::unique_ptr<VarDecl> variable);
 
-    NON_COPYABLE_NON_MOVABLE(VarStmt);
+    forbid_copy_and_move(VarStmt);
 
     ~VarStmt() noexcept override;
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    std::string_view name() const;
+    auto name() const -> std::string_view;
 
-    const VarDecl& variable() const;
+    auto variable() const -> const VarDecl&;
 
-    std::unique_ptr<VarDecl> steal_variable();
+    auto steal_variable() -> std::unique_ptr<VarDecl>;
 
-    bool accesses_symbol(const Decl& symbol, bool transitive) const override;
+    auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
     std::unique_ptr<VarDecl> m_variable;

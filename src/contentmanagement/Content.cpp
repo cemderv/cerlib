@@ -4,10 +4,7 @@
 
 #include "cerlib/Content.hpp"
 #include "ContentManager.hpp"
-#include "cerlib/Font.hpp"
 #include "cerlib/Image.hpp"
-#include "cerlib/Shader.hpp"
-#include "cerlib/Sound.hpp"
 #include "game/GameImpl.hpp"
 #include <cassert>
 
@@ -28,7 +25,7 @@ Asset::~Asset() noexcept
     }
 }
 
-std::string_view Asset::asset_name() const
+auto Asset::asset_name() const -> std::string_view
 {
     return m_asset_name;
 }
@@ -40,34 +37,10 @@ void cer::set_asset_loading_prefix(std::string_view prefix)
     content.set_asset_loading_prefix(prefix);
 }
 
-std::string cer::asset_loading_prefix()
+auto cer::asset_loading_prefix() -> std::string
 {
     LOAD_CONTENT_MANAGER;
-    return std::string(content.asset_loading_prefix());
-}
-
-cer::Image cer::load_image(std::string_view name, bool generate_mipmaps)
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_image(name, generate_mipmaps);
-}
-
-cer::Shader cer::load_shader(std::string_view name, std::span<const std::string_view> defines)
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_shader(name, defines);
-}
-
-cer::Font cer::load_font(std::string_view name)
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_font(name);
-}
-
-cer::Sound cer::load_sound(std::string_view name)
-{
-    LOAD_CONTENT_MANAGER;
-    return content.load_sound(name);
+    return std::string{content.asset_loading_prefix()};
 }
 
 void cer::register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func)
@@ -82,15 +55,15 @@ void cer::unregister_custom_asset_loader(std::string_view type_id)
     content.unregister_custom_asset_loader(type_id);
 }
 
-std::shared_ptr<cer::Asset> cer::load_custom_asset(std::string_view type_id,
-                                                   std::string_view name,
-                                                   const std::any&  extra_info)
+auto cer::load_custom_asset(std::string_view type_id,
+                            std::string_view name,
+                            const std::any&  extra_info) -> std::shared_ptr<cer::Asset>
 {
     LOAD_CONTENT_MANAGER;
     return content.load_custom_asset(type_id, name, extra_info);
 }
 
-bool cer::is_asset_loaded(std::string_view name)
+auto cer::is_asset_loaded(std::string_view name) -> bool
 {
     LOAD_CONTENT_MANAGER;
     return content.is_loaded(name);

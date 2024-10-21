@@ -19,7 +19,7 @@ class OpenGLWindow final : public WindowImpl
                           std::optional<uint32_t> height,
                           bool                    allow_high_dpi);
 
-    NON_COPYABLE_NON_MOVABLE(OpenGLWindow);
+    forbid_copy_and_move(OpenGLWindow);
 
     ~OpenGLWindow() noexcept override;
 
@@ -27,7 +27,7 @@ class OpenGLWindow final : public WindowImpl
 
     void make_context_current();
 
-    SDL_GLContext sdl_gl_context() const;
+    auto sdl_gl_context() const -> SDL_GLContext;
 
   private:
     SDL_GLContext m_gl_context{};

@@ -18,29 +18,25 @@ constexpr float jump_control_power   = 0.14f;
 
 Player::Player(Level* level, cer::Vector2 position)
     : m_level(level)
+    , m_idle_animation("sprites/player/idle.png", 1.0f, true)
+    , m_run_animation("sprites/player/run.png", 0.07f, true)
+    , m_jump_animation("sprites/player/jump.png", 0.06f, false)
+    , m_celebrate_animation("sprites/player/celebrate.png", 0.08f, false)
+    , m_die_animation("sprites/player/die.png", 0.1f, false)
+    , m_killed_sound("sounds/player_killed.wav")
+    , m_jump_sound("sounds/player_jump.wav")
+    , m_fall_sound("sounds/player_fall.wav")
     , m_position(position)
 {
-    // Load animated textures.
-    m_idle_animation      = {"sprites/player/idle.png", 1.0f, true};
-    m_run_animation       = {"sprites/player/run.png", 0.07f, true};
-    m_jump_animation      = {"sprites/player/jump.png", 0.06f, false};
-    m_celebrate_animation = {"sprites/player/celebrate.png", 0.08f, false};
-    m_die_animation       = {"sprites/player/die.png", 0.1f, false};
-
     // Calculate bounds within texture size.
-    const auto  frame_width  = static_cast<float>(m_idle_animation.frame_width());
-    const auto  frame_height = static_cast<float>(m_idle_animation.frame_height());
+    const auto  frame_width  = float(m_idle_animation.frame_width());
+    const auto  frame_height = float(m_idle_animation.frame_height());
     const float width        = cer::round(frame_width * 0.4f);
     const float left         = cer::round((frame_width - width) / 2);
     const float height       = cer::round(frame_width * 0.8f);
     const float top          = cer::round(frame_height - height);
 
     m_local_bounds = {left, top, width, height};
-
-    // Load sounds.
-    m_killed_sound = cer::load_sound("sounds/player_killed.wav");
-    m_jump_sound   = cer::load_sound("sounds/player_jump.wav");
-    m_fall_sound   = cer::load_sound("sounds/player_fall.wav");
 
     reset(position);
 }
@@ -61,10 +57,10 @@ void Player::handle_collisions()
     // Get the player's bounding rectangle and find neighboring tiles.
     cer::Rectangle bounds = bounding_rect();
 
-    const auto left_tile   = static_cast<int>(cer::floor(bounds.left() / Tile::width));
-    const auto right_tile  = static_cast<int>(cer::ceiling(bounds.right() / Tile::width)) - 1;
-    const auto top_tile    = static_cast<int>(cer::floor(bounds.top() / Tile::height));
-    const auto bottom_tile = static_cast<int>(cer::ceiling(bounds.bottom() / Tile::height)) - 1;
+    const auto left_tile   = int(cer::floor(bounds.left() / Tile::width));
+    const auto right_tile  = int(cer::ceiling(bounds.right() / Tile::width)) - 1;
+    const auto top_tile    = int(cer::floor(bounds.top() / Tile::height));
+    const auto bottom_tile = int(cer::ceiling(bounds.bottom() / Tile::height)) - 1;
 
     // Reset flag to search for ground collision.
     m_is_on_ground = false;

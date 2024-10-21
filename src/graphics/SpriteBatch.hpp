@@ -14,9 +14,9 @@
 #include "cerlib/Shader.hpp"
 #include "cerlib/Vector2.hpp"
 #include "cerlib/Vector4.hpp"
-#include "util/NonCopyable.hpp"
-
-#include <gsl/pointers>
+#include "graphics/TextImpl.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 
 namespace cer
 {
@@ -38,11 +38,11 @@ class SpriteBatch
         Vector2 uv;
     };
 
-    static constexpr uint32_t max_batch_size      = 2048;
-    static constexpr uint32_t min_batch_size      = 128;
-    static constexpr uint32_t initial_queue_size  = 512;
-    static constexpr uint32_t vertices_per_sprite = 4;
-    static constexpr uint32_t indices_per_sprite  = 6;
+    static constexpr auto max_batch_size      = 2048u;
+    static constexpr auto min_batch_size      = 128u;
+    static constexpr auto initial_queue_size  = 512u;
+    static constexpr auto vertices_per_sprite = 4u;
+    static constexpr auto indices_per_sprite  = 6u;
 
     enum class SpriteShaderKind
     {
@@ -50,10 +50,9 @@ class SpriteBatch
         Monochromatic = 2, // splats .r to .rrrr (e.g. for monochromatic bitmap fonts)
     };
 
-    explicit SpriteBatch(gsl::not_null<GraphicsDevice*> device_impl,
-                         gsl::not_null<FrameStats*>     draw_stats);
+    explicit SpriteBatch(GraphicsDevice& device_impl, FrameStats& draw_stats);
 
-    NON_COPYABLE_NON_MOVABLE(SpriteBatch);
+    forbid_copy_and_move(SpriteBatch);
 
     virtual ~SpriteBatch() noexcept;
 
@@ -71,6 +70,8 @@ class SpriteBatch
                      const Color&                         color,
                      const std::optional<TextDecoration>& decoration);
 
+    void draw_text(const Text& text, const Vector2& position, const Color& color);
+
     void fill_rectangle(const Rectangle& rectangle,
                         const Color&     color,
                         float            rotation,
@@ -78,7 +79,7 @@ class SpriteBatch
 
     void end();
 
-    virtual void on_shader_destroyed(gsl::not_null<ShaderImpl*> shader);
+    virtual void on_shader_destroyed(ShaderImpl& shader);
 
     void release_resources();
 
@@ -103,32 +104,37 @@ class SpriteBatch
                               const Rectangle& texture_size_and_inverse,
                               bool             flip_image_up_down) const;
 
-    gsl::not_null<GraphicsDevice*> parent_device() const
+    auto parent_device() -> GraphicsDevice&
     {
         return m_parent_device;
     }
 
-    Matrix current_transformation() const
+    auto parent_device() const -> const GraphicsDevice&
+    {
+        return m_parent_device;
+    }
+
+    auto current_transformation() const -> Matrix
     {
         return m_transformation;
     }
 
-    const BlendState& current_blend_state() const
+    auto current_blend_state() const -> const BlendState&
     {
         return m_blend_state;
     }
 
-    const Sampler& current_sampler() const
+    auto current_sampler() const -> const Sampler&
     {
         return m_sampler;
     }
 
-    FrameStats& frame_stats()
+    auto frame_stats() -> FrameStats&
     {
-        return *m_frame_stats;
+        return m_frame_stats;
     }
 
-    const Shader& sprite_shader() const
+    auto sprite_shader() const -> const Shader&
     {
         return m_sprite_shader;
     }
@@ -140,7 +146,7 @@ class SpriteBatch
         Rectangle        dst;
         Rectangle        src;
         Color            color;
-        Vector2          origin{};
+        Vector2          origin;
         float            rotation{};
         SpriteFlip       flip{SpriteFlip::None};
         SpriteShaderKind shader_kind{SpriteShaderKind::Default};
@@ -157,15 +163,24 @@ class SpriteBatch
                               const Rectangle&      texture_size_and_inverse,
                               bool                  flip_image_up_down);
 
-    gsl::not_null<GraphicsDevice*> m_parent_device;
-    gsl::not_null<FrameStats*>     m_frame_stats;
-    std::vector<InternalSprite>    m_sprite_queue;
-    uint32_t                       m_vertex_buffer_position;
-    Image                          m_white_image;
-    Matrix                         m_transformation;
-    BlendState                     m_blend_state;
-    Shader                         m_sprite_shader;
-    Sampler                        m_sampler;
-    bool                           m_is_in_begin_end_pair{};
+    void do_draw_text(std::span<const PreshapedGlyph>     glyphs,
+                      std::span<const TextDecorationRect> decoration_rects,
+                      const Vector2&                      offset,
+                      const Color&                        color);
+
+    bool                 m_is_in_begin_end_pair{};
+    GraphicsDevice&      m_parent_device;
+    FrameStats&          m_frame_stats;
+    List<InternalSprite> m_sprite_queue;
+    uint32_t             m_vertex_buffer_position;
+    Image                m_white_image;
+    Matrix               m_transformation;
+    BlendState           m_blend_state;
+    Shader               m_sprite_shader;
+    Sampler              m_sampler;
+
+    // Used in draw_string() as temporary buffers for text shaping results.
+    List<PreshapedGlyph>     m_tmp_glyphs;
+    List<TextDecorationRect> m_tmp_decoration_rects;
 };
 } // namespace cer::details

@@ -6,9 +6,8 @@
 
 #include "shadercompiler/AST.hpp"
 #include "shadercompiler/Lexer.hpp"
-#include "util/InternalExport.hpp"
-#include "util/NonCopyable.hpp"
-#include "util/SmallVector.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <span>
 
 namespace cer::shadercompiler
@@ -50,99 +49,100 @@ class ParenExpr;
 class TernaryExpr;
 class CodeBlock;
 
-class CERLIB_API_INTERNAL Parser final
+class Parser final
 {
   public:
     explicit Parser(TypeCache& type_cache);
 
-    NON_COPYABLE_NON_MOVABLE(Parser);
+    forbid_copy_and_move(Parser);
 
     ~Parser() noexcept = default;
 
-    AST::DeclsType parse(std::span<const Token> tokens);
+    auto parse(std::span<const Token> tokens) -> AST::DeclsType;
 
   private:
-    std::unique_ptr<Decl> parse_decl_at_global_scope();
+    auto parse_decl_at_global_scope() -> std::unique_ptr<Decl>;
 
-    std::unique_ptr<Stmt> parse_stmt();
+    auto parse_stmt() -> std::unique_ptr<Stmt>;
 
-    std::unique_ptr<Expr> parse_expr(std::unique_ptr<Expr> lhs            = {},
-                                     int                   min_precedence = 0,
-                                     std::string_view      name           = std::string_view());
+    auto parse_expr(std::unique_ptr<Expr> lhs            = {},
+                    int                   min_precedence = 0,
+                    std::string_view      name = std::string_view()) -> std::unique_ptr<Expr>;
 
-    std::unique_ptr<Expr> parse_primary_expr();
+    auto parse_primary_expr() -> std::unique_ptr<Expr>;
 
-    std::unique_ptr<ShaderParamDecl> parse_shader_param(const SourceLocation& location,
-                                                        const Type&           return_type,
-                                                        std::string_view      name);
+    auto parse_shader_param(const SourceLocation& location,
+                            const Type&           return_type,
+                            std::string_view      name) -> std::unique_ptr<ShaderParamDecl>;
 
-    std::unique_ptr<FunctionDecl> parse_function(std::string_view      name,
-                                                 const SourceLocation& name_location,
-                                                 const Type&           return_type);
+    auto parse_function(std::string_view      name,
+                        const SourceLocation& name_location,
+                        const Type&           return_type) -> std::unique_ptr<FunctionDecl>;
 
-    std::unique_ptr<StructDecl> parse_struct();
+    auto parse_struct() -> std::unique_ptr<StructDecl>;
 
-    std::unique_ptr<StructFieldDecl> parse_struct_field_decl();
+    auto parse_struct_field_decl() -> std::unique_ptr<StructFieldDecl>;
 
-    std::unique_ptr<FunctionParamDecl> parse_function_param_decl();
+    auto parse_function_param_decl() -> std::unique_ptr<FunctionParamDecl>;
 
-    std::unique_ptr<CompoundStmt> parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs);
+    auto parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs) -> std::unique_ptr<CompoundStmt>;
 
-    std::unique_ptr<AssignmentStmt> parse_assignment_stmt(std::unique_ptr<Expr> lhs);
+    auto parse_assignment_stmt(std::unique_ptr<Expr> lhs) -> std::unique_ptr<AssignmentStmt>;
 
-    std::unique_ptr<ReturnStmt> parse_return_stmt();
+    auto parse_return_stmt() -> std::unique_ptr<ReturnStmt>;
 
-    std::unique_ptr<ForStmt> parse_for_stmt();
+    auto parse_for_stmt() -> std::unique_ptr<ForStmt>;
 
-    std::unique_ptr<IfStmt> parse_if_stmt(bool is_if);
+    auto parse_if_stmt(bool is_if) -> std::unique_ptr<IfStmt>;
 
-    std::unique_ptr<VarStmt> parse_var_stmt();
+    auto parse_var_stmt() -> std::unique_ptr<VarStmt>;
 
-    std::unique_ptr<RangeExpr> parse_range_expr();
+    auto parse_range_expr() -> std::unique_ptr<RangeExpr>;
 
-    std::unique_ptr<IntLiteralExpr> parse_int_literal_expr();
+    auto parse_int_literal_expr() -> std::unique_ptr<IntLiteralExpr>;
 
-    std::unique_ptr<BoolLiteralExpr> parse_bool_literal_expr();
+    auto parse_bool_literal_expr() -> std::unique_ptr<BoolLiteralExpr>;
 
-    std::unique_ptr<FloatLiteralExpr> parse_float_literal_expr();
+    auto parse_float_literal_expr() -> std::unique_ptr<FloatLiteralExpr>;
 
-    std::unique_ptr<UnaryOpExpr> parse_unary_op_expr();
+    auto parse_unary_op_expr() -> std::unique_ptr<UnaryOpExpr>;
 
-    std::unique_ptr<StructCtorArg> parse_struct_ctor_arg();
+    auto parse_struct_ctor_arg() -> std::unique_ptr<StructCtorArg>;
 
-    std::unique_ptr<SymAccessExpr> parse_sym_access_expr();
+    auto parse_sym_access_expr() -> std::unique_ptr<SymAccessExpr>;
 
-    std::unique_ptr<StructCtorCall> parse_struct_ctor_call(std::unique_ptr<Expr> callee);
+    auto parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<StructCtorCall>;
 
-    std::unique_ptr<FunctionCallExpr> parse_function_call(std::unique_ptr<Expr> callee);
+    auto parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<FunctionCallExpr>;
 
-    std::unique_ptr<ScientificIntLiteralExpr> parse_scientific_int_literal_expr();
+    auto parse_scientific_int_literal_expr() -> std::unique_ptr<ScientificIntLiteralExpr>;
 
-    std::unique_ptr<HexadecimalIntLiteralExpr> parse_hexadecimal_int_literal_expr();
+    auto parse_hexadecimal_int_literal_expr() -> std::unique_ptr<HexadecimalIntLiteralExpr>;
 
-    std::unique_ptr<ParenExpr> parse_paren_expr();
+    auto parse_paren_expr() -> std::unique_ptr<ParenExpr>;
 
-    std::unique_ptr<TernaryExpr> parse_ternary_expr(std::unique_ptr<Expr> condition_expr);
+    auto parse_ternary_expr(std::unique_ptr<Expr> condition_expr) -> std::unique_ptr<TernaryExpr>;
 
-    std::unique_ptr<CodeBlock> parse_code_block();
+    auto parse_code_block() -> std::unique_ptr<CodeBlock>;
 
-    const Type& parse_type();
+    auto parse_type() -> const Type&;
 
-    const Token& next_tk() const;
+    auto next_tk() const -> const Token&;
 
     void advance();
 
     void expect_identifier() const;
 
-    std::string_view consume_identifier();
+    auto consume_identifier() -> std::string_view;
 
-    bool consume_keyword(std::string_view str, bool must_exist);
+    auto consume_keyword(std::string_view str, bool must_exist) -> bool;
 
-    bool consume(TokenType type, bool must_exist, std::string_view msg = std::string_view());
+    auto consume(TokenType type, bool must_exist, std::string_view msg = std::string_view())
+        -> bool;
 
-    bool is_keyword(std::string_view str) const;
+    auto is_keyword(std::string_view str) const -> bool;
 
-    bool is_at_end() const;
+    auto is_at_end() const -> bool;
 
     void verify_not_eof(const SourceLocation& start_location) const;
 
@@ -150,15 +150,15 @@ class CERLIB_API_INTERNAL Parser final
     {
       public:
         using TokenIterator = std::span<const Token>::iterator;
-        using StackType     = SmallVector<TokenIterator, 4>;
+        using StackType     = List<TokenIterator, 4>;
 
         explicit TokenPusher(StackType& stack, TokenIterator tk);
 
-        NON_COPYABLE_NON_MOVABLE(TokenPusher);
+        forbid_copy_and_move(TokenPusher);
 
         ~TokenPusher() noexcept;
 
-        TokenIterator initial_tk() const;
+        auto initial_tk() const -> TokenIterator;
 
         void pop();
 

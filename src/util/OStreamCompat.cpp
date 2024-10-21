@@ -6,42 +6,42 @@
 #include "cerlib/ToString.hpp"
 #include <ostream>
 
-std::ostream& cer::operator<<(std::ostream& os, const Color& value)
+auto cer::operator<<(std::ostream& os, const Color& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, const Vector2& value)
+auto cer::operator<<(std::ostream& os, const Vector2& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, const Vector3& value)
+auto cer::operator<<(std::ostream& os, const Vector3& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, const Vector4& value)
+auto cer::operator<<(std::ostream& os, const Vector4& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, const Matrix& value)
+auto cer::operator<<(std::ostream& os, const Matrix& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, ImageFormat value)
+auto cer::operator<<(std::ostream& os, ImageFormat value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, const Image& value)
+auto cer::operator<<(std::ostream& os, const Image& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }
 
-std::ostream& cer::operator<<(std::ostream& os, const Rectangle& value)
+auto cer::operator<<(std::ostream& os, const Rectangle& value) -> std::ostream&
 {
     return os << std::to_string(value);
 }

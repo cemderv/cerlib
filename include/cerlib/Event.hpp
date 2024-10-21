@@ -24,7 +24,7 @@ enum class MouseButton;
 struct WindowShownEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -35,7 +35,7 @@ struct WindowShownEvent
 struct WindowHiddenEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -46,7 +46,7 @@ struct WindowHiddenEvent
 struct WindowMovedEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -57,7 +57,7 @@ struct WindowMovedEvent
 struct WindowResizedEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
     uint32_t new_width{};
     uint32_t new_height{};
 };
@@ -70,7 +70,7 @@ struct WindowResizedEvent
 struct WindowMinimizedEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -81,7 +81,7 @@ struct WindowMinimizedEvent
 struct WindowMaximizedEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -92,7 +92,7 @@ struct WindowMaximizedEvent
 struct WindowGotMouseFocusEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -103,7 +103,7 @@ struct WindowGotMouseFocusEvent
 struct WindowLostMouseFocusEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -114,7 +114,7 @@ struct WindowLostMouseFocusEvent
 struct WindowGotKeyboardFocusEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -125,7 +125,7 @@ struct WindowGotKeyboardFocusEvent
 struct WindowLostKeyboardFocusEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -136,7 +136,7 @@ struct WindowLostKeyboardFocusEvent
 struct WindowCloseEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
 };
 
 /**
@@ -147,7 +147,7 @@ struct WindowCloseEvent
 struct KeyPressEvent
 {
     uint64_t    timestamp{};
-    Window      window{};
+    Window      window;
     Key         key{};
     KeyModifier modifiers{};
     bool        is_repeat{};
@@ -161,7 +161,7 @@ struct KeyPressEvent
 struct KeyReleaseEvent
 {
     uint64_t    timestamp{};
-    Window      window{};
+    Window      window;
     Key         key{};
     KeyModifier modifiers{};
     bool        is_repeat{};
@@ -175,10 +175,10 @@ struct KeyReleaseEvent
 struct MouseMoveEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
     uint32_t id{};
-    Vector2  position{};
-    Vector2  delta{};
+    Vector2  position;
+    Vector2  delta;
 };
 
 /**
@@ -189,10 +189,10 @@ struct MouseMoveEvent
 struct MouseButtonPressEvent
 {
     uint64_t    timestamp{};
-    Window      window{};
+    Window      window;
     uint32_t    id{};
     MouseButton button{};
-    Vector2     position{};
+    Vector2     position;
 };
 
 /**
@@ -203,10 +203,10 @@ struct MouseButtonPressEvent
 struct MouseButtonReleaseEvent
 {
     uint64_t    timestamp{};
-    Window      window{};
+    Window      window;
     uint32_t    id{};
     MouseButton button{};
-    Vector2     position{};
+    Vector2     position;
 };
 
 /**
@@ -217,10 +217,10 @@ struct MouseButtonReleaseEvent
 struct MouseDoubleClickEvent
 {
     uint64_t    timestamp{};
-    Window      window{};
+    Window      window;
     uint32_t    id{};
     MouseButton button{};
-    Vector2     position{};
+    Vector2     position;
 };
 
 /**
@@ -231,10 +231,10 @@ struct MouseDoubleClickEvent
 struct MouseWheelEvent
 {
     uint64_t timestamp{};
-    Window   window{};
+    Window   window;
     uint32_t id{};
-    Vector2  position{};
-    Vector2  delta{};
+    Vector2  position;
+    Vector2  delta;
 };
 
 /**
@@ -259,11 +259,11 @@ struct TouchFingerEvent
 {
     TouchFingerEventType type{};
     uint64_t             timestamp{};
-    Window               window{};
+    Window               window;
     uint64_t             touch_id{};
     uint64_t             finger_id{};
-    Vector2              position{};
-    Vector2              delta{};
+    Vector2              position;
+    Vector2              delta;
     float                pressure{};
 };
 

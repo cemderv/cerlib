@@ -6,14 +6,12 @@
 
 #include "cerlib/Game.hpp"
 #include "cerlib/Vector2.hpp"
-#include "util/NonCopyable.hpp"
 #include "util/Object.hpp"
-#include "util/Util.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/List.hpp>
 #include <map>
-#include <memory>
 #include <span>
 #include <variant>
-#include <vector>
 
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
@@ -30,9 +28,13 @@ namespace cer
 class Window;
 }
 
-namespace cer::details
+namespace cer
 {
 class AudioDevice;
+}
+
+namespace cer::details
+{
 class GraphicsDevice;
 class ContentManager;
 class InputImpl;
@@ -82,15 +84,15 @@ class GameImpl final : public Object
 
     explicit GameImpl(bool enable_audio);
 
-    NON_COPYABLE_NON_MOVABLE(GameImpl);
+    forbid_copy_and_move(GameImpl);
 
     ~GameImpl() noexcept override;
 
     static void init_instance(bool enable_audio);
 
-    static GameImpl& instance();
+    static auto instance() -> GameImpl&;
 
-    static bool is_instance_initialized();
+    static auto is_instance_initialized() -> bool;
 
     static void destroy_instance();
 
@@ -108,33 +110,33 @@ class GameImpl final : public Object
 
     void set_event_func(const EventFunc& func);
 
-    ContentManager& content_manager();
+    auto content_manager() -> ContentManager&;
 
-    uint32_t display_count() const;
+    auto display_count() const -> uint32_t;
 
-    std::optional<DisplayMode> current_display_mode(uint32_t display_index) const;
+    auto current_display_mode(uint32_t display_index) const -> std::optional<DisplayMode>;
 
-    std::vector<DisplayMode> display_modes(uint32_t display_index) const;
+    auto display_modes(uint32_t display_index) const -> List<DisplayMode>;
 
-    float display_content_scale(uint32_t display_index) const;
+    auto display_content_scale(uint32_t display_index) const -> float;
 
-    DisplayOrientation display_orientation(uint32_t display_index) const;
+    auto display_orientation(uint32_t display_index) const -> DisplayOrientation;
 
-    Window keyboard_focused_window() const;
+    auto keyboard_focused_window() const -> Window;
 
-    Window mouse_focused_window() const;
+    auto mouse_focused_window() const -> Window;
 
-    bool is_audio_device_initialized() const;
+    auto is_audio_device_initialized() const -> bool;
 
-    GraphicsDevice& graphics_device();
+    auto graphics_device() -> GraphicsDevice&;
 
-    AudioDevice& audio_device();
+    auto audio_device() -> AudioDevice&;
 
     void ensure_graphics_device_initialized(WindowImpl& first_window);
 
-    std::span<WindowImpl* const> windows() const;
+    auto windows() const -> std::span<WindowImpl* const>;
 
-    std::vector<Gamepad> gamepads() const;
+    auto gamepads() const -> List<Gamepad>;
 
   private:
     void open_initial_gamepads();
@@ -143,7 +145,7 @@ class GameImpl final : public Object
 
     void create_graphics_device(WindowImpl& first_window);
 
-    bool tick();
+    auto tick() -> bool;
 
     void process_events();
 
@@ -159,14 +161,14 @@ class GameImpl final : public Object
 
     void notify_window_destroyed(WindowImpl* window);
 
-    Window find_window_by_sdl_window_id(Uint32 sdl_window_id) const;
+    auto find_window_by_sdl_window_id(Uint32 sdl_window_id) const -> Window;
 
-    WindowImpl* find_window_by_sdl_window(SDL_Window* sdl_window) const;
+    auto find_window_by_sdl_window(SDL_Window* sdl_window) const -> WindowImpl*;
 
     void raise_event(const Event& event);
 
-    std::ranges::borrowed_iterator_t<const std::vector<Gamepad>&> find_gamepad_by_sdl_joystick_id(
-        SDL_JoystickID sdl_joystick_id) const;
+    auto find_gamepad_by_sdl_joystick_id(SDL_JoystickID sdl_joystick_id) const
+        -> std::ranges::borrowed_iterator_t<const List<Gamepad>&>;
 
     bool       m_is_running{};
     bool       m_is_first_tick{true};
@@ -195,8 +197,8 @@ class GameImpl final : public Object
     std::unique_ptr<GraphicsDevice> m_graphics_device;
     std::unique_ptr<AudioDevice>    m_audio_device;
     std::unique_ptr<ContentManager> m_content_manager;
-    std::vector<WindowImpl*>        m_windows;
+    List<WindowImpl*>               m_windows;
     Vector2                         m_previous_mouse_position;
-    std::vector<Gamepad>            m_connected_gamepads;
+    List<Gamepad>                   m_connected_gamepads;
 };
 } // namespace cer::details

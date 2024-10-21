@@ -13,6 +13,7 @@ set(graphics_files
   Image.cpp
   ImageImpl.cpp
   ImageImpl.hpp
+  ParticleSystem.cpp
   Shader.cpp
   ShaderImpl.cpp
   ShaderImpl.hpp
@@ -21,5 +22,14 @@ set(graphics_files
   SpriteBatch.hpp
   Tessellation2D.cpp
   Tessellation2D.hpp
+  TextImpl.hpp
+  TextImpl.cpp
+  Text.cpp
   VertexElement.hpp
+  stb_image.hpp
+  stb_image.cpp
+  stb_truetype.hpp
+  stb_truetype.cpp
+  stb_image_write.hpp
+  stb_image_write.cpp
 )

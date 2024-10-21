@@ -7,12 +7,11 @@
 #include "DDS.hpp"
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
-#include "cerlib/Math.hpp"
 #include "contentmanagement/FileSystem.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include "util/InternalError.hpp"
+#include "graphics/ImageImpl.hpp"
+#include "util/narrow_cast.hpp"
 #include <cstddef>
-#include <gsl/narrow>
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -24,18 +23,14 @@
 #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
-#include <stb_image.h>
-
-#ifndef __ANDROID__
-#include <stb_image_resize2.h>
-#endif
+#include "graphics/stb_image.hpp"
 
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 
+#include "util/narrow_cast.hpp"
 #include <cassert>
-#include <gsl/util>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -43,22 +38,11 @@
 
 namespace cer::details
 {
-static const void* misc_image_data_upload(
-    const void*                                         base_image_data,
-    const SmallVector<std::unique_ptr<std::byte[]>, 4>& mipmap_datas,
-    [[maybe_unused]] uint32_t                           array_index,
-    uint32_t                                            mipmap)
+static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> memory)
+    -> std::unique_ptr<ImageImpl>
 {
-    assert(array_index == 0);
-    return mipmap == 0 ? base_image_data : mipmap_datas[mipmap - 1].get();
-}
-
-static gsl::owner<ImageImpl*> try_load_misc(GraphicsDevice&            device,
-                                            std::span<const std::byte> memory,
-                                            [[maybe_unused]] bool      generate_mipmaps)
-{
-    const bool is_hdr = stbi_is_hdr_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
-                                                gsl::narrow<int>(memory.size())) != 0;
+    const auto is_hdr = stbi_is_hdr_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
+                                                narrow<int>(memory.size())) != 0;
 
     int   width      = 0;
     int   height     = 0;
@@ -68,7 +52,7 @@ static gsl::owner<ImageImpl*> try_load_misc(GraphicsDevice&            device,
     if (is_hdr)
     {
         image_data = stbi_loadf_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
-                                            gsl::narrow<int>(memory.size()),
+                                            narrow<int>(memory.size()),
                                             &width,
                                             &height,
                                             &comp,
@@ -77,7 +61,7 @@ static gsl::owner<ImageImpl*> try_load_misc(GraphicsDevice&            device,
     else
     {
         image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
-                                           gsl::narrow<int>(memory.size()),
+                                           narrow<int>(memory.size()),
                                            &width,
                                            &height,
                                            &comp,
@@ -91,96 +75,48 @@ static gsl::owner<ImageImpl*> try_load_misc(GraphicsDevice&            device,
 
     if (width <= 0 || height <= 0 || comp <= 0)
     {
-        CER_THROW_RUNTIME_ERROR_STR("Failed to load the image (invalid extents/channels).");
+        throw std::runtime_error{"Failed to load the image (invalid extents/channels)."};
     }
 
-    const auto _ = gsl::finally([&] { stbi_image_free(image_data); });
-
-    uint32_t mipmap_count = 1;
-
-    // Contains data of additional mipmaps (m > 0)
-    SmallVector<std::unique_ptr<std::byte[]>, 4> mipmap_datas{};
-
-#ifndef __ANDROID__
-    if (generate_mipmaps && !is_hdr)
+    defer
     {
-        mipmap_count = max_mipmap_count_for_extent(min(width, height));
+        stbi_image_free(image_data);
+    };
 
-        uint32_t w = static_cast<uint32_t>(width);
-        uint32_t h = static_cast<uint32_t>(height);
+    const auto format = is_hdr ? ImageFormat::R32G32B32A32_Float : ImageFormat::R8G8B8A8_UNorm;
 
-        for (uint32_t i = 0; i < mipmap_count - 1; ++i)
-        {
-            const void* src_data = i == 0 ? image_data : mipmap_datas[i - 1].get();
-
-            const uint32_t output_width  = max(w >> 1, 1u);
-            const uint32_t output_height = max(h >> 1, 1u);
-
-            auto dst_data = std::make_unique<std::byte[]>(static_cast<size_t>(output_width) *
-                                                          static_cast<size_t>(output_height) * 4);
-
-            stbir_resize_uint8_srgb(static_cast<const stbi_uc*>(src_data),
-                                    static_cast<int>(w),
-                                    static_cast<int>(h),
-                                    0,
-                                    reinterpret_cast<stbi_uc*>(dst_data.get()),
-                                    static_cast<int>(output_width),
-                                    static_cast<int>(output_height),
-                                    0,
-                                    STBIR_RGBA);
-
-            mipmap_datas.push_back(std::move(dst_data));
-
-            w = output_width;
-            h = output_height;
-        }
-    }
-#endif
-
-    const ImageFormat format =
-        is_hdr ? ImageFormat::R32G32B32A32_Float : ImageFormat::R8G8B8A8_UNorm;
-
-    return device.create_image(width, height, format, mipmap_count, [&](uint32_t mipmap) {
-        return misc_image_data_upload(image_data, mipmap_datas, 0, mipmap);
-    });
+    return device.create_image(width, height, format, image_data);
 }
 } // namespace cer::details
 
-gsl::not_null<cer::details::ImageImpl*> cer::details::load_image(GraphicsDevice& device_impl,
-                                                                 std::span<const std::byte> memory,
-                                                                 bool generate_mipmaps)
+auto cer::details::load_image(GraphicsDevice& device_impl, std::span<const std::byte> memory)
+    -> std::unique_ptr<ImageImpl>
 {
-    log_verbose("Loading image from memory. Span is {} bytes, generate_mipmaps={}",
-                memory.size(),
-                generate_mipmaps);
+    log_verbose("Loading image from memory. Span is {} bytes", memory.size());
 
     // Try loading misc image first
 
-    if (const gsl::owner<ImageImpl*> image = try_load_misc(device_impl, memory, generate_mipmaps))
+    if (auto image = try_load_misc(device_impl, memory))
     {
-        return image; // NOLINT
+        return image;
     }
 
-    if (const std::optional<dds::DDSImage> maybe_dds_image = dds::load(memory))
+    if (const auto maybe_dds_image = dds::load(memory))
     {
-        const dds::DDSImage& dds_image = *maybe_dds_image;
+        const auto& dds_image    = *maybe_dds_image;
+        const auto& first_mipmap = dds_image.faces.front().mipmaps.front();
 
-        return device_impl.create_image(
-            dds_image.width,
-            dds_image.height,
-            dds_image.format,
-            gsl::narrow<uint32_t>(dds_image.faces.front().mipmaps.size()),
-            [&](uint32_t mipmap) { return dds_image_data_upload(dds_image, 0, mipmap); });
+        return device_impl.create_image(dds_image.width,
+                                        dds_image.height,
+                                        dds_image.format,
+                                        first_mipmap.data_span.data());
     }
 
-    CER_THROW_RUNTIME_ERROR_STR("Failed to load the image.");
+    throw std::runtime_error{"Failed to load the image (unknown image type)."};
 }
 
-gsl::not_null<cer::details::ImageImpl*> cer::details::load_image(GraphicsDevice&  device_impl,
-                                                                 std::string_view filename,
-                                                                 bool             generate_mipmaps)
+auto cer::details::load_image(GraphicsDevice& device_impl, std::string_view filename)
+    -> std::unique_ptr<ImageImpl>
 {
-    const std::vector<std::byte> file_data = filesystem::load_file_data_from_disk(filename);
-
-    return load_image(device_impl, file_data, generate_mipmaps);
+    return load_image(device_impl, filesystem::load_file_data_from_disk(filename));
 }

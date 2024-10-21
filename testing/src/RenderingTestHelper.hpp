@@ -5,7 +5,7 @@
 #pragma once
 
 #include "cerlib/Image.hpp"
-#include "util/NonCopyable.hpp"
+#include <cerlib/CopyMoveMacros.hpp>
 #include <functional>
 #include <string>
 
@@ -16,7 +16,7 @@ class RenderingTestHelper
 
     RenderingTestHelper(uint32_t width, uint32_t height, const cer::Window& window);
 
-    NON_COPYABLE_NON_MOVABLE(RenderingTestHelper);
+    forbid_copy_and_move(RenderingTestHelper);
 
     ~RenderingTestHelper() noexcept = default;
 
@@ -25,7 +25,7 @@ class RenderingTestHelper
     void generate_reference_image(std::string_view test_name, const RenderFunction& function);
 
   private:
-    std::string get_reference_image_filename(std::string_view test_name) const;
+    auto get_reference_image_filename(std::string_view test_name) const -> std::string;
 
     cer::Image m_canvas;
 };

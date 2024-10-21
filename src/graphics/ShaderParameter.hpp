@@ -37,34 +37,34 @@ class ShaderParameter final
     friend CBufferPacker;
 
   public:
-    static constexpr uint32_t array_element_base_alignment = 16;
+    static constexpr auto array_element_base_alignment = 16u;
 
-    std::string         name{};
+    std::string         name;
     ShaderParameterType type{};
     uint16_t            offset{};
     uint16_t            size_in_bytes{};
     uint16_t            array_size{};
     bool                is_image{};
-    Image               image{};
-    std::any            default_value{};
+    Image               image;
+    std::any            default_value;
 };
 
-static bool operator==(const ShaderParameter& lhs, const ShaderParameter& rhs)
+static auto operator==(const ShaderParameter& lhs, const ShaderParameter& rhs) -> bool
 {
     return lhs.name == rhs.name;
 }
 
-static bool operator==(const ShaderParameter& lhs, std::string_view rhs)
+static auto operator==(const ShaderParameter& lhs, std::string_view rhs) -> bool
 {
     return lhs.name == rhs;
 }
 
-static bool operator<(std::string_view name, const ShaderParameter& parameter)
+static auto operator<(std::string_view name, const ShaderParameter& parameter) -> bool
 {
     return parameter.name > name;
 }
 
-static bool operator<(const ShaderParameter& parameter, std::string_view name)
+static auto operator<(const ShaderParameter& parameter, std::string_view name) -> bool
 {
     return parameter.name < name;
 }

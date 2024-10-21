@@ -4,15 +4,12 @@
 
 #include "OpenGLPrerequisites.hpp"
 #include "cerlib/Image.hpp"
-#include "util/InternalError.hpp"
 
 void cer::details::verify_opengl_state_x()
 {
-    GLenum error = glGetError();
-
-    if (error != GL_NO_ERROR)
+    if (auto error = glGetError(); error != GL_NO_ERROR)
     {
-        std::string error_string;
+        auto error_string = std::string{};
 
         while (error != GL_NO_ERROR)
         {
@@ -23,11 +20,11 @@ void cer::details::verify_opengl_state_x()
 
         error_string.pop_back();
 
-        CER_THROW_RUNTIME_ERROR("OpenGL error(s) occurred: {}", error_string);
+        throw std::runtime_error{fmt::format("OpenGL error(s) occurred: {}", error_string)};
     }
 }
 
-cer::details::OpenGLFormatTriplet cer::details::convert_to_opengl_pixel_format(ImageFormat format)
+auto cer::details::convert_to_opengl_pixel_format(ImageFormat format) -> OpenGLFormatTriplet
 {
 #ifdef GL_RGBA8
     constexpr auto rgba8 = GL_RGBA8;
@@ -75,16 +72,19 @@ cer::details::OpenGLFormatTriplet cer::details::convert_to_opengl_pixel_format(I
                 .type            = GL_UNSIGNED_BYTE,
             };
 
-        default: CER_THROW_INTERNAL_ERROR("Unsupported texture format {}", int(format));
+        default:
+            throw std::runtime_error{fmt::format("Unsupported texture format {}", int(format))};
     }
 }
 
-int cer::details::compare_opengl_version_to_min_required_version(int major, int minor)
+auto cer::details::compare_opengl_version_to_min_required_version(int major, int minor) -> int
 {
-    const auto compare = [](int lhs, int rhs) { return lhs < rhs ? -1 : lhs > rhs ? 1 : 0; };
+    const auto compare = [](int lhs, int rhs) {
+        return lhs < rhs ? -1 : lhs > rhs ? 1 : 0;
+    };
 
-    constexpr int rhs_major = min_required_gl_major_version;
-    constexpr int rhs_minor = min_required_gl_minor_version;
+    constexpr auto rhs_major = min_required_gl_major_version;
+    constexpr auto rhs_minor = min_required_gl_minor_version;
 
     if (major != rhs_major)
     {
