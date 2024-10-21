@@ -43,7 +43,9 @@ def is_valid_entry(obj):
             'stb_truetype.cpp' not in key and
             'dr_impl.cpp' not in key and
             'stb_vorbis.cpp' not in key and
-            'BiQuadResonantFilter.cpp' not in key
+            'BiQuadResonantFilter.cpp' not in key and
+            'glad.cpp' not in key and
+            'imgui' not in key
             )
 
 

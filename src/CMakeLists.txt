@@ -148,6 +148,17 @@ set(src_sub_dirs
   util
 )
 
+if (CERLIB_ENABLE_IMGUI)
+  list(APPEND src_sub_dirs imgui)
+  target_compile_definitions(cerlib PRIVATE -DCERLIB_ENABLE_IMGUI)
+
+  # Provide the user access to the ImGui API.
+  target_include_directories(cerlib PUBLIC imgui)
+
+  # We provide a custom OpenGL loader, ImGui doesn't need its own.
+  target_compile_definitions(cerlib PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_CUSTOM)
+endif ()
+
 foreach (dir ${src_sub_dirs})
   include(${dir}/Files.cmake)
 
@@ -217,12 +228,6 @@ if (EMSCRIPTEN)
     "SHELL:-s FULL_ES3=1"
     "SHELL:-sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=[\"$autoResumeAudioContext\",\"$dynCall\"]"
   )
-endif ()
-
-if (CERLIB_ENABLE_IMGUI)
-  add_subdirectory(imgui)
-  target_link_libraries(cerlib PUBLIC cerlib_imgui)
-  target_compile_definitions(cerlib PRIVATE -DCERLIB_ENABLE_IMGUI)
 endif ()
 
 if (ANDROID)
