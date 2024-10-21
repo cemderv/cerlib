@@ -57,7 +57,7 @@ struct MyGame : cer::Game {
   }
 
   void load_content() override {
-    image = cer::load_image("MyImage.png");
+    image = cer::Image{"MyImage.png"};
   }
 
   bool update(const cer::GameTime& time) override {
@@ -133,7 +133,7 @@ cerlib has been tested and is confirmed to work with the following compilers:
 
 - MSVC 2022
 - Clang ≥ 16.0.6
-- GCC ≥ 13.3
+- GCC ≥ 11.4
 - Apple Clang ≥ 15
 
 ## Contributing and Feedback
