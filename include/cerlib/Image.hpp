@@ -88,17 +88,14 @@ class Image : public GraphicsResource
     explicit Image(std::span<const std::byte> memory);
 
     /**
-     * Loads a 2D image from a file.
-     * Supported file formats are:
-     *  - jpg, bmp, png, tga, gif, hdr, dds
+     * Lazily loads an Image object from the storage.
      *
-     * @param filename The data to load.
+     * @param asset_name The name of the image in the asset storage.
      *
-     * @attention This constructor is only available on desktop platforms.
-     * On non-desktop platforms, the cer::load_image() function must be used to load
-     * images. Calling this on non-desktop platforms will raise an error.
+     * @throw std::runtime_error If the asset does not exist or could not be read or
+     * loaded.
      */
-    explicit Image(std::string_view filename);
+    explicit Image(std::string_view asset_name);
 
     /**
      * Creates a 2D image to be used as a canvas.

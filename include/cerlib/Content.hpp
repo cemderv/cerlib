@@ -107,9 +107,9 @@ using CustomAssetLoadFunc = std::function<std::shared_ptr<Asset>(
  * @code{.cpp}
  * cer::set_asset_loading_prefix("MySpecialFolder/Folder2/");
  *
- * const auto image = cer::load_image("MyImage.png");
+ * const auto image = cer::Image{"MyImage.png"};
  *
- * # ^ Same as cer::load_image("MySpecialFolder/Folder2/MyImage.png")
+ * # ^ Same as cer::Image{"MySpecialFolder/Folder2/MyImage.png"}
  * @endcode
  *
  * @attention This affects how assets are cached. The content manager
@@ -126,55 +126,6 @@ void set_asset_loading_prefix(std::string_view prefix);
  * @ingroup Content
  */
 auto asset_loading_prefix() -> std::string;
-
-/**
- * Lazily loads an Image object from the storage.
- *
- * @param name The name of the asset in the storage.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-auto load_image(std::string_view name) -> Image;
-
-/**
- * Lazily loads a Shader object from the storage.
- *
- * @param name The name of the asset in the storage.
- * @param defines Reserved; currently has no effect.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-auto load_shader(std::string_view name, std::span<const std::string_view> defines = {}) -> Shader;
-
-/**
- * Lazily loads a Font object from the storage.
- *
- * @param name The name of the asset in the storage.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-auto load_font(std::string_view name) -> Font;
-
-/**
- * Lazily loads a Sound object from the storage.
- *
- * @param name The name of the asset in the storage.
- *
- * @throw std::runtime_error If the asset does not exist or could not be read or
- * loaded.
- *
- * @ingroup Content
- */
-auto load_sound(std::string_view name) -> Sound;
 
 /**
  * Registers a function as a custom asset loader for a specific type ID.

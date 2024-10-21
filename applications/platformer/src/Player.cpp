@@ -18,15 +18,16 @@ constexpr float jump_control_power   = 0.14f;
 
 Player::Player(Level* level, cer::Vector2 position)
     : m_level(level)
+    , m_idle_animation("sprites/player/idle.png", 1.0f, true)
+    , m_run_animation("sprites/player/run.png", 0.07f, true)
+    , m_jump_animation("sprites/player/jump.png", 0.06f, false)
+    , m_celebrate_animation("sprites/player/celebrate.png", 0.08f, false)
+    , m_die_animation("sprites/player/die.png", 0.1f, false)
+    , m_killed_sound("sounds/player_killed.wav")
+    , m_jump_sound("sounds/player_jump.wav")
+    , m_fall_sound("sounds/player_fall.wav")
     , m_position(position)
 {
-    // Load animated textures.
-    m_idle_animation      = {"sprites/player/idle.png", 1.0f, true};
-    m_run_animation       = {"sprites/player/run.png", 0.07f, true};
-    m_jump_animation      = {"sprites/player/jump.png", 0.06f, false};
-    m_celebrate_animation = {"sprites/player/celebrate.png", 0.08f, false};
-    m_die_animation       = {"sprites/player/die.png", 0.1f, false};
-
     // Calculate bounds within texture size.
     const auto  frame_width  = float(m_idle_animation.frame_width());
     const auto  frame_height = float(m_idle_animation.frame_height());
@@ -36,11 +37,6 @@ Player::Player(Level* level, cer::Vector2 position)
     const float top          = cer::round(frame_height - height);
 
     m_local_bounds = {left, top, width, height};
-
-    // Load sounds.
-    m_killed_sound = cer::load_sound("sounds/player_killed.wav");
-    m_jump_sound   = cer::load_sound("sounds/player_jump.wav");
-    m_fall_sound   = cer::load_sound("sounds/player_fall.wav");
 
     reset(position);
 }

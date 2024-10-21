@@ -31,6 +31,16 @@ class Font final
 
   public:
     /**
+     * Lazily loads a Font object from the storage.
+     *
+     * @param asset_name The name of the font in the asset storage.
+     *
+     * @throw std::runtime_error If the asset does not exist or could not be read or
+     * loaded.
+     */
+    explicit Font(std::string_view asset_name);
+
+    /**
      * Loads a font from memory.
      *
      * @param data he font data to load.

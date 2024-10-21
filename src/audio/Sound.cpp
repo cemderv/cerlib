@@ -6,6 +6,7 @@
 
 #include "AudioDevice.hpp"
 #include "SoundImpl.hpp"
+#include "contentmanagement/ContentManager.hpp"
 #include "game/GameImpl.hpp"
 #include <cerlib/Util2.hpp>
 
@@ -21,6 +22,13 @@ Sound::Sound(std::span<const std::byte> data)
     auto impl = std::make_unique<details::SoundImpl>(audio_device, data);
 
     set_impl(*this, impl.release());
+}
+
+Sound::Sound(std::string_view asset_name)
+    : m_impl(nullptr)
+{
+    auto& content = details::GameImpl::instance().content_manager();
+    *this         = content.load_sound(asset_name);
 }
 
 void Sound::stop()

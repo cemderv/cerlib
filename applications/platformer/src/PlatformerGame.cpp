@@ -34,11 +34,11 @@ void PlatformerGame::load_content()
 {
     m_hud_font = cer::Font::built_in();
 
-    m_win_overlay  = cer::load_image("overlays/you_win.png");
-    m_lose_overlay = cer::load_image("overlays/you_lose.png");
-    m_died_overlay = cer::load_image("overlays/you_died.png");
+    m_win_overlay  = cer::Image{"overlays/you_win.png"};
+    m_lose_overlay = cer::Image{"overlays/you_lose.png"};
+    m_died_overlay = cer::Image{"overlays/you_died.png"};
 
-    cer::SoundChannel music_channel = play_sound_in_background(cer::load_sound("sounds/music.mp3"));
+    cer::SoundChannel music_channel = cer::play_sound_in_background(cer::Sound{"sounds/music.mp3"});
 
     music_channel.set_looping(true);
 
