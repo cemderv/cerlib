@@ -57,8 +57,8 @@ using namespace std::string_view_literals;
 namespace cer::shadercompiler
 {
 static void add_struct_fields(
-    RefList<Decl, 132>&                                                       all,
-    List<std::unique_ptr<Decl>>&                                                    var,
+    RefList<Decl, 132>&                                                                    all,
+    List<std::unique_ptr<Decl>>&                                                           var,
     std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>> fields)
 {
     var.reserve(fields.size());

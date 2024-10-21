@@ -4,8 +4,8 @@
 
 #include "shadercompiler/Writer.hpp"
 
-#include <cassert>
 #include "util/narrow_cast.hpp"
+#include <cassert>
 
 namespace cer::shadercompiler
 {

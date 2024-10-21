@@ -78,7 +78,4 @@ class InternalError final : public std::exception
     }
 
 #define CER_THROW_NOT_IMPLEMENTED(feature_name)                                                    \
-    throw std::logic_error                                                                         \
-    {                                                                                              \
-        "The feature '" feature_name "' is not implemented yet."                                   \
-    }
+    throw std::logic_error{"The feature '" feature_name "' is not implemented yet."}

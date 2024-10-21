@@ -234,16 +234,16 @@ class FontImpl final : public Object, public Asset
 
     static void update_page_atlas_image(FontPage& page);
 
-    std::byte*                      m_font_data{};
-    bool                            m_owns_font_data{};
-    stbtt_fontinfo                  m_font_info{};
-    int                             m_ascent{};
-    int                             m_descent{};
-    int                             m_line_gap{};
-    RasterizedGlyphsMap             m_rasterized_glyphs;
-    List<FontPage>           m_pages;
-    List<FontPage>::iterator m_current_page_iterator;
-    std::unordered_set<uint32_t>    m_initialized_sizes;
-    std::unordered_set<size_t>      m_page_images_to_update;
+    std::byte*                   m_font_data{};
+    bool                         m_owns_font_data{};
+    stbtt_fontinfo               m_font_info{};
+    int                          m_ascent{};
+    int                          m_descent{};
+    int                          m_line_gap{};
+    RasterizedGlyphsMap          m_rasterized_glyphs;
+    List<FontPage>               m_pages;
+    List<FontPage>::iterator     m_current_page_iterator;
+    std::unordered_set<uint32_t> m_initialized_sizes;
+    std::unordered_set<size_t>   m_page_images_to_update;
 };
 } // namespace cer::details

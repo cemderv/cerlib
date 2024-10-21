@@ -46,8 +46,8 @@ GLSLShaderGenerator::GLSLShaderGenerator(bool is_gles)
     m_needs_float_literal_suffix = false;
 }
 
-auto GLSLShaderGenerator::do_generation(const SemaContext&                  context,
-                                        const FunctionDecl&                 entry_point,
+auto GLSLShaderGenerator::do_generation(const SemaContext&          context,
+                                        const FunctionDecl&         entry_point,
                                         const List<const Decl*, 8>& decls_to_generate)
     -> std::string
 {

@@ -114,7 +114,7 @@ void BiquadResonantFilterInstance::filter_channel(const FilterChannelArgs& args)
     {
         // Generate outputs by filtering inputs.
         const float x = args.buffer[c];
-        s.y2 = (m_a0 * x) + (m_a1 * s.x1) + (m_a2 * s.x2) - (m_b1 * s.y1) - (m_b2 * s.y2);
+        s.y2          = (m_a0 * x) + (m_a1 * s.x1) + (m_a2 * s.x2) - (m_b1 * s.y1) - (m_b2 * s.y2);
         args.buffer[c] += (s.y2 - args.buffer[c]) * m_params[Wet];
 
         ++c;

@@ -169,12 +169,12 @@ class ForLoopVariableDecl final : public Decl
 class FunctionDecl final : public Decl
 {
   public:
-    explicit FunctionDecl(const SourceLocation&                               location,
-                          std::string_view                                    name,
+    explicit FunctionDecl(const SourceLocation&                       location,
+                          std::string_view                            name,
                           List<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                          const Type&                                         return_type,
-                          std::unique_ptr<CodeBlock>                          body,
-                          bool is_struct_ctor = false);
+                          const Type&                                 return_type,
+                          std::unique_ptr<CodeBlock>                  body,
+                          bool                                        is_struct_ctor = false);
 
     forbid_copy_and_move(FunctionDecl);
 
@@ -203,10 +203,10 @@ class FunctionDecl final : public Decl
     auto is_struct_ctor() const -> bool;
 
   private:
-    FunctionKind                                        m_kind;
+    FunctionKind                                m_kind;
     List<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
-    std::unique_ptr<CodeBlock>                          m_body;
-    bool                                                m_is_struct_ctor;
+    std::unique_ptr<CodeBlock>                  m_body;
+    bool                                        m_is_struct_ctor;
 };
 
 /**

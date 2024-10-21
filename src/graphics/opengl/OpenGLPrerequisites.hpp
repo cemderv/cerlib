@@ -27,9 +27,13 @@ constexpr GLsizei shader_log_max_length = 256;
 #define USE_OPENGL_DEBUGGING
 #endif
 
+#ifdef USE_OPENGL_DEBUGGING
 #define GL_CALL(expr)                                                                              \
     expr;                                                                                          \
     verify_opengl_state()
+#else
+#define GL_CALL(expr) expr
+#endif
 
 struct OpenGLFeatures
 {

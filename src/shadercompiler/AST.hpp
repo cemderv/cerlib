@@ -66,9 +66,9 @@ class AST final
     auto is_verified() const -> bool;
 
   private:
-    std::string                      m_filename;
-    UniquePtrList<Decl, 8> m_decls;
-    const StringViewUnorderedSet*    m_user_specified_defines;
-    bool                             m_is_verified{};
+    std::string                   m_filename;
+    UniquePtrList<Decl, 8>        m_decls;
+    const StringViewUnorderedSet* m_user_specified_defines;
+    bool                          m_is_verified{};
 };
 } // namespace cer::shadercompiler
