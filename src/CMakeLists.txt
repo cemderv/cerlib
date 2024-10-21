@@ -119,6 +119,8 @@ target_precompile_headers(cerlib PRIVATE
   util/narrow_cast.hpp
 )
 
+set_source_files_properties(graphics/stb_image.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+
 if (EMSCRIPTEN)
   target_precompile_headers(cerlib PRIVATE <SDL2/SDL.h>)
 else ()
