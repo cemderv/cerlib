@@ -14,6 +14,8 @@ jobs:
     name: Linux build (GCC)
     strategy:
       fail-fast: true
+      matrix:
+        cmconfig: [ Debug, Release ]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -51,16 +53,18 @@ jobs:
           -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config Release --parallel
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}/build/bin/Release/cerlibTests
+        run: ${{github.workspace}}/build/bin/${{matrix.cmconfig}}/cerlibTests
 
         
   build-linux-clang:
     name: Linux build (Clang)
     strategy:
       fail-fast: true
+      matrix:
+        cmconfig: [ Debug, Release ]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -103,10 +107,10 @@ jobs:
         run: python3 cppcheck.py ${{github.workspace}}/build
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config Release --parallel
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}/build/bin/Release/cerlibTests
+        run: ${{github.workspace}}/build/bin/${{matrix.cmconfig}}/cerlibTests
 
 
   build-windows:
@@ -115,6 +119,7 @@ jobs:
       fail-fast: true
       matrix:
         os: [ 2022 ]
+        cmconfig: [ Debug, Release ]
     runs-on: windows-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
@@ -142,10 +147,10 @@ jobs:
           cmake -B ${{github.workspace}}/build -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config Release --parallel
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}\build\bin\Release\cerlibTests.exe
+        run: ${{github.workspace}}\build\bin\${{matrix.cmconfig}}\cerlibTests.exe
 
 
   build-macos:
@@ -153,7 +158,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ 13, 14 ]
+        os: [ 13, 14, 15 ]
+        cmconfig: [ Debug, Release ]
     runs-on: macos-${{matrix.os}}
     steps:
       - uses: actions/checkout@v4
@@ -185,8 +191,8 @@ jobs:
           cmake -B ${{github.workspace}}/build -G "Ninja Multi-Config" -DCERLIB_ENABLE_TESTS=ON -DCERLIB_ENABLE_RENDERING_TESTS=OFF
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build --config Release --parallel
+        run: cmake --build ${{github.workspace}}/build --config ${{matrix.cmconfig}} --parallel
 
       - name: Run Tests
-        run: ${{github.workspace}}/build/bin/Release/cerlibTests
+        run: ${{github.workspace}}/build/bin/${{matrix.cmconfig}}/cerlibTests
         
