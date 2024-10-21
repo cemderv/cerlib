@@ -6,7 +6,7 @@
 static Tile load_tile(std::string_view name, TileCollision collision)
 {
     return {
-        .image     = cer::load_image(cer_fmt::format("tiles/{}.png", name)),
+        .image     = cer::Image{cer_fmt::format("tiles/{}.png", name)},
         .collision = collision,
     };
 }
@@ -67,10 +67,10 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
         const std::string image_name =
             cer_fmt::format("backgrounds/layer{}_{}.png", i, segment_index);
 
-        m_layers[i] = cer::load_image(image_name);
+        m_layers[i] = cer::Image{image_name};
     }
 
-    m_exit_reached_sound = cer::load_sound("sounds/exit_reached.wav");
+    m_exit_reached_sound = cer::Sound{"sounds/exit_reached.wav"};
 }
 
 Tile Level::load_tile(char type, int x, int y)

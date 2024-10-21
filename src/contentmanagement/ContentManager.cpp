@@ -158,14 +158,15 @@ static auto build_shader_key(std::string_view asset_name, std::span<const std::s
     return key;
 }
 
-auto ContentManager::load_shader(std::string_view name, std::span<const std::string_view> defines)
+auto ContentManager::load_shader(std::string_view                                   name,
+                                 [[maybe_unused]] std::span<const std::string_view> defines)
     -> Shader
 {
     const auto key = std::string{build_shader_key(name, defines)};
 
-    return lazy_load<Shader, ShaderImpl>(key, name, [defines](std::string_view full_name) {
+    return lazy_load<Shader, ShaderImpl>(key, name, [](std::string_view full_name) {
         const auto data   = filesystem::load_asset_data(full_name);
-        auto       shader = Shader{full_name, data.as_string_view(), defines};
+        auto       shader = Shader{full_name, data.as_string_view()};
         shader.set_name(full_name);
         return shader;
     });

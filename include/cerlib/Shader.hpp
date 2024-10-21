@@ -37,11 +37,18 @@ class Shader final : public GraphicsResource
      * @param name The name of the shader. Used for tracking the object as well as error
      * reporting. Does not have to be related to the code.
      * @param source_code The code of the shader.
-     * @param defines Reserved; currently has no effect.
      */
-    explicit Shader(std::string_view                  name,
-                    std::string_view                  source_code,
-                    std::span<const std::string_view> defines = {});
+    explicit Shader(std::string_view name, std::string_view source_code);
+
+    /**
+     * Lazily loads a Shader object from the storage.
+     *
+     * @param asset_name The name of the shader in the asset storage.
+     *
+     * @throw std::runtime_error If the asset does not exist or could not be read or
+     * loaded.
+     */
+    explicit Shader(std::string_view asset_name);
 
     /** Sets the value of a float parameter. */
     void set_value(std::string_view name, float value);

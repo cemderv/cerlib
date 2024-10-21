@@ -12,10 +12,10 @@ Gem::Gem(Level* level, cer::Vector2 position, bool is_super_gem)
     , m_base_position(position)
     , m_is_super_gem(is_super_gem)
 {
-    m_texture         = cer::load_image("sprites/gem.png");
+    m_texture         = cer::Image{"sprites/gem.png"};
     m_origin          = m_texture.size() / 2;
-    m_collected_sound = is_super_gem ? cer::load_sound("sounds/super_gem_collected.wav")
-                                     : cer::load_sound("sounds/gem_collected.wav");
+    m_collected_sound = is_super_gem ? cer::Sound{"sounds/super_gem_collected.wav"}
+                                     : cer::Sound{"sounds/gem_collected.wav"};
 }
 
 void Gem::update(cer::GameTime time)
