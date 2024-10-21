@@ -15,11 +15,11 @@
 #ifdef CERLIB_ENABLE_IMGUI
 #  include <imgui.h>
 #  ifdef __EMSCRIPTEN__
-#    include <backends/imgui_impl_sdl2.h>
+#    include <impl/imgui_impl_sdl2.hpp>
 #  else
-#    include <backends/imgui_impl_sdl3.h>
+#    include <impl/imgui_impl_sdl3.hpp>
 #  endif
-#  include <backends/imgui_impl_opengl3.h>
+#  include <impl/imgui_impl_opengl3.hpp>
 #endif
 // clang-format on
 

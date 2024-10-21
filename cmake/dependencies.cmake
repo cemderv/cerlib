@@ -23,16 +23,6 @@ CPMAddPackage(
 
 set_target_properties(fmt PROPERTIES FOLDER "Dependencies")
 
-# ImGui
-if (CERLIB_ENABLE_IMGUI)
-  CPMAddPackage(
-    NAME ImGui
-    GITHUB_REPOSITORY ocornut/imgui
-    VERSION 1.91.3
-    GIT_SHALLOW
-  )
-endif ()
-
 if (NOT EMSCRIPTEN)
   set(sdl_version "3.1.3")
 
