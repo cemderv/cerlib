@@ -9,40 +9,76 @@
 
 namespace cer
 {
+/**
+ * @ingroup Graphics
+ */
 struct ParticleBoxFillShape
 {
-    float width  = 1.0f;
+    /** */
+    float width = 1.0f;
+
+    /** */
     float height = 1.0f;
 };
 
+/**
+ * @ingroup Graphics
+ */
 struct ParticleBoxShape
 {
-    float width  = 1.0f;
+    /** */
+    float width = 1.0f;
+
+    /** */
     float height = 1.0f;
 };
 
+/**
+ * @ingroup Graphics
+ */
 struct ParticleCircleShape
 {
-    float radius         = 1.0f;
-    bool  should_radiate = false;
+    /** */
+    float radius = 1.0f;
+
+    /** */
+    bool should_radiate = false;
 };
 
+/**
+ * @ingroup Graphics
+ */
 struct ParticlePointShape
 {
 };
 
+/**
+ * @ingroup Graphics
+ */
 struct ParticleRingShape
 {
-    float radius         = 1.0f;
-    bool  should_radiate = false;
+    /** */
+    float radius = 1.0f;
+
+    /** */
+    bool should_radiate = false;
 };
 
+/**
+ * @ingroup Graphics
+ */
 struct ParticleSprayShape
 {
+    /** */
     Vector2 direction;
-    float   spread = 1.0f;
+
+    /** */
+    float spread = 1.0f;
 };
 
+/**
+ * @ingroup Graphics
+ */
 using ParticleEmitterShape = std::variant<ParticleBoxFillShape,
                                           ParticleBoxShape,
                                           ParticleCircleShape,

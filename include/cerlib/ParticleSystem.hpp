@@ -28,6 +28,8 @@ class GraphicsDevice;
  * - Create it.
  * - Call the `update` method with each game update. This advances the particle simulation.
  * - Call `cer::draw_particles` to draw all of the system's particles.
+ *
+ * @ingroup Graphics
  */
 class ParticleSystem
 {

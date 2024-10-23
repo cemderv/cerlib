@@ -54,16 +54,22 @@ namespace cer
 {
 /**
  * Represents a closed interval of floating-point values.
+ *
+ * @ingroup Math
  */
 using FloatInterval = details::IntervalType<float>;
 
 /**
  * Represents a closed interval of integer values.
+ *
+ * @ingroup Math
  */
 using IntInterval = details::IntervalType<int32_t>;
 
 /**
  * Represents a closed interval of unsigned integer values.
+ *
+ * @ingroup Math
  */
 using UIntInterval = details::IntervalType<uint32_t>;
 } // namespace cer

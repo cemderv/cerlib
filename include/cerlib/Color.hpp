@@ -63,6 +63,8 @@ struct Color
 
 /**
  * Represents a closed interval of color values.
+ *
+ * @ingroup Math
  */
 using ColorInterval = details::IntervalType<Color>;
 

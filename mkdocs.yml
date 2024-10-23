@@ -1,0 +1,132 @@
+site_name: cerlib
+site_url: https://cerlib.org
+site_description: cerlib is a lightweight 2D game development library for modern C++.
+repo_url: https://github.com/cemderv/cerlib
+copyright: Copyright &copy; 2024 Cem Dervis
+
+nav:
+  - Home: index.md
+  - getting-started.md
+  - contributing.md
+  - platformer-demo.md
+  - Game:
+    - game/content-management.md
+    - game/timing.md
+    - game/logging.md
+    # - game/event-handling.md
+    # - game/window-management.md
+    # - game/custom-assets.md
+    # - game/display-management.md
+  - Graphics:
+    - graphics/drawing-sprites.md
+    - graphics/drawing-text.md
+    - graphics/handling-text.md
+    - graphics/imgui.md
+    # - graphics/particles.md
+    # - graphics/alpha-blending.md
+    - graphics/samplers.md
+    - graphics/transformations.md
+    - graphics/shading-language.md
+    - graphics/custom-shaders.md
+    # - graphics/offscreen-drawing.md
+  - Input:
+    - input/handling-input.md
+  - Audio:
+    - audio/playing-sounds.md
+    # - audio/filters.md
+  - Deployment:
+    - deployment/deploying-to-android.md
+    - deployment/deploying-to-web.md
+  - API Reference: api/
+  - imprint.md
+
+plugins:
+  - glightbox
+  # - projects
+  # - optimize
+  - offline
+  - privacy:
+      cache: true
+  - search
+
+theme:
+  name: material
+  logo: img/cerlib-logo.svg
+  favicon: img/favicon-32x32.png
+  font:
+    text: Roboto
+    code: Roboto Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: white
+      accent: teal
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+      primary: black
+      accent: teal
+
+  icon:
+    repo: fontawesome/brands/github
+    annotation: material/plus-circle
+      
+  features:
+    - content.code.copy
+    - content.code.annotate
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.tracking
+
+markdown_extensions:
+  - def_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      use_pygments: true
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - attr_list
+  - md_in_html
+
+extra:
+  social:
+    - icon: octicons/mail-16
+      link: mailto:cem@dervis.de
+    - icon: fontawesome/brands/github
+      link: https://github.com/cemderv/cerlib
+  version:
+    provider: mike
+
+extra_css:
+  - stylesheets/extra.css
+  - stylesheets/doxide.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

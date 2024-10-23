@@ -94,11 +94,20 @@ enum class Comparison
  */
 struct Sampler
 {
-    ImageFilter        filter             = ImageFilter::Linear;
-    ImageAddressMode   address_u          = ImageAddressMode::ClampToEdgeTexels;
-    ImageAddressMode   address_v          = ImageAddressMode::ClampToEdgeTexels;
-    Comparison         texture_comparison = Comparison::Never;
-    SamplerBorderColor border_color       = SamplerBorderColor::OpaqueBlack;
+    /** */
+    ImageFilter filter = ImageFilter::Linear;
+
+    /** */
+    ImageAddressMode address_u = ImageAddressMode::ClampToEdgeTexels;
+
+    /** */
+    ImageAddressMode address_v = ImageAddressMode::ClampToEdgeTexels;
+
+    /** */
+    Comparison texture_comparison = Comparison::Never;
+
+    /** */
+    SamplerBorderColor border_color = SamplerBorderColor::OpaqueBlack;
 
     /** Default comparison */
     auto operator==(const Sampler&) const -> bool = default;
@@ -107,24 +116,28 @@ struct Sampler
     auto operator!=(const Sampler&) const -> bool = default;
 };
 
+/** */
 static constexpr auto point_repeat = Sampler{
     .filter    = ImageFilter::Point,
     .address_u = ImageAddressMode::Repeat,
     .address_v = ImageAddressMode::Repeat,
 };
 
+/** */
 static constexpr auto point_clamp = Sampler{
     .filter    = ImageFilter::Point,
     .address_u = ImageAddressMode::ClampToEdgeTexels,
     .address_v = ImageAddressMode::ClampToEdgeTexels,
 };
 
+/** */
 static constexpr auto linear_repeat = Sampler{
     .filter    = ImageFilter::Linear,
     .address_u = ImageAddressMode::Repeat,
     .address_v = ImageAddressMode::Repeat,
 };
 
+/** */
 static constexpr auto linear_clamp = Sampler{
     .filter    = ImageFilter::Linear,
     .address_u = ImageAddressMode::ClampToEdgeTexels,

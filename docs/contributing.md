@@ -1,17 +1,21 @@
-# Contributing to cerlib
+---
+icon: material/account-group
+---
+
+# Contributing
 
 Thanks for your interest in contributing to cerlib!
 
 cerlib development happens on [GitHub](https://github.com/cemderv/cerlib).
 
-The website is [https://cerlib.org](https://cerlib.org).
+The homepage is [https://cerlib.org](https://cerlib.org).
 
 ## How to build
 
 cerlib requires:
 
-- A C++ compiler that implements the C++20 standard or newer.
-  - Please see the [README](README.md) for a list of supported compilers.
+- A C++ compiler that implements the C++ 20 standard or newer.
+  - Please see [Home](index.md) for a list of supported compilers.
 - [CMake](https://cerlib.org) 3.22 or newer
 
 Clone the repository or your fork of it:
@@ -24,11 +28,12 @@ cd cerlib
 The easiest way to start development is to open the cerlib folder in any C++ editor or IDE that
 supports a CMake workflow, such as:
 
-- [CLion](https://www.jetbrains.com/clion/)
-- [Visual Studio](https://visualstudio.microsoft.com/)
-- [Visual Studio Code](https://code.visualstudio.com/) with C++ extensions and a C++ toolchain
-- [Qt Creator](https://github.com/qt-creator/qt-creator)
-- [Xcode](https://developer.apple.com/xcode/)
+* [CLion](https://www.jetbrains.com/clion/)
+* [Visual Studio](https://visualstudio.microsoft.com/)
+* [Visual Studio Code](https://code.visualstudio.com/) with C++ extensions and a C++ toolchain
+    * See [Getting Started](getting-started.md)
+* [Qt Creator](https://github.com/qt-creator/qt-creator)
+* [Xcode](https://developer.apple.com/xcode/)
 
 Alternatively, you can configure and build via the command line:
 
@@ -36,8 +41,8 @@ Alternatively, you can configure and build via the command line:
 cmake --workflow --preset dev
 ```
 
-> [!NOTE]  
-> CMake workflow presets require version 3.25 or newer.
+!!! note
+    CMake workflow presets require version 3.25 or newer.
 
 If you have an older version that does not support workflow presets,
 you can configure and build separately:
@@ -71,9 +76,9 @@ folder in your editor / IDE directly.
 If you want to report a bug or request a feature, [create a new issue](https://github.com/cemderv/cerlib/issues).
 
 For other kinds of feedback, you may contact the developers directly via:
-- [Discussions](https://github.com/cemderv/cerlib/discussions)
-- [Contact form](https://cerlib.org/contact)
-- [Email](mailto:support@cerlib.org) 
+
+* [Discussions](https://github.com/cemderv/cerlib/discussions)
+* [Email](mailto:cem@dervis.de) 
 
 ## C++
 

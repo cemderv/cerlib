@@ -29,6 +29,8 @@ namespace cer
  *
  * For modifiers that modify already emitted particles, see
  * the ParticleModifier type and the `modifiers` field of ParticleEmitter.
+ *
+ * @ingroup Graphics
  */
 struct ParticleEmissionParams
 {
@@ -62,6 +64,8 @@ struct ParticleEmissionParams
  * for managing them.
  *
  * Particles are managed and emitted using a ParticleSystem.
+ *
+ * @ingroup Graphics
  */
 struct ParticleEmitter
 {

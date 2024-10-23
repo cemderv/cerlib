@@ -73,14 +73,29 @@ struct Sprite
     /** Default comparison */
     auto operator!=(const Sprite&) const -> bool = default;
 
-    Image                    image{};
-    Rectangle                dst_rect{};
-    std::optional<Rectangle> src_rect{};
-    Color                    color{white};
-    float                    rotation{};
-    Vector2                  origin{};
-    Vector2                  scale{1.0f, 1.0f};
-    SpriteFlip               flip{SpriteFlip::None};
+    /** The image of the sprite. */
+    Image image = {};
+
+    /** The destination area of the sprite, in pixels. */
+    Rectangle dst_rect = {};
+
+    /** The image coordinates of the sprite, in pixels. */
+    std::optional<Rectangle> src_rect = {};
+
+    /** The multiplicative color of the sprite. */
+    Color color = white;
+
+    /** The rotation of the sprite, in radians. */
+    float rotation = 0.0f;
+
+    /** The top-left origin of the sprite, in pixels. */
+    Vector2 origin = {};
+
+    /** The scaling factor of the sprite. */
+    Vector2 scale = {1.0f, 1.0f};
+
+    /** Flip flags of the sprite. */
+    SpriteFlip flip = SpriteFlip::None;
 };
 
 /**
