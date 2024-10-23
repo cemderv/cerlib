@@ -126,7 +126,7 @@ class ParticleSystem
         List<Particle>  particle_buffer;
         size_t          active_particle_count   = 0;
         float           time_since_last_reclaim = 0.0f;
-    } s_;
+    };
 
     void reclaim_expired_particles(EmitterData& emitter);
 
