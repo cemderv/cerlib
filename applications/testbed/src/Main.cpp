@@ -2,8 +2,6 @@
 #include <cerlib/Main.hpp>
 #include <imgui.h>
 
-using namespace std::chrono_literals;
-
 class Testbed : public cer::Game
 {
   public:

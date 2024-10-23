@@ -16,3 +16,5 @@ venv/
 site/
 include/cerlib/Version.hpp
 .idea/misc.xml
+.cache/
+docs/api/

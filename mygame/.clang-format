@@ -1,5 +1,5 @@
 ---
-BasedOnStyle: LLVM
+BasedOnStyle: Microsoft
 AlignAfterOpenBracket: Align
 AlignConsecutiveMacros: 'true'
 AlignConsecutiveDeclarations: 'true'
@@ -12,8 +12,8 @@ AllowShortBlocksOnASingleLine: 'false'
 AllowShortCaseLabelsOnASingleLine: 'true'
 AllowShortFunctionsOnASingleLine: 'false'
 AllowShortIfStatementsOnASingleLine: 'false'
-AllowShortLambdasOnASingleLine: 'true'
-AllowShortLoopsOnASingleLine: 'true'
+AllowShortLambdasOnASingleLine: 'false'
+AllowShortLoopsOnASingleLine: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: 'false'
@@ -26,10 +26,10 @@ BreakBeforeBraces: Custom
 BraceWrapping:
   BeforeElse: true
 
-ColumnLimit: '120'
+ColumnLimit: '100'
 DerivePointerAlignment: 'false'
 DisableFormat: 'false'
-IndentWidth: '2'
+IndentWidth: '4'
 PointerAlignment: Left
 ReflowComments: 'true'
 SortUsingDeclarations: 'true'
@@ -42,9 +42,10 @@ SpacesInParentheses: 'false'
 SpacesInSquareBrackets: 'false'
 SortIncludes: 'true'
 Standard: Cpp11
-TabWidth: '2'
+TabWidth: '4'
 UseTab: Never
 MaxEmptyLinesToKeep: 2
-NamespaceIndentation: All
+NamespaceIndentation: None
 IndentCaseLabels: true
+
 ...

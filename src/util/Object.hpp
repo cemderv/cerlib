@@ -112,16 +112,16 @@
 #endif
 
 #define DECLARE_THIS_IMPL                                                                          \
-    const auto impl = this -> impl();                                                              \
+    const auto impl = this->impl();                                                                \
     VERIFY_IMPL_ACCESS
 
 #define DECLARE_THIS_IMPL_OR_RETURN                                                                \
-    const auto impl = this -> impl();                                                              \
+    const auto impl = this->impl();                                                                \
     if (!impl)                                                                                     \
         return;
 
 #define DECLARE_THIS_IMPL_OR_RETURN_VALUE(value)                                                   \
-    const auto impl = this -> impl();                                                              \
+    const auto impl = this->impl();                                                                \
     if (!impl)                                                                                     \
         return value;
 

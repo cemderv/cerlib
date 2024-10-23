@@ -15,16 +15,33 @@ namespace cer
  * Particles are never used directly by the user.
  * They are instead created and managed by a particle system,
  * which is what the user typically wants.
+ *
+ * @ingroup Graphics
  */
 struct Particle
 {
-    float   inception = 0.0f;
-    float   age       = 0.0f;
+    /** */
+    float inception = 0.0f;
+
+    /** */
+    float age = 0.0f;
+
+    /** */
     Vector2 position;
+
+    /** */
     Vector2 velocity;
-    Color   color;
-    float   scale    = 0.0f;
-    float   rotation = 0.0f;
-    float   mass     = 0.0f;
+
+    /** */
+    Color color;
+
+    /** */
+    float scale = 0.0f;
+
+    /** */
+    float rotation = 0.0f;
+
+    /** */
+    float mass = 0.0f;
 };
 } // namespace cer

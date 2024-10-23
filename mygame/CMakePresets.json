@@ -34,18 +34,21 @@
       "name": "wasm-dev",
       "displayName": "Build the game for WebAssembly in debug mode",
       "inherits": "dev",
+      "binaryDir": "${sourceDir}/wasm-dev/",
       "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
     },
     {
       "name": "wasm",
       "displayName": "Build the game for WebAssembly in release mode",
       "inherits": "release",
+      "binaryDir": "${sourceDir}/wasm/",
       "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
     },
     {
       "name": "vs2022",
       "displayName": "Configure the game for development with Visual Studio 2022",
       "inherits": "default",
+      "binaryDir": "${sourceDir}/vs2022/",
       "generator": "Visual Studio 17 2022",
       "condition": {
         "type": "equals",
@@ -57,6 +60,7 @@
       "name": "xcode",
       "displayName": "Configure the game for development with Xcode",
       "inherits": "default",
+      "binaryDir": "${sourceDir}/xcode/",
       "generator": "Xcode",
       "condition": {
         "type": "equals",
@@ -139,6 +143,19 @@
         {
           "type": "build",
           "name": "wasm"
+        }
+      ]
+    },
+    {
+      "name": "xcode",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "xcode"
+        },
+        {
+          "type": "build",
+          "name": "xcode"
         }
       ]
     }
