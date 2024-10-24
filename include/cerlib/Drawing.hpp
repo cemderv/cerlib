@@ -277,6 +277,8 @@ void draw_string(std::string_view                     text,
  * @param text The text object to draw.
  * @param position The top-left position of the text.
  * @param color The color of the text.
+ *
+ * @ingroup Graphics
  */
 void draw_text(const Text& text, Vector2 position, const Color& color = white);
 

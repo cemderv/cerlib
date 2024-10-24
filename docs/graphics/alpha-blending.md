@@ -8,3 +8,5 @@ In this case, the window's background color is the _destination_ color, while th
 _source_ color.
 
 The blending process is performed for each pixel of the sprite.
+
+_More information will follow soon_

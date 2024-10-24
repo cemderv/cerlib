@@ -1,19 +1,15 @@
 ---
-title: "cerlib: 2D game development library for modern C++"
+title: "cerlib: 2D game library for modern C++"
 icon: material/home-outline
 decription: cerlib is a lightweight 2D game development library for modern C++.
-hide:
-  toc: true
 ---
 
-# cerlib
+# Home
 
 ![img](img/LogoWide.webp#only-light){ width="300" }
 ![img](img/LogoWideDark.webp#only-dark){ width="300" }
 
-#
-
-#### A lightweight library for easy 2D game development using C++ 20 and newer.
+#### A lightweight library for 2D game development using modern C++
 
 cerlib focuses on a simple design and at the same time offers you the possibility to design your game architecture your way.
 
@@ -23,91 +19,82 @@ cerlib focuses on a simple design and at the same time offers you the possibilit
 
 ## Features
 
----
-
-:fontawesome-solid-dove:{.feature} **Open Source**
-
-* _Permissive Apache 2.0 license with no royalties attached_
-
----
-
-:material-linux:{.feature} **Cross-platform**
-
-* _Runs on multiple platforms, including :fontawesome-brands-windows:, :material-apple:, :material-linux:, :material-android: and :simple-webassembly:_
-
----
-
-:fontawesome-solid-gears:{.feature} **App framework**
-
-* _Based on latest SDL3_
-
----
-
-:material-image:{.feature} **Efficient sprite and UTF-8 text rendering**
-
-* _Utilizing the platform's native graphics API and GPU_
-
----
-
-:material-brush:{.feature} **Custom sprite shading**
-
-* _Simple and safe shading language that transpiles to native shading languages_
-
----
-
-:material-square-root:{.feature} **Integrated math library**
-
-* _From colors to vectors to matrices_
-
----
-
-:material-volume-medium:{.feature} **Audio playback**
-
-* _Including faders and channels for playback control_
-
----
-
-:material-package-variant:{.feature} **Content management system**
-
-* _Images: .png, .jpg, .bmp, .dds, .hdr, .tga, .psd, .gif_
-* _Fonts: .ttf, .otf_
-* _Sounds: .wav, .mp3, .ogg, .flac_
-
----
-
-:material-star-shooting:{.feature} **Particle systems**
-
-* _Customizable behaviors via emitters, modifiers and shapes_
-
----
-
-:material-view-grid-outline:{.feature} **First-class support for [ImGui](https://github.com/ocornut/imgui)**
-
-* _Automatically available in your game, simply `#!cpp #include <imgui.h>` and use it_
-
----
-
-:material-bug:{.feature} **Compatible with graphics debuggers such as [RenderDoc](https://renderdoc.org)**
-
-* _For in-depth frame analysis_
-
----
+<div class="grid cards" markdown>
 
 
-## What it does **not** provide
+-   :fontawesome-solid-dove:{.feature} __Open Source__
 
-- A full-fledged 2D game engine
-- A level editor
-- An entity-component-system or any kind of scene representation
-- A physics API
-- A networking API (candidate for future versions)
-- 3D rendering (candidate for future versions)
+    ---
 
----
+    Permissive Apache 2.0 license with no royalties attached
 
-In short, cerlib lets you define your game architecture however you desire.
-It does not impose a strict model on the game's code.
-It provides every audiovisual aspect necessary to comfortably make a 2D game.
+    [:octicons-arrow-right-24: GitHub Repository](https://github.com/cemderv/cerlib)
+
+-   :material-linux:{.feature} __Cross-platform__
+
+    ---
+
+    Runs on multiple platforms, including
+ 
+    :fontawesome-brands-windows:, :material-apple:, :material-linux:, :material-android:
+    and :simple-webassembly: WebAssembly
+
+-   :fontawesome-solid-gears:{.feature} __App framework__
+
+    ---
+
+    Based on latest SDL3, with an easy-to-use input handling API, window management and event handling
+
+-   :material-image:{.feature} __Efficient sprite and UTF-8 text rendering__
+ 
+    ---
+
+    Utilizing the platform's native graphics API and GPU
+ 
+-   :material-brush:{.feature} __Custom sprite shading__
+
+    ---
+
+    Simple and safe shading language that transpiles to native shading languages
+
+-   :material-square-root:{.feature} __Integrated math library__
+
+    ---
+
+    From colors to vectors to matrices
+ 
+-   :material-volume-medium:{.feature} __Audio playback__
+
+    ---
+
+    Including faders and channels for playback control
+
+-   :material-package-variant:{.feature} __Content management__
+
+    ---
+
+    Load common formats such as .png, .jpg, .bmp, .dds, .ttf, .wav, .mp3, .ogg, .flac
+    and many more
+
+-   :material-star-shooting:{.feature} __Particle systems__
+
+    ---
+
+    Customizable behaviors via emitters, modifiers and shapes
+
+-   :material-view-grid-outline:{.feature} __First-class support for [ImGui](https://github.com/ocornut/imgui)__
+
+    ---
+
+    Automatically available in your game, simply `#!cpp #include <imgui.h>` and use it
+
+-   :material-bug:{.feature} __Graphics debugger support__
+
+    ---
+
+    Use [RenderDoc](https://renderdoc.org) for in-depth frame analysis and shader debugging
+
+</div>
 
 ---
 
@@ -121,22 +108,22 @@ struct MyGame : Game
 {
     void load_content() override
     {
-      image = Image{"MyImage.png"};
+        image = Image{"MyImage.png"};
     }
 
     bool update(const GameTime& time) override
     {
-      // Update game logic. Use the time parameter as a reference point for
-      // how much time has passed since the last update:
-      // ...
-      return true;
+        // Update game logic. Use the time parameter as a reference point for
+        // how much time has passed since the last update:
+        // ...
+        return true;
     }
 
     void draw(const Window& window) override
     {
-      // Draw game content into 'window':
-      // ...
-      draw_sprite(image, {100, 200}, white);
+        // Draw game content into 'window':
+        // ...
+        draw_sprite(image, {100, 200}, white);
     }
 
     Window window = Window{"My Game Window"};
@@ -152,6 +139,21 @@ int main() {
 ## Getting Started
 
 For a detailed introduction, please visit [Getting Started](getting-started.md).
+
+## What it does **not** provide
+
+- A full-fledged 2D game engine
+- A level editor
+- An entity-component-system or any kind of scene representation
+- A physics API
+- A networking API (candidate for future versions)
+- 3D rendering (candidate for future versions)
+
+---
+
+In short, cerlib lets you define your game architecture however you desire.
+It does not impose a strict model on the game's code.
+It provides every audiovisual aspect necessary to comfortably make a 2D game.
 
 ## Platform Support
 

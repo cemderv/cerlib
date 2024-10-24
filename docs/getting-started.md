@@ -66,11 +66,12 @@ Please ensure that the following tools and packages are installed on your corres
                      wayland-protocols-devel extra-cmake-modules
     ```
 
-Finally, clone the cerlib Git repository:
+---
+
+Clone the cerlib repository:
 
 ```bash
 git clone https://github.com/cemderv/cerlib
-cd cerlib
 ```
 
 This is all there is to set up cerlib.
@@ -93,33 +94,29 @@ Let's have a look at `MyGame.hpp`:
 ```cpp
 #include <cerlib.hpp>
 
-struct MyGame : cer::Game {
-  MyGame()
-  {
-    window = cer::Window{"My Game Window"};
-  }
+struct MyGame : cer::Game
+{
+    void load_content() override
+    {
+        // Load the game's initial assets
+    }
 
-  void load_content() override
-  {
-    // Load the game's initial assets
-  }
+    bool update(const cer::GameTime& time) override
+    {
+        // Update game logic. Use the time parameter as a reference point for
+        // how much time has passed since the last update:
+        // ...
 
-  bool update([[maybe_unused]] const cer::GameTime& time) override
-  {
-    // Update game logic. Use the time parameter as a reference point for
-    // how much time has passed since the last update:
-    // ...
+        return true;
+    }
 
-    return true;
-  }
+    void draw(const cer::Window& window) override
+    {
+        // Draw game content into window:
+        // ...
+    }
 
-  void draw([[maybe_unused]] const cer::Window& window) override
-  {
-    // Draw game content into window:
-    // ...
-  }
-
-  cer::Window window;
+    cer::Window window = cer::Window{"My Game Window"};
 };
 ```
 

@@ -36,3 +36,6 @@ This is a port of the [XNA Platformer Starter Kit](https://github.com/SimonDarks
 | Jump              | ++space++                         |
 
 _(Sorry, this demo is not yet made for mobile devices :fontawesome-solid-face-sad-tear:)_
+
+!!! note
+    If the audio keeps playing after you leave this page, please refresh the website.

@@ -2,7 +2,7 @@
 
 <img src="https://github.com/cemderv/cerlib/blob/main/misc/cerlib-logo-startpage.png?raw=true" width="300">
 
-#### cerlib is an easy-to-use 2D game library for C++.
+#### A lightweight library for 2D game development using modern C++.
 
 - [Homepage](https://cerlib.org)
 - [Getting Started](https://cerlib.org/getting-started.html)

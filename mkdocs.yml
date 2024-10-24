@@ -10,33 +10,33 @@ nav:
   - contributing.md
   - platformer-demo.md
   - Game:
-    - game/content-management.md
-    - game/timing.md
-    - game/logging.md
+      - game/content-management.md
+      - game/timing.md
+      - game/logging.md
     # - game/event-handling.md
     # - game/window-management.md
     # - game/custom-assets.md
     # - game/display-management.md
   - Graphics:
-    - graphics/drawing-sprites.md
-    - graphics/drawing-text.md
-    - graphics/handling-text.md
-    - graphics/imgui.md
-    # - graphics/particles.md
-    # - graphics/alpha-blending.md
-    - graphics/samplers.md
-    - graphics/transformations.md
-    - graphics/shading-language.md
-    - graphics/custom-shaders.md
+      - graphics/drawing-sprites.md
+      - graphics/drawing-text.md
+      - graphics/handling-text.md
+      - graphics/imgui.md
+      # - graphics/particles.md
+      - graphics/alpha-blending.md
+      - graphics/samplers.md
+      - graphics/transformations.md
+      - graphics/shading-language.md
+      - graphics/custom-shaders.md
     # - graphics/offscreen-drawing.md
   - Input:
-    - input/handling-input.md
+      - input/handling-input.md
   - Audio:
-    - audio/playing-sounds.md
+      - audio/playing-sounds.md
     # - audio/filters.md
   - Deployment:
-    - deployment/deploying-to-android.md
-    - deployment/deploying-to-web.md
+      - deployment/deploying-to-android.md
+      - deployment/deploying-to-web.md
   - API Reference: api/
   - imprint.md
 
@@ -54,8 +54,8 @@ theme:
   logo: img/cerlib-logo.svg
   favicon: img/favicon-32x32.png
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: PT Sans
+    code: Ubuntu Mono
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -76,7 +76,7 @@ theme:
   icon:
     repo: fontawesome/brands/github
     annotation: material/plus-circle
-      
+
   features:
     - content.code.copy
     - content.code.annotate
