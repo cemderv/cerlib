@@ -16,8 +16,6 @@ static void open_cerlib_api(sol::state& l);
 LuaStateImpl::LuaStateImpl([[maybe_unused]] LuaLibraries libraries_to_open,
                            const List<LuaScript>&        scripts_to_run)
 {
-    // m_lua_state.open_libraries();
-
     m_lua_state.open_libraries(sol::lib::base);
     m_lua_state.open_libraries(sol::lib::coroutine);
     m_lua_state.open_libraries(sol::lib::string);
@@ -56,20 +54,20 @@ auto LuaStateImpl::variable(std::string_view name) const -> std::optional<LuaVal
 
     if (lua_isnumber(l, -1) != 0)
     {
-        const auto num = lua_tonumber(l, -1);
-        return LuaValue{double(num)};
+        const auto result = lua_tonumber(l, -1);
+        return LuaValue{double(result)};
     }
 
     if (lua_isboolean(l, -1) != 0)
     {
-        const auto val = lua_toboolean(l, -1);
-        return LuaValue{val != 0};
+        const auto result = lua_toboolean(l, -1);
+        return LuaValue{result != 0};
     }
 
     if (lua_isstring(l, -1) != 0)
     {
-        const auto str = lua_tostring(l, -1);
-        return LuaValue{std::string{str}};
+        const auto result = lua_tostring(l, -1);
+        return LuaValue{std::string{result}};
     }
 
     return std::nullopt;

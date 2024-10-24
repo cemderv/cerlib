@@ -7,6 +7,11 @@
 #define lstrlib_c
 #define LUA_LIB
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4310)
+#endif
+
 #include "lprefix.h"
 
 
