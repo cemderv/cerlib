@@ -4,7 +4,7 @@ icon: material/home-outline
 decription: cerlib is a lightweight 2D game development library for modern C++.
 ---
 
-# Home
+# cerlib
 
 ![img](img/LogoWide.webp#only-light){ width="300" }
 ![img](img/LogoWideDark.webp#only-dark){ width="300" }
