@@ -207,5 +207,66 @@ function(cerlib_add_game)
     find_library(android_library android REQUIRED)
     target_link_libraries(${target_name} PRIVATE ${android_library})
     target_sources(${target_name} PRIVATE ${main_activity_setup_file})
+
+    target_precompile_headers(${target_name} PRIVATE
+      <algorithm>
+      <memory>
+      <optional>
+      <ranges>
+      <string>
+      <string_view>
+      <unordered_map>
+      <unordered_set>
+      <variant>
+      <vector>
+      <cerlib/Audio.hpp>
+      <cerlib/BlendState.hpp>
+      <cerlib/Circle.hpp>
+      <cerlib/Color.hpp>
+      <cerlib/Content.hpp>
+      <cerlib/Defer.hpp>
+      <cerlib/Drawing.hpp>
+      <cerlib/Event.hpp>
+      <cerlib/Font.hpp>
+      <cerlib/Formatters.hpp>
+      <cerlib/Game.hpp>
+      <cerlib/Gamepad.hpp>
+      <cerlib/GraphicsResource.hpp>
+      <cerlib/HashMap.hpp>
+      <cerlib/HashSet.hpp>
+      <cerlib/Hashing.hpp>
+      <cerlib/Image.hpp>
+      <cerlib/Input.hpp>
+      <cerlib/Interval.hpp>
+      <cerlib/Key.hpp>
+      <cerlib/KeyModifier.hpp>
+      <cerlib/List.hpp>
+      <cerlib/Logging.hpp>
+      <cerlib/Math.hpp>
+      <cerlib/Matrix.hpp>
+      <cerlib/MouseButton.hpp>
+      <cerlib/OStreamCompat.hpp>
+      <cerlib/Option.hpp>
+      <cerlib/Particle.hpp>
+      <cerlib/ParticleEmitter.hpp>
+      <cerlib/ParticleModifier.hpp>
+      <cerlib/ParticleSystem.hpp>
+      <cerlib/Rectangle.hpp>
+      <cerlib/Sampler.hpp>
+      <cerlib/Shader.hpp>
+      <cerlib/Sound.hpp>
+      <cerlib/SoundChannel.hpp>
+      <cerlib/SoundTypes.hpp>
+      <cerlib/String.hpp>
+      <cerlib/Text.hpp>
+      <cerlib/ToString.hpp>
+      <cerlib/Tween.hpp>
+      <cerlib/Util.hpp>
+      <cerlib/Variant.hpp>
+      <cerlib/Vector2.hpp>
+      <cerlib/Vector3.hpp>
+      <cerlib/Vector4.hpp>
+      <cerlib/Window.hpp>
+    )
   endif ()
 endfunction()
