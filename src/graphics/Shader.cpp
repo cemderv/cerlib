@@ -131,49 +131,49 @@ void Shader::set_value(std::string_view name, const Image& image)
     impl->update_parameter_image(name, image);
 }
 
-auto Shader::float_value(std::string_view name) const -> std::optional<float>
+auto Shader::float_value(std::string_view name) const -> Option<float>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<float>(name, details::ShaderParameterType::Float);
 }
 
-auto Shader::int_value(std::string_view name) const -> std::optional<int32_t>
+auto Shader::int_value(std::string_view name) const -> Option<int32_t>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<int32_t>(name, details::ShaderParameterType::Int);
 }
 
-auto Shader::bool_value(std::string_view name) const -> std::optional<bool>
+auto Shader::bool_value(std::string_view name) const -> Option<bool>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<bool>(name, details::ShaderParameterType::Bool);
 }
 
-auto Shader::vector2_value(std::string_view name) const -> std::optional<Vector2>
+auto Shader::vector2_value(std::string_view name) const -> Option<Vector2>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Vector2>(name, details::ShaderParameterType::Vector2);
 }
 
-auto Shader::vector3_value(std::string_view name) const -> std::optional<Vector3>
+auto Shader::vector3_value(std::string_view name) const -> Option<Vector3>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Vector3>(name, details::ShaderParameterType::Vector3);
 }
 
-auto Shader::vector4_value(std::string_view name) const -> std::optional<Vector4>
+auto Shader::vector4_value(std::string_view name) const -> Option<Vector4>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Vector4>(name, details::ShaderParameterType::Vector4);
 }
 
-auto Shader::matrix_value(std::string_view name) const -> std::optional<Matrix>
+auto Shader::matrix_value(std::string_view name) const -> Option<Matrix>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Matrix>(name, details::ShaderParameterType::Matrix);
 }
 
-auto Shader::image_value(std::string_view name) const -> std::optional<Image>
+auto Shader::image_value(std::string_view name) const -> Option<Image>
 {
     DECLARE_SHADER_IMPL;
     return impl->read_parameter_data<Image>(name, details::ShaderParameterType::Image);

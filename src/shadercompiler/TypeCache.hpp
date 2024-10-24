@@ -6,7 +6,7 @@
 
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
-#include <memory>
+#include <cerlib/SmartPointers.hpp>
 
 namespace cer::shadercompiler
 {
@@ -30,7 +30,7 @@ class TypeCache final
 
     auto create_array_type(const SourceLocation& location,
                            std::string_view      element_type_name,
-                           std::unique_ptr<Expr> size_expr) -> ArrayType&;
+                           UniquePtr<Expr>       size_expr) -> ArrayType&;
 
     auto create_unresolved_type(const SourceLocation& location, std::string_view name)
         -> UnresolvedType&;

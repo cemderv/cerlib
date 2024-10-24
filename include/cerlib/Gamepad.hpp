@@ -4,11 +4,11 @@
 
 #pragma once
 
+#include <cerlib/Option.hpp>
 #include <cerlib/SmallDataArray.hpp>
 #include <cerlib/Vector2.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
 #include <chrono>
-#include <optional>
 
 namespace cer
 {
@@ -174,7 +174,7 @@ class Gamepad final
     /**
      * Gets the serial number of the gamepad, if available.
      */
-    auto serial_number() const -> std::optional<std::string_view>;
+    auto serial_number() const -> Option<std::string_view>;
 
     /**
      * Gets the normalized value of a specific axis on the gamepad.
@@ -206,7 +206,7 @@ class Gamepad final
      *
      * @param sensor The sensor to query.
      */
-    auto sensor_data(GamepadSensorType sensor) const -> std::optional<SmallDataArray<float, 16>>;
+    auto sensor_data(GamepadSensorType sensor) const -> Option<SmallDataArray<float, 16>>;
 
     /**
      * Gets the data rate (number of events per second) of a specific sensor on the gamepad.
@@ -221,7 +221,7 @@ class Gamepad final
      * @return A InputHandle_t that can be used with the Steam Input API:
      * https://partner.steamgames.com/doc/api/ISteamInput
      */
-    auto steam_handle() const -> std::optional<uint64_t>;
+    auto steam_handle() const -> Option<uint64_t>;
 
     /**
      * Gets the number of touchpads available on the gamepad.
@@ -241,7 +241,7 @@ class Gamepad final
     /**
      * Gets the type of the gamepad.
      */
-    auto type() const -> std::optional<GamepadType>;
+    auto type() const -> Option<GamepadType>;
 
     /**
      * If supported by the gamepad, changes its LED color.

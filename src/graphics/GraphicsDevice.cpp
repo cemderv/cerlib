@@ -208,7 +208,7 @@ static auto to_parameter_type(const shadercompiler::Type& type) -> ShaderParamet
 auto GraphicsDevice::demand_create_shader(std::string_view                  name,
                                           std::string_view                  source_code,
                                           std::span<const std::string_view> defines)
-    -> std::unique_ptr<ShaderImpl>
+    -> UniquePtr<ShaderImpl>
 {
     auto tokens = List<shadercompiler::Token>{};
     do_lexing(source_code, name, true, tokens);
@@ -308,7 +308,7 @@ auto GraphicsDevice::demand_create_shader(std::string_view                  name
         }
 
         parameters.push_back(ShaderParameter{
-            .name          = std::string{param.name()},
+            .name          = String{param.name()},
             .type          = type,
             .offset        = /*offset will be determined later:*/ 0,
             .size_in_bytes = size_in_bytes,
@@ -445,12 +445,12 @@ void GraphicsDevice::draw_sprite(const Sprite& sprite)
     m_sprite_batch->draw_sprite(sprite, SpriteBatch::SpriteShaderKind::Default);
 }
 
-void GraphicsDevice::draw_string(std::string_view                     text,
-                                 const Font&                          font,
-                                 uint32_t                             font_size,
-                                 const Vector2&                       position,
-                                 const Color&                         color,
-                                 const std::optional<TextDecoration>& decoration)
+void GraphicsDevice::draw_string(std::string_view              text,
+                                 const Font&                   font,
+                                 uint32_t                      font_size,
+                                 const Vector2&                position,
+                                 const Color&                  color,
+                                 const Option<TextDecoration>& decoration)
 {
     ensure_category(Category::SpriteBatch);
     m_sprite_batch->draw_string(text, font, font_size, position, color, decoration);
@@ -581,7 +581,7 @@ auto GraphicsDevice::current_canvas_size() const -> Vector2
     return m_viewport.size();
 }
 
-void GraphicsDevice::post_init(std::unique_ptr<SpriteBatch> sprite_batch)
+void GraphicsDevice::post_init(UniquePtr<SpriteBatch> sprite_batch)
 {
     assert(sprite_batch);
 

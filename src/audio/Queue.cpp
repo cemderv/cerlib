@@ -69,7 +69,7 @@ auto QueueInstance::has_ended() -> bool
     return loop_count != 0 && m_parent->m_count == 0;
 }
 
-auto Queue::create_instance() -> std::shared_ptr<AudioSourceInstance>
+auto Queue::create_instance() -> SharedPtr<AudioSourceInstance>
 {
     if (m_instance)
     {

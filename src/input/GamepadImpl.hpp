@@ -41,24 +41,24 @@ class GamepadImpl final : public Object
 
     auto name() const -> std::string_view;
 
-    auto serial_number() const -> std::optional<std::string_view>;
+    auto serial_number() const -> Option<std::string_view>;
 
     auto axis_value(GamepadAxis axis) const -> double;
 
     auto is_button_down(GamepadButton button) const -> bool;
 
-    auto sensor_data(GamepadSensorType sensor) const -> std::optional<SmallDataArray<float, 16>>;
+    auto sensor_data(GamepadSensorType sensor) const -> Option<SmallDataArray<float, 16>>;
 
     auto sensor_data_rate(GamepadSensorType sensor) const -> float;
 
-    auto steam_handle() const -> std::optional<uint64_t>;
+    auto steam_handle() const -> Option<uint64_t>;
 
     auto touchpad_count() const -> uint32_t;
 
     auto touchpad_finger_data(uint32_t touchpad_index) const
         -> SmallDataArray<GamepadTouchpadFingerData, 8>;
 
-    auto type() const -> std::optional<GamepadType>;
+    auto type() const -> Option<GamepadType>;
 
     auto set_led_color(const Color& color) -> bool;
 

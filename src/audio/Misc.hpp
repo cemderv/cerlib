@@ -52,9 +52,9 @@ class AlignedFloatBuffer
     auto operator[](size_t index) const -> const float&;
 
   private:
-    float*                           m_aligned_ptr = nullptr; // aligned pointer
-    std::unique_ptr<unsigned char[]> m_data;
-    size_t                           m_count = 0; // size of buffer (w/out padding)
+    float*                     m_aligned_ptr = nullptr; // aligned pointer
+    UniquePtr<unsigned char[]> m_data;
+    size_t                     m_count = 0; // size of buffer (w/out padding)
 };
 
 // Lightweight class that handles small aligned buffer to support vectorized operations

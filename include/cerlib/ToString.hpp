@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include <cerlib/String.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
-#include <string>
 
 namespace cer
 {

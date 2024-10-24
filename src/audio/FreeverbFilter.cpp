@@ -485,7 +485,7 @@ void FreeverbFilterInstance::filter(const FilterArgs& args)
     m_model->process(args.buffer, args.samples, args.buffer_size);
 }
 
-auto FreeverbFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto FreeverbFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<FreeverbFilterInstance>(this);
 }

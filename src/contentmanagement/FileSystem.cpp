@@ -9,10 +9,10 @@
 #include "util/narrow_cast.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cerlib/Option.hpp>
+#include <cerlib/String.hpp>
 #include <cstring>
 #include <fstream>
-#include <optional>
-#include <string_view>
 
 #ifdef CERLIB_ENABLE_TESTS
 #include "graphics/stb_image.hpp"
@@ -43,14 +43,14 @@ void set_android_asset_manager([[maybe_unused]] void* asset_manager)
 }
 } // namespace cer::details
 
-static std::string s_file_loading_root_directory;
+static cer::String s_file_loading_root_directory;
 
 auto cer::filesystem::set_file_loading_root_directory(std::string_view prefix) -> void
 {
     s_file_loading_root_directory = prefix;
 }
 
-auto cer::filesystem::filename_extension(std::string_view filename) -> std::string
+auto cer::filesystem::filename_extension(std::string_view filename) -> String
 {
     if (const size_t dot_idx = filename.rfind('.'); dot_idx != std::string_view::npos)
     {
@@ -142,17 +142,17 @@ struct MemoryStream
 
 // #endif
 
-auto cer::filesystem::filename_without_extension(std::string_view filename) -> std::string
+auto cer::filesystem::filename_without_extension(std::string_view filename) -> String
 {
     if (const auto dot_idx = filename.rfind('.'); dot_idx != std::string_view::npos)
     {
-        return std::string{filename.substr(0, dot_idx)};
+        return String{filename.substr(0, dot_idx)};
     }
 
-    return std::string{filename};
+    return String{filename};
 }
 
-static void clean_path(std::string& str, std::optional<bool> with_ending_slash)
+static void clean_path(cer::String& str, cer::Option<bool> with_ending_slash)
 {
     std::ranges::replace(str.begin(), str.end(), '\\', '/');
 
@@ -179,16 +179,16 @@ static void clean_path(std::string& str, std::optional<bool> with_ending_slash)
 
     auto idx = str.find("../");
 
-    while (idx != std::string::npos)
+    while (idx != cer::String::npos)
     {
         const auto idx_of_previous = str.rfind('/', idx);
-        if (idx_of_previous == std::string::npos)
+        if (idx_of_previous == cer::String::npos)
         {
             break;
         }
 
         const auto idx_of_previous2 = str.rfind('/', idx_of_previous - 1);
-        if (idx_of_previous2 == std::string::npos)
+        if (idx_of_previous2 == cer::String::npos)
         {
             break;
         }
@@ -201,12 +201,12 @@ static void clean_path(std::string& str, std::optional<bool> with_ending_slash)
     }
 }
 
-auto cer::filesystem::parent_directory(std::string_view filename) -> std::string
+auto cer::filesystem::parent_directory(std::string_view filename) -> String
 {
-    auto result = std::string{filename};
+    auto result = String{filename};
     clean_path(result, {});
 
-    if (const auto idx_of_last_slash = result.rfind('/'); idx_of_last_slash != std::string::npos)
+    if (const auto idx_of_last_slash = result.rfind('/'); idx_of_last_slash != String::npos)
     {
         result.erase(idx_of_last_slash + 1);
     }
@@ -214,12 +214,12 @@ auto cer::filesystem::parent_directory(std::string_view filename) -> std::string
     return result;
 }
 
-auto cer::filesystem::combine_paths(std::string_view path1, std::string_view path2) -> std::string
+auto cer::filesystem::combine_paths(std::string_view path1, std::string_view path2) -> String
 {
-    auto first = std::string{path1};
+    auto first = String{path1};
     clean_path(first, true);
 
-    auto second = std::string{path2};
+    auto second = String{path2};
     clean_path(second, {});
 
     return first + second;
@@ -229,7 +229,7 @@ auto cer::filesystem::load_asset_data(std::string_view filename) -> AssetData
 {
     log_verbose("Loading binary file '{}'", filename);
 
-    auto filename_str = std::string{s_file_loading_root_directory};
+    auto filename_str = String{s_file_loading_root_directory};
     clean_path(filename_str, true);
 
     filename_str += filename;
@@ -362,7 +362,7 @@ auto cer::filesystem::load_file_data_from_disk([[maybe_unused]] std::string_view
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__) || TARGET_OS_IPHONE
     throw std::runtime_error{"Loading files from disk is not supported on the current system."};
 #else
-    auto ifs = std::ifstream{std::string{filename}, std::ios::binary | std::ios::ate};
+    auto ifs = std::ifstream{String{filename}, std::ios::binary | std::ios::ate};
 
     if (!ifs.is_open())
     {
@@ -383,7 +383,7 @@ auto cer::filesystem::load_file_data_from_disk([[maybe_unused]] std::string_view
 auto cer::filesystem::write_text_to_file_on_disk(std::string_view filename,
                                                  std::string_view contents) -> void
 {
-    auto ofs = std::ofstream{std::string(filename)};
+    auto ofs = std::ofstream{String(filename)};
 
     if (!ofs)
     {
@@ -398,7 +398,7 @@ auto cer::filesystem::decode_image_data_from_file_on_disk(std::string_view filen
     -> List<std::byte>
 {
     auto       file_data    = load_file_data_from_disk(filename);
-    const auto filename_str = std::string{filename};
+    const auto filename_str = String{filename};
 
     int      width    = 0;
     int      height   = 0;
@@ -432,7 +432,7 @@ auto cer::filesystem::encode_image_data_to_file_on_disk(std::string_view        
                                                         uint32_t                   width,
                                                         uint32_t                   height) -> void
 {
-    const auto filename_str = std::string{filename};
+    const auto filename_str = String{filename};
 
     if (const auto result = stbi_write_png(filename_str.c_str(),
                                            narrow<int>(width),

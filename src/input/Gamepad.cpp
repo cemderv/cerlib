@@ -23,7 +23,7 @@ auto Gamepad::name() const -> std::string_view
     return impl->name();
 }
 
-auto Gamepad::serial_number() const -> std::optional<std::string_view>
+auto Gamepad::serial_number() const -> Option<std::string_view>
 {
     DECLARE_THIS_IMPL;
     return impl->serial_number();
@@ -46,8 +46,7 @@ auto Gamepad::is_button_up(GamepadButton button) const -> bool
     return !is_button_down(button);
 }
 
-auto Gamepad::sensor_data(GamepadSensorType sensor) const
-    -> std::optional<SmallDataArray<float, 16>>
+auto Gamepad::sensor_data(GamepadSensorType sensor) const -> Option<SmallDataArray<float, 16>>
 {
     DECLARE_THIS_IMPL;
     return impl->sensor_data(sensor);
@@ -59,7 +58,7 @@ auto Gamepad::sensor_data_rate(GamepadSensorType sensor) const -> float
     return impl->sensor_data_rate(sensor);
 }
 
-auto Gamepad::steam_handle() const -> std::optional<uint64_t>
+auto Gamepad::steam_handle() const -> Option<uint64_t>
 {
     DECLARE_THIS_IMPL;
     return impl->steam_handle();
@@ -78,7 +77,7 @@ auto Gamepad::touchpad_finger_data(uint32_t touchpad_index) const
     return impl->touchpad_finger_data(touchpad_index);
 }
 
-auto Gamepad::type() const -> std::optional<GamepadType>
+auto Gamepad::type() const -> Option<GamepadType>
 {
     DECLARE_THIS_IMPL;
     return impl->type();

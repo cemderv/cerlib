@@ -6,9 +6,9 @@
 
 #include <cerlib/Gamepad.hpp>
 #include <cerlib/Input.hpp>
+#include <cerlib/String.hpp>
 #include <cerlib/Vector2.hpp>
 #include <cerlib/Window.hpp>
-#include <string>
 
 namespace cer
 {

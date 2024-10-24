@@ -7,9 +7,8 @@
 #include "cerlib/Window.hpp"
 #include "util/Object.hpp"
 
-#include <optional>
-#include <string>
-#include <string_view>
+#include <cerlib/Option.hpp>
+#include <cerlib/String.hpp>
 
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
@@ -22,13 +21,13 @@ namespace cer::details
 class WindowImpl : public Object
 {
   public:
-    explicit WindowImpl(std::string_view        title,
-                        uint32_t                id,
-                        std::optional<int32_t>  position_x,
-                        std::optional<int32_t>  position_y,
-                        std::optional<uint32_t> width,
-                        std::optional<uint32_t> height,
-                        bool                    allow_high_dpi);
+    explicit WindowImpl(std::string_view title,
+                        uint32_t         id,
+                        Option<int32_t>  position_x,
+                        Option<int32_t>  position_y,
+                        Option<uint32_t> width,
+                        Option<uint32_t> height,
+                        bool             allow_high_dpi);
 
     forbid_copy_and_move(WindowImpl);
 
@@ -86,9 +85,9 @@ class WindowImpl : public Object
 
     void set_sync_interval(uint32_t value);
 
-    void set_clear_color(std::optional<Color> value);
+    void set_clear_color(Option<Color> value);
 
-    auto clear_color() const -> std::optional<Color>;
+    auto clear_color() const -> Option<Color>;
 
     virtual void handle_resize_event() = 0;
 
@@ -105,16 +104,16 @@ class WindowImpl : public Object
     void create_sdl_window(int additional_flags);
 
   private:
-    std::string          m_initial_title;
-    std::optional<int>   m_initial_position_x;
-    std::optional<int>   m_initial_position_y;
-    std::optional<int>   m_initial_width;
-    std::optional<int>   m_initial_height;
-    bool                 m_allow_high_dpi;
-    SDL_Window*          m_sdl_window;
-    uint32_t             m_id;
-    uint32_t             m_sync_interval;
-    std::optional<Color> m_clear_color;
+    String        m_initial_title;
+    Option<int>   m_initial_position_x;
+    Option<int>   m_initial_position_y;
+    Option<int>   m_initial_width;
+    Option<int>   m_initial_height;
+    bool          m_allow_high_dpi;
+    SDL_Window*   m_sdl_window;
+    uint32_t      m_id;
+    uint32_t      m_sync_interval;
+    Option<Color> m_clear_color;
 
   protected:
     Window::ResizeCallback m_resize_callback; // NOLINT

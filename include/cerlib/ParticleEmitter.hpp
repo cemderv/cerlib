@@ -12,9 +12,9 @@
 #include <cerlib/Particle.hpp>
 #include <cerlib/ParticleEmitterShape.hpp>
 #include <cerlib/ParticleModifier.hpp>
+#include <cerlib/SmartPointers.hpp>
 #include <cerlib/Vector2.hpp>
 #include <chrono>
-#include <memory>
 #include <span>
 
 

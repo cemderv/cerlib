@@ -39,7 +39,7 @@
 namespace cer::details
 {
 static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> memory)
-    -> std::unique_ptr<ImageImpl>
+    -> UniquePtr<ImageImpl>
 {
     const auto is_hdr = stbi_is_hdr_from_memory(reinterpret_cast<const stbi_uc*>(memory.data()),
                                                 narrow<int>(memory.size())) != 0;
@@ -90,7 +90,7 @@ static auto try_load_misc(GraphicsDevice& device, std::span<const std::byte> mem
 } // namespace cer::details
 
 auto cer::details::load_image(GraphicsDevice& device_impl, std::span<const std::byte> memory)
-    -> std::unique_ptr<ImageImpl>
+    -> UniquePtr<ImageImpl>
 {
     log_verbose("Loading image from memory. Span is {} bytes", memory.size());
 
@@ -116,7 +116,7 @@ auto cer::details::load_image(GraphicsDevice& device_impl, std::span<const std::
 }
 
 auto cer::details::load_image(GraphicsDevice& device_impl, std::string_view filename)
-    -> std::unique_ptr<ImageImpl>
+    -> UniquePtr<ImageImpl>
 {
     return load_image(device_impl, filesystem::load_file_data_from_disk(filename));
 }

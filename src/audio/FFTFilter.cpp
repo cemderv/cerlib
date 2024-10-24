@@ -279,7 +279,7 @@ void FFTFilterInstance::fft_filter_channel(const FilterChannelArgs& args)
     magPhase2Comp(args.buffer, args.samples);
 }
 
-auto FFTFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto FFTFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<FFTFilterInstance>(this);
 }

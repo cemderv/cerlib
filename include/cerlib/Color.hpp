@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cerlib/Interval.hpp>
+#include <cerlib/Option.hpp>
 #include <compare>
-#include <optional>
 
 namespace cer
 {
@@ -76,7 +76,7 @@ using ColorInterval = details::IntervalType<Color>;
  *
  * @ingroup Math
  */
-auto random_color(std::optional<float> alpha = std::nullopt) -> Color;
+auto random_color(Option<float> alpha = std::nullopt) -> Color;
 
 /**
  * Calculates a random color.
@@ -87,7 +87,7 @@ auto random_color(std::optional<float> alpha = std::nullopt) -> Color;
  *
  * @ingroup Math
  */
-auto fastrand_color(std::optional<float> alpha = std::nullopt) -> Color;
+auto fastrand_color(Option<float> alpha = std::nullopt) -> Color;
 
 /**
  * Calculates a random color with its components being in a specific interval.

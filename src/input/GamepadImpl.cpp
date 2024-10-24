@@ -197,7 +197,7 @@ std::string_view GamepadImpl::name() const
 #endif
 }
 
-auto GamepadImpl::serial_number() const -> std::optional<std::string_view>
+auto GamepadImpl::serial_number() const -> Option<std::string_view>
 {
 #ifdef __EMSCRIPTEN__
     const auto serial = SDL_GameControllerGetSerial(m_sdl_gamepad);
@@ -230,8 +230,7 @@ auto GamepadImpl::is_button_down(GamepadButton button) const -> bool
     return state != 0;
 }
 
-auto GamepadImpl::sensor_data(GamepadSensorType sensor) const
-    -> std::optional<SmallDataArray<float, 16>>
+auto GamepadImpl::sensor_data(GamepadSensorType sensor) const -> Option<SmallDataArray<float, 16>>
 {
     auto result = SmallDataArray<float, 16>{};
 
@@ -259,7 +258,7 @@ auto GamepadImpl::sensor_data_rate(GamepadSensorType sensor) const -> float
 #endif
 }
 
-auto GamepadImpl::steam_handle() const -> std::optional<uint64_t>
+auto GamepadImpl::steam_handle() const -> Option<uint64_t>
 {
 #ifdef __EMSCRIPTEN__
     return std::nullopt;
@@ -332,7 +331,7 @@ auto GamepadImpl::touchpad_finger_data(uint32_t touchpad_index) const
     return result;
 }
 
-static auto from_sdl_gamepad_type(SDL_GamepadType type) -> std::optional<GamepadType>
+static auto from_sdl_gamepad_type(SDL_GamepadType type) -> Option<GamepadType>
 {
     switch (type)
     {
@@ -357,7 +356,7 @@ static auto from_sdl_gamepad_type(SDL_GamepadType type) -> std::optional<Gamepad
     return std::nullopt;
 }
 
-auto GamepadImpl::type() const -> std::optional<GamepadType>
+auto GamepadImpl::type() const -> Option<GamepadType>
 {
 #ifdef __EMSCRIPTEN__
     const auto sdl_gamepad_type = SDL_GameControllerGetType(m_sdl_gamepad);

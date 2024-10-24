@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <cerlib/HashSet.hpp>
-#include <cerlib/String.hpp>
+#include <unordered_set>
 
 namespace cer
 {
-using StringViewUnorderedSet = HashSet<std::string_view>;
+template <typename Value, typename Hash = std::hash<Value>, typename Equal = std::equal_to<Value>>
+using HashSet = std::unordered_set<Value, Hash, Equal>;
 }

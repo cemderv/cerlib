@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cerlib/SmartPointers.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -30,7 +31,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <limits>
-#include <memory>
 #include <new>
 #include <stdexcept>
 #include <type_traits>
@@ -74,9 +74,7 @@ concept ConvertibleTo =
 template <typename From, typename To>
 concept NoThrowConvertibleTo = std::is_nothrow_convertible_v<From, To> &&
                                requires(std::add_rvalue_reference_t<From> (&f)() noexcept) {
-                                   {
-                                       static_cast<To>(f())
-                                   } noexcept;
+                                   { static_cast<To>(f()) } noexcept;
                                };
 
 // Note: std::default_initializable requires std::destructible.
@@ -185,24 +183,12 @@ concept NullablePointer =
     Destructible<T> && ConstructibleFrom<T, std::nullptr_t> && ConvertibleTo<std::nullptr_t, T> &&
     requires(T p, T q, std::nullptr_t np) {
         T(np);
-        {
-            p = np
-        } -> std::same_as<T&>;
-        {
-            p != q
-        } -> ContextuallyConvertibleToBool;
-        {
-            p == np
-        } -> ContextuallyConvertibleToBool;
-        {
-            np == p
-        } -> ContextuallyConvertibleToBool;
-        {
-            p != np
-        } -> ContextuallyConvertibleToBool;
-        {
-            np != p
-        } -> ContextuallyConvertibleToBool;
+        { p = np } -> std::same_as<T&>;
+        { p != q } -> ContextuallyConvertibleToBool;
+        { p == np } -> ContextuallyConvertibleToBool;
+        { np == p } -> ContextuallyConvertibleToBool;
+        { p != np } -> ContextuallyConvertibleToBool;
+        { np != p } -> ContextuallyConvertibleToBool;
     };
 
 static_assert(NullablePointer<int*>);
@@ -277,76 +263,50 @@ concept AllocatorFor =
         };
 
         /** Operations on pointers **/
-        {
-            *p
-        } -> std::same_as<typename A::value_type&>;
-        {
-            *cp
-        } -> std::same_as<const typename A::value_type&>;
+        { *p } -> std::same_as<typename A::value_type&>;
+        { *cp } -> std::same_as<const typename A::value_type&>;
 
         // Language in the standard implies that `decltype (p)` must either
         // be a raw pointer or implement `operator->`. There is no mention
         // of `std::to_address` or `std::pointer_traits<Ptr>::to_address`.
         requires std::same_as<decltype(p), typename A::value_type*> || requires {
-            {
-                p.operator->()
-            } -> std::same_as<typename A::value_type*>;
+            { p.operator->() } -> std::same_as<typename A::value_type*>;
         };
 
         requires std::same_as<decltype(cp), const typename A::value_type*> || requires {
-            {
-                cp.operator->()
-            } -> std::same_as<const typename A::value_type*>;
+            { cp.operator->() } -> std::same_as<const typename A::value_type*>;
         };
 
-        {
-            static_cast<decltype(p)>(vp)
-        } -> std::same_as<decltype(p)>;
-        {
-            static_cast<decltype(cp)>(cvp)
-        } -> std::same_as<decltype(cp)>;
+        { static_cast<decltype(p)>(vp) } -> std::same_as<decltype(p)>;
+        { static_cast<decltype(cp)>(cvp) } -> std::same_as<decltype(cp)>;
 
-        {
-            std::pointer_traits<decltype(p)>::pointer_to(r)
-        } -> std::same_as<decltype(p)>;
+        { std::pointer_traits<decltype(p)>::pointer_to(r) } -> std::same_as<decltype(p)>;
 
         /** Storage and lifetime operations **/
         // a.allocate (n)
-        {
-            a.allocate(n)
-        } -> std::same_as<decltype(p)>;
+        { a.allocate(n) } -> std::same_as<decltype(p)>;
 
         // a.allocate (n, cvp) [optional]
         requires !requires { a.allocate(n, cvp); } || requires {
-            {
-                a.allocate(n, cvp)
-            } -> std::same_as<decltype(p)>;
+            { a.allocate(n, cvp) } -> std::same_as<decltype(p)>;
         };
 
         // a.deallocate (p, n)
-        {
-            a.deallocate(p, n)
-        } -> std::convertible_to<void>;
+        { a.deallocate(p, n) } -> std::convertible_to<void>;
 
         // a.max_size () [optional]
         requires !requires { a.max_size(); } || requires {
-            {
-                a.max_size()
-            } -> std::same_as<decltype(n)>;
+            { a.max_size() } -> std::same_as<decltype(n)>;
         };
 
         // a.construct (xp, args) [optional]
         requires !requires { a.construct(xp); } || requires {
-            {
-                a.construct(xp)
-            } -> std::convertible_to<void>;
+            { a.construct(xp) } -> std::convertible_to<void>;
         };
 
         // a.destroy (xp) [optional]
         requires !requires { a.destroy(xp); } || requires {
-            {
-                a.destroy(xp)
-            } -> std::convertible_to<void>;
+            { a.destroy(xp) } -> std::convertible_to<void>;
         };
 
         /** Relationship between instances **/
@@ -358,9 +318,7 @@ concept AllocatorFor =
         /** Influence on container operations **/
         // a.select_on_container_copy_construction () [optional]
         requires !requires { a.select_on_container_copy_construction(); } || requires {
-            {
-                a.select_on_container_copy_construction()
-            } -> std::same_as<A>;
+            { a.select_on_container_copy_construction() } -> std::same_as<A>;
         };
 
         requires BoolConstant<
@@ -371,20 +329,12 @@ concept AllocatorFor =
 
         requires BoolConstant<typename std::allocator_traits<A>::propagate_on_container_swap>;
 
-        {
-            a == b
-        } -> std::same_as<bool>;
-        {
-            a != b
-        } -> std::same_as<bool>;
+        { a == b } -> std::same_as<bool>;
+        { a != b } -> std::same_as<bool>;
     } &&
     requires(A a1, A a2) {
-        {
-            a1 == a2
-        } -> std::same_as<bool>;
-        {
-            a1 != a2
-        } -> std::same_as<bool>;
+        { a1 == a2 } -> std::same_as<bool>;
+        { a1 != a2 } -> std::same_as<bool>;
     };
 
 static_assert(AllocatorFor<std::allocator<int>, int>,
@@ -503,11 +453,11 @@ class ListIterator
     using iterator_category = typename std::iterator_traits<Pointer>::iterator_category;
     using iterator_concept  = std::contiguous_iterator_tag;
 
-         ListIterator(const ListIterator&)                   = default;
-         ListIterator(ListIterator&&) noexcept               = default;
+    ListIterator(const ListIterator&)                        = default;
+    ListIterator(ListIterator&&) noexcept                    = default;
     auto operator=(const ListIterator&) -> ListIterator&     = default;
     auto operator=(ListIterator&&) noexcept -> ListIterator& = default;
-    ~    ListIterator()                                      = default;
+    ~ListIterator()                                          = default;
 
 #ifdef NDEBUG
     ListIterator() = default;
@@ -766,12 +716,12 @@ class inline_storage
   public:
     using value_ty = T;
 
-         inline_storage()                                        = default;
-         inline_storage(const inline_storage&)                   = delete;
-         inline_storage(inline_storage&&) noexcept               = delete;
+    inline_storage()                                             = default;
+    inline_storage(const inline_storage&)                        = delete;
+    inline_storage(inline_storage&&) noexcept                    = delete;
     auto operator=(const inline_storage&) -> inline_storage&     = delete;
     auto operator=(inline_storage&&) noexcept -> inline_storage& = delete;
-    ~    inline_storage()                                        = default;
+    ~inline_storage()                                            = default;
 
     [[nodiscard]] constexpr auto get_inline_ptr() noexcept -> value_ty*
     {
@@ -793,7 +743,7 @@ class
 #if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918L
     __declspec(empty_bases)
 #endif
-        allocator_inliner<Allocator, true> : Allocator
+    allocator_inliner<Allocator, true> : Allocator
 {
     using alloc_traits = std::allocator_traits<Allocator>;
 
@@ -983,7 +933,7 @@ class
 #if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918L
     __declspec(empty_bases)
 #endif
-        allocator_interface : public allocator_inliner<Allocator>
+    allocator_interface : public allocator_inliner<Allocator>
 {
   public:
     template <typename, typename = void>
@@ -1212,10 +1162,9 @@ class
         using from = underlying_if_enum_t<From>;
         using to   = underlying_if_enum_t<To>;
 
-        static constexpr bool value =
-            (sizeof(from) == sizeof(to)) &&
-            (std::is_same_v<bool, from> == std::is_same_v<bool, to>)&&std::is_integral_v<from> &&
-            std::is_integral_v<to>;
+        static constexpr bool value = (sizeof(from) == sizeof(to)) &&
+                                      (std::is_same_v<bool, from> == std::is_same_v<bool, to>) &&
+                                      std::is_integral_v<from> && std::is_integral_v<to>;
     };
 
     template <typename From, typename To>
@@ -1742,12 +1691,12 @@ class ListDataBase
     using ptr     = Pointer;
     using size_ty = SizeT;
 
-         ListDataBase()                                      = default;
-         ListDataBase(const ListDataBase&)                   = default;
-         ListDataBase(ListDataBase&&) noexcept               = default;
+    ListDataBase()                                           = default;
+    ListDataBase(const ListDataBase&)                        = default;
+    ListDataBase(ListDataBase&&) noexcept                    = default;
     auto operator=(const ListDataBase&) -> ListDataBase&     = default;
     auto operator=(ListDataBase&&) noexcept -> ListDataBase& = default;
-    ~    ListDataBase()                                      = default;
+    ~ListDataBase()                                          = default;
 
     constexpr auto data_ptr() const noexcept -> ptr
     {
@@ -1818,12 +1767,12 @@ template <typename Pointer, typename SizeT, typename T, unsigned InlineCapacity>
 class ListData : public ListDataBase<Pointer, SizeT>
 {
   public:
-         ListData()                                  = default;
-         ListData(const ListData&)                   = delete;
-         ListData(ListData&&) noexcept               = delete;
+    ListData()                                       = default;
+    ListData(const ListData&)                        = delete;
+    ListData(ListData&&) noexcept                    = delete;
     auto operator=(const ListData&) -> ListData&     = delete;
     auto operator=(ListData&&) noexcept -> ListData& = delete;
-    ~    ListData()                                  = default;
+    ~ListData()                                      = default;
 
     constexpr auto storage() noexcept -> T*
     {
@@ -1839,15 +1788,15 @@ class
 #if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918L
     __declspec(empty_bases)
 #endif
-        ListData<Pointer, SizeT, T, 0> : public ListDataBase<Pointer, SizeT>
+    ListData<Pointer, SizeT, T, 0> : public ListDataBase<Pointer, SizeT>
 {
   public:
-         ListData()                                  = default;
-         ListData(const ListData&)                   = delete;
-         ListData(ListData&&) noexcept               = delete;
+    ListData()                                       = default;
+    ListData(const ListData&)                        = delete;
+    ListData(ListData&&) noexcept                    = delete;
     auto operator=(const ListData&) -> ListData&     = delete;
     auto operator=(ListData&&) noexcept -> ListData& = delete;
-    ~    ListData()                                  = default;
+    ~ListData()                                      = default;
 
     constexpr auto storage() noexcept -> T*
     {
@@ -2042,9 +1991,9 @@ class ListBase : public allocator_interface<Allocator>
     class stack_temporary
     {
       public:
-             stack_temporary()                                         = delete;
-             stack_temporary(const stack_temporary&)                   = delete;
-             stack_temporary(stack_temporary&&) noexcept               = delete;
+        stack_temporary()                                              = delete;
+        stack_temporary(const stack_temporary&)                        = delete;
+        stack_temporary(stack_temporary&&) noexcept                    = delete;
         auto operator=(const stack_temporary&) -> stack_temporary&     = delete;
         auto operator=(stack_temporary&&) noexcept -> stack_temporary& = delete;
         //      ~stack_temporary           ()                       = impl;
@@ -2089,9 +2038,9 @@ class ListBase : public allocator_interface<Allocator>
     class heap_temporary
     {
       public:
-             heap_temporary()                                        = delete;
-             heap_temporary(const heap_temporary&)                   = delete;
-             heap_temporary(heap_temporary&&) noexcept               = delete;
+        heap_temporary()                                             = delete;
+        heap_temporary(const heap_temporary&)                        = delete;
+        heap_temporary(heap_temporary&&) noexcept                    = delete;
         auto operator=(const heap_temporary&) -> heap_temporary&     = delete;
         auto operator=(heap_temporary&&) noexcept -> heap_temporary& = delete;
         //      ~heap_temporary           ()                      = impl;
@@ -2635,8 +2584,8 @@ class ListBase : public allocator_interface<Allocator>
     }
 
   public:
-         ListBase(const ListBase&)                   = delete;
-         ListBase(ListBase&&) noexcept               = delete;
+    ListBase(const ListBase&)                        = delete;
+    ListBase(ListBase&&) noexcept                    = delete;
     auto operator=(const ListBase&) -> ListBase&     = delete;
     auto operator=(ListBase&&) noexcept -> ListBase& = delete;
 
@@ -5034,9 +4983,9 @@ template <typename T,
 using RefList = List<std::reference_wrapper<T>, InlineCapacity, Allocator>;
 
 template <typename T,
-          unsigned InlineCapacity = default_buffer_size<std::allocator<std::unique_ptr<T>>>::value,
-          typename Allocator      = std::allocator<std::unique_ptr<T>>>
-using UniquePtrList = List<std::unique_ptr<T>, InlineCapacity, Allocator>;
+          unsigned InlineCapacity = default_buffer_size<std::allocator<UniquePtr<T>>>::value,
+          typename Allocator      = std::allocator<UniquePtr<T>>>
+using UniquePtrList = List<UniquePtr<T>, InlineCapacity, Allocator>;
 
 template <typename First,
           typename Second,
@@ -5059,8 +5008,8 @@ using RefList = List<std::reference_wrapper<T>, InlineCapacity, Allocator>;
 
 template <typename T,
           unsigned InlineCapacity = 0,
-          typename Allocator      = std::allocator<std::unique_ptr<T>>>
-using UniquePtrList = List<std::unique_ptr<T>, InlineCapacity, Allocator>;
+          typename Allocator      = std::allocator<UniquePtr<T>>>
+using UniquePtrList = List<UniquePtr<T>, InlineCapacity, Allocator>;
 
 template <typename First,
           typename Second,

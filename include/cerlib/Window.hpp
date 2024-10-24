@@ -5,10 +5,10 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
+#include <cerlib/Option.hpp>
+#include <cerlib/String.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
 #include <functional>
-#include <optional>
-#include <string_view>
 
 namespace cer
 {
@@ -63,13 +63,13 @@ class Window final
      * @param allow_high_dpi If true, high-density displays are considered and the window
      * is able to report a pixel ratio.
      */
-    explicit Window(std::string_view        title,
-                    uint32_t                id             = 0,
-                    std::optional<int32_t>  position_x     = std::nullopt,
-                    std::optional<int32_t>  position_y     = std::nullopt,
-                    std::optional<uint32_t> width          = std::nullopt,
-                    std::optional<uint32_t> height         = std::nullopt,
-                    bool                    allow_high_dpi = true);
+    explicit Window(std::string_view title,
+                    uint32_t         id             = 0,
+                    Option<int32_t>  position_x     = std::nullopt,
+                    Option<int32_t>  position_y     = std::nullopt,
+                    Option<uint32_t> width          = std::nullopt,
+                    Option<uint32_t> height         = std::nullopt,
+                    bool             allow_high_dpi = true);
 
     /**
      * Gets the optional user-defined ID of the window.
@@ -236,9 +236,9 @@ class Window final
 
     void set_sync_interval(uint32_t value);
 
-    void set_clear_color(std::optional<Color> value);
+    void set_clear_color(Option<Color> value);
 
-    auto clear_color() const -> std::optional<Color>;
+    auto clear_color() const -> Option<Color>;
 
     /**
      * Shows a native message box.

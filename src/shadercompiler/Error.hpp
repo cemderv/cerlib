@@ -6,8 +6,8 @@
 
 #include "cerlib/Formatters.hpp"
 #include "shadercompiler/SourceLocation.hpp"
+#include <cerlib/String.hpp>
 #include <exception>
-#include <string>
 
 namespace cer::shadercompiler
 {
@@ -33,6 +33,6 @@ class Error final : public std::exception
     auto full_message() const -> std::string_view;
 
   private:
-    std::string m_full_message;
+    String m_full_message;
 };
 } // namespace cer::shadercompiler

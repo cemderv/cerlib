@@ -6,7 +6,7 @@
 
 #include "shadercompiler/TempVarNameGen.hpp"
 
-#include <unordered_map>
+#include <cerlib/HashMap.hpp>
 
 namespace cer::shadercompiler
 {
@@ -29,6 +29,6 @@ class ASTOptimizer
 
     static auto remove_unused_variables(CodeBlock* block) -> bool;
 
-    std::unordered_map<const CodeBlock*, TempVarNameGen> m_code_block_name_gens{};
+    HashMap<const CodeBlock*, TempVarNameGen> m_code_block_name_gens{};
 };
 } // namespace cer::shadercompiler

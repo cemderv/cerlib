@@ -9,10 +9,10 @@
 
 namespace cer::details
 {
-TextImpl::TextImpl(std::string_view                     text,
-                   const Font&                          font,
-                   uint32_t                             font_size,
-                   const std::optional<TextDecoration>& decoration)
+TextImpl::TextImpl(std::string_view              text,
+                   const Font&                   font,
+                   uint32_t                      font_size,
+                   const Option<TextDecoration>& decoration)
 {
     shape_text(text,
                font ? font : Font::built_in(false),

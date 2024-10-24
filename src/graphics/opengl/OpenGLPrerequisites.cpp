@@ -9,7 +9,7 @@ void cer::details::verify_opengl_state_x()
 {
     if (auto error = glGetError(); error != GL_NO_ERROR)
     {
-        auto error_string = std::string{};
+        auto error_string = String{};
 
         while (error != GL_NO_ERROR)
         {

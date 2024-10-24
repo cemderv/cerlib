@@ -4,7 +4,7 @@
 
 #include "shadercompiler/Naming.hpp"
 
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer::shadercompiler
 {

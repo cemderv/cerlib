@@ -19,7 +19,7 @@ class GLSLShaderGenerator final : public ShaderGenerator
 
     auto do_generation(const SemaContext&          context,
                        const FunctionDecl&         entry_point,
-                       const List<const Decl*, 8>& decls_to_generate) -> std::string override;
+                       const List<const Decl*, 8>& decls_to_generate) -> String override;
 
   private:
     void generate_var_stmt(Writer& w, const VarStmt& var_stmt, const SemaContext& context) override;
@@ -51,7 +51,7 @@ class GLSLShaderGenerator final : public ShaderGenerator
                                              const AccessedParams& params) const;
 
     bool                m_is_gles = false;
-    std::string         m_v2f_prefix;
+    String              m_v2f_prefix;
     const FunctionDecl* m_currently_generated_function = nullptr;
 };
 } // namespace cer::shadercompiler

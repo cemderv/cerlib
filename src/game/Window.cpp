@@ -17,13 +17,13 @@ namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(Window)
 
-Window::Window(std::string_view        title,
-               uint32_t                id,
-               std::optional<int32_t>  position_x,
-               std::optional<int32_t>  position_y,
-               std::optional<uint32_t> width,
-               std::optional<uint32_t> height,
-               bool                    allow_high_dpi)
+Window::Window(std::string_view title,
+               uint32_t         id,
+               Option<int32_t>  position_x,
+               Option<int32_t>  position_y,
+               Option<uint32_t> width,
+               Option<uint32_t> height,
+               bool             allow_high_dpi)
     : m_impl(nullptr)
 {
     details::WindowImpl* impl = nullptr;
@@ -216,13 +216,13 @@ void Window::set_sync_interval(uint32_t value)
     impl->set_sync_interval(value);
 }
 
-void Window::set_clear_color(std::optional<Color> value)
+void Window::set_clear_color(Option<Color> value)
 {
     DECLARE_THIS_IMPL;
     impl->set_clear_color(value);
 }
 
-auto Window::clear_color() const -> std::optional<Color>
+auto Window::clear_color() const -> Option<Color>
 {
     DECLARE_THIS_IMPL;
     return impl->clear_color();

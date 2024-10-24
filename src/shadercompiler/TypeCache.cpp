@@ -19,7 +19,7 @@ TypeCache::~TypeCache() noexcept = default;
 
 auto TypeCache::create_array_type(const SourceLocation& location,
                                   std::string_view      element_type_name,
-                                  std::unique_ptr<Expr> size_expr) -> ArrayType&
+                                  UniquePtr<Expr>       size_expr) -> ArrayType&
 {
     m_array_types.push_back(
         std::make_unique<ArrayType>(location,

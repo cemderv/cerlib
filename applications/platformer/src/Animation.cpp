@@ -23,7 +23,7 @@ uint32_t Animation::frame_height() const
     return image.height();
 }
 
-cer::Vector2 AnimationPlayer::origin() const
+Vector2 AnimationPlayer::origin() const
 {
     return {
         float(m_animation.frame_width()) / 2,
@@ -31,7 +31,7 @@ cer::Vector2 AnimationPlayer::origin() const
     };
 }
 
-void AnimationPlayer::update(cer::GameTime time)
+void AnimationPlayer::update(GameTime time)
 {
     m_time += float(time.elapsed_time);
 
@@ -45,18 +45,18 @@ void AnimationPlayer::update(cer::GameTime time)
         }
         else
         {
-            m_frame_index = cer::min(m_frame_index + 1, m_animation.frame_count() - 1);
+            m_frame_index = min(m_frame_index + 1, m_animation.frame_count() - 1);
         }
     }
 }
 
-void AnimationPlayer::draw(cer::Vector2 position, cer::SpriteFlip flip) const
+void AnimationPlayer::draw(Vector2 position, SpriteFlip flip) const
 {
     const float texture_height = m_animation.image.heightf();
 
-    cer::Rectangle source{float(m_frame_index) * texture_height, 0, texture_height, texture_height};
+    Rectangle source{float(m_frame_index) * texture_height, 0, texture_height, texture_height};
 
-    cer::draw_sprite({
+    draw_sprite({
         .image    = m_animation.image,
         .dst_rect = {position, texture_height, texture_height},
         .src_rect = source,

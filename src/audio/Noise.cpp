@@ -99,7 +99,7 @@ Noise::~Noise()
     stop();
 }
 
-auto Noise::create_instance() -> std::shared_ptr<AudioSourceInstance>
+auto Noise::create_instance() -> SharedPtr<AudioSourceInstance>
 {
     return std::make_shared<NoiseInstance>(this);
 }

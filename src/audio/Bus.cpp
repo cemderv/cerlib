@@ -133,7 +133,7 @@ Bus::Bus()
     channel_count = 2;
 }
 
-auto Bus::create_instance() -> std::shared_ptr<AudioSourceInstance>
+auto Bus::create_instance() -> SharedPtr<AudioSourceInstance>
 {
     if (m_channel_handle != 0u)
     {

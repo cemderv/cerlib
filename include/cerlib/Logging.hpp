@@ -17,7 +17,7 @@ enum class LogMessageType
     Error   = 3,
 };
 
-void log_internal(const std::string& message, LogMessageType type);
+void log_internal(const String& message, LogMessageType type);
 } // namespace details
 
 /**

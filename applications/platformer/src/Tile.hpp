@@ -2,6 +2,8 @@
 
 #include <cerlib.hpp>
 
+using namespace cer;
+
 enum class TileCollision
 {
     Passable   = 0,
@@ -11,10 +13,10 @@ enum class TileCollision
 
 struct Tile
 {
-    static constexpr float        width  = 40.0f;
-    static constexpr float        height = 32.0f;
-    static constexpr cer::Vector2 size   = cer::Vector2{width, height};
+    static constexpr auto width  = 40.0f;
+    static constexpr auto height = 32.0f;
+    static constexpr auto size   = Vector2{width, height};
 
-    cer::Image    image;
+    Image         image;
     TileCollision collision = TileCollision::Passable;
 };

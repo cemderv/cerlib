@@ -28,12 +28,12 @@ DEALINGS IN THE SOFTWARE.
 
 #pragma once
 
+#include <cerlib/String.hpp>
 #include <cstring>
 #include <iterator>
 #include <stdexcept>
-#include <string>
 
-namespace utf8
+namespace cer::utf8
 {
 // Helper code - not intended to be directly called by the library users. May be changed at any time
 namespace internal
@@ -491,10 +491,10 @@ inline auto find_invalid(const char* str) -> const char*
     return find_invalid(str, end);
 }
 
-inline auto find_invalid(const std::string& s) -> std::size_t
+inline auto find_invalid(const String& s) -> std::size_t
 {
-    std::string::const_iterator invalid = find_invalid(s.begin(), s.end());
-    return (invalid == s.end()) ? std::string::npos : static_cast<std::size_t>(invalid - s.begin());
+    const auto invalid = find_invalid(s.begin(), s.end());
+    return (invalid == s.end()) ? String::npos : static_cast<std::size_t>(invalid - s.begin());
 }
 
 template <typename OctetIterator>
@@ -508,7 +508,7 @@ inline auto is_valid(const char* str) -> bool
     return (*(find_invalid(str)) == '\0');
 }
 
-inline auto is_valid(const std::string& s) -> bool
+inline auto is_valid(const String& s) -> bool
 {
     return is_valid(s.begin(), s.end());
 }
@@ -521,13 +521,13 @@ inline auto starts_with_bom(OctetIterator it, OctetIterator end) -> bool
             ((it != end) && (internal::mask8(*it)) == bom[2]));
 }
 
-inline auto starts_with_bom(const std::string& s) -> bool
+inline auto starts_with_bom(const cer::String& s) -> bool
 {
     return starts_with_bom(s.begin(), s.end());
 }
 
 // Exceptions that may be thrown from the library functions.
-class InvalidCodePoint : public std::exception
+class InvalidCodePoint final : public std::exception
 {
     char32_t cp{};
 
@@ -617,7 +617,7 @@ auto append(char32_t cp, OctetIterator result) -> OctetIterator
     return internal::append(cp, result);
 }
 
-inline void append(char32_t cp, std::string& s)
+inline void append(char32_t cp, String& s)
 {
     append(cp, std::back_inserter(s));
 }
@@ -683,16 +683,16 @@ auto replace_invalid(OctetIterator start, OctetIterator end, output_iterator out
     return utf8::replace_invalid(start, end, out, replacement_marker);
 }
 
-inline auto replace_invalid(const std::string& s, char32_t replacement) -> std::string
+inline auto replace_invalid(const String& s, char32_t replacement) -> String
 {
-    std::string result;
+    String result;
     replace_invalid(s.begin(), s.end(), std::back_inserter(result), replacement);
     return result;
 }
 
-inline auto replace_invalid(const std::string& s) -> std::string
+inline auto replace_invalid(const String& s) -> String
 {
-    std::string result;
+    String result;
     replace_invalid(s.begin(), s.end(), std::back_inserter(result));
     return result;
 }
@@ -1031,4 +1031,4 @@ inline auto starts_with_bom(const std::u8string& s) -> bool
 {
     return starts_with_bom(s.begin(), s.end());
 }
-} // namespace utf8
+} // namespace cer::utf8

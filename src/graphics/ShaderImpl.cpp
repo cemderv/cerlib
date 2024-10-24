@@ -12,20 +12,20 @@
 
 namespace cer::details
 {
-auto ShaderImpl::shader_parameter_type_string(ShaderParameterType type) -> std::string
+auto ShaderImpl::shader_parameter_type_string(ShaderParameterType type) -> String
 {
     using namespace shadercompiler; // NOLINT
 
     switch (type)
     {
-        case ShaderParameterType::Float: return std::string{FloatType::instance().type_name()};
-        case ShaderParameterType::Int: return std::string{IntType::instance().type_name()};
-        case ShaderParameterType::Bool: return std::string{BoolType::instance().type_name()};
-        case ShaderParameterType::Vector2: return std::string{Vector2Type::instance().type_name()};
-        case ShaderParameterType::Vector3: return std::string{Vector3Type::instance().type_name()};
-        case ShaderParameterType::Vector4: return std::string{Vector4Type::instance().type_name()};
-        case ShaderParameterType::Matrix: return std::string{MatrixType::instance().type_name()};
-        case ShaderParameterType::Image: return std::string{ImageType::instance().type_name()};
+        case ShaderParameterType::Float: return String{FloatType::instance().type_name()};
+        case ShaderParameterType::Int: return String{IntType::instance().type_name()};
+        case ShaderParameterType::Bool: return String{BoolType::instance().type_name()};
+        case ShaderParameterType::Vector2: return String{Vector2Type::instance().type_name()};
+        case ShaderParameterType::Vector3: return String{Vector3Type::instance().type_name()};
+        case ShaderParameterType::Vector4: return String{Vector4Type::instance().type_name()};
+        case ShaderParameterType::Matrix: return String{MatrixType::instance().type_name()};
+        case ShaderParameterType::Image: return String{ImageType::instance().type_name()};
         case ShaderParameterType::FloatArray:
             return cer_fmt::format("{}[]", FloatType::instance().type_name());
         case ShaderParameterType::IntArray:
@@ -150,8 +150,7 @@ auto ShaderImpl::find_parameter(std::string_view name) const -> const ShaderPara
     return it != m_parameters.end() ? &*it : nullptr;
 }
 
-auto ShaderImpl::dirty_scalar_parameters() const
-    -> const std::unordered_set<const ShaderParameter*>&
+auto ShaderImpl::dirty_scalar_parameters() const -> const HashSet<const ShaderParameter*>&
 {
     return m_dirty_scalar_parameters;
 }
@@ -161,7 +160,7 @@ void ShaderImpl::clear_dirty_scalar_parameters()
     m_dirty_scalar_parameters.clear();
 }
 
-auto ShaderImpl::dirty_image_parameters() const -> const std::unordered_set<const ShaderParameter*>&
+auto ShaderImpl::dirty_image_parameters() const -> const HashSet<const ShaderParameter*>&
 {
     return m_dirty_image_parameters;
 }

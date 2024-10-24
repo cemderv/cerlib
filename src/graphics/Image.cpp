@@ -100,13 +100,13 @@ auto Image::format() const -> ImageFormat
     return impl->format();
 }
 
-auto Image::canvas_clear_color() const -> std::optional<Color>
+auto Image::canvas_clear_color() const -> Option<Color>
 {
     DECLARE_IMAGE_IMPL;
     return impl->canvas_clear_color();
 }
 
-void Image::set_canvas_clear_color(std::optional<Color> value)
+void Image::set_canvas_clear_color(Option<Color> value)
 {
     DECLARE_IMAGE_IMPL;
     impl->set_canvas_clear_color(value);

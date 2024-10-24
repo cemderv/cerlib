@@ -7,10 +7,10 @@
 #include "shadercompiler/TempVarNameGen.hpp"
 #include "shadercompiler/Type.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/HashMap.hpp>
 #include <cerlib/List.hpp>
-#include <optional>
-#include <string>
-#include <unordered_map>
+#include <cerlib/Option.hpp>
+#include <cerlib/String.hpp>
 
 namespace cer::shadercompiler
 {
@@ -46,11 +46,11 @@ class ShaderGenerationResult
   public:
     using ParameterList = RefList<const ShaderParamDecl, 8>;
 
-    explicit ShaderGenerationResult(std::string         glsl_code,
+    explicit ShaderGenerationResult(String              glsl_code,
                                     const FunctionDecl& entry_point,
                                     ParameterList       parameters);
 
-    std::string                                glsl_code;
+    String                                     glsl_code;
     std::reference_wrapper<const FunctionDecl> entry_point;
     ParameterList                              parameters;
 };
@@ -84,7 +84,7 @@ class ShaderGenerator
 
     virtual auto do_generation(const SemaContext&          context,
                                const FunctionDecl&         entry_point,
-                               const List<const Decl*, 8>& decls_to_generate) -> std::string = 0;
+                               const List<const Decl*, 8>& decls_to_generate) -> String = 0;
 
     virtual void generate_stmt(Writer& w, const Stmt& stmt, const SemaContext& context);
 
@@ -152,10 +152,10 @@ class ShaderGenerator
                                        const TernaryExpr& expr,
                                        const SemaContext& context);
 
-    virtual auto translate_type(const Type& type, TypeNameContext context) const -> std::string;
+    virtual auto translate_type(const Type& type, TypeNameContext context) const -> String;
 
     virtual auto translate_array_type(const ArrayType& type, std::string_view variable_name) const
-        -> std::string;
+        -> String;
 
     auto gather_ast_decls_to_generate(const AST&         ast,
                                       std::string_view   entry_point,
@@ -180,14 +180,14 @@ class ShaderGenerator
     bool     m_is_swapping_matrix_vector_multiplications{};
     uint32_t m_uniform_buffer_alignment{};
 
-    std::unordered_map<Type::ConstRef, std::string, TypeHash, TypeEqual> m_built_in_type_dictionary;
+    HashMap<Type::ConstRef, String, TypeHash, TypeEqual> m_built_in_type_dictionary;
 
-    const AST*                                   m_ast{};
-    const FunctionDecl*                          m_currently_generated_shader_function{};
-    List<const FunctionDecl*, 8>                 m_call_stack;
-    List<TempVarNameGen, 4>                      m_temp_var_name_gen_stack;
-    std::unordered_map<const Expr*, std::string> m_temporary_vars;
-    std::optional<std::string>                   m_current_sym_access_override;
-    bool                                         m_needs_float_literal_suffix{};
+    const AST*                   m_ast{};
+    const FunctionDecl*          m_currently_generated_shader_function{};
+    List<const FunctionDecl*, 8> m_call_stack;
+    List<TempVarNameGen, 4>      m_temp_var_name_gen_stack;
+    HashMap<const Expr*, String> m_temporary_vars;
+    Option<String>               m_current_sym_access_override;
+    bool                         m_needs_float_literal_suffix{};
 };
 } // namespace cer::shadercompiler

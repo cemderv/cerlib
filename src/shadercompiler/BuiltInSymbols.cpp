@@ -58,7 +58,7 @@ namespace cer::shadercompiler
 {
 static void add_struct_fields(
     RefList<Decl, 132>&                                                                    all,
-    List<std::unique_ptr<Decl>>&                                                           var,
+    List<UniquePtr<Decl>>&                                                                 var,
     std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>> fields)
 {
     var.reserve(fields.size());
@@ -425,8 +425,8 @@ auto BuiltInSymbols::is_vector_field_access(const Decl& symbol) const -> bool
 }
 
 void BuiltInSymbols::add_func(
-    std::unique_ptr<FunctionDecl>& var,
-    std::string_view               func_name,
+    UniquePtr<FunctionDecl>& var,
+    std::string_view         func_name,
     std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>>
                 param_descs,
     const Type& return_type)
@@ -451,9 +451,7 @@ void BuiltInSymbols::add_func(
     m_all.emplace_back(*var);
 }
 
-void BuiltInSymbols::add_system_value(std::unique_ptr<Decl>& var,
-                                      std::string_view       name,
-                                      const Type&            type)
+void BuiltInSymbols::add_system_value(UniquePtr<Decl>& var, std::string_view name, const Type& type)
 {
     var = std::make_unique<VarDecl>(name, type);
     m_all.emplace_back(*var);

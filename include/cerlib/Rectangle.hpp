@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <optional>
+#include <cerlib/Option.hpp>
 
 namespace cer
 {
@@ -115,7 +115,7 @@ struct Rectangle
      *
      * Example:
      * @code{.cpp}
-     * const std::optional<Vector2> depth =
+     * const Option<Vector2> depth =
      *   Rectangle::intersection_depth({0, 0, 100, 100}, {50, 50, 100, 100});
      *
      * if (depth.has_value())
@@ -124,8 +124,7 @@ struct Rectangle
      * }
      * @endcode
      */
-    static auto intersection_depth(const Rectangle& lhs, const Rectangle& rhs)
-        -> std::optional<Vector2>;
+    static auto intersection_depth(const Rectangle& lhs, const Rectangle& rhs) -> Option<Vector2>;
 
     /**
      * Calculates the intersection rectangle of two rectangles.

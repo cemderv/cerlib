@@ -10,10 +10,10 @@
 #include "cerlib/Sound.hpp"
 #include "cerlib/SoundTypes.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/HashSet.hpp>
 #include <cerlib/List.hpp>
-#include <optional>
+#include <cerlib/Option.hpp>
 #include <span>
-#include <unordered_set>
 
 namespace cer
 {
@@ -32,16 +32,16 @@ class AudioDevice
 
     ~AudioDevice() noexcept;
 
-    auto play_sound(const Sound&             sound,
-                    float                    volume,
-                    float                    pan,
-                    bool                     start_paused,
-                    std::optional<SoundTime> delay) -> SoundChannel;
+    auto play_sound(const Sound&      sound,
+                    float             volume,
+                    float             pan,
+                    bool              start_paused,
+                    Option<SoundTime> delay) -> SoundChannel;
 
-    void play_sound_fire_and_forget(const Sound&             sound,
-                                    float                    volume,
-                                    float                    pan,
-                                    std::optional<SoundTime> delay);
+    void play_sound_fire_and_forget(const Sound&      sound,
+                                    float             volume,
+                                    float             pan,
+                                    Option<SoundTime> delay);
 
     auto play_sound_in_background(const Sound& sound, float volume, bool start_paused)
         -> SoundChannel;
@@ -139,7 +139,7 @@ class AudioDevice
 
     // Get a live filter parameter. Use 0 for the global filters.
     auto filter_parameter(SoundHandle voice_handle, size_t filter_id, size_t attribute_id)
-        -> std::optional<float>;
+        -> Option<float>;
 
     // Fade a live filter parameter. Use 0 for the global filters.
     void fade_filter_parameter(
@@ -511,7 +511,7 @@ class AudioDevice
         }
     }
 
-    auto voices() const -> std::span<const std::shared_ptr<AudioSourceInstance>, max_voice_count>
+    auto voices() const -> std::span<const SharedPtr<AudioSourceInstance>, max_voice_count>
     {
         return m_voice;
     }
@@ -592,10 +592,10 @@ class AudioDevice
     AlignedFloatBuffer m_resample_data_buffer;
 
     // Owners of the resample data
-    List<std::shared_ptr<AudioSourceInstance>> m_resample_data_owner;
+    List<SharedPtr<AudioSourceInstance>> m_resample_data_owner;
 
     // Audio voices.
-    std::array<std::shared_ptr<AudioSourceInstance>, cer::max_voice_count> m_voice;
+    std::array<SharedPtr<AudioSourceInstance>, cer::max_voice_count> m_voice;
 
     // Resampler for the main bus
     Resampler m_resampler = default_resampler;
@@ -636,7 +636,7 @@ class AudioDevice
     std::array<Filter*, filters_per_stream> m_filter{};
 
     // Global filter instance
-    std::array<std::shared_ptr<FilterInstance>, filters_per_stream> m_filter_instance{};
+    std::array<SharedPtr<FilterInstance>, filters_per_stream> m_filter_instance{};
 
     // Approximate volume for channels.
     std::array<float, max_channels> m_visualization_channel_volume{};
@@ -685,7 +685,7 @@ class AudioDevice
         auto operator()(const Sound& sound) const -> size_t;
     };
 
-    bool                                 m_was_initialized_successfully{};
-    std::unordered_set<Sound, SoundHash> m_playing_sounds;
+    bool                      m_was_initialized_successfully{};
+    HashSet<Sound, SoundHash> m_playing_sounds;
 };
 } // namespace cer

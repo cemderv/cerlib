@@ -59,7 +59,7 @@ void LofiFilterInstance::filter_channel(const FilterChannelArgs& args)
     }
 }
 
-auto LofiFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto LofiFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<LofiFilterInstance>(this);
 }

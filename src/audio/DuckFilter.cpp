@@ -118,7 +118,7 @@ void DuckFilterInstance::filter(const FilterArgs& args)
     m_current_level = level;
 }
 
-auto DuckFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto DuckFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<DuckFilterInstance>(this);
 }

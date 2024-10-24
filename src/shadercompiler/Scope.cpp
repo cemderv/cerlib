@@ -275,7 +275,7 @@ auto Scope::parent() const -> Scope*
     return m_parent;
 }
 
-auto Scope::children() const -> std::span<const std::unique_ptr<Scope>>
+auto Scope::children() const -> std::span<const UniquePtr<Scope>>
 {
     return m_children;
 }

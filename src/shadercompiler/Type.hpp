@@ -6,7 +6,7 @@
 
 #include "shadercompiler/SourceLocation.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer::shadercompiler
 {
@@ -185,7 +185,7 @@ class ArrayType final : public Type
 
     explicit ArrayType(const SourceLocation& location,
                        Type&                 element_type,
-                       std::unique_ptr<Expr> size_expr);
+                       UniquePtr<Expr>       size_expr);
 
     ~ArrayType() noexcept override;
 
@@ -203,9 +203,9 @@ class ArrayType final : public Type
 
   private:
     mutable std::reference_wrapper<const Type> m_element_type_ref;
-    std::unique_ptr<Expr>                      m_size_expr;
+    UniquePtr<Expr>                            m_size_expr;
     mutable size_t                             m_size{};
-    mutable std::string                        m_name;
+    mutable String                             m_name;
 };
 
 class UnresolvedType final : public Type

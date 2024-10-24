@@ -68,7 +68,7 @@ auto Writer::buffer() const -> std::string_view
     return m_buffer;
 }
 
-auto Writer::take_buffer() -> std::string
+auto Writer::take_buffer() -> String
 {
     return std::move(m_buffer);
 }
@@ -104,7 +104,7 @@ auto Writer::operator<<(std::string_view str) -> Writer&
     return *this;
 }
 
-auto Writer::operator<<(const std::string& str) -> Writer&
+auto Writer::operator<<(const String& str) -> Writer&
 {
     append(str);
     return *this;

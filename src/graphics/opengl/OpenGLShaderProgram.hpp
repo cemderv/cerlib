@@ -9,7 +9,7 @@
 #include "graphics/ShaderParameter.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer::details
 {
@@ -47,9 +47,9 @@ class OpenGLShaderProgram final
         return gl_handle == other.gl_handle;
     }
 
-    std::string                               name;
+    String                               name;
     GLuint                                    gl_handle;
-    PairList<std::string, GLint> uniform_locations;
+    PairList<String, GLint> uniform_locations;
 
   private:
     void destroy();

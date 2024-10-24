@@ -5,7 +5,7 @@
 #pragma once
 
 #include <cerlib/Color.hpp>
-#include <variant>
+#include <cerlib/Variant.hpp>
 
 namespace cer
 {
@@ -121,14 +121,14 @@ struct ParticleVortexMod
 /**
  * @ingroup Graphics
  */
-using ParticleModifier = std::variant<ParticleColorLerpMod,
-                                      ParticleContainerMod,
-                                      ParticleDragMod,
-                                      ParticleLinearGravityMod,
-                                      ParticleFastFadeMod,
-                                      ParticleOpacityMod,
-                                      ParticleRotationMod,
-                                      ParticleScaleLerpMod,
-                                      ParticleVelocityColorMod,
-                                      ParticleVortexMod>;
+using ParticleModifier = Variant<ParticleColorLerpMod,
+                                 ParticleContainerMod,
+                                 ParticleDragMod,
+                                 ParticleLinearGravityMod,
+                                 ParticleFastFadeMod,
+                                 ParticleOpacityMod,
+                                 ParticleRotationMod,
+                                 ParticleScaleLerpMod,
+                                 ParticleVelocityColorMod,
+                                 ParticleVortexMod>;
 } // namespace cer

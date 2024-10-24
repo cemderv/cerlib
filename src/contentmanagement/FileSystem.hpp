@@ -6,8 +6,7 @@
 
 #include "cerlib/Content.hpp"
 #include <cerlib/List.hpp>
-#include <string>
-#include <string_view>
+#include <cerlib/String.hpp>
 
 auto set_android_asset_manager(void* asset_manager) -> void;
 
@@ -28,13 +27,13 @@ void set_file_loading_root_directory(std::string_view prefix);
 
 auto load_asset_data(std::string_view filename) -> AssetData;
 
-auto filename_extension(std::string_view filename) -> std::string;
+auto filename_extension(std::string_view filename) -> String;
 
-auto filename_without_extension(std::string_view filename) -> std::string;
+auto filename_without_extension(std::string_view filename) -> String;
 
-auto parent_directory(std::string_view filename) -> std::string;
+auto parent_directory(std::string_view filename) -> String;
 
-auto combine_paths(std::string_view path1, std::string_view path2) -> std::string;
+auto combine_paths(std::string_view path1, std::string_view path2) -> String;
 
 /**
  * Loads a binary file from disk, meaning the disk on desktop platforms.

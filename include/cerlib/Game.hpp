@@ -40,7 +40,7 @@ struct DisplayMode
     auto operator!=(const DisplayMode&) const -> bool = default;
 
     /** If known, the format of the mode */
-    std::optional<ImageFormat> format;
+    Option<ImageFormat> format;
 
     /** The width of the mode, in pixels */
     uint32_t width{};
@@ -137,7 +137,7 @@ class Game
      * @param display_index The index of the display for which to obtain the current
      * display mode.
      */
-    auto current_display_mode(uint32_t display_index) -> std::optional<DisplayMode>;
+    auto current_display_mode(uint32_t display_index) -> Option<DisplayMode>;
 
     /**
      * Gets a list of all supported display modes of a specific display.

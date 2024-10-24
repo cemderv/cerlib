@@ -28,7 +28,7 @@ freely, subject to the following restrictions:
 #include "audio/Filter.hpp"
 #include "cerlib/Vector3.hpp"
 #include <array>
-#include <memory>
+#include <cerlib/SmartPointers.hpp>
 
 namespace cer
 {
@@ -229,7 +229,7 @@ class AudioSourceInstance
     size_t bus_handle = ~0u;
 
     // Filter pointer
-    std::array<std::shared_ptr<FilterInstance>, filters_per_stream> filter{};
+    std::array<SharedPtr<FilterInstance>, filters_per_stream> filter{};
 
     // Pointers to buffers for the resampler
     std::array<float*, 2> resample_data{};
@@ -256,7 +256,7 @@ class AudioSource
     virtual ~AudioSource() noexcept;
 
     // Create instance from the audio source. Called from within Soloud class.
-    virtual auto create_instance() -> std::shared_ptr<AudioSourceInstance> = 0;
+    virtual auto create_instance() -> SharedPtr<AudioSourceInstance> = 0;
 
     // Set filter. Set to nullptr to clear the filter.
     virtual void set_filter(size_t filter_id, Filter* filter);

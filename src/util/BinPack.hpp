@@ -7,7 +7,7 @@
 #include "cerlib/Rectangle.hpp"
 
 #include <cerlib/List.hpp>
-#include <optional>
+#include <cerlib/Option.hpp>
 
 namespace cer
 {
@@ -47,17 +47,17 @@ class BinPack final
 
     void insert(List<Size>& rects, List<Rect>& dst);
 
-    auto insert(int32_t width, int32_t height) -> std::optional<Rect>;
+    auto insert(int32_t width, int32_t height) -> Option<Rect>;
 
   private:
-    auto score_rect(int width, int height, int& score1, int& score2) const -> std::optional<Rect>;
+    auto score_rect(int width, int height, int& score1, int& score2) const -> Option<Rect>;
 
     void place_rect(const Rect& node);
 
     auto find_position_for_new_node(int  width,
                                     int  height,
                                     int& best_area_fit,
-                                    int& best_short_side_fit) const -> std::optional<Rect>;
+                                    int& best_short_side_fit) const -> Option<Rect>;
 
     void insert_new_free_rectangle(const Rect& new_free_rect);
 

@@ -7,7 +7,8 @@
 #include "OpenGLPrerequisites.hpp"
 #include "OpenGLVao.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include <optional>
+#include <cerlib/HashMap.hpp>
+#include <cerlib/Option.hpp>
 
 namespace cer::details
 {
@@ -33,10 +34,10 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
     void on_set_scissor_rects(std::span<const Rectangle> scissor_rects) override;
 
     auto create_canvas(const Window& window, uint32_t width, uint32_t height, ImageFormat format)
-        -> std::unique_ptr<ImageImpl> override;
+        -> UniquePtr<ImageImpl> override;
 
     auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
-        -> std::unique_ptr<ImageImpl> override;
+        -> UniquePtr<ImageImpl> override;
 
     auto opengl_features() const -> const OpenGLFeatures&;
 
@@ -54,21 +55,21 @@ class OpenGLGraphicsDevice final : public GraphicsDevice
   protected:
     auto create_native_user_shader(std::string_view          native_code,
                                    ShaderImpl::ParameterList parameters)
-        -> std::unique_ptr<ShaderImpl> override;
+        -> UniquePtr<ShaderImpl> override;
 
   private:
     struct PerOpenGLContextState
     {
-        int                   last_applied_gl_swap_interval{-1};
-        std::optional<GLuint> last_used_shader_program;
+        int            last_applied_gl_swap_interval{-1};
+        Option<GLuint> last_used_shader_program;
 
         // When VAOs are not supported, this counts how many vertex attributes we have
         // currently enabled. Used to only enable/disable attributes that changed.
         size_t enabled_vertex_attrib_count{};
     };
 
-    OpenGLFeatures                                         m_features;
-    std::unordered_map<WindowImpl*, PerOpenGLContextState> m_per_open_gl_context_states;
-    PerOpenGLContextState*                                 m_open_gl_context_state{};
+    OpenGLFeatures                              m_features;
+    HashMap<WindowImpl*, PerOpenGLContextState> m_per_open_gl_context_states;
+    PerOpenGLContextState*                      m_open_gl_context_state{};
 };
 } // namespace cer::details

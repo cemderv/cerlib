@@ -219,7 +219,7 @@ void OpenGLGraphicsDevice::on_set_scissor_rects(std::span<const Rectangle> sciss
 auto OpenGLGraphicsDevice::create_canvas(const Window& window,
                                          uint32_t      width,
                                          uint32_t      height,
-                                         ImageFormat   format) -> std::unique_ptr<ImageImpl>
+                                         ImageFormat   format) -> UniquePtr<ImageImpl>
 {
     return std::make_unique<OpenGLImage>(*this, window.impl(), width, height, format);
 }
@@ -227,7 +227,7 @@ auto OpenGLGraphicsDevice::create_canvas(const Window& window,
 auto OpenGLGraphicsDevice::create_image(uint32_t    width,
                                         uint32_t    height,
                                         ImageFormat format,
-                                        const void* data) -> std::unique_ptr<ImageImpl>
+                                        const void* data) -> UniquePtr<ImageImpl>
 {
     return std::make_unique<OpenGLImage>(*this, width, height, format, data);
 }
@@ -299,7 +299,7 @@ void OpenGLGraphicsDevice::read_canvas_data_into(
 
 auto OpenGLGraphicsDevice::create_native_user_shader(std::string_view          native_code,
                                                      ShaderImpl::ParameterList parameters)
-    -> std::unique_ptr<ShaderImpl>
+    -> UniquePtr<ShaderImpl>
 {
     return std::make_unique<OpenGLUserShader>(*this, native_code, std::move(parameters));
 }

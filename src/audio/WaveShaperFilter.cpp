@@ -58,7 +58,7 @@ void WaveShaperFilterInstance::filter_channel(const FilterChannelArgs& args)
     }
 }
 
-std::shared_ptr<FilterInstance> WaveShaperFilter::create_instance()
+SharedPtr<FilterInstance> WaveShaperFilter::create_instance()
 {
     return std::make_shared<WaveShaperFilterInstance>(this);
 }

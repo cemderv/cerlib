@@ -4,12 +4,10 @@
 
 #pragma once
 
-#include "MultiStringHash.hpp"
+#include <optional>
 
-#include <cerlib/HashMap.hpp>
-
-namespace cer::details
+namespace cer
 {
 template <typename T>
-using StringUnorderedMap = HashMap<String, T, MultiStringHash, std::equal_to<>>;
+using Option = std::optional<T>;
 }

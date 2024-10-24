@@ -6,7 +6,7 @@
 
 #include "cerlib/Content.hpp"
 #include "util/Object.hpp"
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer
 {
@@ -38,6 +38,6 @@ class GraphicsResourceImpl : public Object, public Asset
   private:
     GraphicsDevice&      m_parent_device;
     GraphicsResourceType m_resource_type;
-    std::string          m_name;
+    String               m_name;
 };
 } // namespace cer::details

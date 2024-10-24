@@ -9,10 +9,10 @@ namespace cer
 {
 CERLIB_IMPLEMENT_OBJECT(Text);
 
-Text::Text(std::string_view                     text,
-           const Font&                          font,
-           uint32_t                             font_size,
-           const std::optional<TextDecoration>& decoration)
+Text::Text(std::string_view              text,
+           const Font&                   font,
+           uint32_t                      font_size,
+           const Option<TextDecoration>& decoration)
     : m_impl(nullptr)
 {
     auto impl = std::make_unique<details::TextImpl>(text, font, font_size, decoration);

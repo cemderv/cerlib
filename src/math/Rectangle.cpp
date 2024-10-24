@@ -129,8 +129,7 @@ auto Rectangle::intersects(const Circle& circle) const -> bool
     return distance_squared > 0 && distance_squared < radius * radius;
 }
 
-auto Rectangle::intersection_depth(const Rectangle& lhs, const Rectangle& rhs)
-    -> std::optional<Vector2>
+auto Rectangle::intersection_depth(const Rectangle& lhs, const Rectangle& rhs) -> Option<Vector2>
 {
     // Calculate half sizes.
     const auto half_width_a  = lhs.width / 2.0f;

@@ -55,8 +55,8 @@ class CompoundStmt final : public Stmt
   public:
     CompoundStmt(const SourceLocation& location,
                  CompoundStmtKind      kind,
-                 std::unique_ptr<Expr> lhs,
-                 std::unique_ptr<Expr> rhs);
+                 UniquePtr<Expr>       lhs,
+                 UniquePtr<Expr>       rhs);
 
     forbid_copy_and_move(CompoundStmt);
 
@@ -73,17 +73,15 @@ class CompoundStmt final : public Stmt
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    CompoundStmtKind      m_kind;
-    std::unique_ptr<Expr> m_lhs;
-    std::unique_ptr<Expr> m_rhs;
+    CompoundStmtKind m_kind;
+    UniquePtr<Expr>  m_lhs;
+    UniquePtr<Expr>  m_rhs;
 };
 
 class AssignmentStmt final : public Stmt
 {
   public:
-    AssignmentStmt(const SourceLocation& location,
-                   std::unique_ptr<Expr> lhs,
-                   std::unique_ptr<Expr> rhs);
+    AssignmentStmt(const SourceLocation& location, UniquePtr<Expr> lhs, UniquePtr<Expr> rhs);
 
     forbid_copy_and_move(AssignmentStmt);
 
@@ -98,14 +96,14 @@ class AssignmentStmt final : public Stmt
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr> m_lhs;
-    std::unique_ptr<Expr> m_rhs;
+    UniquePtr<Expr> m_lhs;
+    UniquePtr<Expr> m_rhs;
 };
 
 class ReturnStmt final : public Stmt
 {
   public:
-    explicit ReturnStmt(const SourceLocation& location, std::unique_ptr<Expr> expr);
+    explicit ReturnStmt(const SourceLocation& location, UniquePtr<Expr> expr);
 
     forbid_copy_and_move(ReturnStmt);
 
@@ -118,16 +116,16 @@ class ReturnStmt final : public Stmt
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr> m_expr;
+    UniquePtr<Expr> m_expr;
 };
 
 class ForStmt final : public Stmt
 {
   public:
-    ForStmt(const SourceLocation&                location,
-            std::unique_ptr<ForLoopVariableDecl> loop_variable,
-            std::unique_ptr<RangeExpr>           range,
-            std::unique_ptr<CodeBlock>           body);
+    ForStmt(const SourceLocation&          location,
+            UniquePtr<ForLoopVariableDecl> loop_variable,
+            UniquePtr<RangeExpr>           range,
+            UniquePtr<CodeBlock>           body);
 
     forbid_copy_and_move(ForStmt);
 
@@ -144,18 +142,18 @@ class ForStmt final : public Stmt
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<ForLoopVariableDecl> m_loop_variable;
-    std::unique_ptr<RangeExpr>           m_range;
-    std::unique_ptr<CodeBlock>           m_body;
+    UniquePtr<ForLoopVariableDecl> m_loop_variable;
+    UniquePtr<RangeExpr>           m_range;
+    UniquePtr<CodeBlock>           m_body;
 };
 
 class IfStmt final : public Stmt
 {
   public:
-    IfStmt(const SourceLocation&      location,
-           std::unique_ptr<Expr>      condition_expr,
-           std::unique_ptr<CodeBlock> body,
-           std::unique_ptr<IfStmt>    next);
+    IfStmt(const SourceLocation& location,
+           UniquePtr<Expr>       condition_expr,
+           UniquePtr<CodeBlock>  body,
+           UniquePtr<IfStmt>     next);
 
     forbid_copy_and_move(IfStmt);
 
@@ -172,15 +170,15 @@ class IfStmt final : public Stmt
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>      m_condition_expr;
-    std::unique_ptr<CodeBlock> m_body;
-    std::unique_ptr<IfStmt>    m_next;
+    UniquePtr<Expr>      m_condition_expr;
+    UniquePtr<CodeBlock> m_body;
+    UniquePtr<IfStmt>    m_next;
 };
 
 class VarStmt final : public Stmt
 {
   public:
-    explicit VarStmt(const SourceLocation& location, std::unique_ptr<VarDecl> variable);
+    explicit VarStmt(const SourceLocation& location, UniquePtr<VarDecl> variable);
 
     forbid_copy_and_move(VarStmt);
 
@@ -192,11 +190,11 @@ class VarStmt final : public Stmt
 
     auto variable() const -> const VarDecl&;
 
-    auto steal_variable() -> std::unique_ptr<VarDecl>;
+    auto steal_variable() -> UniquePtr<VarDecl>;
 
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<VarDecl> m_variable;
+    UniquePtr<VarDecl> m_variable;
 };
 } // namespace cer::shadercompiler

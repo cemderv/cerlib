@@ -2,31 +2,33 @@
 
 #include <cerlib.hpp>
 
+using namespace cer;
+
 class Level;
 
 class Gem
 {
   public:
-    Gem(Level* level, cer::Vector2 position, bool is_super_gem);
+    Gem(Level* level, Vector2 position, bool is_super_gem);
 
-    void update(cer::GameTime time);
+    void update(GameTime time);
 
     void draw() const;
 
     void on_collected();
 
-    cer::Vector2 position() const;
+    Vector2 position() const;
 
-    cer::Circle bounding_circle() const;
+    Circle bounding_circle() const;
 
     int score_value() const;
 
   private:
-    Level*       m_level = nullptr;
-    cer::Image   m_texture;
-    cer::Vector2 m_origin;
-    cer::Sound   m_collected_sound;
-    cer::Vector2 m_base_position;
-    float        m_bounce       = 0.0f;
-    bool         m_is_super_gem = false;
+    Level*  m_level = nullptr;
+    Image   m_texture;
+    Vector2 m_origin;
+    Sound   m_collected_sound;
+    Vector2 m_base_position;
+    float   m_bounce       = 0.0f;
+    bool    m_is_super_gem = false;
 };

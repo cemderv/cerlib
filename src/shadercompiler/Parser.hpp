@@ -61,69 +61,69 @@ class Parser final
     auto parse(std::span<const Token> tokens) -> AST::DeclsType;
 
   private:
-    auto parse_decl_at_global_scope() -> std::unique_ptr<Decl>;
+    auto parse_decl_at_global_scope() -> UniquePtr<Decl>;
 
-    auto parse_stmt() -> std::unique_ptr<Stmt>;
+    auto parse_stmt() -> UniquePtr<Stmt>;
 
-    auto parse_expr(std::unique_ptr<Expr> lhs            = {},
-                    int                   min_precedence = 0,
-                    std::string_view      name = std::string_view()) -> std::unique_ptr<Expr>;
+    auto parse_expr(UniquePtr<Expr>  lhs            = {},
+                    int              min_precedence = 0,
+                    std::string_view name           = std::string_view()) -> UniquePtr<Expr>;
 
-    auto parse_primary_expr() -> std::unique_ptr<Expr>;
+    auto parse_primary_expr() -> UniquePtr<Expr>;
 
     auto parse_shader_param(const SourceLocation& location,
                             const Type&           return_type,
-                            std::string_view      name) -> std::unique_ptr<ShaderParamDecl>;
+                            std::string_view      name) -> UniquePtr<ShaderParamDecl>;
 
     auto parse_function(std::string_view      name,
                         const SourceLocation& name_location,
-                        const Type&           return_type) -> std::unique_ptr<FunctionDecl>;
+                        const Type&           return_type) -> UniquePtr<FunctionDecl>;
 
-    auto parse_struct() -> std::unique_ptr<StructDecl>;
+    auto parse_struct() -> UniquePtr<StructDecl>;
 
-    auto parse_struct_field_decl() -> std::unique_ptr<StructFieldDecl>;
+    auto parse_struct_field_decl() -> UniquePtr<StructFieldDecl>;
 
-    auto parse_function_param_decl() -> std::unique_ptr<FunctionParamDecl>;
+    auto parse_function_param_decl() -> UniquePtr<FunctionParamDecl>;
 
-    auto parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs) -> std::unique_ptr<CompoundStmt>;
+    auto parse_compound_stmt(UniquePtr<Expr>* parsed_lhs) -> UniquePtr<CompoundStmt>;
 
-    auto parse_assignment_stmt(std::unique_ptr<Expr> lhs) -> std::unique_ptr<AssignmentStmt>;
+    auto parse_assignment_stmt(UniquePtr<Expr> lhs) -> UniquePtr<AssignmentStmt>;
 
-    auto parse_return_stmt() -> std::unique_ptr<ReturnStmt>;
+    auto parse_return_stmt() -> UniquePtr<ReturnStmt>;
 
-    auto parse_for_stmt() -> std::unique_ptr<ForStmt>;
+    auto parse_for_stmt() -> UniquePtr<ForStmt>;
 
-    auto parse_if_stmt(bool is_if) -> std::unique_ptr<IfStmt>;
+    auto parse_if_stmt(bool is_if) -> UniquePtr<IfStmt>;
 
-    auto parse_var_stmt() -> std::unique_ptr<VarStmt>;
+    auto parse_var_stmt() -> UniquePtr<VarStmt>;
 
-    auto parse_range_expr() -> std::unique_ptr<RangeExpr>;
+    auto parse_range_expr() -> UniquePtr<RangeExpr>;
 
-    auto parse_int_literal_expr() -> std::unique_ptr<IntLiteralExpr>;
+    auto parse_int_literal_expr() -> UniquePtr<IntLiteralExpr>;
 
-    auto parse_bool_literal_expr() -> std::unique_ptr<BoolLiteralExpr>;
+    auto parse_bool_literal_expr() -> UniquePtr<BoolLiteralExpr>;
 
-    auto parse_float_literal_expr() -> std::unique_ptr<FloatLiteralExpr>;
+    auto parse_float_literal_expr() -> UniquePtr<FloatLiteralExpr>;
 
-    auto parse_unary_op_expr() -> std::unique_ptr<UnaryOpExpr>;
+    auto parse_unary_op_expr() -> UniquePtr<UnaryOpExpr>;
 
-    auto parse_struct_ctor_arg() -> std::unique_ptr<StructCtorArg>;
+    auto parse_struct_ctor_arg() -> UniquePtr<StructCtorArg>;
 
-    auto parse_sym_access_expr() -> std::unique_ptr<SymAccessExpr>;
+    auto parse_sym_access_expr() -> UniquePtr<SymAccessExpr>;
 
-    auto parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<StructCtorCall>;
+    auto parse_struct_ctor_call(UniquePtr<Expr> callee) -> UniquePtr<StructCtorCall>;
 
-    auto parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<FunctionCallExpr>;
+    auto parse_function_call(UniquePtr<Expr> callee) -> UniquePtr<FunctionCallExpr>;
 
-    auto parse_scientific_int_literal_expr() -> std::unique_ptr<ScientificIntLiteralExpr>;
+    auto parse_scientific_int_literal_expr() -> UniquePtr<ScientificIntLiteralExpr>;
 
-    auto parse_hexadecimal_int_literal_expr() -> std::unique_ptr<HexadecimalIntLiteralExpr>;
+    auto parse_hexadecimal_int_literal_expr() -> UniquePtr<HexadecimalIntLiteralExpr>;
 
-    auto parse_paren_expr() -> std::unique_ptr<ParenExpr>;
+    auto parse_paren_expr() -> UniquePtr<ParenExpr>;
 
-    auto parse_ternary_expr(std::unique_ptr<Expr> condition_expr) -> std::unique_ptr<TernaryExpr>;
+    auto parse_ternary_expr(UniquePtr<Expr> condition_expr) -> UniquePtr<TernaryExpr>;
 
-    auto parse_code_block() -> std::unique_ptr<CodeBlock>;
+    auto parse_code_block() -> UniquePtr<CodeBlock>;
 
     auto parse_type() -> const Type&;
 

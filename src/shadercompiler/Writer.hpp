@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <cerlib/String.hpp>
 #include <cstddef>
 #include <cstdint>
-#include <string>
 
 namespace cer::shadercompiler
 {
@@ -41,7 +41,7 @@ class Writer final
 
     auto operator<<(std::string_view str) -> Writer&;
 
-    auto operator<<(const std::string& str) -> Writer&;
+    auto operator<<(const String& str) -> Writer&;
 
     auto operator<<(const char* str) -> Writer&;
 
@@ -65,14 +65,14 @@ class Writer final
 
     auto buffer() const -> std::string_view;
 
-    auto take_buffer() -> std::string;
+    auto take_buffer() -> String;
 
     auto buffer_length() const -> size_t;
 
     auto current_column() const -> int;
 
   private:
-    std::string m_buffer;
-    int         m_indentation{};
+    String m_buffer;
+    int    m_indentation{};
 };
 } // namespace cer::shadercompiler

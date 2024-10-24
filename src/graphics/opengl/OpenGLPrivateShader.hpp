@@ -8,8 +8,8 @@
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
 #include <span>
-#include <string>
-#include <string_view>
+#include <cerlib/String.hpp>
+#include <cerlib/String.hpp>
 
 namespace cer::details
 {
@@ -28,8 +28,8 @@ class OpenGLPrivateShader final
 
     ~OpenGLPrivateShader() noexcept;
 
-    std::string               name;
+    String               name;
     GLuint                    gl_handle{};
-    List<std::string> attributes;
+    List<String> attributes;
 };
 } // namespace cer::details

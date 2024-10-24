@@ -59,7 +59,7 @@ class Wav final : public AudioSource
 
     ~Wav() override;
 
-    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
+    auto create_instance() -> SharedPtr<AudioSourceInstance> override;
 
     auto length_time() const -> SoundTime;
 
@@ -72,7 +72,7 @@ class Wav final : public AudioSource
 
     void load_flac(const MemoryReader& reader);
 
-    std::unique_ptr<float[]> m_data;
-    size_t                   m_sample_count = 0;
+    UniquePtr<float[]> m_data;
+    size_t             m_sample_count = 0;
 };
 }; // namespace cer

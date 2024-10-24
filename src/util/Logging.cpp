@@ -15,10 +15,10 @@
 
 namespace cer::details
 {
-void log_internal(const std::string& message, LogMessageType type)
+void log_internal(const String& message, LogMessageType type)
 {
 #if CERLIB_PLATFORM_WINDOWS
-    auto full_msg = std::string{};
+    auto full_msg = String{};
     full_msg.reserve(message.size() + 1);
 
     switch (type)

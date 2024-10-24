@@ -2,6 +2,8 @@
 
 #include <cerlib.hpp>
 
+using namespace cer;
+
 class Animation
 {
   public:
@@ -15,9 +17,9 @@ class Animation
 
     auto frame_height() const -> uint32_t;
 
-    cer::Image image;
-    float      frame_time = 0.0f;
-    bool       is_looping = false;
+    Image image;
+    float frame_time = 0.0f;
+    bool  is_looping = false;
 };
 
 class AnimationPlayer
@@ -25,11 +27,11 @@ class AnimationPlayer
   public:
     void play_animation(const Animation& animation);
 
-    void update(cer::GameTime time);
+    void update(GameTime time);
 
-    void draw(cer::Vector2 position, cer::SpriteFlip flip) const;
+    void draw(Vector2 position, SpriteFlip flip) const;
 
-    cer::Vector2 origin() const;
+    Vector2 origin() const;
 
   private:
     Animation m_animation;

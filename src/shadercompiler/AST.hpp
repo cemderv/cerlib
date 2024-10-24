@@ -7,7 +7,7 @@
 #include "util/StringViewUnorderedSet.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer::shadercompiler
 {
@@ -66,7 +66,7 @@ class AST final
     auto is_verified() const -> bool;
 
   private:
-    std::string                   m_filename;
+    String                        m_filename;
     UniquePtrList<Decl, 8>        m_decls;
     const StringViewUnorderedSet* m_user_specified_defines;
     bool                          m_is_verified{};

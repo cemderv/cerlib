@@ -10,10 +10,9 @@
 #include "graphics/ShaderImpl.hpp"
 #include "util/StringUnorderedMap.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/String.hpp>
+#include <cerlib/Variant.hpp>
 #include <span>
-#include <string>
-#include <string_view>
-#include <variant>
 
 namespace cer::details
 {
@@ -46,7 +45,7 @@ class ContentManager final
 
     auto load_custom_asset(std::string_view type_id,
                            std::string_view name,
-                           const std::any&  extra_info) -> std::shared_ptr<Asset>;
+                           const std::any&  extra_info) -> SharedPtr<Asset>;
 
     auto is_loaded(std::string_view name) const -> bool;
 
@@ -57,14 +56,14 @@ class ContentManager final
     void notify_asset_destroyed(std::string_view name);
 
   private:
-    using CustomAsset = std::weak_ptr<Asset>;
+    using CustomAsset = WeakPtr<Asset>;
 
     // The content manager doesn't manage loaded assets, only non-owning references are
     // stored. When assets are destroyed (because their external references have
     // vanished), they notify the content manager. The content manager then removes those
     // assets from its list.
     using ReferenceToLoadedAsset =
-        std::variant<ImageImpl*, SoundImpl*, ShaderImpl*, FontImpl*, CustomAsset>;
+        Variant<ImageImpl*, SoundImpl*, ShaderImpl*, FontImpl*, CustomAsset>;
 
     using MapOfLoadedAssets = StringUnorderedMap<ReferenceToLoadedAsset>;
 
@@ -73,8 +72,8 @@ class ContentManager final
     template <typename TBase, typename TImpl, typename TLoadFunc>
     auto lazy_load(std::string_view key, std::string_view name, const TLoadFunc& load_func);
 
-    std::string          m_root_directory;
-    std::string          m_asset_loading_prefix;
+    String               m_root_directory;
+    String               m_asset_loading_prefix;
     MapOfLoadedAssets    m_loaded_assets;
     CustomAssetLoaderMap m_custom_asset_loaders;
 };
@@ -87,7 +86,7 @@ auto ContentManager::lazy_load(std::string_view key,
     static_assert(std::is_base_of_v<Asset, TImpl>, "Type must derive from Asset");
 
     // TODO: we can optimize this: use key directly if asset prefix is empty
-    const auto key_str = m_asset_loading_prefix + std::string{key};
+    const auto key_str = m_asset_loading_prefix + String{key};
 
     if (const auto it = m_loaded_assets.find(key_str); it != m_loaded_assets.cend())
     {
@@ -111,7 +110,7 @@ auto ContentManager::lazy_load(std::string_view key,
     }
 
     // Load fresh object, store its impl pointer in the map, but return the object.
-    const auto name_str = m_asset_loading_prefix + std::string(name);
+    const auto name_str = m_asset_loading_prefix + String(name);
     auto       asset    = load_func(name_str);
 
     constexpr auto allowed_to_be_null = std::is_same_v<TImpl, SoundImpl>;

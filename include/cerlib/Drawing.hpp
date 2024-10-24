@@ -7,10 +7,10 @@
 #include <cerlib/Image.hpp>
 #include <cerlib/List.hpp>
 #include <cerlib/Matrix.hpp>
+#include <cerlib/Option.hpp>
 #include <cerlib/Rectangle.hpp>
+#include <cerlib/Variant.hpp>
 #include <cerlib/Vector2.hpp>
-#include <optional>
-#include <variant>
 
 namespace cer
 {
@@ -80,7 +80,7 @@ struct Sprite
     Rectangle dst_rect = {};
 
     /** The image coordinates of the sprite, in pixels. */
-    std::optional<Rectangle> src_rect = {};
+    Option<Rectangle> src_rect = {};
 
     /** The multiplicative color of the sprite. */
     Color color = white;
@@ -107,10 +107,10 @@ struct TextUnderline
 {
     /** The optional thickness of the line. If not specified, an ideal thickness is
      * calculated. */
-    std::optional<float> thickness;
+    Option<float> thickness;
 
     /** The optional color of the line. If not specified, the text color is used. */
-    std::optional<Color> color;
+    Option<Color> color;
 };
 
 /**
@@ -122,10 +122,10 @@ struct TextStrikethrough
 {
     /** The optional thickness of the line. If not specified, an ideal thickness is
      * calculated. */
-    std::optional<float> thickness;
+    Option<float> thickness;
 
     /** The optional color of the line. If not specified, the text color is used. */
-    std::optional<Color> color;
+    Option<Color> color;
 };
 
 /**
@@ -133,7 +133,7 @@ struct TextStrikethrough
  *
  * @ingroup Graphics
  */
-using TextDecoration = std::variant<TextUnderline, TextStrikethrough>;
+using TextDecoration = Variant<TextUnderline, TextStrikethrough>;
 
 /**
  * Represents drawing statistics of a frame.
@@ -264,12 +264,12 @@ void draw_sprite(const Sprite& sprite);
  *
  * @ingroup Graphics
  */
-void draw_string(std::string_view                     text,
-                 const Font&                          font,
-                 uint32_t                             font_size,
-                 Vector2                              position,
-                 Color                                color      = white,
-                 const std::optional<TextDecoration>& decoration = std::nullopt);
+void draw_string(std::string_view              text,
+                 const Font&                   font,
+                 uint32_t                      font_size,
+                 Vector2                       position,
+                 Color                         color      = white,
+                 const Option<TextDecoration>& decoration = std::nullopt);
 
 /**
  * Draws 2D text from a pre-created Text object.

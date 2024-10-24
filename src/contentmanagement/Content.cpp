@@ -37,10 +37,10 @@ void cer::set_asset_loading_prefix(std::string_view prefix)
     content.set_asset_loading_prefix(prefix);
 }
 
-auto cer::asset_loading_prefix() -> std::string
+auto cer::asset_loading_prefix() -> String
 {
     LOAD_CONTENT_MANAGER;
-    return std::string{content.asset_loading_prefix()};
+    return String{content.asset_loading_prefix()};
 }
 
 void cer::register_custom_asset_loader(std::string_view type_id, CustomAssetLoadFunc load_func)
@@ -57,7 +57,7 @@ void cer::unregister_custom_asset_loader(std::string_view type_id)
 
 auto cer::load_custom_asset(std::string_view type_id,
                             std::string_view name,
-                            const std::any&  extra_info) -> std::shared_ptr<cer::Asset>
+                            const std::any&  extra_info) -> SharedPtr<cer::Asset>
 {
     LOAD_CONTENT_MANAGER;
     return content.load_custom_asset(type_id, name, extra_info);
