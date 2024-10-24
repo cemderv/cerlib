@@ -6,6 +6,7 @@
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wgnu-label-as-value"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
 #undef vmdispatch
