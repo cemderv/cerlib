@@ -61,7 +61,7 @@ class Noise final : public AudioSource
 
     ~Noise() override;
 
-    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
+    auto create_instance() -> SharedPtr<AudioSourceInstance> override;
 
     void set_type(NoiseType type);
 

@@ -80,7 +80,7 @@ auto AST::has_parameters() const -> bool
 
 auto AST::is_symbol_accessed_anywhere(const Decl& symbol) const -> bool
 {
-    return std::ranges::any_of(m_decls, [&symbol](const std::unique_ptr<Decl>& decl) {
+    return std::ranges::any_of(m_decls, [&symbol](const UniquePtr<Decl>& decl) {
         const auto* function = asa<FunctionDecl>(decl.get());
 
         return function != nullptr ? function->accesses_symbol(symbol, true) : false;

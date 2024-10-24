@@ -51,7 +51,7 @@ class OpenGLSpriteBatch final : public SpriteBatch
 
     void on_shader_destroyed(ShaderImpl& shader) override;
 
-    std::unique_ptr<Vertex[]> m_vertex_data;
+    UniquePtr<Vertex[]> m_vertex_data;
 
     OpenGLPrivateShader m_sprite_vertex_shader;
     OpenGLShaderProgram m_default_sprite_shader_program;
@@ -61,13 +61,13 @@ class OpenGLSpriteBatch final : public SpriteBatch
     GLint m_default_sprite_shader_program_u_transformation{-1};
     GLint m_monochromatic_shader_program_u_transformation{-1};
 
-    std::unordered_map<const OpenGLUserShader*, OpenGLShaderProgram> m_custom_shader_programs;
+    HashMap<const OpenGLUserShader*, OpenGLShaderProgram> m_custom_shader_programs;
 
     OpenGLShaderProgram* m_current_custom_shader_program{};
 
     OpenGLBuffer              m_vbo;
     OpenGLBuffer              m_ibo;
     OpenGLVao                 m_vao;
-    std::optional<BlendState> m_last_applied_blend_state;
+    Option<BlendState> m_last_applied_blend_state;
 };
 } // namespace cer::details

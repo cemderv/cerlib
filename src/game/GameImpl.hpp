@@ -9,9 +9,9 @@
 #include "util/Object.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
+#include <cerlib/Variant.hpp>
 #include <map>
 #include <span>
-#include <variant>
 
 #ifdef __EMSCRIPTEN__
 #include <SDL2/SDL.h>
@@ -39,28 +39,28 @@ class GraphicsDevice;
 class ContentManager;
 class InputImpl;
 
-using Event = std::variant<WindowShownEvent,
-                           WindowHiddenEvent,
-                           WindowMovedEvent,
-                           WindowResizedEvent,
-                           WindowMinimizedEvent,
-                           WindowMaximizedEvent,
-                           WindowGotMouseFocusEvent,
-                           WindowLostMouseFocusEvent,
-                           WindowGotKeyboardFocusEvent,
-                           WindowLostKeyboardFocusEvent,
-                           WindowCloseEvent,
-                           KeyPressEvent,
-                           KeyReleaseEvent,
-                           MouseMoveEvent,
-                           MouseButtonPressEvent,
-                           MouseButtonReleaseEvent,
-                           MouseDoubleClickEvent,
-                           MouseWheelEvent,
-                           TouchFingerEvent,
-                           GamepadConnectedEvent,
-                           GamepadDisconnectedEvent,
-                           TextInputEvent>;
+using Event = Variant<WindowShownEvent,
+                      WindowHiddenEvent,
+                      WindowMovedEvent,
+                      WindowResizedEvent,
+                      WindowMinimizedEvent,
+                      WindowMaximizedEvent,
+                      WindowGotMouseFocusEvent,
+                      WindowLostMouseFocusEvent,
+                      WindowGotKeyboardFocusEvent,
+                      WindowLostKeyboardFocusEvent,
+                      WindowCloseEvent,
+                      KeyPressEvent,
+                      KeyReleaseEvent,
+                      MouseMoveEvent,
+                      MouseButtonPressEvent,
+                      MouseButtonReleaseEvent,
+                      MouseDoubleClickEvent,
+                      MouseWheelEvent,
+                      TouchFingerEvent,
+                      GamepadConnectedEvent,
+                      GamepadDisconnectedEvent,
+                      TextInputEvent>;
 
 /**
  * Game implementation object.
@@ -114,7 +114,7 @@ class GameImpl final : public Object
 
     auto display_count() const -> uint32_t;
 
-    auto current_display_mode(uint32_t display_index) const -> std::optional<DisplayMode>;
+    auto current_display_mode(uint32_t display_index) const -> Option<DisplayMode>;
 
     auto display_modes(uint32_t display_index) const -> List<DisplayMode>;
 
@@ -190,15 +190,15 @@ class GameImpl final : public Object
 
     ImGuiDrawFunc m_imgui_draw_func;
 
-    std::unique_ptr<ImGuiContext, ImGuiDeleter> m_imgui_context;
+    UniquePtr<ImGuiContext, ImGuiDeleter> m_imgui_context;
 #endif
 
-    EventFunc                       m_event_func;
-    std::unique_ptr<GraphicsDevice> m_graphics_device;
-    std::unique_ptr<AudioDevice>    m_audio_device;
-    std::unique_ptr<ContentManager> m_content_manager;
-    List<WindowImpl*>               m_windows;
-    Vector2                         m_previous_mouse_position;
-    List<Gamepad>                   m_connected_gamepads;
+    EventFunc                 m_event_func;
+    UniquePtr<GraphicsDevice> m_graphics_device;
+    UniquePtr<AudioDevice>    m_audio_device;
+    UniquePtr<ContentManager> m_content_manager;
+    List<WindowImpl*>         m_windows;
+    Vector2                   m_previous_mouse_position;
+    List<Gamepad>             m_connected_gamepads;
 };
 } // namespace cer::details

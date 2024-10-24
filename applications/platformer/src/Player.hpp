@@ -3,6 +3,8 @@
 #include "Animation.hpp"
 #include <cerlib.hpp>
 
+using namespace cer;
+
 class Level;
 class Enemy;
 
@@ -11,18 +13,18 @@ class Player
   public:
     Player() = default;
 
-    Player(Level* level, cer::Vector2 position);
+    Player(Level* level, Vector2 position);
 
     /**
      * Resets the player to life.
      *
      * @param position The position to come to life at.
      */
-    void reset(cer::Vector2 position);
+    void reset(Vector2 position);
 
     void update_input();
 
-    void update(cer::GameTime time);
+    void update(GameTime time);
 
     void draw() const;
 
@@ -32,14 +34,14 @@ class Player
 
     bool is_alive() const;
 
-    void apply_physics(cer::GameTime time);
+    void apply_physics(GameTime time);
 
-    cer::Rectangle bounding_rect() const;
+    Rectangle bounding_rect() const;
 
     bool is_on_ground() const;
 
   private:
-    float do_jump(float velocity_y, cer::GameTime game_time);
+    float do_jump(float velocity_y, GameTime game_time);
 
     void handle_collisions();
 
@@ -54,14 +56,14 @@ class Player
     AnimationPlayer m_sprite;
 
     // Sounds
-    cer::Sound m_killed_sound;
-    cer::Sound m_jump_sound;
-    cer::Sound m_fall_sound;
+    Sound m_killed_sound;
+    Sound m_jump_sound;
+    Sound m_fall_sound;
 
     // Physics state
-    cer::Vector2 m_position;
-    float        m_previous_bottom = 0.0f;
-    cer::Vector2 m_velocity;
+    Vector2 m_position;
+    float   m_previous_bottom = 0.0f;
+    Vector2 m_velocity;
 
     bool  m_is_alive         = true;
     bool  m_is_on_ground     = false;
@@ -74,5 +76,5 @@ class Player
     bool  m_was_jumping = false;
     float m_jump_time   = 0.0f;
 
-    cer::Rectangle m_local_bounds;
+    Rectangle m_local_bounds;
 };

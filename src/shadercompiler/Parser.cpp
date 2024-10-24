@@ -14,7 +14,7 @@
 #include "shadercompiler/Type.hpp"
 #include "shadercompiler/TypeCache.hpp"
 #include <cassert>
-#include <optional>
+#include <cerlib/Option.hpp>
 
 #define PUSH_TK auto tk_pusher_ = TokenPusher(m_tk_stack, m_tk)
 #define POP_TK  tk_pusher_.pop()
@@ -121,7 +121,7 @@ static constexpr auto bin_op_precedence_table = std::array{
     },
 };
 
-static auto get_bin_op_precedence(TokenType type) -> std::optional<int>
+static auto get_bin_op_precedence(TokenType type) -> Option<int>
 {
     const auto it = std::ranges::find_if(bin_op_precedence_table, [type](const auto& op) {
         return op.ttype == type;
@@ -130,7 +130,7 @@ static auto get_bin_op_precedence(TokenType type) -> std::optional<int>
     return it != bin_op_precedence_table.end() ? std::make_optional(it->precedence) : std::nullopt;
 }
 
-static auto get_token_type_to_bin_op_kind(TokenType type) -> std::optional<BinOpKind>
+static auto get_token_type_to_bin_op_kind(TokenType type) -> Option<BinOpKind>
 {
     const auto it = std::ranges::find_if(bin_op_precedence_table, [type](const auto& op) {
         return op.ttype == type;
@@ -207,7 +207,7 @@ auto Parser::parse(std::span<const Token> tokens) -> AST::DeclsType
     return decls;
 }
 
-auto Parser::parse_decl_at_global_scope() -> std::unique_ptr<Decl>
+auto Parser::parse_decl_at_global_scope() -> UniquePtr<Decl>
 {
     // struct <StructDecl>
     // var|const <VarStmt>
@@ -241,7 +241,7 @@ auto Parser::parse_decl_at_global_scope() -> std::unique_ptr<Decl>
     return nullptr;
 }
 
-auto Parser::parse_stmt() -> std::unique_ptr<Stmt>
+auto Parser::parse_stmt() -> UniquePtr<Stmt>
 {
     if (is_keyword(keyword::var) || is_keyword(keyword::const_))
     {
@@ -263,8 +263,8 @@ auto Parser::parse_stmt() -> std::unique_ptr<Stmt>
         return parse_for_stmt();
     }
 
-    auto                  lhs  = std::unique_ptr<Expr>{};
-    std::unique_ptr<Stmt> stmt = parse_compound_stmt(&lhs);
+    auto            lhs  = UniquePtr<Expr>{};
+    UniquePtr<Stmt> stmt = parse_compound_stmt(&lhs);
 
     if (!stmt && !is_at_end() && m_tk->is(TokenType::Equal))
     {
@@ -274,8 +274,8 @@ auto Parser::parse_stmt() -> std::unique_ptr<Stmt>
     return stmt;
 }
 
-auto Parser::parse_expr(std::unique_ptr<Expr> lhs, int min_precedence, std::string_view name)
-    -> std::unique_ptr<Expr>
+auto Parser::parse_expr(UniquePtr<Expr> lhs, int min_precedence, std::string_view name)
+    -> UniquePtr<Expr>
 {
     // Shunting-yard algorithm
 
@@ -285,7 +285,7 @@ auto Parser::parse_expr(std::unique_ptr<Expr> lhs, int min_precedence, std::stri
             throw Error{m_tk->location, "expected a {}", name};
         }
 
-        return std::unique_ptr<Expr>{};
+        return UniquePtr<Expr>{};
     };
 
     if (lhs == nullptr)
@@ -345,9 +345,9 @@ auto Parser::parse_expr(std::unique_ptr<Expr> lhs, int min_precedence, std::stri
     return lhs;
 }
 
-auto Parser::parse_primary_expr() -> std::unique_ptr<Expr>
+auto Parser::parse_primary_expr() -> UniquePtr<Expr>
 {
-    auto expr = std::unique_ptr<Expr>{};
+    auto expr = UniquePtr<Expr>{};
 
     if (auto paren_expr = parse_paren_expr())
     {
@@ -420,9 +420,9 @@ auto Parser::parse_primary_expr() -> std::unique_ptr<Expr>
 
 auto Parser::parse_shader_param(const SourceLocation& location,
                                 const Type&           return_type,
-                                std::string_view      name) -> std::unique_ptr<ShaderParamDecl>
+                                std::string_view      name) -> UniquePtr<ShaderParamDecl>
 {
-    auto default_value_expr = std::unique_ptr<Expr>{};
+    auto default_value_expr = UniquePtr<Expr>{};
 
     if (m_tk->is(TokenType::Equal))
     {
@@ -440,7 +440,7 @@ auto Parser::parse_shader_param(const SourceLocation& location,
 
 auto Parser::parse_function(std::string_view      name,
                             const SourceLocation& name_location,
-                            const Type&           return_type) -> std::unique_ptr<FunctionDecl>
+                            const Type&           return_type) -> UniquePtr<FunctionDecl>
 {
     PUSH_TK;
 
@@ -472,7 +472,7 @@ auto Parser::parse_function(std::string_view      name,
                                           false);
 }
 
-auto Parser::parse_struct() -> std::unique_ptr<StructDecl>
+auto Parser::parse_struct() -> UniquePtr<StructDecl>
 {
     // Assume 'struct' is already consumed
 
@@ -497,7 +497,7 @@ auto Parser::parse_struct() -> std::unique_ptr<StructDecl>
                                         false);
 }
 
-auto Parser::parse_struct_field_decl() -> std::unique_ptr<StructFieldDecl>
+auto Parser::parse_struct_field_decl() -> UniquePtr<StructFieldDecl>
 {
     const auto& type = parse_type();
 
@@ -510,7 +510,7 @@ auto Parser::parse_struct_field_decl() -> std::unique_ptr<StructFieldDecl>
     return std::make_unique<StructFieldDecl>(tk_pusher_.initial_tk()->location, name, type);
 }
 
-auto Parser::parse_function_param_decl() -> std::unique_ptr<FunctionParamDecl>
+auto Parser::parse_function_param_decl() -> UniquePtr<FunctionParamDecl>
 {
     const auto& type = parse_type();
 
@@ -521,7 +521,7 @@ auto Parser::parse_function_param_decl() -> std::unique_ptr<FunctionParamDecl>
     return std::make_unique<FunctionParamDecl>(tk_pusher_.initial_tk()->location, name, type);
 }
 
-auto Parser::parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs) -> std::unique_ptr<CompoundStmt>
+auto Parser::parse_compound_stmt(UniquePtr<Expr>* parsed_lhs) -> UniquePtr<CompoundStmt>
 {
     PUSH_TK;
 
@@ -582,7 +582,7 @@ auto Parser::parse_compound_stmt(std::unique_ptr<Expr>* parsed_lhs) -> std::uniq
                                           std::move(rhs));
 }
 
-auto Parser::parse_assignment_stmt(std::unique_ptr<Expr> lhs) -> std::unique_ptr<AssignmentStmt>
+auto Parser::parse_assignment_stmt(UniquePtr<Expr> lhs) -> UniquePtr<AssignmentStmt>
 {
     PUSH_TK;
 
@@ -618,7 +618,7 @@ auto Parser::parse_assignment_stmt(std::unique_ptr<Expr> lhs) -> std::unique_ptr
                                             std::move(rhs));
 }
 
-auto Parser::parse_return_stmt() -> std::unique_ptr<ReturnStmt>
+auto Parser::parse_return_stmt() -> UniquePtr<ReturnStmt>
 {
     // Assume 'return' is already consumed.
 
@@ -636,7 +636,7 @@ auto Parser::parse_return_stmt() -> std::unique_ptr<ReturnStmt>
     return std::make_unique<ReturnStmt>(tk_pusher_.initial_tk()->location, std::move(expr));
 }
 
-auto Parser::parse_for_stmt() -> std::unique_ptr<ForStmt>
+auto Parser::parse_for_stmt() -> UniquePtr<ForStmt>
 {
     // Assume 'for' is consumed.
 
@@ -668,13 +668,13 @@ auto Parser::parse_for_stmt() -> std::unique_ptr<ForStmt>
                                      std::move(body));
 }
 
-auto Parser::parse_if_stmt(bool is_if) -> std::unique_ptr<IfStmt>
+auto Parser::parse_if_stmt(bool is_if) -> UniquePtr<IfStmt>
 {
     // Assume 'if' is consumed.
 
     PUSH_TK;
 
-    auto condition = std::unique_ptr<Expr>{};
+    auto condition = UniquePtr<Expr>{};
 
     if (is_if)
     {
@@ -691,7 +691,7 @@ auto Parser::parse_if_stmt(bool is_if) -> std::unique_ptr<IfStmt>
     }
 
     auto body = parse_code_block();
-    auto next = std::unique_ptr<IfStmt>{};
+    auto next = UniquePtr<IfStmt>{};
 
     if (consume_keyword(keyword::else_, false))
     {
@@ -709,7 +709,7 @@ auto Parser::parse_if_stmt(bool is_if) -> std::unique_ptr<IfStmt>
                                     std::move(next));
 }
 
-auto Parser::parse_var_stmt() -> std::unique_ptr<VarStmt>
+auto Parser::parse_var_stmt() -> UniquePtr<VarStmt>
 {
     const auto is_var   = is_keyword(keyword::var);
     const auto is_const = is_keyword(keyword::const_);
@@ -740,7 +740,7 @@ auto Parser::parse_var_stmt() -> std::unique_ptr<VarStmt>
         std::make_unique<VarDecl>(name_location, name, std::move(expr), is_const));
 }
 
-auto Parser::parse_range_expr() -> std::unique_ptr<RangeExpr>
+auto Parser::parse_range_expr() -> UniquePtr<RangeExpr>
 {
     PUSH_TK;
 
@@ -765,7 +765,7 @@ auto Parser::parse_range_expr() -> std::unique_ptr<RangeExpr>
                                        std::move(end));
 }
 
-auto Parser::parse_int_literal_expr() -> std::unique_ptr<IntLiteralExpr>
+auto Parser::parse_int_literal_expr() -> UniquePtr<IntLiteralExpr>
 {
     if (m_tk->is(TokenType::IntLiteral))
     {
@@ -774,7 +774,7 @@ auto Parser::parse_int_literal_expr() -> std::unique_ptr<IntLiteralExpr>
 
         try
         {
-            value = std::stoi(std::string{m_tk->value});
+            value = std::stoi(String{m_tk->value});
         }
         catch (const std::exception& ex)
         {
@@ -789,7 +789,7 @@ auto Parser::parse_int_literal_expr() -> std::unique_ptr<IntLiteralExpr>
     return nullptr;
 }
 
-auto Parser::parse_bool_literal_expr() -> std::unique_ptr<BoolLiteralExpr>
+auto Parser::parse_bool_literal_expr() -> UniquePtr<BoolLiteralExpr>
 {
     if (is_keyword(keyword::true_) || is_keyword(keyword::false_))
     {
@@ -804,7 +804,7 @@ auto Parser::parse_bool_literal_expr() -> std::unique_ptr<BoolLiteralExpr>
     return nullptr;
 }
 
-auto Parser::parse_float_literal_expr() -> std::unique_ptr<FloatLiteralExpr>
+auto Parser::parse_float_literal_expr() -> UniquePtr<FloatLiteralExpr>
 {
     if (m_tk->is(TokenType::FloatLiteral))
     {
@@ -815,7 +815,7 @@ auto Parser::parse_float_literal_expr() -> std::unique_ptr<FloatLiteralExpr>
         try
         {
             string_value = m_tk->value;
-            value        = std::stod(std::string{string_value});
+            value        = std::stod(String{string_value});
         }
         catch (const std::exception& ex)
         {
@@ -830,11 +830,11 @@ auto Parser::parse_float_literal_expr() -> std::unique_ptr<FloatLiteralExpr>
     return nullptr;
 }
 
-auto Parser::parse_unary_op_expr() -> std::unique_ptr<UnaryOpExpr>
+auto Parser::parse_unary_op_expr() -> UniquePtr<UnaryOpExpr>
 {
     PUSH_TK;
 
-    auto op_kind = std::optional<UnaryOpKind>{};
+    auto op_kind = Option<UnaryOpKind>{};
 
     if (m_tk->is(TokenType::ExclamationMark))
     {
@@ -864,7 +864,7 @@ auto Parser::parse_unary_op_expr() -> std::unique_ptr<UnaryOpExpr>
                                          std::move(expr));
 }
 
-auto Parser::parse_struct_ctor_arg() -> std::unique_ptr<StructCtorArg>
+auto Parser::parse_struct_ctor_arg() -> UniquePtr<StructCtorArg>
 {
     PUSH_TK;
     const auto name = consume_identifier();
@@ -883,7 +883,7 @@ auto Parser::parse_struct_ctor_arg() -> std::unique_ptr<StructCtorArg>
                                            std::move(expr));
 }
 
-auto Parser::parse_sym_access_expr() -> std::unique_ptr<SymAccessExpr>
+auto Parser::parse_sym_access_expr() -> UniquePtr<SymAccessExpr>
 {
     if (m_tk->is(TokenType::Identifier))
     {
@@ -898,7 +898,7 @@ auto Parser::parse_sym_access_expr() -> std::unique_ptr<SymAccessExpr>
     return nullptr;
 }
 
-auto Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<StructCtorCall>
+auto Parser::parse_struct_ctor_call(UniquePtr<Expr> callee) -> UniquePtr<StructCtorCall>
 {
     PUSH_TK;
     consume(TokenType::LeftBrace, true);
@@ -931,7 +931,7 @@ auto Parser::parse_struct_ctor_call(std::unique_ptr<Expr> callee) -> std::unique
                                             std::move(args));
 }
 
-auto Parser::parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_ptr<FunctionCallExpr>
+auto Parser::parse_function_call(UniquePtr<Expr> callee) -> UniquePtr<FunctionCallExpr>
 {
     PUSH_TK;
     consume(TokenType::LeftParen, true);
@@ -964,7 +964,7 @@ auto Parser::parse_function_call(std::unique_ptr<Expr> callee) -> std::unique_pt
                                               std::move(args));
 }
 
-auto Parser::parse_scientific_int_literal_expr() -> std::unique_ptr<ScientificIntLiteralExpr>
+auto Parser::parse_scientific_int_literal_expr() -> UniquePtr<ScientificIntLiteralExpr>
 {
     if (m_tk->is(TokenType::ScientificNumber))
     {
@@ -979,7 +979,7 @@ auto Parser::parse_scientific_int_literal_expr() -> std::unique_ptr<ScientificIn
     return nullptr;
 }
 
-auto Parser::parse_hexadecimal_int_literal_expr() -> std::unique_ptr<HexadecimalIntLiteralExpr>
+auto Parser::parse_hexadecimal_int_literal_expr() -> UniquePtr<HexadecimalIntLiteralExpr>
 {
     if (m_tk->is(TokenType::HexNumber))
     {
@@ -994,7 +994,7 @@ auto Parser::parse_hexadecimal_int_literal_expr() -> std::unique_ptr<Hexadecimal
     return nullptr;
 }
 
-auto Parser::parse_paren_expr() -> std::unique_ptr<ParenExpr>
+auto Parser::parse_paren_expr() -> UniquePtr<ParenExpr>
 {
     PUSH_TK;
 
@@ -1015,8 +1015,7 @@ auto Parser::parse_paren_expr() -> std::unique_ptr<ParenExpr>
     return std::make_unique<ParenExpr>(tk_pusher_.initial_tk()->location, std::move(expr));
 }
 
-auto Parser::parse_ternary_expr(std::unique_ptr<Expr> condition_expr)
-    -> std::unique_ptr<TernaryExpr>
+auto Parser::parse_ternary_expr(UniquePtr<Expr> condition_expr) -> UniquePtr<TernaryExpr>
 {
     assert(condition_expr);
 
@@ -1037,7 +1036,7 @@ auto Parser::parse_ternary_expr(std::unique_ptr<Expr> condition_expr)
                                          std::move(false_expr));
 }
 
-auto Parser::parse_code_block() -> std::unique_ptr<CodeBlock>
+auto Parser::parse_code_block() -> UniquePtr<CodeBlock>
 {
     const auto location = m_tk->location;
 

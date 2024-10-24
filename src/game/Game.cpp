@@ -121,7 +121,7 @@ auto Game::display_count() -> uint32_t
     return impl.display_count();
 }
 
-auto Game::current_display_mode(uint32_t display_index) -> std::optional<DisplayMode>
+auto Game::current_display_mode(uint32_t display_index) -> Option<DisplayMode>
 {
     LOAD_GAME_IMPL;
     return impl.current_display_mode(display_index);

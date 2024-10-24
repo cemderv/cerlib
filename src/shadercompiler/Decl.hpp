@@ -9,8 +9,8 @@
 #include <any>
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
+#include <cerlib/String.hpp>
 #include <span>
-#include <string>
 
 namespace cer::shadercompiler
 {
@@ -51,7 +51,7 @@ class Decl
   private:
     SourceLocation m_location;
     bool           m_is_verified;
-    std::string    m_name;
+    String         m_name;
     const Type*    m_type;
 };
 
@@ -74,7 +74,7 @@ class StructFieldDecl final : public Decl
 class StructDecl final : public Decl, public Type
 {
   public:
-    using FieldList = List<std::unique_ptr<StructFieldDecl>, 8>;
+    using FieldList = List<UniquePtr<StructFieldDecl>, 8>;
 
     explicit StructDecl(const SourceLocation& location,
                         std::string_view      name,
@@ -91,7 +91,7 @@ class StructDecl final : public Decl, public Type
 
     auto resolve(SemaContext& context, Scope& scope) const -> const Type& override;
 
-    auto get_fields() const -> std::span<const std::unique_ptr<StructFieldDecl>>;
+    auto get_fields() const -> std::span<const UniquePtr<StructFieldDecl>>;
 
     auto find_field(std::string_view name) const -> StructFieldDecl*;
 
@@ -105,9 +105,9 @@ class StructDecl final : public Decl, public Type
     auto is_built_in() const -> bool;
 
   private:
-    FieldList                     m_fields;
-    std::unique_ptr<FunctionDecl> m_ctor;
-    bool                          m_is_built_in{};
+    FieldList               m_fields;
+    UniquePtr<FunctionDecl> m_ctor;
+    bool                    m_is_built_in{};
 };
 
 enum class FunctionParamKind
@@ -169,18 +169,18 @@ class ForLoopVariableDecl final : public Decl
 class FunctionDecl final : public Decl
 {
   public:
-    explicit FunctionDecl(const SourceLocation&                       location,
-                          std::string_view                            name,
-                          List<std::unique_ptr<FunctionParamDecl>, 4> parameters,
-                          const Type&                                 return_type,
-                          std::unique_ptr<CodeBlock>                  body,
-                          bool                                        is_struct_ctor = false);
+    explicit FunctionDecl(const SourceLocation&                 location,
+                          std::string_view                      name,
+                          List<UniquePtr<FunctionParamDecl>, 4> parameters,
+                          const Type&                           return_type,
+                          UniquePtr<CodeBlock>                  body,
+                          bool                                  is_struct_ctor = false);
 
     forbid_copy_and_move(FunctionDecl);
 
     ~FunctionDecl() noexcept override;
 
-    auto parameters() const -> std::span<const std::unique_ptr<FunctionParamDecl>>;
+    auto parameters() const -> std::span<const UniquePtr<FunctionParamDecl>>;
 
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool;
 
@@ -203,10 +203,10 @@ class FunctionDecl final : public Decl
     auto is_struct_ctor() const -> bool;
 
   private:
-    FunctionKind                                m_kind;
-    List<std::unique_ptr<FunctionParamDecl>, 4> m_parameters;
-    std::unique_ptr<CodeBlock>                  m_body;
-    bool                                        m_is_struct_ctor;
+    FunctionKind                          m_kind;
+    List<UniquePtr<FunctionParamDecl>, 4> m_parameters;
+    UniquePtr<CodeBlock>                  m_body;
+    bool                                  m_is_struct_ctor;
 };
 
 /**
@@ -218,7 +218,7 @@ class ShaderParamDecl final : public Decl
     explicit ShaderParamDecl(const SourceLocation& location,
                              std::string_view      name,
                              const Type&           type,
-                             std::unique_ptr<Expr> default_value_expr);
+                             UniquePtr<Expr>       default_value_expr);
 
     forbid_copy_and_move(ShaderParamDecl);
 
@@ -235,8 +235,8 @@ class ShaderParamDecl final : public Decl
     auto default_value() const -> const std::any&;
 
   private:
-    std::unique_ptr<Expr> m_default_value_expr;
-    std::any              m_default_value;
+    UniquePtr<Expr> m_default_value_expr;
+    std::any        m_default_value;
 };
 
 class VarDecl final : public Decl
@@ -244,7 +244,7 @@ class VarDecl final : public Decl
   public:
     explicit VarDecl(const SourceLocation& location,
                      std::string_view      name,
-                     std::unique_ptr<Expr> expr,
+                     UniquePtr<Expr>       expr,
                      bool                  is_const);
 
     // Overload for system values
@@ -263,8 +263,8 @@ class VarDecl final : public Decl
     auto expr() const -> const Expr&;
 
   private:
-    bool                  m_is_const;
-    std::unique_ptr<Expr> m_expr;
-    bool                  m_is_system_value{};
+    bool            m_is_const;
+    UniquePtr<Expr> m_expr;
+    bool            m_is_system_value{};
 };
 } // namespace cer::shadercompiler

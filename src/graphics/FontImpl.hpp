@@ -11,8 +11,8 @@
 
 #include "stb_truetype.hpp"
 #include "util/utf8.hpp"
-#include <unordered_map>
-#include <unordered_set>
+#include <cerlib/HashMap.hpp>
+#include <cerlib/HashSet.hpp>
 
 namespace cer::details
 {
@@ -27,11 +27,11 @@ class FontImpl final : public Object, public Asset
 
     struct FontPage
     {
-        uint32_t                     width;
-        uint32_t                     height;
-        BinPack                      pack;
-        std::unique_ptr<std::byte[]> atlas_data;
-        Image                        atlas;
+        uint32_t               width;
+        uint32_t               height;
+        BinPack                pack;
+        UniquePtr<std::byte[]> atlas_data;
+        Image                  atlas;
     };
 
     struct GlyphIterationExtras
@@ -45,7 +45,7 @@ class FontImpl final : public Object, public Asset
 
     explicit FontImpl(std::span<const std::byte> data, bool create_copy_of_data);
 
-    explicit FontImpl(std::unique_ptr<std::byte[]> data);
+    explicit FontImpl(UniquePtr<std::byte[]> data);
 
     ~FontImpl() noexcept override;
 
@@ -220,10 +220,10 @@ class FontImpl final : public Object, public Asset
         }
     };
 
-    using RasterizedGlyphsMap = std::unordered_map<RasterizedGlyphKey,
-                                                   RasterizedGlyph,
-                                                   RasterizedGlyphKeyHash,
-                                                   RasterizedGlyphKeyEqual>;
+    using RasterizedGlyphsMap = HashMap<RasterizedGlyphKey,
+                                        RasterizedGlyph,
+                                        RasterizedGlyphKeyHash,
+                                        RasterizedGlyphKeyEqual>;
 
     void initialize();
 
@@ -234,16 +234,16 @@ class FontImpl final : public Object, public Asset
 
     static void update_page_atlas_image(FontPage& page);
 
-    std::byte*                   m_font_data{};
-    bool                         m_owns_font_data{};
-    stbtt_fontinfo               m_font_info{};
-    int                          m_ascent{};
-    int                          m_descent{};
-    int                          m_line_gap{};
-    RasterizedGlyphsMap          m_rasterized_glyphs;
-    List<FontPage>               m_pages;
-    List<FontPage>::iterator     m_current_page_iterator;
-    std::unordered_set<uint32_t> m_initialized_sizes;
-    std::unordered_set<size_t>   m_page_images_to_update;
+    std::byte*               m_font_data{};
+    bool                     m_owns_font_data{};
+    stbtt_fontinfo           m_font_info{};
+    int                      m_ascent{};
+    int                      m_descent{};
+    int                      m_line_gap{};
+    RasterizedGlyphsMap      m_rasterized_glyphs;
+    List<FontPage>           m_pages;
+    List<FontPage>::iterator m_current_page_iterator;
+    HashSet<uint32_t>        m_initialized_sizes;
+    HashSet<size_t>          m_page_images_to_update;
 };
 } // namespace cer::details

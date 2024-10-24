@@ -15,9 +15,9 @@
         return &symbol == name##_Vector2.get() || &symbol == name##_Vector3.get() ||               \
                &symbol == name##_Vector4.get();                                                    \
     }                                                                                              \
-    std::unique_ptr<FunctionDecl> name##_Vector2;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Vector3;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Vector4
+    UniquePtr<FunctionDecl> name##_Vector2;                                                        \
+    UniquePtr<FunctionDecl> name##_Vector3;                                                        \
+    UniquePtr<FunctionDecl> name##_Vector4
 
 
 #define DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(name)                                                    \
@@ -26,10 +26,10 @@
         return &symbol == name##_Float.get() || &symbol == name##_Vector2.get() ||                 \
                &symbol == name##_Vector3.get() || &symbol == name##_Vector4.get();                 \
     }                                                                                              \
-    std::unique_ptr<FunctionDecl> name##_Float;                                                    \
-    std::unique_ptr<FunctionDecl> name##_Vector2;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Vector3;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Vector4
+    UniquePtr<FunctionDecl> name##_Float;                                                          \
+    UniquePtr<FunctionDecl> name##_Vector2;                                                        \
+    UniquePtr<FunctionDecl> name##_Vector3;                                                        \
+    UniquePtr<FunctionDecl> name##_Vector4
 
 
 #define DECLARE_FUNC_FOR_FLOAT_TO_MAT(name)                                                        \
@@ -39,11 +39,11 @@
                &symbol == name##_Vector3.get() || &symbol == name##_Vector4.get() ||               \
                &symbol == name##_Matrix4x4.get();                                                  \
     }                                                                                              \
-    std::unique_ptr<FunctionDecl> name##_Float;                                                    \
-    std::unique_ptr<FunctionDecl> name##_Vector2;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Vector3;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Vector4;                                                  \
-    std::unique_ptr<FunctionDecl> name##_Matrix4x4
+    UniquePtr<FunctionDecl> name##_Float;                                                          \
+    UniquePtr<FunctionDecl> name##_Vector2;                                                        \
+    UniquePtr<FunctionDecl> name##_Vector3;                                                        \
+    UniquePtr<FunctionDecl> name##_Vector4;                                                        \
+    UniquePtr<FunctionDecl> name##_Matrix4x4
 
 
 namespace cer::shadercompiler
@@ -103,25 +103,25 @@ class BuiltInSymbols final
 
     // NOLINTBEGIN
 
-    std::unique_ptr<FunctionDecl> float_ctor_int;
-    std::unique_ptr<FunctionDecl> float_ctor_uint;
-    std::unique_ptr<FunctionDecl> int_ctor_float;
-    std::unique_ptr<FunctionDecl> int_ctor_uint;
-    std::unique_ptr<FunctionDecl> uint_ctor_float;
-    std::unique_ptr<FunctionDecl> uint_ctor_int;
+    UniquePtr<FunctionDecl> float_ctor_int;
+    UniquePtr<FunctionDecl> float_ctor_uint;
+    UniquePtr<FunctionDecl> int_ctor_float;
+    UniquePtr<FunctionDecl> int_ctor_uint;
+    UniquePtr<FunctionDecl> uint_ctor_float;
+    UniquePtr<FunctionDecl> uint_ctor_int;
 
-    std::unique_ptr<FunctionDecl> vector2_ctor_x_y;
-    std::unique_ptr<FunctionDecl> vector2_ctor_xy;
+    UniquePtr<FunctionDecl> vector2_ctor_x_y;
+    UniquePtr<FunctionDecl> vector2_ctor_xy;
 
-    std::unique_ptr<FunctionDecl> vector3_ctor_x_y_z;
-    std::unique_ptr<FunctionDecl> vector3_ctor_xy_z;
-    std::unique_ptr<FunctionDecl> vector3_ctor_xyz;
+    UniquePtr<FunctionDecl> vector3_ctor_x_y_z;
+    UniquePtr<FunctionDecl> vector3_ctor_xy_z;
+    UniquePtr<FunctionDecl> vector3_ctor_xyz;
 
-    std::unique_ptr<FunctionDecl> vector4_ctor_x_y_z_w;
-    std::unique_ptr<FunctionDecl> vector4_ctor_xy_zw;
-    std::unique_ptr<FunctionDecl> vector4_ctor_xy_z_w;
-    std::unique_ptr<FunctionDecl> vector4_ctor_xyz_w;
-    std::unique_ptr<FunctionDecl> vector4_ctor_xyzw;
+    UniquePtr<FunctionDecl> vector4_ctor_x_y_z_w;
+    UniquePtr<FunctionDecl> vector4_ctor_xy_zw;
+    UniquePtr<FunctionDecl> vector4_ctor_xy_z_w;
+    UniquePtr<FunctionDecl> vector4_ctor_xyz_w;
+    UniquePtr<FunctionDecl> vector4_ctor_xyzw;
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(abs);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(acos);
@@ -135,7 +135,7 @@ class BuiltInSymbols final
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(cos);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(degrees);
 
-    std::unique_ptr<FunctionDecl> determinant_matrix;
+    UniquePtr<FunctionDecl> determinant_matrix;
 
     DECLARE_FUNC_FOR_ALL_VECTORS(distance);
     DECLARE_FUNC_FOR_ALL_VECTORS(dot);
@@ -156,7 +156,7 @@ class BuiltInSymbols final
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(radians);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(round);
 
-    std::unique_ptr<FunctionDecl> sample_image;
+    UniquePtr<FunctionDecl> sample_image;
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(saturate);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(sign);
@@ -165,17 +165,17 @@ class BuiltInSymbols final
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(sqrt);
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(tan);
 
-    std::unique_ptr<FunctionDecl> transpose_matrix;
+    UniquePtr<FunctionDecl> transpose_matrix;
 
     DECLARE_FUNC_FOR_FLOAT_TO_VECTOR4(trunc);
 
-    List<std::unique_ptr<Decl>> vector2_fields;
-    List<std::unique_ptr<Decl>> vector3_fields;
-    List<std::unique_ptr<Decl>> vector4_fields;
+    List<UniquePtr<Decl>> vector2_fields;
+    List<UniquePtr<Decl>> vector3_fields;
+    List<UniquePtr<Decl>> vector4_fields;
 
-    std::unique_ptr<Decl> sprite_image;
-    std::unique_ptr<Decl> sprite_color;
-    std::unique_ptr<Decl> sprite_uv;
+    UniquePtr<Decl> sprite_image;
+    UniquePtr<Decl> sprite_color;
+    UniquePtr<Decl> sprite_uv;
 
     // NOLINTEND
 
@@ -191,13 +191,13 @@ class BuiltInSymbols final
 
   private:
     void add_func(
-        std::unique_ptr<FunctionDecl>& var,
-        std::string_view               func_name,
+        UniquePtr<FunctionDecl>& var,
+        std::string_view         func_name,
         std::initializer_list<std::pair<std::string_view, std::reference_wrapper<const Type>>>
                     param_descs,
         const Type& return_type);
 
-    void add_system_value(std::unique_ptr<Decl>& var, std::string_view name, const Type& type);
+    void add_system_value(UniquePtr<Decl>& var, std::string_view name, const Type& type);
 
     RefList<Decl, 132> m_all;
 };

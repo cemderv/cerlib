@@ -23,16 +23,16 @@ struct PreshapedGlyph
 
 struct TextDecorationRect
 {
-    Rectangle            rect;
-    std::optional<Color> color;
+    Rectangle     rect;
+    Option<Color> color;
 };
 
-static void shape_text(std::string_view                     text,
-                       const Font&                          font,
-                       uint32_t                             font_size,
-                       const std::optional<TextDecoration>& decoration,
-                       List<PreshapedGlyph>&                dst_glyphs,
-                       List<TextDecorationRect>&            dst_decoration_rects)
+static void shape_text(std::string_view              text,
+                       const Font&                   font,
+                       uint32_t                      font_size,
+                       const Option<TextDecoration>& decoration,
+                       List<PreshapedGlyph>&         dst_glyphs,
+                       List<TextDecorationRect>&     dst_decoration_rects)
 {
     assert(font);
 
@@ -117,10 +117,10 @@ static void shape_text(std::string_view                     text,
 class TextImpl final : public Object
 {
   public:
-    TextImpl(std::string_view                     text,
-             const Font&                          font,
-             uint32_t                             font_size,
-             const std::optional<TextDecoration>& decoration);
+    TextImpl(std::string_view              text,
+             const Font&                   font,
+             uint32_t                      font_size,
+             const Option<TextDecoration>& decoration);
 
     auto glyphs() const -> std::span<const PreshapedGlyph>;
 

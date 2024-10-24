@@ -27,20 +27,20 @@ auto cer::is_audio_device_initialized() -> bool
     return details::GameImpl::instance().is_audio_device_initialized();
 }
 
-auto cer::play_sound(const Sound&             sound,
-                     float                    volume,
-                     float                    pan,
-                     bool                     start_paused,
-                     std::optional<SoundTime> delay) -> SoundChannel
+auto cer::play_sound(const Sound&      sound,
+                     float             volume,
+                     float             pan,
+                     bool              start_paused,
+                     Option<SoundTime> delay) -> SoundChannel
 {
     LOAD_AUDIO_ENGINE_IMPL_OR_RETURN_VALUE(SoundChannel{});
     return impl.play_sound(sound, volume, pan, start_paused, delay);
 }
 
-void cer::play_sound_fire_and_forget(const Sound&             sound,
-                                     float                    volume,
-                                     float                    pan,
-                                     std::optional<SoundTime> delay)
+void cer::play_sound_fire_and_forget(const Sound&      sound,
+                                     float             volume,
+                                     float             pan,
+                                     Option<SoundTime> delay)
 {
     LOAD_AUDIO_ENGINE_IMPL_OR_RETURN;
     impl.play_sound_fire_and_forget(sound, volume, pan, delay);

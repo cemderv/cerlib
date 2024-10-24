@@ -9,8 +9,7 @@
 
 namespace cer::shadercompiler
 {
-static auto build_full_message(const SourceLocation& location, std::string_view message)
-    -> std::string
+static auto build_full_message(const SourceLocation& location, std::string_view message) -> String
 {
     assert(!location.filename.empty());
 

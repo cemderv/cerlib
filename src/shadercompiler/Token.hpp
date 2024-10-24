@@ -5,7 +5,7 @@
 #pragma once
 
 #include "SourceLocation.hpp"
-#include <string_view>
+#include <cerlib/String.hpp>
 
 namespace cer::shadercompiler
 {

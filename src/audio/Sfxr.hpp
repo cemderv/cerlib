@@ -149,7 +149,7 @@ class Sfxr final : public AudioSource
 
     ~Sfxr() override;
 
-    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
+    auto create_instance() -> SharedPtr<AudioSourceInstance> override;
 
   private:
     SfxrParams m_params;

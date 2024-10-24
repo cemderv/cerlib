@@ -27,7 +27,7 @@ ShaderGenerator::ShaderGenerator()
 
 ShaderGenerator::~ShaderGenerator() noexcept = default;
 
-ShaderGenerationResult::ShaderGenerationResult(std::string         glsl_code,
+ShaderGenerationResult::ShaderGenerationResult(String              glsl_code,
                                                const FunctionDecl& entry_point,
                                                ParameterList       parameters)
     : glsl_code(std::move(glsl_code))
@@ -571,13 +571,13 @@ void ShaderGenerator::generate_ternary_expr(Writer&            w,
     w << ")";
 }
 
-auto ShaderGenerator::translate_type(const Type& type, TypeNameContext context) const -> std::string
+auto ShaderGenerator::translate_type(const Type& type, TypeNameContext context) const -> String
 {
     if (context == TypeNameContext::FunctionParam)
     {
         if (const auto* strct = asa<StructDecl>(&type))
         {
-            return std::string{strct->name()};
+            return String{strct->name()};
         }
     }
 
@@ -587,11 +587,11 @@ auto ShaderGenerator::translate_type(const Type& type, TypeNameContext context) 
         return it->second;
     }
 
-    return std::string{type.type_name()};
+    return String{type.type_name()};
 }
 
 auto ShaderGenerator::translate_array_type(const ArrayType& type,
-                                           std::string_view variable_name) const -> std::string
+                                           std::string_view variable_name) const -> String
 {
     return cer_fmt::format("{} {}[{}]",
                            translate_type(type.element_type(), TypeNameContext::Normal),

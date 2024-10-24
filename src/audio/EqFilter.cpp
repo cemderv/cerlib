@@ -85,7 +85,7 @@ EqFilter::EqFilter()
     std::ranges::fill(m_volume, 1.0f);
 }
 
-auto EqFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto EqFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<EqFilterInstance>(this);
 }

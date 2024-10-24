@@ -5,7 +5,7 @@
 static constexpr float max_wait_time = 0.5f;
 static constexpr float move_speed    = 64.0f;
 
-Enemy::Enemy(Level* level, cer::Vector2 position, std::string sprite_set)
+Enemy::Enemy(Level* level, Vector2 position, std::string sprite_set)
     : m_level(level)
     , m_position(position)
 {
@@ -25,7 +25,7 @@ Enemy::Enemy(Level* level, cer::Vector2 position, std::string sprite_set)
     m_local_bounds = {float(left), float(top), float(width), float(height)};
 }
 
-void Enemy::update(cer::GameTime time)
+void Enemy::update(GameTime time)
 {
     const auto elapsed = float(time.elapsed_time);
     const auto dir     = int(m_direction);
@@ -38,7 +38,7 @@ void Enemy::update(cer::GameTime time)
     if (m_wait_time > 0)
     {
         // Wait for some amount of time.
-        m_wait_time = cer::max(0.0f, m_wait_time - elapsed);
+        m_wait_time = max(0.0f, m_wait_time - elapsed);
 
         if (m_wait_time <= 0.0f)
         {
@@ -57,7 +57,7 @@ void Enemy::update(cer::GameTime time)
         else
         {
             // Move in the current direction.
-            m_position += cer::Vector2{float(dir) * move_speed * elapsed, 0.0f};
+            m_position += Vector2{float(dir) * move_speed * elapsed, 0.0f};
         }
     }
 
@@ -65,7 +65,7 @@ void Enemy::update(cer::GameTime time)
 
     // Stop running when the game is paused or before turning around.
     if (!m_level->player()->is_alive() || m_level->is_exit_reached() ||
-        cer::is_zero(m_level->time_remaining()) || m_wait_time > 0)
+        is_zero(m_level->time_remaining()) || m_wait_time > 0)
     {
         m_sprite.play_animation(m_idle_animation);
     }
@@ -78,17 +78,16 @@ void Enemy::update(cer::GameTime time)
 void Enemy::draw() const
 {
     // Draw facing the way the enemy is moving.
-    const cer::SpriteFlip flip =
-        int(m_direction) > 0 ? cer::SpriteFlip::Horizontally : cer::SpriteFlip::None;
+    const SpriteFlip flip = int(m_direction) > 0 ? SpriteFlip::Horizontally : SpriteFlip::None;
 
     m_sprite.draw(m_position, flip);
 }
 
-cer::Rectangle Enemy::bounding_rect() const
+Rectangle Enemy::bounding_rect() const
 {
-    const cer::Vector2 sprite_origin = m_sprite.origin();
-    const float        left          = round(m_position.x - sprite_origin.x) + m_local_bounds.x;
-    const float        top           = round(m_position.y - sprite_origin.y) + m_local_bounds.y;
+    const Vector2 sprite_origin = m_sprite.origin();
+    const float   left          = round(m_position.x - sprite_origin.x) + m_local_bounds.x;
+    const float   top           = round(m_position.y - sprite_origin.y) + m_local_bounds.y;
 
     return {left, top, m_local_bounds.width, m_local_bounds.height};
 }

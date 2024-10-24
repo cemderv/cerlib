@@ -15,8 +15,8 @@
 #include "shadercompiler/SemaContext.hpp"
 #include "shadercompiler/Type.hpp"
 #include <cassert>
-#include <optional>
-#include <unordered_set>
+#include <cerlib/HashSet.hpp>
+#include <cerlib/Option.hpp>
 #include <utility>
 
 namespace cer::shadercompiler
@@ -331,8 +331,8 @@ auto BinOpExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bo
 
 BinOpExpr::BinOpExpr(const SourceLocation& location,
                      BinOpKind             kind,
-                     std::unique_ptr<Expr> lhs,
-                     std::unique_ptr<Expr> rhs)
+                     UniquePtr<Expr>       lhs,
+                     UniquePtr<Expr>       rhs)
     : Expr(location)
     , m_bin_op_kind(kind)
     , m_lhs(std::move(lhs))
@@ -378,7 +378,7 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
 
     if (!m_args.empty())
     {
-        std::unordered_set<std::string_view> already_initialized_fields;
+        HashSet<std::string_view> already_initialized_fields;
 
         for (const auto& arg : m_args)
         {
@@ -425,7 +425,7 @@ void StructCtorCall::on_verify(SemaContext& context, Scope& scope)
 }
 
 StructCtorCall::StructCtorCall(const SourceLocation&           location,
-                               std::unique_ptr<Expr>           callee,
+                               UniquePtr<Expr>                 callee,
                                UniquePtrList<StructCtorArg, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
@@ -438,7 +438,7 @@ auto StructCtorCall::callee() const -> const Expr&
     return *m_callee;
 }
 
-auto StructCtorCall::args() const -> std::span<const std::unique_ptr<StructCtorArg>>
+auto StructCtorCall::args() const -> std::span<const UniquePtr<StructCtorArg>>
 {
     return m_args;
 }
@@ -469,10 +469,9 @@ auto StructCtorCall::accesses_symbol(const Decl& symbol, bool transitive) const 
         }
     }
 
-    return std::ranges::any_of(m_args,
-                               [&symbol, transitive](const std::unique_ptr<StructCtorArg>& expr) {
-                                   return expr->accesses_symbol(symbol, transitive);
-                               });
+    return std::ranges::any_of(m_args, [&symbol, transitive](const UniquePtr<StructCtorArg>& expr) {
+        return expr->accesses_symbol(symbol, transitive);
+    });
 }
 
 void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
@@ -505,7 +504,7 @@ void SubscriptExpr::on_verify(SemaContext& context, Scope& scope)
 
     const auto array_size = array_type->size();
 
-    auto constant_index = std::optional<uint32_t>{};
+    auto constant_index = Option<uint32_t>{};
     {
         const auto constant_value = m_index_expr->evaluate_constant_value(context, scope);
 
@@ -560,8 +559,8 @@ auto SubscriptExpr::accesses_symbol(const Decl& symbol, bool transitive) const -
 }
 
 SubscriptExpr::SubscriptExpr(const SourceLocation& location,
-                             std::unique_ptr<Expr> expr,
-                             std::unique_ptr<Expr> index_expr)
+                             UniquePtr<Expr>       expr,
+                             UniquePtr<Expr>       index_expr)
     : Expr(location)
     , m_expr(std::move(expr))
     , m_index_expr(std::move(index_expr))
@@ -645,7 +644,7 @@ void SymAccessExpr::on_verify(SemaContext& context, Scope& scope)
         }
 
         const auto build_call_string = [&] {
-            auto str = std::string{m_name};
+            auto str = String{m_name};
             str += '(';
             for (const auto& arg_ref : args)
             {
@@ -763,7 +762,7 @@ void FunctionCallExpr::on_verify(SemaContext& context, Scope& scope)
     }
 }
 
-auto FunctionCallExpr::args() const -> std::span<const std::unique_ptr<Expr>>
+auto FunctionCallExpr::args() const -> std::span<const UniquePtr<Expr>>
 {
     return m_args;
 }
@@ -967,7 +966,7 @@ auto FunctionCallExpr::callee() const -> const Expr&
 }
 
 FunctionCallExpr::FunctionCallExpr(const SourceLocation&  location,
-                                   std::unique_ptr<Expr>  callee,
+                                   UniquePtr<Expr>        callee,
                                    UniquePtrList<Expr, 4> args)
     : Expr(location)
     , m_callee(std::move(callee))
@@ -1011,9 +1010,7 @@ auto HexadecimalIntLiteralExpr::value() const -> std::string_view
     return m_value;
 }
 
-RangeExpr::RangeExpr(const SourceLocation& location,
-                     std::unique_ptr<Expr> start,
-                     std::unique_ptr<Expr> end)
+RangeExpr::RangeExpr(const SourceLocation& location, UniquePtr<Expr> start, UniquePtr<Expr> end)
     : Expr(location)
     , m_start(std::move(start))
     , m_end(std::move(end))
@@ -1052,9 +1049,7 @@ auto RangeExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bo
            m_end->accesses_symbol(symbol, transitive);
 }
 
-UnaryOpExpr::UnaryOpExpr(const SourceLocation& location,
-                         UnaryOpKind           kind,
-                         std::unique_ptr<Expr> expr)
+UnaryOpExpr::UnaryOpExpr(const SourceLocation& location, UnaryOpKind kind, UniquePtr<Expr> expr)
     : Expr(location)
     , m_kind(kind)
     , m_expr(std::move(expr))
@@ -1120,7 +1115,7 @@ auto UnaryOpExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> 
 
 StructCtorArg::StructCtorArg(const SourceLocation& location,
                              std::string_view      name,
-                             std::unique_ptr<Expr> expr)
+                             UniquePtr<Expr>       expr)
     : Expr(location)
     , m_name(name)
     , m_expr(std::move(expr))
@@ -1148,7 +1143,7 @@ auto StructCtorArg::accesses_symbol(const Decl& symbol, bool transitive) const -
     return m_expr->accesses_symbol(symbol, transitive);
 }
 
-ParenExpr::ParenExpr(const SourceLocation& location, std::unique_ptr<Expr> expr)
+ParenExpr::ParenExpr(const SourceLocation& location, UniquePtr<Expr> expr)
     : Expr(location)
     , m_expr(std::move(expr))
 {
@@ -1177,9 +1172,9 @@ auto ParenExpr::accesses_symbol(const Decl& symbol, bool transitive) const -> bo
 }
 
 TernaryExpr::TernaryExpr(const SourceLocation& location,
-                         std::unique_ptr<Expr> condition_expr,
-                         std::unique_ptr<Expr> true_expr,
-                         std::unique_ptr<Expr> false_expr)
+                         UniquePtr<Expr>       condition_expr,
+                         UniquePtr<Expr>       true_expr,
+                         UniquePtr<Expr>       false_expr)
     : Expr(location)
     , m_condition_expr(std::move(condition_expr))
     , m_true_expr(std::move(true_expr))

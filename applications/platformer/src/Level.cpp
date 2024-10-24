@@ -6,7 +6,7 @@
 static Tile load_tile(std::string_view name, TileCollision collision)
 {
     return {
-        .image     = cer::Image{cer_fmt::format("tiles/{}.png", name)},
+        .image     = Image{cer_fmt::format("tiles/{}.png", name)},
         .collision = collision,
     };
 }
@@ -15,7 +15,7 @@ static auto load_variety_tile(std::string_view base_name,
                               int              variation_count,
                               TileCollision    collision)
 {
-    const int index = cer::random_int(0, variation_count - 1);
+    const int index = random_int(0, variation_count - 1);
     return load_tile(cer_fmt::format("{}{}", base_name, index), collision);
 }
 
@@ -27,12 +27,12 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
     std::stringstream stream;
     stream << contents;
 
-    cer::List<std::string> lines;
-    std::string            line;
+    List<std::string> lines;
+    std::string       line;
 
     while (getline(stream, line))
     {
-        cer::util::trim_string(line, {{' ', '\r', '\n'}});
+        util::trim_string(line, {{' ', '\r', '\n'}});
         lines.push_back(line);
 
         if (m_width != 0 && line.size() != m_width)
@@ -63,14 +63,14 @@ Level::Level(std::string_view name, std::string_view contents, Args args)
     for (size_t i = 0; i < m_layers.size(); ++i)
     {
         // Choose a random segment if each background layer for level variety.
-        const int         segment_index = cer::random_int(0, 2);
+        const int         segment_index = random_int(0, 2);
         const std::string image_name =
             cer_fmt::format("backgrounds/layer{}_{}.png", i, segment_index);
 
-        m_layers[i] = cer::Image{image_name};
+        m_layers[i] = Image{image_name};
     }
 
-    m_exit_reached_sound = cer::Sound{"sounds/exit_reached.wav"};
+    m_exit_reached_sound = Sound{"sounds/exit_reached.wav"};
 }
 
 Tile Level::load_tile(char type, int x, int y)
@@ -150,7 +150,7 @@ Tile Level::load_gem_tile(int x, int y, bool is_super_gem)
     return {.image = {}, .collision = TileCollision::Passable};
 }
 
-void Level::update_gems(cer::GameTime time)
+void Level::update_gems(GameTime time)
 {
     const auto player_rect = m_player.bounding_rect();
 
@@ -168,9 +168,9 @@ void Level::update_gems(cer::GameTime time)
     }
 }
 
-void Level::update_enemies(cer::GameTime time)
+void Level::update_enemies(GameTime time)
 {
-    const cer::Rectangle player_rect = m_player.bounding_rect();
+    const Rectangle player_rect = m_player.bounding_rect();
 
     for (Enemy& enemy : m_enemies)
     {
@@ -216,7 +216,7 @@ void Level::draw_tiles()
             if (auto image = m_tiles[y * m_width + x].image)
             {
                 // Draw it in screen space.
-                cer::draw_sprite(image, cer::Vector2{float(x), float(y)} * Tile::size);
+                draw_sprite(image, Vector2{float(x), float(y)} * Tile::size);
             }
         }
     }
@@ -227,10 +227,10 @@ std::string_view Level::name() const
     return m_name;
 }
 
-void Level::update(cer::GameTime time)
+void Level::update(GameTime time)
 {
     // Pause while the player is dead or time is expired.
-    if (!m_player.is_alive() || cer::is_zero(m_time_remaining))
+    if (!m_player.is_alive() || is_zero(m_time_remaining))
     {
         // Still want to perform physics on the player.
         m_player.update(time);
@@ -238,8 +238,8 @@ void Level::update(cer::GameTime time)
     else if (m_is_exit_reached)
     {
         // Animate the time being converted into points.
-        int seconds = int(cer::round(time.elapsed_time * 100.0f));
-        seconds     = cer::min(seconds, int(cer::ceiling(m_time_remaining)));
+        int seconds = int(round(time.elapsed_time * 100.0f));
+        seconds     = min(seconds, int(ceiling(m_time_remaining)));
         m_time_remaining -= seconds;
         *m_score += seconds * points_per_second;
 
@@ -271,17 +271,17 @@ void Level::update(cer::GameTime time)
     }
 
     // Clamp the time remaining at zero.
-    m_time_remaining = cer::max(0.0, m_time_remaining);
+    m_time_remaining = max(0.0, m_time_remaining);
 }
 
 void Level::draw()
 {
-    const cer::Vector2   canvas_size     = cer::current_canvas_size();
-    const cer::Rectangle background_rect = cer::Rectangle{0, 0, canvas_size};
+    const Vector2   canvas_size     = current_canvas_size();
+    const Rectangle background_rect = Rectangle{0, 0, canvas_size};
 
     for (int i = 0; i <= entity_layer; ++i)
     {
-        cer::draw_sprite({
+        draw_sprite({
             .image    = m_layers[i],
             .dst_rect = background_rect,
         });
@@ -303,14 +303,14 @@ void Level::draw()
 
     for (int i = entity_layer + 1; i < m_layers.size(); ++i)
     {
-        cer::draw_sprite({
+        draw_sprite({
             .image    = m_layers[i],
             .dst_rect = {0, 0, m_layers[i].size()},
         });
     }
 }
 
-cer::Rectangle Level::bounds(int x, int y) const
+Rectangle Level::bounds(int x, int y) const
 {
     return {float(x) * Tile::width, float(y) * Tile::height, Tile::width, Tile::height};
 }

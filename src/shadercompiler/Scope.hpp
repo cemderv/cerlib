@@ -6,8 +6,8 @@
 
 #include <cerlib/CopyMoveMacros.hpp>
 #include <cerlib/List.hpp>
+#include <cerlib/String.hpp>
 #include <span>
-#include <string_view>
 
 namespace cer::shadercompiler
 {
@@ -71,7 +71,7 @@ class Scope final
 
     auto parent() const -> Scope*;
 
-    auto children() const -> std::span<const std::unique_ptr<Scope>>;
+    auto children() const -> std::span<const UniquePtr<Scope>>;
 
     auto push_child() -> Scope&;
 

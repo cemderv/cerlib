@@ -72,13 +72,13 @@ static auto sdl_window_event_watcher(void* userdata, SDL_Event* event)
 #endif
 }
 
-WindowImpl::WindowImpl(std::string_view        title,
-                       uint32_t                id,
-                       std::optional<int32_t>  position_x,
-                       std::optional<int32_t>  position_y,
-                       std::optional<uint32_t> width,
-                       std::optional<uint32_t> height,
-                       bool                    allow_high_dpi)
+WindowImpl::WindowImpl(std::string_view title,
+                       uint32_t         id,
+                       Option<int32_t>  position_x,
+                       Option<int32_t>  position_y,
+                       Option<uint32_t> width,
+                       Option<uint32_t> height,
+                       bool             allow_high_dpi)
     : m_initial_title(title)
     , m_initial_position_x(position_x)
     , m_initial_position_y(position_y)
@@ -129,8 +129,8 @@ void WindowImpl::show_message_box(MessageBoxType   type,
         return 0;
     }();
 
-    const auto title_str   = std::string{title};
-    const auto message_str = std::string{message};
+    const auto title_str   = String{title};
+    const auto message_str = String{message};
 
     auto* parent_sdl_window = parent_window ? parent_window.impl()->sdl_window() : nullptr;
 
@@ -261,7 +261,7 @@ auto WindowImpl::title() const -> std::string_view
 
 void WindowImpl::set_title(std::string_view value)
 {
-    const auto str = std::string{value};
+    const auto str = String{value};
     SDL_SetWindowTitle(m_sdl_window, str.c_str());
 }
 
@@ -384,12 +384,12 @@ void WindowImpl::set_sync_interval(uint32_t value)
     m_sync_interval = value;
 }
 
-void WindowImpl::set_clear_color(std::optional<Color> value)
+void WindowImpl::set_clear_color(Option<Color> value)
 {
     m_clear_color = value;
 }
 
-auto WindowImpl::clear_color() const -> std::optional<Color>
+auto WindowImpl::clear_color() const -> Option<Color>
 {
     return m_clear_color;
 }

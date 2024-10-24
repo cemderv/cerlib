@@ -6,8 +6,8 @@
 
 #include "cerlib/Image.hpp"
 #include <cerlib/List.hpp>
+#include <cerlib/Option.hpp>
 #include <cstdint>
-#include <optional>
 #include <span>
 
 namespace cer
@@ -36,5 +36,5 @@ struct DDSImage
     List<DDSFace, 2> faces{};
 };
 
-auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>;
+auto load(std::span<const std::byte> memory) -> Option<DDSImage>;
 } // namespace cer::dds

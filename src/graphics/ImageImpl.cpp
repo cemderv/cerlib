@@ -48,12 +48,12 @@ auto ImageImpl::format() const -> ImageFormat
     return m_format;
 }
 
-auto ImageImpl::canvas_clear_color() const -> std::optional<Color>
+auto ImageImpl::canvas_clear_color() const -> Option<Color>
 {
     return m_canvas_clear_color;
 }
 
-void ImageImpl::set_canvas_clear_color(const std::optional<Color>& value)
+void ImageImpl::set_canvas_clear_color(const Option<Color>& value)
 {
     m_canvas_clear_color = value;
 }

@@ -5,7 +5,7 @@
 #include "OpenGLPrivateShader.hpp"
 #include "cerlib/Logging.hpp"
 #include <cassert>
-#include <memory>
+#include <cerlib/SmartPointers.hpp>
 
 namespace cer::details
 {
@@ -21,13 +21,13 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
         constexpr auto str = std::string_view{"vsin"};
         auto           idx = glsl_code.find("in ");
 
-        while (idx != std::string::npos)
+        while (idx != String::npos)
         {
             const auto semicolon_idx = glsl_code.find(';', idx + str.size());
-            assert(semicolon_idx != std::string::npos);
+            assert(semicolon_idx != String::npos);
 
             idx = glsl_code.find(str, idx);
-            assert(idx != std::string::npos);
+            assert(idx != String::npos);
 
             auto var_name = glsl_code.substr(idx, semicolon_idx - idx);
             while (var_name.back() == ' ')
@@ -86,7 +86,7 @@ OpenGLPrivateShader::OpenGLPrivateShader(std::string_view name,
 
 #ifdef CERLIB_ENABLE_VERBOSE_LOGGING
     {
-        std::string total_code;
+        String total_code;
 
         for (const std::string_view str : code_strings)
         {

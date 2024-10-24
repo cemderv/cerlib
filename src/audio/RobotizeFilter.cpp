@@ -51,7 +51,7 @@ void RobotizeFilterInstance::filter_channel(const FilterChannelArgs& args)
     }
 }
 
-auto RobotizeFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto RobotizeFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<RobotizeFilterInstance>(this);
 }

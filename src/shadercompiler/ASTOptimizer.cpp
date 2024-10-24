@@ -42,7 +42,7 @@ void ASTOptimizer::optimize(AST& ast)
     auto& decls = ast.decls();
 
     const auto it =
-        std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
+        std::ranges::remove_if(decls, [&ast](const UniquePtr<Decl>& decl) {
             return isa<ShaderParamDecl>(decl.get()) && !ast.is_symbol_accessed_anywhere(*decl);
         }).begin();
 
@@ -53,7 +53,7 @@ auto ASTOptimizer::remove_unused_functions(AST& ast) const -> bool
 {
     auto& decls = ast.decls();
 
-    const auto it = std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
+    const auto it = std::ranges::remove_if(decls, [&ast](const UniquePtr<Decl>& decl) {
                         const auto* func = asa<FunctionDecl>(decl.get());
                         if (func == nullptr)
                         {
@@ -88,7 +88,7 @@ auto ASTOptimizer::remove_unused_structs(AST& ast) const -> bool
 {
     auto& decls = ast.decls();
 
-    const auto it = std::ranges::remove_if(decls, [&ast](const std::unique_ptr<Decl>& decl) {
+    const auto it = std::ranges::remove_if(decls, [&ast](const UniquePtr<Decl>& decl) {
                         const auto* strct = asa<StructDecl>(decl.get());
                         if (strct == nullptr)
                         {

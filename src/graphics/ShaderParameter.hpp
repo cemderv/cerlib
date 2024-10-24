@@ -7,7 +7,7 @@
 #include "cerlib/Image.hpp"
 
 #include <any>
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer::details
 {
@@ -39,7 +39,7 @@ class ShaderParameter final
   public:
     static constexpr auto array_element_base_alignment = 16u;
 
-    std::string         name;
+    String              name;
     ShaderParameterType type{};
     uint16_t            offset{};
     uint16_t            size_in_bytes{};

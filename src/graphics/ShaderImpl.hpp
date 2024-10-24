@@ -6,9 +6,9 @@
 
 #include "GraphicsResourceImpl.hpp"
 #include "ShaderParameter.hpp"
+#include <cerlib/HashSet.hpp>
 #include <cerlib/List.hpp>
 #include <span>
-#include <unordered_set>
 
 namespace cer
 {
@@ -35,7 +35,7 @@ class ShaderImpl : public GraphicsResourceImpl
 
     ~ShaderImpl() noexcept override;
 
-    static auto shader_parameter_type_string(ShaderParameterType type) -> std::string;
+    static auto shader_parameter_type_string(ShaderParameterType type) -> String;
 
     static void verify_parameter_read(std::string_view    parameter_name,
                                       ShaderParameterType dst_type,
@@ -46,8 +46,7 @@ class ShaderImpl : public GraphicsResourceImpl
                                             ShaderParameterType src_type);
 
     template <typename T>
-    auto read_parameter_data(std::string_view name, ShaderParameterType type) const
-        -> std::optional<T>
+    auto read_parameter_data(std::string_view name, ShaderParameterType type) const -> Option<T>
     {
         if (const auto param = find_parameter(name))
         {
@@ -55,7 +54,7 @@ class ShaderImpl : public GraphicsResourceImpl
             return *reinterpret_cast<const T*>(m_cbuffer_data.data() + param->offset);
         }
 
-        return std::optional<T>();
+        return Option<T>();
     }
 
     void update_parameter_image(std::string_view name, const Image& image);
@@ -131,11 +130,11 @@ class ShaderImpl : public GraphicsResourceImpl
 
     auto find_parameter(std::string_view name) const -> const ShaderParameter*;
 
-    auto dirty_scalar_parameters() const -> const std::unordered_set<const ShaderParameter*>&;
+    auto dirty_scalar_parameters() const -> const HashSet<const ShaderParameter*>&;
 
     void clear_dirty_scalar_parameters();
 
-    auto dirty_image_parameters() const -> const std::unordered_set<const ShaderParameter*>&;
+    auto dirty_image_parameters() const -> const HashSet<const ShaderParameter*>&;
 
     void clear_dirty_image_parameters();
 
@@ -152,12 +151,12 @@ class ShaderImpl : public GraphicsResourceImpl
 
     void set_default_parameter_values();
 
-    List<uint8_t, 512>                         m_cbuffer_data;
-    uint32_t                                   m_c_buffer_size{};
-    ParameterList                              m_parameters;
-    ParameterPtrsList                          m_image_parameters;
-    std::unordered_set<const ShaderParameter*> m_dirty_scalar_parameters;
-    std::unordered_set<const ShaderParameter*> m_dirty_image_parameters;
-    bool                                       m_is_in_use{};
+    List<uint8_t, 512>              m_cbuffer_data;
+    uint32_t                        m_c_buffer_size{};
+    ParameterList                   m_parameters;
+    ParameterPtrsList               m_image_parameters;
+    HashSet<const ShaderParameter*> m_dirty_scalar_parameters;
+    HashSet<const ShaderParameter*> m_dirty_image_parameters;
+    bool                            m_is_in_use{};
 };
 } // namespace cer::details

@@ -77,7 +77,7 @@ FlangerFilter::FlangerFilter()
     m_freq  = 10;
 }
 
-auto FlangerFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto FlangerFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<FlangerFilterInstance>(this);
 }

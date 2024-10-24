@@ -5,8 +5,8 @@
 #pragma once
 
 #include <cerlib/Drawing.hpp>
+#include <cerlib/String.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
-#include <string_view>
 
 namespace cer
 {
@@ -38,9 +38,9 @@ class Text
      * @param font_size The size of the font to use, in pixels.
      * @param decoration The text decorations.
      */
-    explicit Text(std::string_view                     text,
-                  const Font&                          font,
-                  uint32_t                             font_size,
-                  const std::optional<TextDecoration>& decoration = std::nullopt);
+    explicit Text(std::string_view              text,
+                  const Font&                   font,
+                  uint32_t                      font_size,
+                  const Option<TextDecoration>& decoration = std::nullopt);
 };
 } // namespace cer

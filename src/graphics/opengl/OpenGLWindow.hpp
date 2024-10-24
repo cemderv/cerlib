@@ -13,10 +13,10 @@ class OpenGLWindow final : public WindowImpl
   public:
     explicit OpenGLWindow(std::string_view        title,
                           uint32_t                id,
-                          std::optional<int32_t>  position_x,
-                          std::optional<int32_t>  position_y,
-                          std::optional<uint32_t> width,
-                          std::optional<uint32_t> height,
+                          Option<int32_t>  position_x,
+                          Option<int32_t>  position_y,
+                          Option<uint32_t> width,
+                          Option<uint32_t> height,
                           bool                    allow_high_dpi);
 
     forbid_copy_and_move(OpenGLWindow);

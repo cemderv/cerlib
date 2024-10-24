@@ -8,7 +8,7 @@
 #include "cerlib/Color.hpp"
 #include "cerlib/Image.hpp"
 
-#include <optional>
+#include <cerlib/Option.hpp>
 
 namespace cer
 {
@@ -39,16 +39,16 @@ class ImageImpl : public GraphicsResourceImpl
 
     auto format() const -> ImageFormat;
 
-    auto canvas_clear_color() const -> std::optional<Color>;
+    auto canvas_clear_color() const -> Option<Color>;
 
-    void set_canvas_clear_color(const std::optional<Color>& value);
+    void set_canvas_clear_color(const Option<Color>& value);
 
   private:
-    bool                 m_is_canvas{};
-    WindowImpl*          m_window_for_canvas{};
-    uint32_t             m_width{};
-    uint32_t             m_height{};
-    ImageFormat          m_format{};
-    std::optional<Color> m_canvas_clear_color{};
+    bool          m_is_canvas{};
+    WindowImpl*   m_window_for_canvas{};
+    uint32_t      m_width{};
+    uint32_t      m_height{};
+    ImageFormat   m_format{};
+    Option<Color> m_canvas_clear_color{};
 };
 } // namespace cer::details

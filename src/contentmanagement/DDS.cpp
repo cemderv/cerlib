@@ -668,7 +668,7 @@ static auto create_image_from_dds(const DdsHeader& header, std::span<const std::
                    bit_data,
                    image);
 
-    const std::optional<ImageFormat> format = from_dxgi_format(dxgi_format);
+    const Option<ImageFormat> format = from_dxgi_format(dxgi_format);
 
     if (!format.has_value())
     {
@@ -680,7 +680,7 @@ static auto create_image_from_dds(const DdsHeader& header, std::span<const std::
     return image;
 }
 
-auto load(std::span<const std::byte> memory) -> std::optional<DDSImage>
+auto load(std::span<const std::byte> memory) -> Option<DDSImage>
 {
     // Validate DDS file in memory.
     if (memory.size() < sizeof(uint32_t) + sizeof(DdsHeader))

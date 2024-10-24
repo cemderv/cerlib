@@ -137,7 +137,7 @@ void BiquadResonantFilterInstance::filter_channel(const FilterChannelArgs& args)
     }
 }
 
-auto BiquadResonantFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto BiquadResonantFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<BiquadResonantFilterInstance>(this);
 }

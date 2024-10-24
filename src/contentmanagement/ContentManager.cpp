@@ -27,13 +27,13 @@
 
 namespace cer::details
 {
-static auto root_directory() -> std::string
+static auto root_directory() -> String
 {
 #ifdef CERLIB_PLATFORM_WINDOWS
     TCHAR szFileName[MAX_PATH];
     GetModuleFileName(NULL, szFileName, MAX_PATH);
 
-    auto ret = std::string(szFileName);
+    auto ret = String(szFileName);
 
     for (auto& ch : ret)
     {
@@ -42,7 +42,7 @@ static auto root_directory() -> std::string
     }
 
     const auto idx = ret.rfind('/');
-    if (idx != std::string::npos)
+    if (idx != String::npos)
     {
         ret.erase(idx);
     }
@@ -54,7 +54,7 @@ static auto root_directory() -> std::string
 
     return ret;
 #else
-    return std::string{};
+    return String{};
 #endif
 }
 
@@ -134,7 +134,7 @@ auto ContentManager::asset_loading_prefix() const -> std::string_view
 
 auto ContentManager::load_image(std::string_view name) -> Image
 {
-    const auto key = std::string{name};
+    const auto key = String{name};
 
     return lazy_load<Image, ImageImpl>(key, name, [](std::string_view name) {
         const auto data  = filesystem::load_asset_data(name);
@@ -145,9 +145,9 @@ auto ContentManager::load_image(std::string_view name) -> Image
 }
 
 static auto build_shader_key(std::string_view asset_name, std::span<const std::string_view> defines)
-    -> std::string
+    -> String
 {
-    auto key = std::string{asset_name};
+    auto key = String{asset_name};
 
     for (const auto& define : defines)
     {
@@ -162,7 +162,7 @@ auto ContentManager::load_shader(std::string_view                               
                                  [[maybe_unused]] std::span<const std::string_view> defines)
     -> Shader
 {
-    const auto key = std::string{build_shader_key(name, defines)};
+    const auto key = String{build_shader_key(name, defines)};
 
     return lazy_load<Shader, ShaderImpl>(key, name, [](std::string_view full_name) {
         const auto data   = filesystem::load_asset_data(full_name);
@@ -202,14 +202,14 @@ auto ContentManager::load_sound(std::string_view name) -> Sound
 
 auto ContentManager::load_custom_asset(std::string_view type_id,
                                        std::string_view name,
-                                       const std::any&  extra_info) -> std::shared_ptr<Asset>
+                                       const std::any&  extra_info) -> SharedPtr<Asset>
 {
     if (type_id.empty())
     {
         throw std::invalid_argument{"No type ID specified."};
     }
 
-    const auto it_load_func = m_custom_asset_loaders.find(std::string(type_id));
+    const auto it_load_func = m_custom_asset_loaders.find(String(type_id));
 
     if (it_load_func == m_custom_asset_loaders.cend())
     {
@@ -220,7 +220,7 @@ auto ContentManager::load_custom_asset(std::string_view type_id,
     // Loading a custom asset requires special handling, as the types are not Object
     // based. They are reference-counted using shared_ptr instead.
 
-    const auto key_str = std::string{m_asset_loading_prefix + std::string{name}};
+    const auto key_str = String{m_asset_loading_prefix + String{name}};
 
     const auto it_asset = m_loaded_assets.find(key_str);
 
@@ -277,7 +277,7 @@ void ContentManager::register_custom_asset_loader(std::string_view    type_id,
             fmt::format("A custom asset loader for type '{}' is already registered.", type_id)};
     }
 
-    m_custom_asset_loaders.emplace(std::string{type_id}, std::move(load_func));
+    m_custom_asset_loaders.emplace(String{type_id}, std::move(load_func));
 
     log_verbose("[ContentManager] Registered custom asset loader for type ID '{}'", type_id);
 }
@@ -293,6 +293,6 @@ void ContentManager::unregister_custom_asset_loader(std::string_view type_id)
 void ContentManager::notify_asset_destroyed(std::string_view name)
 {
     log_verbose("[ContentManager] Removing asset '{}'", name);
-    m_loaded_assets.erase(std::string{name});
+    m_loaded_assets.erase(String{name});
 }
 } // namespace cer::details

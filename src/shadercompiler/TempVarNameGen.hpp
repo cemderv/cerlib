@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <string>
+#include <cerlib/String.hpp>
 
 namespace cer::shadercompiler
 {
@@ -15,10 +15,10 @@ class TempVarNameGen final
   public:
     explicit TempVarNameGen(const CodeBlock* block = nullptr);
 
-    auto next(std::string_view hint = {}) -> std::string;
+    auto next(std::string_view hint = {}) -> String;
 
   private:
-    std::string m_prefix;
-    int         m_counter;
+    String m_prefix;
+    int    m_counter;
 };
 } // namespace cer::shadercompiler

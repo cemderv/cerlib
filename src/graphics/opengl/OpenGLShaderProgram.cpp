@@ -123,7 +123,7 @@ OpenGLShaderProgram::OpenGLShaderProgram(const OpenGLPrivateShader&       vertex
             GL_CALL(location = glGetUniformLocation(gl_handle, name_buffer.data()));
             assert(location != -1);
 
-            uniform_locations.emplace_back(std::string{name_buffer.data()}, location);
+            uniform_locations.emplace_back(String{name_buffer.data()}, location);
         }
 
         std::ranges::sort(uniform_locations, [](const auto& lhs, const auto& rhs) {

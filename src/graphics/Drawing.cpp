@@ -97,12 +97,12 @@ void cer::draw_sprite(const Sprite& sprite)
     device_impl.draw_sprite(sprite);
 }
 
-void cer::draw_string(std::string_view                     text,
-                      const Font&                          font,
-                      uint32_t                             font_size,
-                      Vector2                              position,
-                      Color                                color,
-                      const std::optional<TextDecoration>& decoration)
+void cer::draw_string(std::string_view              text,
+                      const Font&                   font,
+                      uint32_t                      font_size,
+                      Vector2                       position,
+                      Color                         color,
+                      const Option<TextDecoration>& decoration)
 {
     LOAD_DEVICE_IMPL;
     device_impl.draw_string(text, font, font_size, position, color, decoration);
@@ -230,7 +230,7 @@ void cer::save_canvas_to_file(const Image&     canvas,
     const auto canvas_height = canvas.height();
     const auto pixel_data    = read_canvas_data(canvas, 0, 0, canvas_width, canvas_height);
     const auto row_pitch     = image_row_pitch(canvas_width, canvas.format());
-    const auto filename_str  = std::string{filename};
+    const auto filename_str  = String{filename};
 
     const int result = [&] {
         switch (format)

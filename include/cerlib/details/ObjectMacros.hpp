@@ -6,7 +6,7 @@
 
 #include <cstddef>
 #include <stdexcept>
-#include <string_view>
+#include <cerlib/String.hpp>
 
 // clang-format off
 
@@ -15,7 +15,7 @@
  * cerlib objects have automatic memory management via shared reference counting with
  * support for C++ move semantics. They can therefore be passed around very efficiently.
  * This behavior is similar to that of classic shared pointer types, such as
- * `std::shared_ptr`.
+ * `SharedPtr`.
  *
  * Every object stores at most a single pointer, which points to an instance of its
  * implementation in the free store (heap).

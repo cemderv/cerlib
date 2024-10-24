@@ -17,6 +17,8 @@
 #include <cerlib/Game.hpp>
 #include <cerlib/Gamepad.hpp>
 #include <cerlib/GraphicsResource.hpp>
+#include <cerlib/HashMap.hpp>
+#include <cerlib/HashSet.hpp>
 #include <cerlib/Hashing.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Input.hpp>
@@ -29,6 +31,7 @@
 #include <cerlib/Matrix.hpp>
 #include <cerlib/MouseButton.hpp>
 #include <cerlib/OStreamCompat.hpp>
+#include <cerlib/Option.hpp>
 #include <cerlib/Particle.hpp>
 #include <cerlib/ParticleEmitter.hpp>
 #include <cerlib/ParticleModifier.hpp>
@@ -39,10 +42,12 @@
 #include <cerlib/Sound.hpp>
 #include <cerlib/SoundChannel.hpp>
 #include <cerlib/SoundTypes.hpp>
+#include <cerlib/String.hpp>
 #include <cerlib/Text.hpp>
 #include <cerlib/ToString.hpp>
 #include <cerlib/Tween.hpp>
 #include <cerlib/Util.hpp>
+#include <cerlib/Variant.hpp>
 #include <cerlib/Vector2.hpp>
 #include <cerlib/Vector3.hpp>
 #include <cerlib/Vector4.hpp>

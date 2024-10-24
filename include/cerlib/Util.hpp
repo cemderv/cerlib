@@ -4,20 +4,20 @@
 
 #pragma once
 
+#include <cerlib/String.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
 #include <span>
-#include <string>
 
 namespace cer::util
 {
-void trim_string(std::string& str, std::span<const char> chars = {{' '}});
+void trim_string(String& str, std::span<const char> chars = {{' '}});
 
 [[nodiscard]] auto string_trimmed(std::string_view str, std::span<const char> chars = {{' '}})
-    -> std::string;
+    -> String;
 
-[[nodiscard]] auto to_lower_case(std::string_view str) -> std::string;
+[[nodiscard]] auto to_lower_case(std::string_view str) -> String;
 
-[[nodiscard]] auto to_upper_case(std::string_view str) -> std::string;
+[[nodiscard]] auto to_upper_case(std::string_view str) -> String;
 
 template <typename Iterator, typename T>
 static Iterator binary_find(Iterator begin, Iterator end, T value)

@@ -27,7 +27,7 @@ BinPack::BinPack(int32_t width, int32_t height)
     m_free_rectangles.emplace_back(0, 0, width, height);
 }
 
-auto BinPack::insert(int32_t width, int32_t height) -> std::optional<BinPack::Rect>
+auto BinPack::insert(int32_t width, int32_t height) -> Option<BinPack::Rect>
 {
     // Unused in this function. We don't need to know the score after finding the
     // position.
@@ -53,7 +53,7 @@ void BinPack::insert(List<Size>& rects, List<Rect>& dst)
         auto best_score1     = std::numeric_limits<int>::max();
         auto best_score2     = std::numeric_limits<int>::max();
         auto best_rect_index = size_t(-1);
-        auto best_node       = std::optional<Rect>{};
+        auto best_node       = Option<Rect>{};
 
         for (size_t i = 0; i < rects.size(); ++i)
         {
@@ -102,8 +102,7 @@ void BinPack::place_rect(const Rect& node)
     m_used_rectangles.push_back(node);
 }
 
-auto BinPack::score_rect(int width, int height, int& score1, int& score2) const
-    -> std::optional<Rect>
+auto BinPack::score_rect(int width, int height, int& score1, int& score2) const -> Option<Rect>
 {
     score1 = std::numeric_limits<int>::max();
     score2 = std::numeric_limits<int>::max();
@@ -123,9 +122,9 @@ auto BinPack::score_rect(int width, int height, int& score1, int& score2) const
 auto BinPack::find_position_for_new_node(int  width,
                                          int  height,
                                          int& best_area_fit,
-                                         int& best_short_side_fit) const -> std::optional<Rect>
+                                         int& best_short_side_fit) const -> Option<Rect>
 {
-    auto best_node = std::optional<Rect>{};
+    auto best_node = Option<Rect>{};
 
     best_area_fit       = std::numeric_limits<int>::max();
     best_short_side_fit = std::numeric_limits<int>::max();

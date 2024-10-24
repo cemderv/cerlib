@@ -7,7 +7,7 @@
 #include <cctype>
 #include <ranges>
 
-void cer::util::trim_string(std::string& str, std::span<const char> chars)
+void cer::util::trim_string(String& str, std::span<const char> chars)
 {
     const auto should_remove = [&chars](char ch) {
         return std::ranges::find(chars, ch) != chars.end();
@@ -24,17 +24,17 @@ void cer::util::trim_string(std::string& str, std::span<const char> chars)
     }
 }
 
-auto cer::util::string_trimmed(std::string_view str, std::span<const char> chars) -> std::string
+auto cer::util::string_trimmed(std::string_view str, std::span<const char> chars) -> String
 {
-    auto result = std::string{str};
+    auto result = String{str};
     trim_string(result, chars);
 
     return result;
 }
 
-auto cer::util::to_lower_case(std::string_view str) -> std::string
+auto cer::util::to_lower_case(std::string_view str) -> String
 {
-    auto result = std::string{str};
+    auto result = String{str};
 
     for (auto& ch : result)
     {
@@ -44,9 +44,9 @@ auto cer::util::to_lower_case(std::string_view str) -> std::string
     return result;
 }
 
-auto cer::util::to_upper_case(std::string_view str) -> std::string
+auto cer::util::to_upper_case(std::string_view str) -> String
 {
-    auto result = std::string{str};
+    auto result = String{str};
 
     for (auto& ch : result)
     {

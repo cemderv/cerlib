@@ -77,12 +77,12 @@ void SpriteBatch::draw_sprite(const Sprite& sprite, SpriteShaderKind sprite_shad
     });
 }
 
-void SpriteBatch::draw_string(std::string_view                     text,
-                              const Font&                          font,
-                              uint32_t                             font_size,
-                              const Vector2&                       position,
-                              const Color&                         color,
-                              const std::optional<TextDecoration>& decoration)
+void SpriteBatch::draw_string(std::string_view              text,
+                              const Font&                   font,
+                              uint32_t                      font_size,
+                              const Vector2&                position,
+                              const Color&                  color,
+                              const Option<TextDecoration>& decoration)
 {
     verify_has_begun();
     assert(font);

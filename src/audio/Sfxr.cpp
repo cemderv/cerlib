@@ -590,7 +590,7 @@ Sfxr::~Sfxr()
     stop();
 }
 
-auto Sfxr::create_instance() -> std::shared_ptr<AudioSourceInstance>
+auto Sfxr::create_instance() -> SharedPtr<AudioSourceInstance>
 {
     return std::make_shared<SfxrInstance>(this);
 }

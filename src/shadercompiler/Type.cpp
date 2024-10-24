@@ -12,7 +12,7 @@
 #include "shadercompiler/Scope.hpp"
 #include "shadercompiler/SemaContext.hpp"
 #include <cassert>
-#include <optional>
+#include <cerlib/Option.hpp>
 
 namespace cer::shadercompiler
 {
@@ -297,9 +297,7 @@ auto MatrixType::is_matrix_type() const -> bool
     return true;
 }
 
-ArrayType::ArrayType(const SourceLocation& location,
-                     Type&                 element_type,
-                     std::unique_ptr<Expr> size_expr)
+ArrayType::ArrayType(const SourceLocation& location, Type& element_type, UniquePtr<Expr> size_expr)
     : Type(location)
     , m_element_type_ref(element_type)
     , m_size_expr(std::move(size_expr))
@@ -352,7 +350,7 @@ auto ArrayType::resolve(SemaContext& context, Scope& scope) const -> const Type&
         throw Error{location(), "expression does not evaluate to a constant integer value"};
     }
 
-    auto size = std::optional<uint32_t>{};
+    auto size = Option<uint32_t>{};
 
     if (const auto* const int_size = std::any_cast<int32_t>(&constant_value))
     {

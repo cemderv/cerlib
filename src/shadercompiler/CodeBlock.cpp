@@ -42,7 +42,7 @@ auto CodeBlock::variables() const -> RefList<VarStmt, 8>
     auto vars = RefList<VarStmt, 8>{};
     vars.reserve(m_stmts.size());
 
-    for (const std::unique_ptr<Stmt>& stmt : m_stmts)
+    for (const UniquePtr<Stmt>& stmt : m_stmts)
     {
         if (auto* var = asa<VarStmt>(stmt.get()))
         {
@@ -55,7 +55,7 @@ auto CodeBlock::variables() const -> RefList<VarStmt, 8>
 
 void CodeBlock::remove_stmt(const Stmt& stmt)
 {
-    const auto it = std::ranges::find_if(m_stmts, [&stmt](const std::unique_ptr<Stmt>& e) {
+    const auto it = std::ranges::find_if(m_stmts, [&stmt](const UniquePtr<Stmt>& e) {
         return e.get() == &stmt;
     });
 
@@ -67,7 +67,7 @@ void CodeBlock::remove_stmt(const Stmt& stmt)
 
 auto CodeBlock::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 {
-    return std::ranges::any_of(m_stmts, [&symbol, transitive](const std::unique_ptr<Stmt>& e) {
+    return std::ranges::any_of(m_stmts, [&symbol, transitive](const UniquePtr<Stmt>& e) {
         return e->accesses_symbol(symbol, transitive);
     });
 }

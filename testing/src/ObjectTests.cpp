@@ -6,9 +6,9 @@
 #include "util/Object.hpp"
 #include <cerlib/Formatters.hpp>
 #include <cerlib/List.hpp>
-#include <memory>
+#include <cerlib/SmartPointers.hpp>
+#include <cerlib/String.hpp>
 #include <snitch/snitch.hpp>
-#include <string>
 
 static auto s_info_list = cer::List<std::string>{};
 

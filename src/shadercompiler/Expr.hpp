@@ -60,9 +60,7 @@ class Expr
 class RangeExpr final : public Expr
 {
   public:
-    explicit RangeExpr(const SourceLocation& location,
-                       std::unique_ptr<Expr> start,
-                       std::unique_ptr<Expr> end);
+    explicit RangeExpr(const SourceLocation& location, UniquePtr<Expr> start, UniquePtr<Expr> end);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -73,8 +71,8 @@ class RangeExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr> m_start;
-    std::unique_ptr<Expr> m_end; // exclusive
+    UniquePtr<Expr> m_start;
+    UniquePtr<Expr> m_end; // exclusive
 };
 
 enum class BinOpKind
@@ -104,8 +102,8 @@ class BinOpExpr final : public Expr
   public:
     explicit BinOpExpr(const SourceLocation& location,
                        BinOpKind             kind,
-                       std::unique_ptr<Expr> lhs,
-                       std::unique_ptr<Expr> rhs);
+                       UniquePtr<Expr>       lhs,
+                       UniquePtr<Expr>       rhs);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -122,9 +120,9 @@ class BinOpExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    BinOpKind             m_bin_op_kind;
-    std::unique_ptr<Expr> m_lhs;
-    std::unique_ptr<Expr> m_rhs;
+    BinOpKind       m_bin_op_kind;
+    UniquePtr<Expr> m_lhs;
+    UniquePtr<Expr> m_rhs;
 };
 
 class IntLiteralExpr final : public Expr
@@ -192,9 +190,7 @@ enum class UnaryOpKind
 class UnaryOpExpr final : public Expr
 {
   public:
-    explicit UnaryOpExpr(const SourceLocation& location,
-                         UnaryOpKind           kind,
-                         std::unique_ptr<Expr> expr);
+    explicit UnaryOpExpr(const SourceLocation& location, UnaryOpKind kind, UniquePtr<Expr> expr);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -207,8 +203,8 @@ class UnaryOpExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    UnaryOpKind           m_kind;
-    std::unique_ptr<Expr> m_expr;
+    UnaryOpKind     m_kind;
+    UniquePtr<Expr> m_expr;
 };
 
 class StructCtorArg final : public Expr
@@ -216,7 +212,7 @@ class StructCtorArg final : public Expr
   public:
     explicit StructCtorArg(const SourceLocation& location,
                            std::string_view      name,
-                           std::unique_ptr<Expr> expr);
+                           UniquePtr<Expr>       expr);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -227,8 +223,8 @@ class StructCtorArg final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::string_view      m_name;
-    std::unique_ptr<Expr> m_expr;
+    std::string_view m_name;
+    UniquePtr<Expr>  m_expr;
 };
 
 class SymAccessExpr final : public Expr
@@ -257,19 +253,19 @@ class StructCtorCall final : public Expr
 {
   public:
     explicit StructCtorCall(const SourceLocation&           location,
-                            std::unique_ptr<Expr>           callee,
+                            UniquePtr<Expr>                 callee,
                             UniquePtrList<StructCtorArg, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
     auto callee() const -> const Expr&;
 
-    auto args() const -> std::span<const std::unique_ptr<StructCtorArg>>;
+    auto args() const -> std::span<const UniquePtr<StructCtorArg>>;
 
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr>           m_callee;
+    UniquePtr<Expr>                 m_callee;
     UniquePtrList<StructCtorArg, 4> m_args;
 };
 
@@ -277,21 +273,21 @@ class FunctionCallExpr final : public Expr
 {
   public:
     explicit FunctionCallExpr(const SourceLocation&  location,
-                              std::unique_ptr<Expr>  callee,
+                              UniquePtr<Expr>        callee,
                               UniquePtrList<Expr, 4> args);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
     auto callee() const -> const Expr&;
 
-    auto args() const -> std::span<const std::unique_ptr<Expr>>;
+    auto args() const -> std::span<const UniquePtr<Expr>>;
 
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
     auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
   private:
-    std::unique_ptr<Expr>  m_callee;
+    UniquePtr<Expr>        m_callee;
     UniquePtrList<Expr, 4> m_args;
 };
 
@@ -299,8 +295,8 @@ class SubscriptExpr final : public Expr
 {
   public:
     explicit SubscriptExpr(const SourceLocation& location,
-                           std::unique_ptr<Expr> expr,
-                           std::unique_ptr<Expr> index_expr);
+                           UniquePtr<Expr>       expr,
+                           UniquePtr<Expr>       index_expr);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -311,8 +307,8 @@ class SubscriptExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr> m_expr;
-    std::unique_ptr<Expr> m_index_expr;
+    UniquePtr<Expr> m_expr;
+    UniquePtr<Expr> m_index_expr;
 };
 
 class ScientificIntLiteralExpr final : public Expr
@@ -344,7 +340,7 @@ class HexadecimalIntLiteralExpr final : public Expr
 class ParenExpr final : public Expr
 {
   public:
-    explicit ParenExpr(const SourceLocation& location, std::unique_ptr<Expr> expr);
+    explicit ParenExpr(const SourceLocation& location, UniquePtr<Expr> expr);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -355,16 +351,16 @@ class ParenExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr> m_expr;
+    UniquePtr<Expr> m_expr;
 };
 
 class TernaryExpr final : public Expr
 {
   public:
     explicit TernaryExpr(const SourceLocation& location,
-                         std::unique_ptr<Expr> condition_expr,
-                         std::unique_ptr<Expr> true_expr,
-                         std::unique_ptr<Expr> false_expr);
+                         UniquePtr<Expr>       condition_expr,
+                         UniquePtr<Expr>       true_expr,
+                         UniquePtr<Expr>       false_expr);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
@@ -379,25 +375,25 @@ class TernaryExpr final : public Expr
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    std::unique_ptr<Expr> m_condition_expr;
-    std::unique_ptr<Expr> m_true_expr;
-    std::unique_ptr<Expr> m_false_expr;
+    UniquePtr<Expr> m_condition_expr;
+    UniquePtr<Expr> m_true_expr;
+    UniquePtr<Expr> m_false_expr;
 };
 
 class ArrayExpr final : public Expr
 {
   public:
-    explicit ArrayExpr(const SourceLocation& location, List<std::unique_ptr<Expr>> elements);
+    explicit ArrayExpr(const SourceLocation& location, List<UniquePtr<Expr>> elements);
 
     void on_verify(SemaContext& context, Scope& scope) override;
 
-    auto elements() const -> std::span<const std::unique_ptr<Expr>>;
+    auto elements() const -> std::span<const UniquePtr<Expr>>;
 
     auto evaluate_constant_value(SemaContext& context, Scope& scope) const -> std::any override;
 
     auto accesses_symbol(const Decl& symbol, bool transitive) const -> bool override;
 
   private:
-    List<std::unique_ptr<Expr>> m_elements;
+    List<UniquePtr<Expr>> m_elements;
 };
 } // namespace cer::shadercompiler

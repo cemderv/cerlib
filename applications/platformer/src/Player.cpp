@@ -16,7 +16,7 @@ constexpr float max_velocity_x       = 250.0f;
 constexpr float max_fall_speed       = 550.0f;
 constexpr float jump_control_power   = 0.14f;
 
-Player::Player(Level* level, cer::Vector2 position)
+Player::Player(Level* level, Vector2 position)
     : m_level(level)
     , m_idle_animation("sprites/player/idle.png", 1.0f, true)
     , m_run_animation("sprites/player/run.png", 0.07f, true)
@@ -31,10 +31,10 @@ Player::Player(Level* level, cer::Vector2 position)
     // Calculate bounds within texture size.
     const auto  frame_width  = float(m_idle_animation.frame_width());
     const auto  frame_height = float(m_idle_animation.frame_height());
-    const float width        = cer::round(frame_width * 0.4f);
-    const float left         = cer::round((frame_width - width) / 2);
-    const float height       = cer::round(frame_width * 0.8f);
-    const float top          = cer::round(frame_height - height);
+    const float width        = round(frame_width * 0.4f);
+    const float left         = round((frame_width - width) / 2);
+    const float height       = round(frame_width * 0.8f);
+    const float top          = round(frame_height - height);
 
     m_local_bounds = {left, top, width, height};
 
@@ -55,12 +55,12 @@ bool Player::is_alive() const
 void Player::handle_collisions()
 {
     // Get the player's bounding rectangle and find neighboring tiles.
-    cer::Rectangle bounds = bounding_rect();
+    Rectangle bounds = bounding_rect();
 
-    const auto left_tile   = int(cer::floor(bounds.left() / Tile::width));
-    const auto right_tile  = int(cer::ceiling(bounds.right() / Tile::width)) - 1;
-    const auto top_tile    = int(cer::floor(bounds.top() / Tile::height));
-    const auto bottom_tile = int(cer::ceiling(bounds.bottom() / Tile::height)) - 1;
+    const auto left_tile   = int(floor(bounds.left() / Tile::width));
+    const auto right_tile  = int(ceiling(bounds.right() / Tile::width)) - 1;
+    const auto top_tile    = int(floor(bounds.top() / Tile::height));
+    const auto bottom_tile = int(ceiling(bounds.bottom() / Tile::height)) - 1;
 
     // Reset flag to search for ground collision.
     m_is_on_ground = false;
@@ -76,14 +76,11 @@ void Player::handle_collisions()
             if (collision != TileCollision::Passable)
             {
                 // Determine collision depth (with direction) and magnitude.
-                const cer::Rectangle tile_bounds = m_level->bounds(x, y);
+                const Rectangle tile_bounds = m_level->bounds(x, y);
 
-                const std::optional<cer::Vector2> depth =
-                    cer::Rectangle::intersection_depth(bounds, tile_bounds);
-
-                if (depth)
+                if (const auto depth = Rectangle::intersection_depth(bounds, tile_bounds))
                 {
-                    const cer::Vector2 abs_depth = cer::abs(*depth);
+                    const Vector2 abs_depth = abs(*depth);
 
                     // Resolve the collision along the shallow axis.
                     if (abs_depth.y < abs_depth.x || collision == TileCollision::Platform)
@@ -121,7 +118,7 @@ void Player::handle_collisions()
     m_previous_bottom = bounds.bottom();
 }
 
-float Player::do_jump(float velocity_y, cer::GameTime game_time)
+float Player::do_jump(float velocity_y, GameTime game_time)
 {
     // If the player wants to jump
     if (m_is_jumping)
@@ -144,7 +141,7 @@ float Player::do_jump(float velocity_y, cer::GameTime game_time)
             // Fully override the vertical velocity with a power curve that gives players more
             // control over the top of the jump
             velocity_y = jump_launch_velocity *
-                         (1.0f - cer::pow(m_jump_time / max_jump_time, jump_control_power));
+                         (1.0f - pow(m_jump_time / max_jump_time, jump_control_power));
         }
         else
         {
@@ -163,17 +160,17 @@ float Player::do_jump(float velocity_y, cer::GameTime game_time)
     return velocity_y;
 }
 
-void Player::apply_physics(cer::GameTime time)
+void Player::apply_physics(GameTime time)
 {
     const float elapsed = float(time.elapsed_time);
 
-    cer::Vector2 previous_position = m_position;
+    Vector2 previous_position = m_position;
 
     // Base velocity is a combination of horizontal movement control and
     // acceleration downward due to gravity.
     m_velocity.x += m_movement * move_acceleration;
     m_velocity.y =
-        cer::clamp(m_velocity.y + gravity_acceleration * elapsed, -max_fall_speed, max_fall_speed);
+        clamp(m_velocity.y + gravity_acceleration * elapsed, -max_fall_speed, max_fall_speed);
 
     m_velocity.y = do_jump(m_velocity.y, time);
 
@@ -188,7 +185,7 @@ void Player::apply_physics(cer::GameTime time)
     }
 
     // Prevent the player from running faster than his top speed.
-    m_velocity.x = cer::clamp(m_velocity.x, -max_velocity_x, max_velocity_x);
+    m_velocity.x = clamp(m_velocity.x, -max_velocity_x, max_velocity_x);
 
     // Apply velocity.
     m_position += m_velocity * elapsed;
@@ -198,22 +195,22 @@ void Player::apply_physics(cer::GameTime time)
     handle_collisions();
 
     // If the collision stopped us from moving, reset the velocity to zero.
-    if (cer::equal_within_epsilon(m_position.x, previous_position.x))
+    if (equal_within_epsilon(m_position.x, previous_position.x))
     {
         m_velocity.x = 0;
     }
 
-    if (cer::equal_within_epsilon(m_position.y, previous_position.y))
+    if (equal_within_epsilon(m_position.y, previous_position.y))
     {
         m_velocity.y = 0;
     }
 }
 
-cer::Rectangle Player::bounding_rect() const
+Rectangle Player::bounding_rect() const
 {
-    const cer::Vector2 sprite_origin = m_sprite.origin();
-    const float        left = cer::round(m_position.x - sprite_origin.x) + m_local_bounds.x;
-    const float        top  = cer::round(m_position.y - sprite_origin.y) + m_local_bounds.y;
+    const Vector2 sprite_origin = m_sprite.origin();
+    const float   left          = round(m_position.x - sprite_origin.x) + m_local_bounds.x;
+    const float   top           = round(m_position.y - sprite_origin.y) + m_local_bounds.y;
 
     return {left, top, m_local_bounds.width, m_local_bounds.height};
 }
@@ -226,29 +223,28 @@ bool Player::is_on_ground() const
 void Player::update_input()
 {
     // If any digital horizontal movement input is found, override the analog movement.
-    if (is_key_down(cer::Key::Left) || is_key_down(cer::Key::A))
+    if (is_key_down(Key::Left) || is_key_down(Key::A))
     {
         m_movement      = -1.0f;
         m_last_movement = m_movement;
     }
-    else if (is_key_down(cer::Key::Right) || is_key_down(cer::Key::D))
+    else if (is_key_down(Key::Right) || is_key_down(Key::D))
     {
         m_movement      = 1.0f;
         m_last_movement = m_movement;
     }
 
     // Check if the player wants to jump.
-    m_is_jumping =
-        is_key_down(cer::Key::Space) || is_key_down(cer::Key::Up) || is_key_down(cer::Key::W);
+    m_is_jumping = is_key_down(Key::Space) || is_key_down(Key::Up) || is_key_down(Key::W);
 }
 
-void Player::update(cer::GameTime time)
+void Player::update(GameTime time)
 {
     apply_physics(time);
 
     if (m_is_alive && m_is_on_ground && !m_has_reached_exit)
     {
-        const bool is_moving = cer::abs(m_velocity.x) - 0.02f > 0;
+        const bool is_moving = abs(m_velocity.x) - 0.02f > 0;
         m_sprite.play_animation(is_moving ? m_run_animation : m_idle_animation);
     }
 
@@ -262,8 +258,7 @@ void Player::update(cer::GameTime time)
 void Player::draw() const
 {
     // Flip the sprite to face the way we are moving.
-    const cer::SpriteFlip flip =
-        m_last_movement > 0.0f ? cer::SpriteFlip::Horizontally : cer::SpriteFlip::None;
+    const SpriteFlip flip = m_last_movement > 0.0f ? SpriteFlip::Horizontally : SpriteFlip::None;
 
     m_sprite.draw(m_position, flip);
 }
@@ -284,9 +279,9 @@ void Player::on_killed(const Enemy* killed_by)
     m_sprite.play_animation(m_die_animation);
 }
 
-void Player::reset(cer::Vector2 position)
+void Player::reset(Vector2 position)
 {
-    m_position = position - cer::Vector2{0, 10};
+    m_position = position - Vector2{0, 10};
     m_velocity = {};
     m_is_alive = true;
 

@@ -6,7 +6,7 @@
 #include "shadercompiler/Error.hpp"
 #include <algorithm>
 #include <cassert>
-#include <optional>
+#include <cerlib/Option.hpp>
 #include <span>
 
 namespace cer::shadercompiler
@@ -58,7 +58,7 @@ static auto is_keyword(std::string_view str) -> bool
     return std::ranges::find(keyword::list, str) != keyword::list.cend();
 }
 
-static auto get_single_char_token_type(char ch) -> std::optional<TokenType>
+static auto get_single_char_token_type(char ch) -> Option<TokenType>
 {
     if (is_digit(ch))
     {
@@ -146,7 +146,7 @@ static auto get_trimmed(std::string_view str) -> std::string_view
 static auto determine_token_type(const SourceLocation& location, std::string_view value)
     -> TokenType
 {
-    auto type = std::optional<TokenType>{};
+    auto type = Option<TokenType>{};
 
     if (value.size() == 1)
     {

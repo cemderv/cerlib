@@ -63,12 +63,12 @@ class SpriteBatch
 
     void draw_sprite(const Sprite& sprite, SpriteShaderKind shader = SpriteShaderKind::Default);
 
-    void draw_string(std::string_view                     text,
-                     const Font&                          font,
-                     uint32_t                             font_size,
-                     const Vector2&                       position,
-                     const Color&                         color,
-                     const std::optional<TextDecoration>& decoration);
+    void draw_string(std::string_view              text,
+                     const Font&                   font,
+                     uint32_t                      font_size,
+                     const Vector2&                position,
+                     const Color&                  color,
+                     const Option<TextDecoration>& decoration);
 
     void draw_text(const Text& text, const Vector2& position, const Color& color);
 

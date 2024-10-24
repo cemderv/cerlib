@@ -66,7 +66,7 @@ class Bus final : public AudioSource
   public:
     Bus();
 
-    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
+    auto create_instance() -> SharedPtr<AudioSourceInstance> override;
 
     // Set filter. Set to nullptr to clear the filter.
     void set_filter(size_t filter_id, Filter* filter) override;
@@ -127,9 +127,9 @@ class Bus final : public AudioSource
     // Internal: find the bus' channel
     void find_bus_handle();
 
-    std::shared_ptr<BusInstance> m_instance;
-    size_t                       m_channel_handle = 0;
-    Resampler                    m_resampler      = default_resampler;
+    SharedPtr<BusInstance> m_instance;
+    size_t                 m_channel_handle = 0;
+    Resampler              m_resampler      = default_resampler;
 
     // FFT output data
     std::array<float, 256> m_fft_data{};

@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <cerlib/Option.hpp>
 #include <cerlib/SoundTypes.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
-#include <optional>
 
 namespace cer
 {
@@ -37,11 +37,11 @@ auto is_audio_device_initialized() -> bool;
  *
  * @ingroup Audio
  */
-[[nodiscard]] auto play_sound(const Sound&             sound,
-                              float                    volume       = 1.0f,
-                              float                    pan          = 0.0f,
-                              bool                     start_paused = false,
-                              std::optional<SoundTime> delay        = std::nullopt) -> SoundChannel;
+[[nodiscard]] auto play_sound(const Sound&      sound,
+                              float             volume       = 1.0f,
+                              float             pan          = 0.0f,
+                              bool              start_paused = false,
+                              Option<SoundTime> delay        = std::nullopt) -> SoundChannel;
 
 /**
  * Plays a sound without returning its channel.
@@ -53,10 +53,10 @@ auto is_audio_device_initialized() -> bool;
  *
  * @ingroup Audio
  */
-void play_sound_fire_and_forget(const Sound&             sound,
-                                float                    volume = 1.0f,
-                                float                    pan    = 0.0f,
-                                std::optional<SoundTime> delay  = std::nullopt);
+void play_sound_fire_and_forget(const Sound&      sound,
+                                float             volume = 1.0f,
+                                float             pan    = 0.0f,
+                                Option<SoundTime> delay  = std::nullopt);
 
 /**
  * Plays a sound with its volume set equally to all channels, and without

@@ -17,8 +17,8 @@
 
 namespace cer::details
 {
-static std::unique_ptr<FontImpl> s_built_in_font_regular;
-static std::unique_ptr<FontImpl> s_built_in_font_bold;
+static UniquePtr<FontImpl> s_built_in_font_regular;
+static UniquePtr<FontImpl> s_built_in_font_bold;
 
 FontImpl::FontImpl(std::span<const std::byte> data, bool create_copy_of_data)
     : m_owns_font_data(create_copy_of_data)
@@ -36,7 +36,7 @@ FontImpl::FontImpl(std::span<const std::byte> data, bool create_copy_of_data)
     initialize();
 }
 
-FontImpl::FontImpl(std::unique_ptr<std::byte[]> data)
+FontImpl::FontImpl(UniquePtr<std::byte[]> data)
     : m_font_data(data.release())
     , m_owns_font_data(true)
 {

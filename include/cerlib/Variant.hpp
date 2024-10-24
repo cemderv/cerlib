@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include <cerlib/HashSet.hpp>
-#include <cerlib/String.hpp>
+#include <variant>
 
 namespace cer
 {
-using StringViewUnorderedSet = HashSet<std::string_view>;
+template <typename... Types>
+using Variant = std::variant<Types...>;
 }

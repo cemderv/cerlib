@@ -6,9 +6,9 @@
 
 #include <cerlib/Color.hpp>
 #include <cerlib/GraphicsResource.hpp>
+#include <cerlib/Option.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
 #include <functional>
-#include <optional>
 #include <span>
 
 namespace cer
@@ -129,10 +129,10 @@ class Image : public GraphicsResource
     auto format() const -> ImageFormat;
 
     /** Gets the clear color of the image when it is set as a canvas. */
-    auto canvas_clear_color() const -> std::optional<Color>;
+    auto canvas_clear_color() const -> Option<Color>;
 
     /** Sets the clear color of the image when it is set as a canvas. */
-    void set_canvas_clear_color(std::optional<Color> value);
+    void set_canvas_clear_color(Option<Color> value);
 
     /** Gets the size of the image's pixel data, in bytes. */
     auto size_in_bytes() const -> uint32_t;

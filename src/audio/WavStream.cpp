@@ -509,7 +509,7 @@ void WavStream::loadmp3(MemoryReader& fp)
     drmp3_uninit(&decoder);
 }
 
-std::shared_ptr<AudioSourceInstance> WavStream::create_instance()
+SharedPtr<AudioSourceInstance> WavStream::create_instance()
 {
     return std::make_shared<WavStreamInstance>(this);
 }

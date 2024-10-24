@@ -26,8 +26,8 @@ freely, subject to the following restrictions:
 
 #include "audio/AudioSource.hpp"
 #include "util/MemoryReader.hpp"
-#include <optional>
-#include <variant>
+#include <cerlib/Option.hpp>
+#include <cerlib/Variant.hpp>
 
 struct stb_vorbis;
 #ifndef dr_flac_h
@@ -50,7 +50,7 @@ class WavStreamInstance final : public AudioSourceInstance
     size_t       mOffset = 0;
     MemoryReader mFile;
 
-    std::variant<stb_vorbis*, drflac*, drmp3*, drwav*> mCodec;
+    Variant<stb_vorbis*, drflac*, drmp3*, drwav*> mCodec;
 
     size_t  mOggFrameSize   = 0;
     size_t  mOggFrameOffset = 0;
@@ -87,8 +87,8 @@ class WavStream final : public AudioSource
 
     ~WavStream() override;
 
-    std::shared_ptr<AudioSourceInstance> create_instance() override;
-    SoundTime                            getLength() const;
+    SharedPtr<AudioSourceInstance> create_instance() override;
+    SoundTime                      getLength() const;
 
   private:
     void loadwav(MemoryReader& fp);

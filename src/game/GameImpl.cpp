@@ -107,7 +107,7 @@ namespace cer::details
 {
 using namespace std::chrono_literals;
 
-static std::unique_ptr<GameImpl> s_game_instance;
+static UniquePtr<GameImpl> s_game_instance;
 
 GameImpl::GameImpl(bool enable_audio)
 {
@@ -279,7 +279,7 @@ auto GameImpl::display_count() const -> uint32_t
 #endif
 }
 
-static auto from_sdl_display_mode_format(Uint32 format) -> std::optional<ImageFormat>
+static auto from_sdl_display_mode_format(Uint32 format) -> Option<ImageFormat>
 {
     switch (format)
     {
@@ -290,7 +290,7 @@ static auto from_sdl_display_mode_format(Uint32 format) -> std::optional<ImageFo
     return {};
 }
 
-static auto from_sdl_display_mode(const SDL_DisplayMode& sdl_mode) -> std::optional<DisplayMode>
+static auto from_sdl_display_mode(const SDL_DisplayMode& sdl_mode) -> Option<DisplayMode>
 {
     if (const auto format = from_sdl_display_mode_format(sdl_mode.format))
     {
@@ -307,7 +307,7 @@ static auto from_sdl_display_mode(const SDL_DisplayMode& sdl_mode) -> std::optio
     return {};
 }
 
-auto GameImpl::current_display_mode(uint32_t display_index) const -> std::optional<DisplayMode>
+auto GameImpl::current_display_mode(uint32_t display_index) const -> Option<DisplayMode>
 {
 #ifdef __EMSCRIPTEN__
     SDL_DisplayMode mode{};

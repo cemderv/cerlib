@@ -50,7 +50,7 @@ class Queue final : public AudioSource
   public:
     static constexpr auto queue_max = size_t(32);
 
-    auto create_instance() -> std::shared_ptr<AudioSourceInstance> override;
+    auto create_instance() -> SharedPtr<AudioSourceInstance> override;
 
     // Play sound through the queue
     void play(AudioSource& sound);
@@ -70,11 +70,11 @@ class Queue final : public AudioSource
     void find_queue_handle();
 
   private:
-    size_t                                                      m_read_index  = 0;
-    size_t                                                      m_write_index = 0;
-    size_t                                                      m_count       = 0;
-    std::array<std::shared_ptr<AudioSourceInstance>, queue_max> m_source{};
-    std::shared_ptr<QueueInstance>                              m_instance;
-    SoundHandle                                                 m_queue_handle = 0;
+    size_t                                                m_read_index  = 0;
+    size_t                                                m_write_index = 0;
+    size_t                                                m_count       = 0;
+    std::array<SharedPtr<AudioSourceInstance>, queue_max> m_source{};
+    SharedPtr<QueueInstance>                              m_instance;
+    SoundHandle                                           m_queue_handle = 0;
 };
 }; // namespace cer

@@ -88,11 +88,11 @@ AudioDevice::~AudioDevice() noexcept
     }
 }
 
-auto AudioDevice::play_sound(const Sound&             sound,
-                             float                    volume,
-                             float                    pan,
-                             bool                     start_paused,
-                             std::optional<SoundTime> delay) -> SoundChannel
+auto AudioDevice::play_sound(const Sound&      sound,
+                             float             volume,
+                             float             pan,
+                             bool              start_paused,
+                             Option<SoundTime> delay) -> SoundChannel
 {
     if (!sound)
     {
@@ -111,10 +111,10 @@ auto AudioDevice::play_sound(const Sound&             sound,
     return SoundChannel{channel_impl.release()};
 }
 
-void AudioDevice::play_sound_fire_and_forget(const Sound&             sound,
-                                             float                    volume,
-                                             float                    pan,
-                                             std::optional<SoundTime> delay)
+void AudioDevice::play_sound_fire_and_forget(const Sound&      sound,
+                                             float             volume,
+                                             float             pan,
+                                             Option<SoundTime> delay)
 {
     if (!sound)
     {
@@ -1065,12 +1065,12 @@ static void resample_point(const float* src,
     }
 }
 
-void panAndExpand(std::shared_ptr<AudioSourceInstance>& voice,
-                  float*                                buffer,
-                  size_t                                samples_to_read,
-                  size_t                                buffer_size,
-                  float*                                scratch,
-                  size_t                                channels)
+void panAndExpand(SharedPtr<AudioSourceInstance>& voice,
+                  float*                          buffer,
+                  size_t                          samples_to_read,
+                  size_t                          buffer_size,
+                  float*                          scratch,
+                  size_t                          channels)
 {
 #ifdef SOLOUD_SSE_INTRINSICS
     assert(((size_t)buffer & 0xf) == 0);
@@ -3461,14 +3461,14 @@ void AudioDevice::set_global_filter(size_t aFilterId, Filter* aFilter)
 }
 
 auto AudioDevice::filter_parameter(SoundHandle voice_handle, size_t filter_id, size_t attribute_id)
-    -> std::optional<float>
+    -> Option<float>
 {
     if (filter_id >= filters_per_stream)
     {
         return {};
     }
 
-    auto ret = std::optional<float>{};
+    auto ret = Option<float>{};
 
     if (voice_handle == 0)
     {

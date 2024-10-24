@@ -36,8 +36,7 @@ TempVarNameGen::TempVarNameGen(const CodeBlock* block)
                 continue;
             }
 
-            if (const auto num = std::stoi(std::string{name.substr(m_prefix.size())});
-                num >= m_counter)
+            if (const auto num = std::stoi(String{name.substr(m_prefix.size())}); num >= m_counter)
             {
                 m_counter = num + 1;
             }
@@ -45,7 +44,7 @@ TempVarNameGen::TempVarNameGen(const CodeBlock* block)
     }
 }
 
-auto TempVarNameGen::next(std::string_view hint) -> std::string
+auto TempVarNameGen::next(std::string_view hint) -> String
 {
     auto str = hint.empty() ? cer_fmt::format("{}{}", m_prefix, m_counter)
                             : cer_fmt::format("{}{}_{}", m_prefix, m_counter, hint);

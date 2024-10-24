@@ -18,7 +18,7 @@ SoundImpl::SoundImpl(AudioDevice& audio_device, std::span<const std::byte> data)
     init_soloud_audio_source();
 }
 
-SoundImpl::SoundImpl(AudioDevice& audio_device, std::unique_ptr<std::byte[]> data, size_t data_size)
+SoundImpl::SoundImpl(AudioDevice& audio_device, UniquePtr<std::byte[]> data, size_t data_size)
     : m_audio_device(&audio_device)
     , m_data(std::move(data))
     , m_data_size(data_size)

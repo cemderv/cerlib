@@ -35,7 +35,7 @@ Stmt::Stmt(const SourceLocation& location)
 {
 }
 
-VarStmt::VarStmt(const SourceLocation& location, std::unique_ptr<VarDecl> variable)
+VarStmt::VarStmt(const SourceLocation& location, UniquePtr<VarDecl> variable)
     : Stmt(location)
     , m_variable(std::move(variable))
 {
@@ -58,7 +58,7 @@ auto VarStmt::variable() const -> const VarDecl&
     return *m_variable;
 }
 
-auto VarStmt::steal_variable() -> std::unique_ptr<VarDecl>
+auto VarStmt::steal_variable() -> UniquePtr<VarDecl>
 {
     return std::move(m_variable);
 }
@@ -68,7 +68,7 @@ auto VarStmt::accesses_symbol(const Decl& symbol, [[maybe_unused]] bool transiti
     return m_variable->expr().accesses_symbol(symbol, true);
 }
 
-ReturnStmt::ReturnStmt(const SourceLocation& location, std::unique_ptr<Expr> expr)
+ReturnStmt::ReturnStmt(const SourceLocation& location, UniquePtr<Expr> expr)
     : Stmt(location)
     , m_expr(std::move(expr))
 {
@@ -89,8 +89,8 @@ auto ReturnStmt::expr() const -> const Expr&
 
 CompoundStmt::CompoundStmt(const SourceLocation& location,
                            CompoundStmtKind      kind,
-                           std::unique_ptr<Expr> lhs,
-                           std::unique_ptr<Expr> rhs)
+                           UniquePtr<Expr>       lhs,
+                           UniquePtr<Expr>       rhs)
     : Stmt(location)
     , m_kind(kind)
     , m_lhs(std::move(lhs))
@@ -133,10 +133,10 @@ auto ReturnStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> b
     return m_expr->accesses_symbol(symbol, transitive);
 }
 
-ForStmt::ForStmt(const SourceLocation&                location,
-                 std::unique_ptr<ForLoopVariableDecl> loop_variable,
-                 std::unique_ptr<RangeExpr>           range,
-                 std::unique_ptr<CodeBlock>           body)
+ForStmt::ForStmt(const SourceLocation&          location,
+                 UniquePtr<ForLoopVariableDecl> loop_variable,
+                 UniquePtr<RangeExpr>           range,
+                 UniquePtr<CodeBlock>           body)
     : Stmt(location)
     , m_loop_variable(std::move(loop_variable))
     , m_range(std::move(range))
@@ -192,10 +192,10 @@ bool ForStmt::accesses_symbol(const Decl& symbol, bool transitive) const
     return m_body->accesses_symbol(symbol, transitive);
 }
 
-IfStmt::IfStmt(const SourceLocation&      location,
-               std::unique_ptr<Expr>      condition_expr,
-               std::unique_ptr<CodeBlock> body,
-               std::unique_ptr<IfStmt>    next)
+IfStmt::IfStmt(const SourceLocation& location,
+               UniquePtr<Expr>       condition_expr,
+               UniquePtr<CodeBlock>  body,
+               UniquePtr<IfStmt>     next)
     : Stmt(location)
     , m_condition_expr(std::move(condition_expr))
     , m_body(std::move(body))
@@ -264,8 +264,8 @@ auto IfStmt::accesses_symbol(const Decl& symbol, bool transitive) const -> bool
 }
 
 AssignmentStmt::AssignmentStmt(const SourceLocation& location,
-                               std::unique_ptr<Expr> lhs,
-                               std::unique_ptr<Expr> rhs)
+                               UniquePtr<Expr>       lhs,
+                               UniquePtr<Expr>       rhs)
     : Stmt(location)
     , m_lhs(std::move(lhs))
     , m_rhs(std::move(rhs))

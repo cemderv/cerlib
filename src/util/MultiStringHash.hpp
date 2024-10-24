@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include <string>
-#include <string_view>
+#include <cerlib/String.hpp>
 
 namespace cer::details
 {
@@ -14,7 +13,7 @@ struct MultiStringHash
     using hash_type      = std::hash<std::string_view>;
     using is_transparent = void;
 
-    auto operator()(const std::string& str) const -> size_t
+    auto operator()(const String& str) const -> size_t
     {
         return hash_type{}(str);
     }

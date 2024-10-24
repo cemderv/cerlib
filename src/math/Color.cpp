@@ -19,7 +19,7 @@ auto Color::to_vector4() const -> Vector4
 }
 } // namespace cer
 
-auto cer::random_color(std::optional<float> alpha) -> Color
+auto cer::random_color(Option<float> alpha) -> Color
 {
     if (!alpha.has_value())
     {
@@ -34,7 +34,7 @@ auto cer::random_color(std::optional<float> alpha) -> Color
     };
 }
 
-auto cer::fastrand_color(std::optional<float> alpha) -> Color
+auto cer::fastrand_color(Option<float> alpha) -> Color
 {
     if (!alpha.has_value())
     {

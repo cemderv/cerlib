@@ -76,7 +76,7 @@ void EchoFilterInstance::filter(const FilterArgs& args)
     }
 }
 
-auto EchoFilter::create_instance() -> std::shared_ptr<FilterInstance>
+auto EchoFilter::create_instance() -> SharedPtr<FilterInstance>
 {
     return std::make_shared<EchoFilterInstance>(this);
 }

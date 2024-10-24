@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include <cerlib/String.hpp>
 #include <cstdint>
-#include <string_view>
 
 namespace cer::shadercompiler
 {

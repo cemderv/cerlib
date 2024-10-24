@@ -14,7 +14,7 @@
 #include "cerlib/Shader.hpp"
 #include "cerlib/Window.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
-#include <optional>
+#include <cerlib/Option.hpp>
 #include <span>
 
 #define LOAD_DEVICE_IMPL auto& device_impl = details::GameImpl::instance().graphics_device()
@@ -49,16 +49,15 @@ class GraphicsDevice
 
     auto demand_create_shader(std::string_view                  name,
                               std::string_view                  source_code,
-                              std::span<const std::string_view> defines)
-        -> std::unique_ptr<ShaderImpl>;
+                              std::span<const std::string_view> defines) -> UniquePtr<ShaderImpl>;
 
     virtual auto create_canvas(const Window& window,
                                uint32_t      width,
                                uint32_t      height,
-                               ImageFormat   format) -> std::unique_ptr<ImageImpl> = 0;
+                               ImageFormat   format) -> UniquePtr<ImageImpl> = 0;
 
     virtual auto create_image(uint32_t width, uint32_t height, ImageFormat format, const void* data)
-        -> std::unique_ptr<ImageImpl> = 0;
+        -> UniquePtr<ImageImpl> = 0;
 
     void notify_resource_created(GraphicsResourceImpl& resource);
 
@@ -93,12 +92,12 @@ class GraphicsDevice
                         float            rotation,
                         const Vector2&   origin);
 
-    void draw_string(std::string_view                     text,
-                     const Font&                          font,
-                     uint32_t                             font_size,
-                     const Vector2&                       position,
-                     const Color&                         color,
-                     const std::optional<TextDecoration>& decoration);
+    void draw_string(std::string_view              text,
+                     const Font&                   font,
+                     uint32_t                      font_size,
+                     const Vector2&                position,
+                     const Color&                  color,
+                     const Option<TextDecoration>& decoration);
 
     void draw_text(const Text& text, Vector2 position, const Color& color);
 
@@ -118,13 +117,13 @@ class GraphicsDevice
                                        void*        destination) = 0;
 
   protected:
-    void post_init(std::unique_ptr<SpriteBatch> sprite_batch);
+    void post_init(UniquePtr<SpriteBatch> sprite_batch);
 
     void pre_backend_dtor();
 
     virtual auto create_native_user_shader(std::string_view          native_code,
                                            ShaderImpl::ParameterList parameters)
-        -> std::unique_ptr<ShaderImpl> = 0;
+        -> UniquePtr<ShaderImpl> = 0;
 
     virtual void on_start_frame(const Window& window) = 0;
 
@@ -155,7 +154,7 @@ class GraphicsDevice
     void compute_combined_transformation();
 
     RefList<GraphicsResourceImpl> m_resources;
-    std::unique_ptr<SpriteBatch>  m_sprite_batch;
+    UniquePtr<SpriteBatch>        m_sprite_batch;
     Window                        m_current_window;
     bool                          m_must_flush_draw_calls;
     FrameStats                    m_frame_stats;
@@ -167,6 +166,6 @@ class GraphicsDevice
     BlendState                    m_blend_state;
     Sampler                       m_sampler;
     Shader                        m_sprite_shader;
-    std::optional<Category>       m_current_category;
+    Option<Category>              m_current_category;
 };
 } // namespace cer::details

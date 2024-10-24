@@ -7,12 +7,11 @@
 #include <cerlib/details/ObjectMacros.hpp>
 
 #include <any>
+#include <cerlib/SmartPointers.hpp>
+#include <cerlib/String.hpp>
 #include <functional>
-#include <memory>
 #include <span>
 #include <stdexcept>
-#include <string>
-#include <string_view>
 
 namespace cer
 {
@@ -33,8 +32,8 @@ class ContentManager;
  */
 struct AssetData
 {
-    std::unique_ptr<std::byte[]> data;
-    size_t                       size{};
+    UniquePtr<std::byte[]> data;
+    size_t                 size{};
 
     auto as_span() const -> std::span<const std::byte>
     {
@@ -78,7 +77,7 @@ class Asset
 
   private:
     details::ContentManager* m_content_manager{};
-    std::string              m_asset_name;
+    String                   m_asset_name;
 };
 
 /**
@@ -93,7 +92,7 @@ class Asset
  *
  * @ingroup Content
  */
-using CustomAssetLoadFunc = std::function<std::shared_ptr<Asset>(
+using CustomAssetLoadFunc = std::function<SharedPtr<Asset>(
     std::string_view name, AssetData& data, const std::any& extra_info)>;
 
 /**
@@ -125,7 +124,7 @@ void set_asset_loading_prefix(std::string_view prefix);
  *
  * @ingroup Content
  */
-auto asset_loading_prefix() -> std::string;
+auto asset_loading_prefix() -> String;
 
 /**
  * Registers a function as a custom asset loader for a specific type ID.
@@ -186,7 +185,7 @@ static void register_custom_asset_loader_for_type(CustomAssetLoadFunc load_func)
  * @ingroup Content
  */
 auto load_custom_asset(std::string_view type_id, std::string_view name, const std::any& extra_info)
-    -> std::shared_ptr<Asset>;
+    -> SharedPtr<Asset>;
 
 /**
  * Registers a function as a custom asset loader for a specific type.
@@ -205,7 +204,7 @@ auto load_custom_asset(std::string_view type_id, std::string_view name, const st
  */
 template <typename T>
 static auto load_custom_asset_of_type(std::string_view name, const std::any& extra_info)
-    -> std::shared_ptr<T>
+    -> SharedPtr<T>
     requires(std::is_base_of_v<Asset, T>)
 {
     const auto asset      = load_custom_asset(typeid(T).name(), name, extra_info);

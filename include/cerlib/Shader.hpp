@@ -7,12 +7,12 @@
 #include <cerlib/GraphicsResource.hpp>
 #include <cerlib/Image.hpp>
 #include <cerlib/Matrix.hpp>
+#include <cerlib/String.hpp>
 #include <cerlib/Vector2.hpp>
 #include <cerlib/Vector3.hpp>
 #include <cerlib/Vector4.hpp>
 #include <cerlib/details/ObjectMacros.hpp>
 #include <span>
-#include <string_view>
 
 namespace cer
 {
@@ -99,28 +99,28 @@ class Shader final : public GraphicsResource
     void set_value(std::string_view name, const Image& image);
 
     /** Gets the float value of a parameter. */
-    auto float_value(std::string_view name) const -> std::optional<float>;
+    auto float_value(std::string_view name) const -> Option<float>;
 
     /** Gets the signed 32-bit integer value of a parameter. */
-    auto int_value(std::string_view name) const -> std::optional<int32_t>;
+    auto int_value(std::string_view name) const -> Option<int32_t>;
 
     /** Gets the boolean value of a parameter. */
-    auto bool_value(std::string_view name) const -> std::optional<bool>;
+    auto bool_value(std::string_view name) const -> Option<bool>;
 
     /** Gets the 2D vector value of a parameter. */
-    auto vector2_value(std::string_view name) const -> std::optional<Vector2>;
+    auto vector2_value(std::string_view name) const -> Option<Vector2>;
 
     /** Gets the 3D vector value of a parameter. */
-    auto vector3_value(std::string_view name) const -> std::optional<Vector3>;
+    auto vector3_value(std::string_view name) const -> Option<Vector3>;
 
     /** Gets the 4D vector value of a parameter. */
-    auto vector4_value(std::string_view name) const -> std::optional<Vector4>;
+    auto vector4_value(std::string_view name) const -> Option<Vector4>;
 
     /** Gets the matrix value of a parameter. */
-    auto matrix_value(std::string_view name) const -> std::optional<Matrix>;
+    auto matrix_value(std::string_view name) const -> Option<Matrix>;
 
     /** Gets the image value of a parameter. */
-    auto image_value(std::string_view name) const -> std::optional<Image>;
+    auto image_value(std::string_view name) const -> Option<Image>;
 
     /** Gets a value indicating whether the shader contains a parameter with a specific
      * name. */

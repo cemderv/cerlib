@@ -7,7 +7,9 @@
 #include <array>
 #include <cerlib.hpp>
 
-class Level : public cer::Asset
+using namespace cer;
+
+class Level : public Asset
 {
   public:
     struct Args
@@ -19,7 +21,7 @@ class Level : public cer::Asset
 
     std::string_view name() const;
 
-    void update(cer::GameTime time);
+    void update(GameTime time);
 
     void draw();
 
@@ -31,7 +33,7 @@ class Level : public cer::Asset
 
     uint32_t height() const;
 
-    cer::Rectangle bounds(int x, int y) const;
+    Rectangle bounds(int x, int y) const;
 
     bool is_exit_reached() const;
 
@@ -50,9 +52,9 @@ class Level : public cer::Asset
 
     Tile load_gem_tile(int x, int y, bool is_super_gem);
 
-    void update_gems(cer::GameTime time);
+    void update_gems(GameTime time);
 
-    void update_enemies(cer::GameTime time);
+    void update_enemies(GameTime time);
 
     void on_gem_collected(Gem& gem);
 
@@ -62,22 +64,22 @@ class Level : public cer::Asset
 
     void draw_tiles();
 
-    static constexpr int          entity_layer      = 2;
-    static constexpr cer::Vector2 invalid_position  = cer::Vector2{-1};
-    static constexpr int          points_per_second = 5;
+    static constexpr int     entity_layer      = 2;
+    static constexpr Vector2 invalid_position  = Vector2{-1};
+    static constexpr int     points_per_second = 5;
 
-    std::string               m_name;
-    int                       m_width  = 0;
-    int                       m_height = 0;
-    cer::List<Tile>           m_tiles;
-    std::array<cer::Image, 3> m_layers;
-    Player                    m_player;
-    cer::List<Gem>            m_gems;
-    cer::List<Enemy>          m_enemies;
-    cer::Vector2              m_start;
-    cer::Vector2              m_exit            = invalid_position;
-    int*                      m_score           = nullptr;
-    bool                      m_is_exit_reached = false;
-    double                    m_time_remaining  = 0.0;
-    cer::Sound                m_exit_reached_sound;
+    std::string          m_name;
+    int                  m_width  = 0;
+    int                  m_height = 0;
+    List<Tile>           m_tiles;
+    std::array<Image, 3> m_layers;
+    Player               m_player;
+    List<Gem>            m_gems;
+    List<Enemy>          m_enemies;
+    Vector2              m_start;
+    Vector2              m_exit            = invalid_position;
+    int*                 m_score           = nullptr;
+    bool                 m_is_exit_reached = false;
+    double               m_time_remaining  = 0.0;
+    Sound                m_exit_reached_sound;
 };

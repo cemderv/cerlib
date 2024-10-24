@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include <cerlib/Option.hpp>
 #include <cstdint>
-#include <optional>
 
 namespace cer
 {
@@ -140,5 +140,5 @@ enum DXGI_FORMAT : uint32_t
 };
 #endif
 
-auto from_dxgi_format(DXGI_FORMAT dxgi_format) -> std::optional<ImageFormat>;
+auto from_dxgi_format(DXGI_FORMAT dxgi_format) -> Option<ImageFormat>;
 } // namespace cer

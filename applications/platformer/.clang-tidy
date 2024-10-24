@@ -80,7 +80,6 @@ Checks:
   - 'bugprone-unsafe-functions'
   - 'bugprone-unused-return-value'
   - 'bugprone-use-after-move'
-  - 'google-build-using-namespace'
   - 'google-explicit-constructor'
   - 'misc-confusable-identifiers'
   - 'misc-const-correctness'

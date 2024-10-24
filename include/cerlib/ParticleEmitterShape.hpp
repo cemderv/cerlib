@@ -4,8 +4,8 @@
 
 #pragma once
 
+#include <cerlib/Variant.hpp>
 #include <cerlib/Vector2.hpp>
-#include <variant>
 
 namespace cer
 {
@@ -79,10 +79,10 @@ struct ParticleSprayShape
 /**
  * @ingroup Graphics
  */
-using ParticleEmitterShape = std::variant<ParticleBoxFillShape,
-                                          ParticleBoxShape,
-                                          ParticleCircleShape,
-                                          ParticlePointShape,
-                                          ParticleRingShape,
-                                          ParticleSprayShape>;
+using ParticleEmitterShape = Variant<ParticleBoxFillShape,
+                                     ParticleBoxShape,
+                                     ParticleCircleShape,
+                                     ParticlePointShape,
+                                     ParticleRingShape,
+                                     ParticleSprayShape>;
 } // namespace cer

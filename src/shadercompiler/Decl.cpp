@@ -167,7 +167,7 @@ auto StructDecl::resolve([[maybe_unused]] SemaContext& context, [[maybe_unused]]
     return *this;
 }
 
-auto StructDecl::get_fields() const -> std::span<const std::unique_ptr<StructFieldDecl>>
+auto StructDecl::get_fields() const -> std::span<const UniquePtr<StructFieldDecl>>
 {
     return m_fields;
 }
@@ -192,7 +192,7 @@ FunctionDecl::FunctionDecl(const SourceLocation&               location,
                            std::string_view                    name,
                            UniquePtrList<FunctionParamDecl, 4> parameters,
                            const Type&                         return_type,
-                           std::unique_ptr<CodeBlock>          body,
+                           UniquePtr<CodeBlock>                body,
                            bool                                is_struct_ctor)
     : Decl(location, name)
     , m_kind(FunctionKind::Normal)
@@ -367,7 +367,7 @@ auto FunctionDecl::find_parameter(std::string_view name) const -> FunctionParamD
     return nullptr;
 }
 
-auto FunctionDecl::parameters() const -> std::span<const std::unique_ptr<FunctionParamDecl>>
+auto FunctionDecl::parameters() const -> std::span<const UniquePtr<FunctionParamDecl>>
 {
     return m_parameters;
 }
@@ -482,7 +482,7 @@ void ForLoopVariableDecl::on_verify([[maybe_unused]] SemaContext& context, Scope
 ShaderParamDecl::ShaderParamDecl(const SourceLocation& location,
                                  std::string_view      name,
                                  const Type&           type,
-                                 std::unique_ptr<Expr> default_value_expr)
+                                 UniquePtr<Expr>       default_value_expr)
     : Decl(location, name)
     , m_default_value_expr(std::move(default_value_expr))
 {
@@ -559,7 +559,7 @@ auto ShaderParamDecl::default_value() const -> const std::any&
 
 VarDecl::VarDecl(const SourceLocation& location,
                  std::string_view      name,
-                 std::unique_ptr<Expr> expr,
+                 UniquePtr<Expr>       expr,
                  bool                  is_const)
     : Decl(location, name)
     , m_is_const(is_const)

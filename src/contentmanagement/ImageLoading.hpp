@@ -12,8 +12,7 @@ class GraphicsDevice;
 class ImageImpl;
 
 auto load_image(GraphicsDevice& device_impl, std::span<const std::byte> memory)
-    -> std::unique_ptr<ImageImpl>;
+    -> UniquePtr<ImageImpl>;
 
-auto load_image(GraphicsDevice& device_impl, std::string_view filename)
-    -> std::unique_ptr<ImageImpl>;
+auto load_image(GraphicsDevice& device_impl, std::string_view filename) -> UniquePtr<ImageImpl>;
 } // namespace cer::details

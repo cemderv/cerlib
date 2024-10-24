@@ -270,7 +270,7 @@ void Wav::load_flac(const MemoryReader& reader)
     drflac_close(decoder);
 }
 
-auto Wav::create_instance() -> std::shared_ptr<AudioSourceInstance>
+auto Wav::create_instance() -> SharedPtr<AudioSourceInstance>
 {
     return std::make_shared<WavInstance>(this);
 }

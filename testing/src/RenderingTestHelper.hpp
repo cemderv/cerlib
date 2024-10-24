@@ -6,8 +6,8 @@
 
 #include "cerlib/Image.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
+#include <cerlib/String.hpp>
 #include <functional>
-#include <string>
 
 class RenderingTestHelper
 {
