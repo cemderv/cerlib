@@ -5,7 +5,9 @@
 */
 
 #ifdef __GNUC__
+#ifdef __clang__
 #pragma GCC diagnostic ignored "-Wgnu-label-as-value"
+#endif
 #pragma GCC diagnostic ignored "-Wpedantic"
 #endif
 
