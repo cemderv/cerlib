@@ -25,6 +25,8 @@
 #include <cerlib/KeyModifier.hpp>
 #include <cerlib/List.hpp>
 #include <cerlib/Logging.hpp>
+#include <cerlib/LuaScript.hpp>
+#include <cerlib/LuaState.hpp>
 #include <cerlib/Math.hpp>
 #include <cerlib/Matrix.hpp>
 #include <cerlib/MouseButton.hpp>

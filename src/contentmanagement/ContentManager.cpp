@@ -11,6 +11,7 @@
 #include "cerlib/Font.hpp"
 #include "cerlib/Image.hpp"
 #include "cerlib/Logging.hpp"
+#include "cerlib/LuaScript.hpp"
 #include "cerlib/Shader.hpp"
 #include "cerlib/Sound.hpp"
 #include "game/GameImpl.hpp"
@@ -197,6 +198,16 @@ auto ContentManager::load_sound(std::string_view name) -> Sound
             std::make_unique<SoundImpl>(audio_device, std::move(data.data), data.size);
 
         return Sound{sound_impl.release()};
+    });
+}
+
+auto ContentManager::load_lua_script(std::string_view name) -> LuaScript
+{
+    const auto key = std::string{name};
+
+    return lazy_load<LuaScript, LuaScriptImpl>(key, name, [](std::string_view full_name) {
+        const auto data = filesystem::load_asset_data(full_name);
+        return LuaScript{full_name, LuaCode{data.as_string_view()}};
     });
 }
 

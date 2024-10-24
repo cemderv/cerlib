@@ -6,8 +6,8 @@
 
 #include "cerlib/Content.hpp"
 #include "cerlib/Logging.hpp"
-#include "cerlib/Shader.hpp"
-#include "graphics/ShaderImpl.hpp"
+#include "cerlib/LuaScript.hpp"
+#include "lua/LuaScriptImpl.hpp"
 #include "util/StringUnorderedMap.hpp"
 #include <cerlib/CopyMoveMacros.hpp>
 #include <span>
@@ -44,6 +44,8 @@ class ContentManager final
 
     auto load_sound(std::string_view name) -> Sound;
 
+    auto load_lua_script(std::string_view name) -> LuaScript;
+
     auto load_custom_asset(std::string_view type_id,
                            std::string_view name,
                            const std::any&  extra_info) -> std::shared_ptr<Asset>;
@@ -64,7 +66,7 @@ class ContentManager final
     // vanished), they notify the content manager. The content manager then removes those
     // assets from its list.
     using ReferenceToLoadedAsset =
-        std::variant<ImageImpl*, SoundImpl*, ShaderImpl*, FontImpl*, CustomAsset>;
+        std::variant<ImageImpl*, SoundImpl*, ShaderImpl*, FontImpl*, LuaScriptImpl*, CustomAsset>;
 
     using MapOfLoadedAssets = StringUnorderedMap<ReferenceToLoadedAsset>;
 
